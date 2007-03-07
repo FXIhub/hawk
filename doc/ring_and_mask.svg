@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://web.resource.org/cc/"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="744.09448819"
+   height="1052.3622047"
+   id="svg11004"
+   sodipodi:version="0.32"
+   inkscape:version="0.44"
+   sodipodi:docbase="/home/filipe/Imaging/Hamburg/uwrap/uwrap/doc"
+   sodipodi:docname="ring_and_mask.svg"
+   inkscape:export-filename="/home/filipe/Imaging/Hamburg/uwrap/uwrap/doc/ring_and_mask_svg.png"
+   inkscape:export-xdpi="144.31737"
+   inkscape:export-ydpi="144.31737">
+  <defs
+     id="defs11006">
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath12007">
+      <rect
+         ry="4.456461"
+         rx="4.456461"
+         y="43.939171"
+         x="74.312599"
+         height="254.30313"
+         width="255.46121"
+         id="rect12002"
+         style="opacity:1;fill:none;fill-opacity:1;stroke:black;stroke-width:1.29590487;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4.30000019;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath12014">
+      <rect
+         style="opacity:1;fill:none;fill-opacity:1;stroke:black;stroke-width:1.29526746;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4.30000019;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+         id="rect12012"
+         width="255.2093"
+         height="254.30377"
+         x="384.05975"
+         y="43.93885"
+         rx="4.456461"
+         ry="4.456461" />
+    </clipPath>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     gridtolerance="10000"
+     guidetolerance="10"
+     objecttolerance="10"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.4"
+     inkscape:cx="286.16451"
+     inkscape:cy="854.87805"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     inkscape:window-width="1302"
+     inkscape:window-height="1065"
+     inkscape:window-x="152"
+     inkscape:window-y="106" />
+  <metadata
+     id="metadata11009">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="opacity:1;fill:white;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4.30000019;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect12908"
+       width="578.57141"
+       height="264.28571"
+       x="69.285713"
+       y="40.933609"
+       rx="4.456461"
+       ry="4.456461"
+       inkscape:export-filename="/home/filipe/Imaging/Hamburg/uwrap/uwrap/doc/ring_and_mask_svg.png"
+       inkscape:export-xdpi="1000"
+       inkscape:export-ydpi="1000" />
+    <rect
+       style="opacity:0.5;fill:black;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4.30000019;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect12906"
+       width="255.46121"
+       height="254.30313"
+       x="390.31259"
+       y="49.939171"
+       rx="4.456461"
+       ry="4.456461"
+       inkscape:export-filename="/home/filipe/Imaging/Hamburg/uwrap/uwrap/doc/ring_and_mask_svg.png"
+       inkscape:export-xdpi="1000"
+       inkscape:export-ydpi="1000" />
+    <image
+       xlink:href="ring_and_mask.png"
+       sodipodi:absref="/home/filipe/Imaging/Hamburg/uwrap/uwrap/doc/ring_and_mask.png"
+       width="572.14288"
+       height="254.28572"
+       id="image12005"
+       x="67.14286"
+       y="43.790722"
+       clip-path="url(#clipPath12014)"
+       inkscape:export-filename="/home/filipe/Imaging/Hamburg/uwrap/uwrap/doc/ring_and_mask_svg.png"
+       inkscape:export-xdpi="1000"
+       inkscape:export-ydpi="1000" />
+    <rect
+       ry="4.456461"
+       rx="4.456461"
+       y="49.939171"
+       x="80.312599"
+       height="254.30313"
+       width="255.46121"
+       id="rect12904"
+       style="opacity:0.5;fill:black;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4.30000019;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       inkscape:export-filename="/home/filipe/Imaging/Hamburg/uwrap/uwrap/doc/ring_and_mask_svg.png"
+       inkscape:export-xdpi="1000"
+       inkscape:export-ydpi="1000" />
+    <image
+       y="43.790722"
+       x="67.14286"
+       id="image11112"
+       height="254.28572"
+       width="572.14288"
+       sodipodi:absref="/home/filipe/Imaging/Hamburg/uwrap/uwrap/doc/ring_and_mask.png"
+       xlink:href="ring_and_mask.png"
+       clip-path="url(#clipPath12007)"
+       inkscape:export-filename="/home/filipe/Imaging/Hamburg/uwrap/uwrap/doc/ring_and_mask_svg.png"
+       inkscape:export-xdpi="1000"
+       inkscape:export-ydpi="1000" />
+    <rect
+       style="opacity:1;fill:none;fill-opacity:1;stroke:black;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4.30000019;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect11115"
+       width="255.46121"
+       height="254.30313"
+       x="74.312599"
+       y="43.939171"
+       rx="4.456461"
+       ry="4.456461"
+       inkscape:export-filename="/home/filipe/Imaging/Hamburg/uwrap/uwrap/doc/ring_and_mask_svg.png"
+       inkscape:export-xdpi="1000"
+       inkscape:export-ydpi="1000" />
+    <rect
+       ry="4.456461"
+       rx="4.456461"
+       y="43.93885"
+       x="384.05975"
+       height="254.30377"
+       width="255.2093"
+       id="rect12010"
+       style="opacity:1;fill:none;fill-opacity:1;stroke:black;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4.30000019;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       inkscape:export-xdpi="1000"
+       inkscape:export-ydpi="1000"
+       inkscape:export-filename="/home/filipe/Imaging/Hamburg/uwrap/uwrap/doc/ring_and_mask_svg.png" />
+  </g>
+</svg>

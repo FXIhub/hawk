@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://web.resource.org/cc/"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   id="svg1923"
+   sodipodi:version="0.32"
+   inkscape:version="0.44"
+   width="616"
+   height="594"
+   version="1.0"
+   sodipodi:docbase="/home/filipe/Imaging/Hamburg/uwrap/uwrap/doc"
+   sodipodi:docname="visit_raw_ring.svg"
+   inkscape:export-filename="/home/filipe/Imaging/Hamburg/uwrap/uwrap/doc/visit_raw_ring.png"
+   inkscape:export-xdpi="999.93884"
+   inkscape:export-ydpi="999.93884">
+  <metadata
+     id="metadata1928">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs1926">
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath9218">
+      <rect
+         ry="4.456461"
+         rx="4.456461"
+         y="20.067825"
+         x="29.521408"
+         height="221.41341"
+         width="215.70189"
+         id="rect9216"
+         style="opacity:1;fill:none;fill-opacity:1;stroke:black;stroke-width:0.95793587;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4.30000019;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+    </clipPath>
+  </defs>
+  <sodipodi:namedview
+     inkscape:window-height="971"
+     inkscape:window-width="1157"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     guidetolerance="10.0"
+     gridtolerance="10.0"
+     objecttolerance="10.0"
+     borderopacity="1.0"
+     bordercolor="#666666"
+     pagecolor="#ffffff"
+     id="base"
+     inkscape:object-nodes="false"
+     inkscape:object-bbox="false"
+     inkscape:object-points="false"
+     inkscape:zoom="7.180586"
+     inkscape:cx="68.055626"
+     inkscape:cy="549.28117"
+     inkscape:window-x="53"
+     inkscape:window-y="102"
+     inkscape:current-layer="svg1923"
+     inkscape:object-paths="true" />
+  <rect
+     inkscape:export-ydpi="1990.1899"
+     inkscape:export-xdpi="1990.1899"
+     inkscape:export-filename="/home/filipe/Imaging/Hamburg/uwrap/uwrap/doc/visit_raw_ring.png"
+     style="opacity:1;fill:white;fill-opacity:1;stroke:none;stroke-width:0.95793587;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4.30000019;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+     id="rect10108"
+     width="222.94363"
+     height="228.65515"
+     x="28.507889"
+     y="18.49725"
+     rx="4.456461"
+     ry="4.456461" />
+  <rect
+     ry="4.456461"
+     rx="4.456461"
+     y="24.067825"
+     x="33.521408"
+     height="221.41341"
+     width="215.70189"
+     id="rect9221"
+     style="opacity:0.5;fill:black;fill-opacity:1;stroke:none;stroke-width:0.95793587;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4.30000019;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+     inkscape:export-filename="/home/filipe/Imaging/Hamburg/uwrap/uwrap/doc/visit_raw_ring.png"
+     inkscape:export-xdpi="1990.1899"
+     inkscape:export-ydpi="1990.1899" />
+  <image
+     y="20.470587"
+     x="30.201101"
+     id="image7424"
+     height="221.27245"
+     width="214.43538"
+     sodipodi:absref="/home/filipe/Imaging/Hamburg/uwrap/uwrap/doc/visit_raw_ring.png"
+     xlink:href="visit_raw_ring.png"
+     clip-path="url(#clipPath9218)"
+     inkscape:export-filename="/home/filipe/Imaging/Hamburg/uwrap/uwrap/doc/visit_raw_ring.png"
+     inkscape:export-xdpi="1990.1899"
+     inkscape:export-ydpi="1990.1899" />
+  <rect
+     style="opacity:1;fill:none;fill-opacity:1;stroke:black;stroke-width:0.95793587;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4.30000019;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+     id="rect7427"
+     width="215.70189"
+     height="221.41341"
+     x="29.521408"
+     y="20.067825"
+     rx="4.456461"
+     ry="4.456461"
+     inkscape:export-filename="/home/filipe/Imaging/Hamburg/uwrap/uwrap/doc/visit_raw_ring.png"
+     inkscape:export-xdpi="1990.1899"
+     inkscape:export-ydpi="1990.1899" />
+</svg>

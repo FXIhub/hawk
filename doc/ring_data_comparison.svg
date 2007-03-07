@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://web.resource.org/cc/"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   id="svg6747"
+   sodipodi:version="0.32"
+   inkscape:version="0.44"
+   width="1164"
+   height="400"
+   version="1.0"
+   sodipodi:docbase="/home/filipe/Imaging/Hamburg/uwrap/uwrap/doc"
+   sodipodi:docname="ring_data_comparison.svg">
+  <metadata
+     id="metadata6752">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs6750" />
+  <sodipodi:namedview
+     inkscape:window-height="1168"
+     inkscape:window-width="1534"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     guidetolerance="10.0"
+     gridtolerance="10.0"
+     objecttolerance="10.0"
+     borderopacity="1.0"
+     bordercolor="#666666"
+     pagecolor="#ffffff"
+     id="base"
+     inkscape:zoom="1.9828149"
+     inkscape:cx="645.0491"
+     inkscape:cy="200"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:current-layer="svg6747" />
+  <rect
+     style="opacity:1;fill:white;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+     id="rect8548"
+     width="635.46021"
+     height="236.53242"
+     x="291.00043"
+     y="65.626877"
+     rx="3.5355344"
+     ry="3.5355341"
+     inkscape:export-filename="/home/filipe/Imaging/Hamburg/uwrap/uwrap/doc/ring_data_comparison.png"
+     inkscape:export-xdpi="180"
+     inkscape:export-ydpi="180" />
+  <rect
+     inkscape:export-ydpi="180"
+     inkscape:export-xdpi="180"
+     inkscape:export-filename="/home/filipe/Imaging/Hamburg/uwrap/uwrap/doc/ring_data_comparison.png"
+     rx="3.5355341"
+     ry="3.5355341"
+     y="81.726624"
+     x="327.20459"
+     height="216.32617"
+     width="324.73792"
+     id="rect8552"
+     style="opacity:0.5;fill:black;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+  <rect
+     inkscape:export-filename="/home/filipe/Imaging/Hamburg/uwrap/uwrap/doc/ring_data_comparison.png"
+     inkscape:export-ydpi="180"
+     inkscape:export-xdpi="180"
+     style="opacity:0.5;fill:black;fill-opacity:1;stroke:none;stroke-width:1.63512111;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+     id="rect8550"
+     width="216.69102"
+     height="216.69106"
+     x="707.4339"
+     y="81.544182"
+     ry="3.5355341"
+     rx="3.5355344" />
+  <image
+     xlink:href="ring_data_comparison.png"
+     sodipodi:absref="/home/filipe/Imaging/Hamburg/uwrap/uwrap/doc/ring_data_comparison.png"
+     width="626.44171"
+     height="215.27206"
+     id="image6754"
+     x="293.13971"
+     y="76.316177"
+     inkscape:export-filename="/home/filipe/Imaging/Hamburg/uwrap/uwrap/doc/ring_data_comparison.png"
+     inkscape:export-xdpi="180"
+     inkscape:export-ydpi="180" />
+  <rect
+     style="opacity:1;fill:none;fill-opacity:1;stroke:black;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+     id="rect6756"
+     width="324.73792"
+     height="216.32617"
+     x="321.20459"
+     y="75.726624"
+     ry="3.5355341"
+     rx="3.5355341"
+     inkscape:export-filename="/home/filipe/Imaging/Hamburg/uwrap/uwrap/doc/ring_data_comparison.png"
+     inkscape:export-xdpi="180"
+     inkscape:export-ydpi="180" />
+  <rect
+     rx="3.5355344"
+     ry="3.5355341"
+     y="75.544182"
+     x="701.4339"
+     height="216.69106"
+     width="216.69102"
+     id="rect8528"
+     style="opacity:1;fill:none;fill-opacity:1;stroke:black;stroke-width:1.63512111;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+     inkscape:export-xdpi="180"
+     inkscape:export-ydpi="180"
+     inkscape:export-filename="/home/filipe/Imaging/Hamburg/uwrap/uwrap/doc/ring_data_comparison.png" />
+</svg>

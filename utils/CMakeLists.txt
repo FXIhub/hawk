@@ -1,0 +1,65 @@
+PROJECT (uwrapc)
+
+
+IF(WIN32)
+	SET (PORTS ${PORTS} getopt.c)
+	ADD_DEFINITIONS(-D_CRT_SECURE_NO_DEPRECATE)
+ENDIF(WIN32)
+
+ADD_EXECUTABLE(tiff2h5 tiff2h5.c ${PORTS})
+ADD_EXECUTABLE(tiff2png tiff2png.c ${PORTS})
+#ADD_EXECUTABLE(analyze_img analyze_img.c ${PORTS})
+ADD_EXECUTABLE(image_to_vtk image_to_vtk.c ${PORTS})
+
+IF(WIN32)
+  ADD_DEFINITIONS(-D_HDF5USEDLL_)
+ENDIF(WIN32)
+ADD_EXECUTABLE(gif2h5image gif2h5image.c ${PORTS})
+ADD_EXECUTABLE(denoise denoise.c)
+#ADD_EXECUTABLE(h5tospeden h5tospeden.c ${PORTS})
+#ADD_EXECUTABLE(separate_channel separate_channel.c ${PORTS})
+#ADD_EXECUTABLE(matrix2image matrix2image.c ${PORTS})
+#ADD_EXECUTABLE(fft_bench fft_bench.c)
+#ADD_EXECUTABLE(combine_images combine_images.c)
+#ADD_EXECUTABLE(manual_merge manual_merge.c)
+#ADD_EXECUTABLE(analyse_image analyse_image.c)
+ADD_EXECUTABLE(prtf prtf.c)
+#ADD_EXECUTABLE(average_h5 average_h5.c)
+#ADD_EXECUTABLE(deautocorrelate deautocorrelate.c)
+ADD_EXECUTABLE(autocorrelate autocorrelate.c)
+#ADD_EXECUTABLE(stretch stretch.c)
+ADD_EXECUTABLE(image_to_png image_to_png.c)
+ADD_EXECUTABLE(png_to_image png_to_image.c)
+
+
+SET(LIBRARY_LIST ${SPIMAGE_LIBRARY} ${TIFF_LIBRARY} ${MATH_LIBRARY} ${HDF5_LIBRARY} ${PNG_LIBRARY} ${FFTW_LIBRARY})
+
+
+#I'm gonna reduce the number of programs actually used
+
+TARGET_LINK_LIBRARIES(tiff2h5 ${LIBRARY_LIST})
+TARGET_LINK_LIBRARIES(tiff2png ${LIBRARY_LIST})
+#TARGET_LINK_LIBRARIES(analyze_img ${LIBRARY_LIST})
+TARGET_LINK_LIBRARIES(image_to_vtk ${LIBRARY_LIST})
+TARGET_LINK_LIBRARIES(gif2h5image ${LIBRARY_LIST} )
+TARGET_LINK_LIBRARIES(autocorrelate ${LIBRARY_LIST} )
+#TARGET_LINK_LIBRARIES(h5tospeden ${LIBRARY_LIST} )
+#TARGET_LINK_LIBRARIES(separate_channel ${LIBRARY_LIST})
+#TARGET_LINK_LIBRARIES(matrix2image ${LIBRARY_LIST})
+#TARGET_LINK_LIBRARIES(fft_bench ${LIBRARY_LIST})
+#TARGET_LINK_LIBRARIES(combine_images ${LIBRARY_LIST})
+#TARGET_LINK_LIBRARIES(manual_merge ${LIBRARY_LIST})
+TARGET_LINK_LIBRARIES(prtf ${LIBRARY_LIST})
+#TARGET_LINK_LIBRARIES(analyse_image ${LIBRARY_LIST})
+#TARGET_LINK_LIBRARIES(deautocorrelate ${LIBRARY_LIST})
+#TARGET_LINK_LIBRARIES(average_h5 ${LIBRARY_LIST})
+TARGET_LINK_LIBRARIES(image_to_png ${LIBRARY_LIST})
+TARGET_LINK_LIBRARIES(png_to_image ${LIBRARY_LIST})
+TARGET_LINK_LIBRARIES(denoise ${LIBRARY_LIST})
+#TARGET_LINK_LIBRARIES(stretch ${LIBRARY_LIST})
+
+INSTALL(TARGETS tiff2h5 image_to_vtk gif2h5image
+	image_to_png png_to_image tiff2png autocorrelate prtf denoise
+            RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
+            LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+            ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/static)

@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://web.resource.org/cc/"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   id="svg10357"
+   sodipodi:version="0.32"
+   inkscape:version="0.44"
+   width="98"
+   height="98"
+   version="1.0"
+   sodipodi:docbase="/home/filipe/Imaging/Hamburg/uwrap/uwrap/doc"
+   sodipodi:docname="reconstructed_ring.svg">
+  <metadata
+     id="metadata10362">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs10360">
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath13917">
+      <rect
+         inkscape:export-ydpi="1440.2939"
+         inkscape:export-xdpi="1440.2939"
+         inkscape:export-filename="/home/filipe/Imaging/Hamburg/uwrap/uwrap/doc/reconstructed_ring.png"
+         ry="0.78119355"
+         rx="0.78119355"
+         y="23.891006"
+         x="25.656799"
+         height="39.05006"
+         width="39.161003"
+         id="rect13915"
+         style="opacity:1;fill:none;fill-opacity:1;stroke:black;stroke-width:0.29977617;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+    </clipPath>
+  </defs>
+  <sodipodi:namedview
+     inkscape:window-height="1168"
+     inkscape:window-width="1534"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     guidetolerance="10.0"
+     gridtolerance="10.0"
+     objecttolerance="10.0"
+     borderopacity="1.0"
+     bordercolor="#666666"
+     pagecolor="#ffffff"
+     id="base"
+     inkscape:zoom="15.387755"
+     inkscape:cx="49"
+     inkscape:cy="55.305854"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:current-layer="svg10357" />
+  <rect
+     style="opacity:1;fill:white;fill-opacity:1;stroke:none;stroke-width:0.40000001;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+     id="rect12143"
+     width="42.566315"
+     height="42.241379"
+     x="24.759947"
+     y="23.070292"
+     rx="0.78119355"
+     ry="0.78119355"
+     inkscape:export-filename="/home/filipe/Imaging/Hamburg/uwrap/uwrap/doc/reconstructed_ring.png"
+     inkscape:export-xdpi="1440.2939"
+     inkscape:export-ydpi="1440.2939" />
+  <rect
+     ry="0.78119355"
+     rx="0.78119355"
+     y="25.16888"
+     x="27.072533"
+     height="39.278599"
+     width="39.251682"
+     id="rect12141"
+     style="opacity:0.5;fill:black;fill-opacity:1;stroke:none;stroke-width:0.39107001;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+     inkscape:export-filename="/home/filipe/Imaging/Hamburg/uwrap/uwrap/doc/reconstructed_ring.png"
+     inkscape:export-xdpi="1440.2939"
+     inkscape:export-ydpi="1440.2939" />
+  <image
+     xlink:href="reconstructed_ring.png"
+     sodipodi:absref="/home/filipe/Imaging/Hamburg/uwrap/uwrap/doc/reconstructed_ring.png"
+     width="38.992043"
+     height="38.992043"
+     id="image10364"
+     x="25.734749"
+     y="23.915119"
+     inkscape:export-filename="/home/filipe/Imaging/Hamburg/uwrap/uwrap/doc/reconstructed_ring.png"
+     inkscape:export-xdpi="1440.2939"
+     inkscape:export-ydpi="1440.2939"
+     clip-path="url(#clipPath13917)" />
+  <rect
+     style="opacity:1;fill:none;fill-opacity:1;stroke:black;stroke-width:0.19983484;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+     id="rect10369"
+     width="39.09618"
+     height="39.050224"
+     x="25.721703"
+     y="23.890924"
+     rx="0.78119355"
+     ry="0.78119355"
+     inkscape:export-filename="/home/filipe/Imaging/Hamburg/uwrap/uwrap/doc/reconstructed_ring.png"
+     inkscape:export-xdpi="1440.2939"
+     inkscape:export-ydpi="1440.2939" />
+</svg>

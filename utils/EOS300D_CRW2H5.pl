@@ -1,0 +1,36 @@
+#!/usr/bin/perl 
+
+$crw_file = $ARGV[0];
+$crw_file =~ m/(.*)\.crw/i;
+$base = $1;
+$tif = "$base".".tif";
+$ppm = "$base".".ppm";
+$raw_h5 = "Raw_"."$base".".h5";
+$red_h5 = "Red_"."$base".".h5";
+$red_png = "Red_"."$base".".png";
+$green_h5 = "Green_"."$base".".h5";
+$green_png = "Green_"."$base".".png";
+mkdir("$base");
+chdir("$base");
+print("dcraw -d -4 ../$crw_file...");
+system("dcraw -d -4 ../$crw_file");
+system("mv ../$ppm .");
+print("done\n");
+print("convert $ppm $tif...");
+system("convert $ppm $tif");
+print("done\n");
+print("tiff2h5 -i $tif -o $raw_h5...");
+system("tiff2h5 -i $tif -o $raw_h5");
+print("done\n");
+#print("separate_channel $raw_h5 R $red_h5...");
+#system("separate_channel $raw_h5 R $red_h5");
+#print("done\n");
+print("separate_channel $raw_h5 G $green_h5...");
+system("separate_channel $raw_h5 G $green_h5");
+print("done\n");
+#print("autocorrelate $red_h5..."); 
+#system("autocorrelate $red_h5"); 
+#print("done\n");
+print("autocorrelate $green_h5..."); 
+system("autocorrelate $green_h5"); 
+print("done\n");
