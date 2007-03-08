@@ -16,6 +16,7 @@ IF(WIN32)
 ENDIF(WIN32)
 ADD_EXECUTABLE(gif2h5image gif2h5image.c ${PORTS})
 ADD_EXECUTABLE(denoise denoise.c)
+ADD_EXECUTABLE(background_subtract background_subtract.c)
 #ADD_EXECUTABLE(h5tospeden h5tospeden.c ${PORTS})
 #ADD_EXECUTABLE(separate_channel separate_channel.c ${PORTS})
 #ADD_EXECUTABLE(matrix2image matrix2image.c ${PORTS})
@@ -56,10 +57,11 @@ TARGET_LINK_LIBRARIES(prtf ${LIBRARY_LIST})
 TARGET_LINK_LIBRARIES(image_to_png ${LIBRARY_LIST})
 TARGET_LINK_LIBRARIES(png_to_image ${LIBRARY_LIST})
 TARGET_LINK_LIBRARIES(denoise ${LIBRARY_LIST})
+TARGET_LINK_LIBRARIES(background_subtract ${LIBRARY_LIST})
 #TARGET_LINK_LIBRARIES(stretch ${LIBRARY_LIST})
 
 INSTALL(TARGETS tiff2h5 image_to_vtk gif2h5image
-	image_to_png png_to_image tiff2png autocorrelate prtf denoise
+	image_to_png png_to_image tiff2png autocorrelate prtf denoise background_subtract
             RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
             LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
             ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/static)

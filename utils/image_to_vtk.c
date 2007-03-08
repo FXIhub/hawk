@@ -9,7 +9,7 @@ int main(int argc, char ** argv){
   if(argc < 2){
     fprintf(stderr,"Usage: %s <hdf5 file> [vtk file] [vtk phase file] [mask vtk file]\n",argv[0]);
   }
-  img = read_imagefile(argv[1]);
+  img = sp_image_read(argv[1],0);
   if(argc == 2){
     strcpy(filename,argv[1]);
     strcat(filename,".vtk");
@@ -21,17 +21,17 @@ int main(int argc, char ** argv){
     sp_image_free(img);
     img = tmp;
   }
-  write_vtk(img,filename);
+  sp_image_write(img,filename,0);
   if(argc > 3){
     tmp = sp_image_get_phases(img);
-    write_vtk(tmp,argv[3]);
+    sp_image_write(tmp,argv[3],0);
     sp_image_free(tmp);
   }
   if(argc > 4){
     for(i = 0;i<sp_cmatrix_size(img->image);i++){
       img->image->data[i] = img->mask->data[i];
     }
-    write_vtk(img,argv[4]);
+    sp_image_write(img,argv[4],0);
   }
   return 0;
 }

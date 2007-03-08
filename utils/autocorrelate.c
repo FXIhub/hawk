@@ -23,7 +23,7 @@ int main(int argc, char ** argv){
 	   "Output: img_autocorrelation.vtk and img_autocorrelation.png\n",argv[0]);
     exit(0);
   }
-  a = read_imagefile(argv[1]);
+  a = sp_image_read(argv[1],0);
   for(i = 0;i<sp_cmatrix_size(a->image);i++){
     if(cabs(a->image->data[i]) > 55000){
       a->image->data[i] = 0;
@@ -34,9 +34,9 @@ int main(int argc, char ** argv){
   sprintf(base,"%s",argv[1]);
   base[strlen(base)-3] = 0;
   sprintf(buffer,"%s_autocorrelation.vtk",base);
-  write_vtk(a,buffer);
+  sp_image_write(a,buffer,0);
   sprintf(buffer,"%s_autocorrelation.png",base);
-  write_png(a,buffer,COLOR_JET|LOG_SCALE);
+  sp_image_write(a,buffer,COLOR_JET|LOG_SCALE);
   max = 0;
   min = 1<< 20;
   for(i = 0;i<sp_cmatrix_size(b->image);i++){
@@ -55,7 +55,7 @@ int main(int argc, char ** argv){
   }
   sprintf(buffer,"%s_capped_autocorrelation.png",base);
   a = sp_image_shift(b);
-  write_png(a,buffer,COLOR_JET|LOG_SCALE);  
+  sp_image_write(a,buffer,COLOR_JET|LOG_SCALE);  
   return 0;
   
 }

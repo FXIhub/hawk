@@ -115,19 +115,21 @@ Image * calculate_average(char ** img_list,int list_size,int cross_correlate){
   Image * res;
   Image * cc;
   Image * a;
-  int size[2] = {sp_cmatrix_cols(a->image),sp_cmatrix_rows(a->image)};
+  int size[2];
 
   int i,j,trans;
   real max;
   if(!list_size){
     return NULL;
   }
-  a = read_imagefile(img_list[0]);
+  a = sp_image_read(img_list[0],0);
+  size[0] = sp_cmatrix_cols(a->image);
+  size[1] = sp_cmatrix_rows(a->image);
   res = sp_image_duplicate(a,SP_COPY_DATA|SP_COPY_MASK);
   sp_image_free(a);
   fprintf(stderr,"Images processed - ");
   for(i = 1;i<list_size;i++){
-    a = read_imagefile(img_list[i]);
+    a = sp_image_read(img_list[i],0);
     if(cross_correlate){
       cc = sp_image_cross_correlate(res, a, size);
       max = creal(sp_cmatrix_max(cc->image,&trans));
@@ -163,12 +165,12 @@ int main(int argc, char ** argv){
     tmp = calculate_average(img_list,list_size,opts.cross_correlate);
     sp_image_write(tmp,opts.output,sizeof(real));
   }else if(opts.rotate){
-    tmp = read_imagefile(opts.input);
+    tmp = sp_image_read(opts.input,0);
     sp_image_reflect(tmp,1,SP_AXIS_XY);
     sp_image_write(tmp,opts.output,sizeof(real));    
   }else if(opts.subtract[0]){
-    tmp = read_imagefile(opts.input);
-    tmp2 = read_imagefile(opts.subtract);
+    tmp = sp_image_read(opts.input,0);
+    tmp2 = sp_image_read(opts.subtract,0);
     trans = 0;
     if(opts.cross_correlate){
       cc = sp_image_cross_correlate(tmp, tmp2,NULL);
@@ -183,7 +185,7 @@ int main(int argc, char ** argv){
     }
     sp_image_write(tmp,opts.output,sizeof(real));    
   }else if(opts.rescale){
-    tmp = read_imagefile(opts.input);
+    tmp = sp_image_read(opts.input,0);
     tmp2 = bilinear_rescale(tmp, sp_cmatrix_cols(tmp->image)*opts.rescale, sp_cmatrix_rows(tmp->image)*opts.rescale);
     sp_image_write(tmp2,opts.output,sizeof(real));        
   }

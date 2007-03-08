@@ -64,10 +64,10 @@ void read_options_file(char * filename, Options * res){
   }
 
   if((tmp = (char *)config_lookup_string(&config,"amplitudes_file"))){
-    res->diffraction = read_imagefile(tmp);
+    res->diffraction = sp_image_read(tmp,0);
     strcpy(res->diffraction_filename,tmp);
   }else if((tmp = config_lookup_string(&config,"real_image_file"))){
-    res->real_image = read_imagefile(tmp);
+    res->real_image = sp_image_read(tmp,0);
     strcpy(res->real_image_filename,tmp);
   }
   
@@ -84,15 +84,15 @@ void read_options_file(char * filename, Options * res){
     res->iterations = config_lookup_int(&config,"innerloop_iterations");
   }
   if((tmp = config_lookup_string(&config,"fixed_support_mask"))){
-    res->support_mask = read_imagefile(tmp);
+    res->support_mask = sp_image_read(tmp,0);
     strcpy(res->support_mask_filename,tmp);
   }
   if((tmp = config_lookup_string(&config,"initial_support"))){
-    res->init_support = read_imagefile(tmp);
+    res->init_support = sp_image_read(tmp,0);
     strcpy(res->init_support_filename,tmp);
   }
   if((tmp = config_lookup_string(&config,"image_guess"))){
-    res->image_guess = read_imagefile(tmp);
+    res->image_guess = sp_image_read(tmp,0);
     strcpy(res->image_guess_filename,tmp);
   }
   if(config_lookup(&config,"added_noise")){

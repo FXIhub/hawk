@@ -132,14 +132,14 @@ int main(int argc, char ** argv){
     exit(0);
   }
 
-  img = read_imagefile(argv[1]);
+  img = sp_image_read(argv[1],0);
   sp_image_dephase(img);
   sum = sp_image_fft(img);
   amps = sp_image_fft(img);
   sp_image_dephase(amps);
   sp_image_free(img);
   for(i = 1;i<argc-2;i++){
-    img = read_imagefile(argv[i+1]);
+    img = sp_image_read(argv[i+1],0);
     sp_image_dephase(img);
     tmp = sp_image_fft(img);
     maximize_overlap(sum,tmp);

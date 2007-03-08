@@ -10,7 +10,7 @@ int main(int argc, char ** argv){
     printf("Usage: image_to_png <image.h5> <image.png> [phase.png] [mask.png]\n");
     return 0;
   }
-  a = read_imagefile(argv[1]);
+  a = sp_image_read(argv[1],0);
   if(a->shifted){
     a = sp_image_shift(a);
   }

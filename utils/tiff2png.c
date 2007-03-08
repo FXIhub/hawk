@@ -185,7 +185,7 @@ int main(int argc, char ** argv){
   out->detector->lambda = opts->lambda;
   /* write HDF5 */
   sprintf(buffer,"%s.png",opts->output);
-  write_png(out,buffer,COLOR_JET|LOG_SCALE);
+  sp_image_write(out,buffer,COLOR_JET|LOG_SCALE);
   sprintf(buffer,"%s.vtk",opts->output);
   /*  write_vtk(out,buffer);*/
   return 0;

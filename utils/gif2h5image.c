@@ -9,7 +9,7 @@ int main(int argc, char ** argv){
   unsigned char * img_i;
   int i;
   int status;
-  Image * image;
+  Image * image = malloc(sizeof(Image));;
   if(argc != 3 && argc != 4 ){
     printf("gif2h5image <file.gif> <file.h5> [-u]\n");
     printf("The optional -u means unscalled data.\n");

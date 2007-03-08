@@ -185,11 +185,11 @@ int main(int argc, char ** argv){
   sp_image_write(out,opts->output,sizeof(real));
   autocorrelation = bilinear_rescale(sp_image_shift(sp_image_fft(sp_image_shift(out))),256,256);
   
-  write_png(autocorrelation,"autocorrelation.png",COLOR_JET|LOG_SCALE);
-  write_vtk(autocorrelation,"autocorrelation.vtk");
+  sp_image_write(autocorrelation,"autocorrelation.png",COLOR_JET|LOG_SCALE);
+  sp_image_write(autocorrelation,"autocorrelation.vtk",0);
   sprintf(buffer,"%s.png",opts->output);
   sp_image_write(out,buffer,COLOR_JET|LOG_SCALE);
   sprintf(buffer,"%s.vtk",opts->output);
-  write_vtk(out,buffer);
+  sp_image_write(out,buffer,0);
   return 0;
 }

@@ -129,7 +129,7 @@ void harmonize_sizes(Options * opts){
     tmp = fourier_rescale(opts->image_guess,sp_cmatrix_cols(exp->image),sp_cmatrix_rows(exp->image));
     sp_image_free(opts->image_guess);
     opts->image_guess = tmp;
-    write_png(tmp,"rescaled_guess.png",COLOR_JET);
+    sp_image_write(tmp,"rescaled_guess.png",COLOR_JET);
   }
 }
 
@@ -189,7 +189,7 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
   }
   
   support = sp_image_duplicate(initial_support,SP_COPY_DATA|SP_COPY_MASK);
-  write_vtk(initial_support,"support.vtk");
+  sp_image_write(initial_support,"support.vtk",0);
   prev_support = sp_image_duplicate(initial_support,SP_COPY_DATA|SP_COPY_MASK);
 
   /* Set the initial guess */
@@ -225,10 +225,10 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
   mkdir(dir,0755);
   chdir(dir);
 #endif
-  write_png(support,"support.png",COLOR_JET);
-  write_png(real_in,"initial_guess.png",COLOR_JET);
+  sp_image_write(support,"support.png",COLOR_JET);
+  sp_image_write(real_in,"initial_guess.png",COLOR_JET);
   sp_image_write(real_in,"initial_guess.h5",sizeof(real));
-  write_png(initial_support,"initial_support.png",COLOR_JET);
+  sp_image_write(initial_support,"initial_support.png",COLOR_JET);
 
   if(get_algorithm(opts,&log) == HIO){     
     real_out = basic_hio_iteration(amp, real_in, support,opts,&log);
@@ -282,9 +282,9 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
       sprintf(buffer,"real_out-%07d.h5",opts->cur_iteration);
       sp_image_write(real_out,buffer,opts->output_precision);
       sprintf(buffer,"real_out-%07d.png",opts->cur_iteration);
-      write_png(real_out,buffer,COLOR_JET);
+      sp_image_write(real_out,buffer,COLOR_JET);
       sprintf(buffer,"support-%07d.png",opts->cur_iteration);
-      write_png(support,buffer,COLOR_JET);
+      sp_image_write(support,buffer,COLOR_JET);
       sprintf(buffer,"support-%07d.h5",opts->cur_iteration);
       sp_image_write(support,buffer,opts->output_precision);
       tmp = sp_image_duplicate(real_out,SP_COPY_DATA|SP_COPY_MASK);
@@ -299,7 +299,7 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
       /*      tmp = zero_pad_image(tmp,sp_cmatrix_cols(tmp->image)*4,sp_cmatrix_rows(tmp->image)*4,1);
       sp_image_write(tmp,buffer,opts->output_precision);
       sprintf(buffer,"pre_pattern-%07d.png",opts->cur_iteration);
-      write_png(tmp,buffer,COLOR_JET|LOG_SCALE);
+      sp_image_write(tmp,buffer,COLOR_JET|LOG_SCALE);
       */
       tmp2 = sp_image_fft(tmp); 
       sp_image_free(tmp);
@@ -310,7 +310,7 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
       sprintf(buffer,"pattern-%07d.h5",opts->cur_iteration);
       sp_image_write(tmp,buffer,opts->output_precision);
       sprintf(buffer,"pattern-%07d.png",opts->cur_iteration);
-      write_png(tmp,buffer,COLOR_JET);
+      sp_image_write(tmp,buffer,COLOR_JET);
       sp_image_free(tmp);
 
     }    
@@ -332,9 +332,9 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
   }  
 
   sp_image_write(real_out,"real_out_final.h5",opts->output_precision);
-  write_png(real_out,"real_out_final.png",COLOR_JET);
+  sp_image_write(real_out,"real_out_final.png",COLOR_JET);
   sprintf(buffer,"support-final.png");
-  write_png(support,buffer,COLOR_JET);
+  sp_image_write(support,buffer,COLOR_JET);
   sprintf(buffer,"support-final.h5");
   sp_image_write(support,buffer,opts->output_precision);
   tmp = sp_image_fft(real_out); 
@@ -344,10 +344,10 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
   sprintf(buffer,"pattern-final.h5");
   sp_image_write(tmp,buffer,opts->output_precision);
   sprintf(buffer,"pattern-final.png");
-  write_png(tmp,buffer,COLOR_JET);
+  sp_image_write(tmp,buffer,COLOR_JET);
   sp_image_free(tmp);
   
-  write_png(real_out,"phases_out_final.png",COLOR_PHASE|COLOR_JET);
+  sp_image_write(real_out,"phases_out_final.png",COLOR_PHASE|COLOR_JET);
   sp_image_free(support);
   sp_image_free(prev_support);
   sp_image_free(real_in);
@@ -474,7 +474,7 @@ void output_to_log(Image * exp_amp,Image * real_in, Image * real_out, Image * fo
 	log->int_cum_fluctuation += fabs(previous_out->image->data[i] - real_out->image->data[i]);    
       }
       /*    sprintf(buffer,"cum_fluct-%06d.png",iter);
-	    write_png(log->cumulative_fluctuation,buffer,sizeof(real));*/
+	    sp_image_write(log->cumulative_fluctuation,buffer,sizeof(real));*/
       sp_image_free(previous_out);     
       previous_out = sp_image_duplicate(real_out,SP_COPY_DATA|SP_COPY_MASK);
     }
@@ -1170,8 +1170,8 @@ Image * get_support(Image * input, Options * opts){
   /* contrast stretch */
 /*  sp_image_adaptative_constrast_stretch(patterson,10,10); */
 
-  write_png(patterson,"autocorrelation.png",COLOR_JET|LOG_SCALE);
-  write_vtk(patterson,"autocorrelation.vtk");
+  sp_image_write(patterson,"autocorrelation.png",COLOR_JET|LOG_SCALE);
+  sp_image_write(patterson,"autocorrelation.vtk",0);
   for(i = 0;i<sp_cmatrix_size(patterson->image);i++){
     integr += patterson->image->data[i];
     if(max_int < creal(patterson->image->data[i])){
@@ -1207,7 +1207,7 @@ Image * get_support(Image * input, Options * opts){
       }
     }
   }
-  write_png(patterson,"support2.png",COLOR_JET);
+  sp_image_write(patterson,"support2.png",COLOR_JET);
 
   for(i = 0;i<sp_cmatrix_size(patterson->image);i++){
     if(creal(patterson->image->data[i]) < max_int*level){
@@ -1216,11 +1216,11 @@ Image * get_support(Image * input, Options * opts){
       patterson->image->data[i] = 1;
     }
   }
-  write_png(patterson,"support3.png",COLOR_JET);
+  sp_image_write(patterson,"support3.png",COLOR_JET);
   if(opts->blur_patterson){
     tmp_img = gaussian_blur(patterson,3);
-    write_png(tmp_img,"support4.png",COLOR_JET);
-    write_vtk(tmp_img,"support4.vtk");
+    sp_image_write(tmp_img,"support4.png",COLOR_JET);
+    sp_image_write(tmp_img,"support4.vtk",0);
     sp_image_free(patterson);
     patterson = sp_image_duplicate(tmp_img,SP_COPY_DATA|SP_COPY_MASK);
     sp_image_free(tmp_img);
@@ -1244,8 +1244,8 @@ Image * get_support(Image * input, Options * opts){
       patterson->image->data[i] = 0;
     }
   }
-  write_png(patterson,"support5.png",COLOR_JET);
-  write_vtk(patterson,"support5.vtk");
+  sp_image_write(patterson,"support5.png",COLOR_JET);
+  sp_image_write(patterson,"support5.vtk",0);
   return patterson;  
 }
 
@@ -1269,8 +1269,8 @@ Image * get_filtered_support(Image * input, real level , real radius, Options * 
     absolute_error->image->data[i] = (res->image->data[i]-running_average->image->data[i])*(res->image->data[i]-running_average->image->data[i]);
   }
   variance = square_blur(absolute_error,radius);
-  write_vtk(variance,"variance.vtk");
-  write_vtk(running_average,"r_avg.vtk");
+  sp_image_write(variance,"variance.vtk",0);
+  sp_image_write(running_average,"r_avg.vtk",0);
   
   sp_image_dephase(res);
 /*  mask = gaussian_blur(previous_support, radius/3);
@@ -1352,7 +1352,7 @@ int main(int argc, char ** argv){
   if(opts->rescale_amplitudes){
     rescale_image(img);
   }
-  write_png(img,"diffraction.png",COLOR_JET);
+  sp_image_write(img,"diffraction.png",COLOR_JET);
 
   if(!opts->init_support){
     opts->init_support = get_support(img,opts);

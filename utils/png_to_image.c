@@ -10,7 +10,7 @@ int main(int argc, char ** argv){
     exit(0);
   }
 
-  image = read_png(argv[1]);
+  image = sp_image_read(argv[1],0);
   sp_image_write(image,argv[2],sizeof(real));
   return 0;
 }

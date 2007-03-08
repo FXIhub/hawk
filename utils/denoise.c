@@ -103,7 +103,7 @@ void denoise(Image * f, Image * u, real beta, int max_iter){
     printf("Usage: denoise <input image> <output image> <beta> <iterations>\n");
     exit(0);
   }
-  in = read_imagefile(argv[1]);
+  in = sp_image_read(argv[1],0);
   out = gaussian_blur(in,3);
 
 
