@@ -1,0 +1,8 @@
+2007-03-21	Filipe Maia	<filipe@xray.bmc.uu.se>
+
+	* Begining of changelog
+	* Added a new utility called denoise that tries to remove some poisson
+	noise from a picture. Please check utils/denois.c for details.
+	* Added background_subtract which tries to subtract the background of a
+	series of similar pictures. It's too specific for general usage though.
+	* Started to build static binaries for easier installation.

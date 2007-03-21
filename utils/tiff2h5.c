@@ -74,25 +74,12 @@ Options * parse_options(int argc, char ** argv){
 
 
 int main(int argc, char ** argv){
-  int nstrips;
-  int stripsize;
-  int i,x,y;
-  unsigned char * img;
-  float * tmpf;
-  unsigned short * tmpi;
-  unsigned short * tmpui;
-  unsigned char * tmpuc;
-  Options * opts;  
-  char buffer[1024];
-  int bpp = 4;
-  int datatype = 0;
-  int width,height;
-  Image * out = malloc(sizeof(Image));
+  Image * out;
   Image * autocorrelation;
-  Image * tmp;
-  TIFF * tif;
+  int width,height;
+  char buffer[1024];
   out->detector = malloc(sizeof(Detector));
-  opts = malloc(sizeof(Options));
+  Options * opts = malloc(sizeof(Options));
   set_defaults(opts);
   opts = parse_options(argc,argv);
 
@@ -100,76 +87,8 @@ int main(int argc, char ** argv){
     printf("Use %s -h for details on how to run this program\n",argv[0]);
     exit(0);
   }
+  out = sp_image_read(opts->input,0);
 
-  tif = TIFFOpen(opts->input, "r");
-  if(TIFFGetField(tif,TIFFTAG_BITSPERSAMPLE,&bpp)){
-    bpp /= 8;
-  }
-  if(!TIFFGetField(tif,TIFFTAG_SAMPLEFORMAT,&datatype)){
-    if(bpp == 1){
-      datatype = SAMPLEFORMAT_VOID;
-    }else if(bpp == 2){
-      datatype = SAMPLEFORMAT_UINT;
-    }
-  }
-  TIFFPrintDirectory(tif,stdout,0);  
-  
-  if(!TIFFGetField(tif,TIFFTAG_IMAGELENGTH,&height)){
-    perror("Could not get image height!\n");
-    return 1;
-  }
-  if(!TIFFGetField(tif,TIFFTAG_IMAGEWIDTH,&width)){
-    perror("Could not get image width!\n");
-    return 1;
-  }
-  
-  nstrips = TIFFNumberOfStrips(tif);
-  stripsize = TIFFStripSize(tif);
-  img = malloc(nstrips*stripsize);
-  for(i = 0;i<nstrips;i++){
-    TIFFReadEncodedStrip(tif,i,img+i*stripsize,stripsize);
-  }
-  TIFFClose(tif);
-  
-  /* Transpose image (Why?!?)*/
-  out->image = sp_cmatrix_alloc(height,width);
-  out->mask = sp_imatrix_alloc(height,width);
-  if(datatype == SAMPLEFORMAT_UINT){
-    tmpui = (unsigned short *)img;
-    for(x = 0;x<width;x++){
-      for(y = 0;y<height;y++){
-	tmpui = (unsigned short *)(img+y*width*bpp+x*bpp);
-	out->image->data[x*height+y] = *tmpui;
-      }    
-    }
-  }else if(datatype == SAMPLEFORMAT_IEEEFP){
-    for(x = 0;x<width;x++){
-      for(y = 0;y<height;y++){
-	tmpf = (float *)(img+y*width*bpp+x*bpp);
-	out->image->data[x*height+y] = *tmpf;
-      }    
-    }
-  }else if(datatype == SAMPLEFORMAT_VOID){
-    for(x = 0;x<width;x++){
-      for(y = 0;y<height;y++){
-	tmpuc = img+y*width*bpp+x*bpp;
-	out->image->data[x*height+y] = *tmpuc;
-      }    
-    }
-  }else if(datatype == SAMPLEFORMAT_INT){
-    for(x = 0;x<width;x++){
-      for(y = 0;y<height;y++){
-	tmpi = (unsigned short *)(img+y*width*bpp+x*bpp);
-	out->image->data[x*height+y] = (*tmpi);
-      }    
-    }
-  }
-  for(i = 0;i<sp_cmatrix_size(out->image);i++){
-    out->mask->data[i] = 1;
-  }
-  out->scaled = 0;
-  out->phased = 0;
-  out->shifted = 0;
   if(opts->x_center == -1){
     opts->x_center = width/2;
   }

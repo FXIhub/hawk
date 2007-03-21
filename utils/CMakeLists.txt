@@ -1,5 +1,7 @@
 PROJECT (uwrapc)
 
+SET(CMAKE_VERBOSE_MAKEFILE ON)
+
 
 IF(WIN32)
 	SET (PORTS ${PORTS} getopt.c)
@@ -33,7 +35,6 @@ ADD_EXECUTABLE(image_to_png image_to_png.c)
 ADD_EXECUTABLE(png_to_image png_to_image.c)
 
 
-SET(LIBRARY_LIST ${SPIMAGE_LIBRARY} ${TIFF_LIBRARY} ${MATH_LIBRARY} ${HDF5_LIBRARY} ${PNG_LIBRARY} ${FFTW_LIBRARY})
 
 
 #I'm gonna reduce the number of programs actually used
@@ -64,4 +65,4 @@ INSTALL(TARGETS tiff2h5 image_to_vtk gif2h5image
 	image_to_png png_to_image tiff2png autocorrelate prtf denoise background_subtract
             RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
             LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
-            ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/static)
+            ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
