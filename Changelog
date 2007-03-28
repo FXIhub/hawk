@@ -1,3 +1,8 @@
+2007-03-27	Filipe Maia	<filipe@xray.bmc.uu.se>
+
+	* Fixed a critical bug in tiff2h5. The width and height were
+	not being set before the autocorrelation was calculated.
+
 2007-03-21	Filipe Maia	<filipe@xray.bmc.uu.se>
 
 	* Begining of changelog

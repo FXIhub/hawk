@@ -89,6 +89,8 @@ int main(int argc, char ** argv){
   }
   out = sp_image_read(opts->input,0);
 
+  width = sp_image_width(out);
+  height = sp_image_height(out);
   if(opts->x_center == -1){
     opts->x_center = width/2;
   }
@@ -102,6 +104,7 @@ int main(int argc, char ** argv){
   out->detector->lambda = opts->lambda;
   /* write HDF5 */
   sp_image_write(out,opts->output,sizeof(real));
+  sp_image_fft(sp_image_shift(out));
   autocorrelation = bilinear_rescale(sp_image_shift(sp_image_fft(sp_image_shift(out))),256,256);
   
   sp_image_write(autocorrelation,"autocorrelation.png",COLOR_JET|LOG_SCALE);
