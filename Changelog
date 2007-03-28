@@ -1,3 +1,7 @@
+2007-03-28	Filipe Maia	<filipe@xray.bmc.uu.se>
+
+	* Public svn repository at svn://130.238.41.203/hawk
+
 2007-03-27	Filipe Maia	<filipe@xray.bmc.uu.se>
 
 	* Fixed a critical bug in tiff2h5. The width and height were
