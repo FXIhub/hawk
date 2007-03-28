@@ -1,4 +1,4 @@
-PROJECT (uwrapc)
+ PROJECT (uwrapc)
 
 
 FIND_PATH (SPIMAGE_INCLUDE_DIR spimage.h PATHS /usr/include /sw/include)
