@@ -78,7 +78,6 @@ int main(int argc, char ** argv){
   Image * autocorrelation;
   int width,height;
   char buffer[1024];
-  out->detector = malloc(sizeof(Detector));
   Options * opts = malloc(sizeof(Options));
   set_defaults(opts);
   opts = parse_options(argc,argv);
