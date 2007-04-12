@@ -1,3 +1,10 @@
+2007-04-12	Filipe Maia	<filipe@xray.bmc.uu.se>
+
+	* Added a max_iterations option to uwrapc.conf that makes the program stop
+	after that number of iterations has been reached.
+	* Changed the -C option in process_image. Now it average the entire image
+	assuming centrosymmetry.
+
 2007-03-28	Filipe Maia	<filipe@xray.bmc.uu.se>
 
 	* Public svn repository at svn://130.238.41.203/hawk

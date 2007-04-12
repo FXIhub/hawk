@@ -245,7 +245,7 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
 
   radius = opts->max_blur_radius;
     
-  for(;!opts->reconstruction_finished;opts->cur_iteration++){
+  for(;!opts->reconstruction_finished && opts->cur_iteration < opts->max_iterations;opts->cur_iteration++){
 
     if(opts->iterations && opts->cur_iteration%opts->iterations == opts->iterations-1){
       for(i = 0;i<opts->error_reduction_iterations_after_loop;i++){
@@ -283,6 +283,8 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
       sp_image_write(real_out,buffer,opts->output_precision);
       sprintf(buffer,"real_out-%07d.png",opts->cur_iteration);
       sp_image_write(real_out,buffer,COLOR_JET);
+      sprintf(buffer,"real_out_phase-%07d.png",opts->cur_iteration);
+      sp_image_write(real_out,buffer,COLOR_JET|COLOR_PHASE);
       sprintf(buffer,"support-%07d.png",opts->cur_iteration);
       sp_image_write(support,buffer,COLOR_JET);
       sprintf(buffer,"support-%07d.h5",opts->cur_iteration);

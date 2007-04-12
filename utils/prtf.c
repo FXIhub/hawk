@@ -165,6 +165,7 @@ int main(int argc, char ** argv){
     bin_count[bin]++;
   }
   sp_image_write(sum,"avg_fft.h5",sizeof(real));
+  sp_image_write(sp_image_ifft(sum),"avg_image.h5",sizeof(real));
   sp_image_write(amps,"amps.h5",sizeof(real));
   sp_image_write(prtf,"prtf.h5",sizeof(real));
   avg_prtf /= sp_image_size(sum);

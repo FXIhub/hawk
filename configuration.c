@@ -232,6 +232,9 @@ void read_options_file(char * filename, Options * res){
   if(config_lookup(&config,"real_error_tolerance")){
     res->real_error_tolerance = config_lookup_float(&config,"real_error_tolerance");  
   }
+  if(config_lookup(&config,"max_iterations")){
+    res->max_iterations = config_lookup_int(&config,"max_iterations");  
+  }
 
 
 }
@@ -382,6 +385,9 @@ void write_options_file(char * filename, Options * res){
 
   s = config_setting_add(root,"real_error_tolerance",CONFIG_TYPE_FLOAT);
   config_setting_set_float(s,res->real_error_tolerance);
+
+  s = config_setting_add(root,"max_iterations",CONFIG_TYPE_INT);
+  config_setting_set_int(s,res->max_iterations);
 
   config_write_file(&config,filename);
 }

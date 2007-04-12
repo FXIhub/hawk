@@ -46,6 +46,11 @@ Image * centrosymetry_average(Image * img){
 	    out->mask->data[i] = 1;
 	    out->image->data[is] = num/den;
 	    out->mask->data[is] = 1;
+	  }else{
+	    out->image->data[i] = 0;
+	    out->mask->data[i] = 0;
+	    out->image->data[is] = 0;
+	    out->mask->data[is] = 0;
 	  }
 	}
       }      
@@ -266,7 +271,7 @@ Options * parse_options(int argc, char ** argv){
     -m: Mask to mask out pixels\n\
     -p: Pad image to improve fft speed\n\
     -r: Maximum resolution to use in pixels (400)\n\
-    -C: Use centrosymetry to assign values to missing data\n\
+    -C: Use centrosymetry average\n\
     -c: User set image center (300x300)\n\
     -d: Dark image file\n\
     -S: Do not shift quadrants\n\
@@ -323,7 +328,6 @@ Options * parse_options(int argc, char ** argv){
     case 'c':
       res->user_center_x = atof(optarg);
       res->user_center_y = atof(strstr(optarg,"x")+1);
-      res->centrosymetry = 1;
       break;
     case 'p':
       res->pad = 1;

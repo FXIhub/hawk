@@ -70,6 +70,7 @@ typedef struct {
   int break_centrosym_period;
   int reconstruction_finished;
   real real_error_tolerance;
+  int max_iterations;
 }Options;
 
 void read_options_file(char * filename, Options * opt);
