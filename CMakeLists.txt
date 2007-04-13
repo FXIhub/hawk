@@ -37,7 +37,7 @@ ELSE(WIN32)
 ENDIF(WIN32)
 
 INCLUDE_DIRECTORIES(${SPIMAGE_INCLUDE_DIR} ${LIBCONFIG_INCLUDE_DIR} ${TIFF_INCLUDE_DIR} ${HDF5_INCLUDE_DIR} ${FFTW3_INCLUDE_DIR} ${PNG_INCLUDE_DIR} saddle)
-ADD_EXECUTABLE(uwrapc uwrapc.c configuration.c saddle/minmaxtau.c)
+ADD_EXECUTABLE(uwrapc uwrapc.c configuration.c support.c algorithms.c saddle/minmaxtau.c)
 ADD_EXECUTABLE(process_image process_image.c ${GETOPT})
 ADD_EXECUTABLE(post_process post_process.c ${GETOPT})
 

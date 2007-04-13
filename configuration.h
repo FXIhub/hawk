@@ -1,20 +1,15 @@
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
 
-#define HIO 1
-#define RAAR 2
-#define HPR 3
-#define CFLIP 4
-#define RAAR_CFLIP 5
+
+typedef enum{HIO=1,RAAR,HPR,CFLIP,RAAR_CFLIP} Phasing_Algorithms;
 
 
-#define FIXED 1
-#define STEPPED 2
-#define REAL_ERROR_CAPPED 3
-#define REAL_ERROR_ADAPTATIVE 4
 
-#define GAUSSIAN_BLUR_REDUCTION 1
-#define GEOMETRICAL_BLUR_REDUCTION 2
+typedef enum{FIXED=1,STEPPED,REAL_ERROR_CAPPED,REAL_ERROR_ADAPTATIVE,CONSTANT_AREA} Support_Update_Algorithms;
+
+
+typedef enum{GAUSSIAN_BLUR_REDUCTION=1,GEOMETRICAL_BLUR_REDUCTION} Blur_Reduction_Method;
 
 typedef struct {
   Image * diffraction;
@@ -63,7 +58,7 @@ typedef struct {
   real charge_flip_sigma;
   int rescale_amplitudes;
   real square_mask;
-  int blur_patterson;
+  float patterson_blur_radius;
   int remove_central_pixel_phase;
   real perturb_weak_reflections;
   int nthreads;
@@ -71,6 +66,8 @@ typedef struct {
   int reconstruction_finished;
   real real_error_tolerance;
   int max_iterations;
+  int patterson_level_algorithm;
+  real object_area;
 }Options;
 
 void read_options_file(char * filename, Options * opt);

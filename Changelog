@@ -1,3 +1,11 @@
+2007-04-13	Filipe Maia	<filipe@xray.bmc.uu.se>
+
+	* Changed the boolean "blur_radius" option to a float "patterson_blur_radius"
+	that allows the set also the amount of blurring.
+	* Fixed a bug in the initial estimation of the support, caused by incorrect
+	calculation of the autocorrelation.
+	* Split the support functions and algorithm functions in 2 new files.
+
 2007-04-12	Filipe Maia	<filipe@xray.bmc.uu.se>
 
 	* Added a max_iterations option to uwrapc.conf that makes the program stop

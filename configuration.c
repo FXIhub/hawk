@@ -44,12 +44,14 @@ Options * set_defaults(){
   opt->charge_flip_sigma = (real)0.05;
   opt->rescale_amplitudes = 1;
   opt->square_mask = 0;
-  opt->blur_patterson = 0;
+  opt->patterson_blur_radius = (real)0;
   opt->remove_central_pixel_phase = 0;
   opt->nthreads = 1;
   opt->break_centrosym_period = 0;
   opt->reconstruction_finished = 0;
   opt->real_error_tolerance = -1;
+  opt->max_iterations = 0;
+  opt->object_area = 0;
   return opt;
 }
 
@@ -101,6 +103,17 @@ void read_options_file(char * filename, Options * res){
   if(config_lookup(&config,"beamstop_radius")){
     res->beamstop = config_lookup_float(&config,"beamstop_radius");
   }
+
+  if((tmp = config_lookup_string(&config,"patterson_level_algorithm"))){
+    if(strcmp(tmp,"fixed") == 0){
+      res->patterson_level_algorithm = FIXED;      
+    }else if(strcmp(tmp,"constant_area") == 0){
+      res->patterson_level_algorithm = CONSTANT_AREA;
+      if(config_lookup(&config,"object_area")){
+	res->object_area = config_lookup_float(&config,"object_area");
+      }
+    }
+  }
   
   if((tmp = config_lookup_string(&config,"support_update_algorithm"))){
     if(strcmp(tmp,"fixed") == 0){
@@ -125,6 +138,11 @@ void read_options_file(char * filename, Options * res){
       res->support_update_algorithm = REAL_ERROR_ADAPTATIVE;
       if(config_lookup(&config,"support_real_error_threshold")){
 	res->real_error_threshold = config_lookup_float(&config,"support_real_error_threshold");
+      }
+    }else if(strcmp(tmp,"constant_area") == 0){
+      res->support_update_algorithm = CONSTANT_AREA;
+      if(config_lookup(&config,"object_area")){
+	res->object_area = config_lookup_float(&config,"object_area");
       }
     }else{
       fprintf(stderr,"Warning: Unrecongnized support update algorithm \"%s\". Using default.\n",tmp);
@@ -214,8 +232,8 @@ void read_options_file(char * filename, Options * res){
   if(config_lookup(&config,"square_mask")){
     res->square_mask = config_lookup_float(&config,"square_mask");  
   }
-  if(config_lookup(&config,"blur_patterson")){
-    res->blur_patterson = config_lookup_int(&config,"blur_patterson");  
+  if(config_lookup(&config,"patterson_blur_radius")){
+    res->patterson_blur_radius = config_lookup_float(&config,"patterson_blur_radius");  
   }
   if(config_lookup(&config,"remove_central_pixel_phase")){
     res->remove_central_pixel_phase = config_lookup_int(&config,"remove_central_pixel_phase");  
@@ -330,6 +348,12 @@ void write_options_file(char * filename, Options * res){
   s = config_setting_add(root,"work_directory",CONFIG_TYPE_STRING);
   config_setting_set_string(s,res->work_dir);
 
+  s = config_setting_add(root,"patterson_level_algorithm",CONFIG_TYPE_STRING);
+  if(res->patterson_level_algorithm == FIXED){
+    config_setting_set_string(s,"fixed");
+  }else if(res->patterson_level_algorithm == CONSTANT_AREA){
+    config_setting_set_string(s,"constant_area");
+  }
 
   s = config_setting_add(root,"support_update_algorithm",CONFIG_TYPE_STRING);
   if(res->support_update_algorithm == FIXED){
@@ -340,7 +364,10 @@ void write_options_file(char * filename, Options * res){
     config_setting_set_string(s,"real_error_capped");
   }else if(res->support_update_algorithm == REAL_ERROR_ADAPTATIVE){
     config_setting_set_string(s,"real_error_adaptative");
+  }else if(res->support_update_algorithm == CONSTANT_AREA){
+    config_setting_set_string(s,"constant_area");
   }
+
   s = config_setting_add(root,"support_real_error_threshold",CONFIG_TYPE_FLOAT);
   config_setting_set_float(s,res->real_error_threshold);
   s = config_setting_add(root,"output_precision",CONFIG_TYPE_STRING);
@@ -368,8 +395,8 @@ void write_options_file(char * filename, Options * res){
   s = config_setting_add(root,"square_mask",CONFIG_TYPE_FLOAT);
   config_setting_set_float(s,res->square_mask);
 
-  s = config_setting_add(root,"blur_patterson",CONFIG_TYPE_INT);
-  config_setting_set_int(s,res->blur_patterson);
+  s = config_setting_add(root,"patterson_blur_radius",CONFIG_TYPE_FLOAT);
+  config_setting_set_float(s,res->patterson_blur_radius);
 
   s = config_setting_add(root,"remove_central_pixel_phase",CONFIG_TYPE_INT);
   config_setting_set_int(s,res->remove_central_pixel_phase);
