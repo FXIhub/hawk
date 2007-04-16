@@ -54,6 +54,7 @@ Options * set_defaults(){
   opt->real_error_tolerance = -1;
   opt->max_iterations = 0;
   opt->object_area = 0;
+  opt->patterson_level_algorithm = FIXED;
   return opt;
 }
 

@@ -41,9 +41,9 @@ Image * basic_hio_iteration(Image * exp_amp, Image * real_in, Image * support,
       /* take the calculated phases and apply to the experimental intensities */
       if(cabsr(fft_out->image->data[i])){
 	pattern->image->data[i] = exp_amp->image->data[i]*fft_out->image->data[i]/cabsr(fft_out->image->data[i]);
-      }else{
+/*      }else{
 	real phase = p_drand48()*2*M_PI;
-	pattern->image->data[i] = cos(phase)*exp_amp->image->data[i]+I+sin(phase)*exp_amp->image->data[i];
+	pattern->image->data[i] = cos(phase)*exp_amp->image->data[i]+I+sin(phase)*exp_amp->image->data[i];*/
       }
     }
   }
