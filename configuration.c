@@ -3,6 +3,8 @@
 #include <stdlib.h>
 
 #include "spimage.h"
+
+#include "log.h"
 #include "uwrapc.h"
 #include "configuration.h"
 
@@ -417,4 +419,28 @@ void write_options_file(char * filename, Options * res){
   config_setting_set_int(s,res->max_iterations);
 
   config_write_file(&config,filename);
+}
+
+
+real get_beta(Options * opts){
+  static const int beta0 = 0.75;
+  int n = opts->cur_iteration;
+  if(opts->dyn_beta){
+    return beta0+(opts->beta-beta0)*(1-exp(-pow(n/opts->dyn_beta,3)));
+  }
+  return opts->beta;
+}
+
+real get_blur_radius(Options * opts){
+  real a;
+  if(opts->blur_radius_reduction_method == GAUSSIAN_BLUR_REDUCTION){
+    a = (3.0*opts->cur_iteration/opts->iterations_to_min_blur)*(3.0*opts->cur_iteration/opts->iterations_to_min_blur)*0.5;
+    return (opts->max_blur_radius-opts->min_blur)*exp(-a)+opts->min_blur;
+  }else if(opts->blur_radius_reduction_method == GEOMETRICAL_BLUR_REDUCTION){
+    a = exp(log(opts->min_blur/opts->max_blur_radius)/opts->iterations_to_min_blur);
+    return opts->max_blur_radius*pow(a,opts->cur_iteration);
+  }else{
+    abort();
+  }
+  return -1;
 }

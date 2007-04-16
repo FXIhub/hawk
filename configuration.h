@@ -1,6 +1,7 @@
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
 
+#define VERSION "1.12"
 
 typedef enum{HIO=1,RAAR,HPR,CFLIP,RAAR_CFLIP} Phasing_Algorithms;
 
@@ -74,5 +75,7 @@ void read_options_file(char * filename, Options * opt);
 void parse_options(int argc, char ** argv, Options * opt);
 Options * set_defaults(void);
 void write_options_file(char * filename, Options * res);
+real get_beta(Options * opts);
+real get_blur_radius(Options * opts);
 
 #endif

@@ -1,4 +1,5 @@
 #include "spimage.h"
+#include "log.h"
 #include "uwrapc.h"
 #include "configuration.h"
 #include "algorithms.h"
@@ -450,5 +451,13 @@ Image * basic_cflip_iteration(Image * exp_amp, Image * real_in, Image * support,
 }
 
 
+int get_algorithm(Options * opts,Log * log){
+  if(opts->automatic){
+    if(log->dSupSize > 0){
+      opts->algorithm = RAAR;
+    }
+  }
+  return opts->algorithm;
+}
 
 

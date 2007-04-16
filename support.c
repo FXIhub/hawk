@@ -1,5 +1,6 @@
 
 #include "spimage.h"
+#include "log.h"
 #include "uwrapc.h"
 #include "configuration.h"
 #include "support.h"
@@ -263,14 +264,7 @@ real get_support_level(Image * input, real * previous_size , real radius, Log * 
    method for defining the support so other methods might have to be used 
 */
 real get_patterson_level(Image * input, real radius, Options * opts){
-  static int stepped_flag = 0;
-  real max_int = 0;
-  int new_size;
-  real new_level;
   Image * res;
-  real reduction = 0;
-  real real_error_threshold;
-  int i;
   
   if(opts->patterson_level_algorithm == FIXED){
     /* Simplest case, constant level  */     

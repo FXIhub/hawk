@@ -37,7 +37,8 @@ ELSE(WIN32)
 ENDIF(WIN32)
 
 INCLUDE_DIRECTORIES(${SPIMAGE_INCLUDE_DIR} ${LIBCONFIG_INCLUDE_DIR} ${TIFF_INCLUDE_DIR} ${HDF5_INCLUDE_DIR} ${FFTW3_INCLUDE_DIR} ${PNG_INCLUDE_DIR} saddle)
-ADD_EXECUTABLE(uwrapc uwrapc.c configuration.c support.c algorithms.c saddle/minmaxtau.c)
+ADD_EXECUTABLE(uwrapc uwrapc.c configuration.c support.c algorithms.c log.c saddle/minmaxtau.c)
+ADD_EXECUTABLE(restore_image restore_image.c configuration.c support.c algorithms.c log.c)
 ADD_EXECUTABLE(process_image process_image.c ${GETOPT})
 ADD_EXECUTABLE(post_process post_process.c ${GETOPT})
 
@@ -51,8 +52,9 @@ ADD_SUBDIRECTORY(saddle)
 TARGET_LINK_LIBRARIES(uwrapc ${LIBRARY_LIST})
 TARGET_LINK_LIBRARIES(process_image ${LIBRARY_LIST})
 TARGET_LINK_LIBRARIES(post_process ${LIBRARY_LIST})
+TARGET_LINK_LIBRARIES(restore_image ${LIBRARY_LIST})
 
-INSTALL(TARGETS uwrapc process_image post_process
+INSTALL(TARGETS uwrapc process_image post_process restore_image
             RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
             LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
             ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
