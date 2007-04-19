@@ -126,19 +126,6 @@ void harmonize_sizes(Options * opts){
 }
 
 
-int descend_real_compare(const void * pa,const void * pb){
-  real a,b;
-  a = *((real *)pa);
-  b = *((real *)pb);
-  if(a < b){
-    return 1;
-  }else if(a == b){
-    return 0;
-  }else{
-    return -1;
-  }
-}
-
 void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_sigma,
 			     Options * opts, char * dir){
 

@@ -29,7 +29,6 @@ int get_algorithm(Options * opts,Log  * log);
 void init_log(Log * log);
 void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_sigma,
 			     Options * opts, char * dir);
-int descend_real_compare(const void * a,const  void * b);
 real get_newsupport_level(Image * input, real * previous_size , real radius, Log * log, Options * opts);
 real get_blur_radius(Options * opts);
 Image * get_filtered_support(Image * input, real level , real radius, Options * opts);

@@ -1,6 +1,8 @@
 #ifndef _SUPPORT_H_
 #define _SUPPORT_H
 
+int descend_real_compare(const void * a,const  void * b);
+int descend_complex_compare(const void * a,const  void * b);
 
 /*! Returns the support given a real space image and a certain threshold  
  */

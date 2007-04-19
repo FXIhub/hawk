@@ -228,7 +228,7 @@ real get_support_level(Image * input, real * previous_size , real radius, Log * 
 	max_int = creal(res->image->data[i]);
       }
     }
-    qsort(res->image,sp_cmatrix_size(res->image),sizeof(real),descend_real_compare);
+    qsort(res->image->data,sp_cmatrix_size(res->image),sizeof(Complex),descend_complex_compare);
     if((*previous_size) < 0){
       for(i = 0;i<sp_cmatrix_size(res->image);i++){
 	if(creal(res->image->data[i]) < -(*previous_size)){
@@ -245,8 +245,7 @@ real get_support_level(Image * input, real * previous_size , real radius, Log * 
   }else if(opts->support_update_algorithm == CONSTANT_AREA){
     /* Keeps a constant area for the support */    
     res = gaussian_blur(input, radius);
-    sp_image_dephase(res);
-    qsort(res->image,sp_cmatrix_size(res->image),sizeof(real),descend_real_compare);
+    qsort(res->image->data,sp_cmatrix_size(res->image),sizeof(Complex),descend_complex_compare);
     /* the level is always a fraction of the maximum value so we divide by the maximum (data[0]) */
     return creal(res->image->data[(int)(sp_image_size(res)*opts->object_area)])/creal(res->image->data[0]);    
   }else{
@@ -277,7 +276,7 @@ real get_patterson_level(Image * input, real radius, Options * opts){
       res = sp_image_duplicate(input,SP_COPY_DATA|SP_COPY_MASK);
     }
     sp_image_dephase(res);
-    qsort(res->image,sp_cmatrix_size(res->image),sizeof(real),descend_real_compare);
+    qsort(res->image->data,sp_cmatrix_size(res->image),sizeof(Complex),descend_complex_compare);
     /* the level is always a fraction of the maximum value so we divide by the maximum (data[0]) */
     return creal(res->image->data[(int)(sp_image_size(res)*opts->object_area)])/creal(res->image->data[0]);    
   }else{
@@ -286,3 +285,30 @@ real get_patterson_level(Image * input, real radius, Options * opts){
   }
   return 0;
 }
+
+int descend_real_compare(const void * pa,const void * pb){
+  real a,b;
+  a = *((real *)pa);
+  b = *((real *)pb);
+  if(a < b){
+    return 1;
+  }else if(a == b){
+    return 0;
+  }else{
+    return -1;
+  }
+}
+
+int descend_complex_compare(const void * pa,const void * pb){
+  Complex a,b;
+  a = *((Complex *)pa);
+  b = *((Complex *)pb);
+  if(cabsr(a) < cabsr(b)){
+    return 1;
+  }else if(cabsr(a) == cabsr(b)){
+    return 0;
+  }else{
+    return -1;
+  }
+}
+
