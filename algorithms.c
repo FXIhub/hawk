@@ -86,7 +86,9 @@ Image * basic_raar_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in
   static Image * exp_amp_minus_sigma = NULL;
   static Image * exp_amp_plus_sigma = NULL;
   Image * real_out;
+
   Image * fft_out;
+  Image * fft_in;
   int i;
   int size = sp_cmatrix_size(real_in->image);
   real beta = get_beta(opts);
@@ -96,6 +98,7 @@ Image * basic_raar_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in
   real max = 0;
   real * array;
   fft_out = sp_image_fft(real_in);
+  fft_in = sp_image_duplicate(fft_out,SP_COPY_DATA|SP_COPY_MASK);
   if(!exp_amp_minus_sigma){
     exp_amp_minus_sigma = sp_image_duplicate(exp_amp,SP_COPY_DATA|SP_COPY_MASK);
     for(i = 0;i<sp_cmatrix_size(exp_amp->image);i++){
@@ -157,18 +160,22 @@ Image * basic_raar_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in
     real_out->image->data[i] *= tmp;
   }
 
-
-
-
-  tmp = 1.0/size;
   for(i = 0;i<sp_cmatrix_size(real_out->image);i++){
-/*    real_out->r[i] += (1.0-support->image->data[i])*((-2*beta)*real_out->r[i]+beta*(real_in->r[i]));
-    real_out->c[i] += (1.0-support->image->data[i])*((-2*beta)*real_out->c[i]+beta*(real_in->c[i]));
-    real_out->image->data[i] = amplitude(real_out,i);*/
+    /* A bit of documentation about the equation:
+
+     Rs = 2*Ps-I; Rm = 2*Pm-I
+
+     RAAR = 1/2 * beta * (RsRm + I) + (1 - beta) * Pm;    
+     RAAR = 2*beta*Ps*Pm+(1-2*beta)*Pm - beta * (Ps-I)
+
+     Which reduces to:
+
+     Inside the support: Pm
+     Outside the support: (1 - 2*beta)*Pm + beta*I
+     
+    */    
     if(!support->image->data[i]){
       real_out->image->data[i] = (one_minus_2_beta)*real_out->image->data[i]+beta*(real_in->image->data[i]);      
-    }else{
-/*      real_out->image->data[i] *= tmp;       */
     }
   }
   if(opts->enforce_positivity){
@@ -178,9 +185,10 @@ Image * basic_raar_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in
   }
 
   if(opts->cur_iteration%opts->log_output_period == opts->log_output_period-1){
-    output_to_log(exp_amp,real_in, real_out, fft_out,support, opts,log);
+    output_to_log(exp_amp,real_in, real_out, fft_in,support, opts,log);
   }
   sp_image_free(fft_out);
+  sp_image_free(fft_in);
   return real_out;
 }
 

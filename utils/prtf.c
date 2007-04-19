@@ -50,14 +50,35 @@ void fourier_translation(Image * a, real t_x, real t_y){
    should be in fourier space */
 void maximize_overlap(Image * a, Image * b){
   int index,x,y;
+  real t_max,max;
   Image * cc;
+  Image * cc2;
   Image * tmp = sp_image_ifft(a);
   Image *tmp2 = sp_image_ifft(b);
+  /* Check superposition with normal and rotated image */
   cc = sp_image_cross_correlate(tmp,tmp2,NULL);
+  cc2 = sp_image_convolute(tmp,tmp2,NULL);
+
   sp_image_free(tmp);
+
+  t_max = sp_image_max(cc,&index,&x,&y);
+  fprintf(stderr,"t_max = %f\n",t_max);
+  max = sp_image_max(cc2,&index,&x,&y);
+  fprintf(stderr,"max = %f\n",max);
+  if( max > t_max){
+    fprintf(stderr,"Rotating image\n");
+    /* Do the flip in real space */
+    sp_image_reflect(tmp2,IN_PLACE,SP_AXIS_XY);
+    tmp =  sp_image_fft(tmp2);
+    /* normalize*/
+    sp_image_scale(tmp,1.0/sp_image_size(tmp));
+    sp_image_memcpy(b,tmp);
+    
+  }else{
+    max = sp_image_max(cc,&index,&x,&y);
+  }
   sp_image_free(tmp2);
 
-  sp_image_max(cc,&index,&x,&y);
   if(x > sp_image_width(cc)/2){
     x = -(sp_image_width(cc)-x);
   }
@@ -65,7 +86,13 @@ void maximize_overlap(Image * a, Image * b){
     y = -(sp_image_height(cc)-y);
   }
   sp_image_free(cc);
+  sp_image_free(cc2);
   if(x != 0 || y != 0){
+    if(max > t_max){
+      x = -x;
+      y = -y;    
+    }
+    fprintf(stderr,"Translating by %d %d\n",x,y);
     fourier_translation(b,x,y);
   }
 }
@@ -138,11 +165,11 @@ int main(int argc, char ** argv){
   amps = sp_image_fft(img);
   sp_image_dephase(amps);
   sp_image_free(img);
-  for(i = 1;i<argc-2;i++){
+  for(i = 1;i<argc-1;i++){
     img = sp_image_read(argv[i+1],0);
     sp_image_dephase(img);
     tmp = sp_image_fft(img);
-    maximize_overlap(sum,tmp);
+/*    maximize_overlap(sum,tmp);*/
     sp_image_add(sum,tmp);
     sp_image_dephase(tmp);
     sp_image_add(amps,tmp);

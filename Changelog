@@ -1,3 +1,7 @@
+2007-04-18	Filipe Maia	<filipe@xray.bmc.uu.se>
+	
+	* Fixed the fourier space error calculation for the RAAR algorithm.
+
 2007-04-13	Filipe Maia	<filipe@xray.bmc.uu.se>
 
 	* Changed the boolean "blur_radius" option to a float "patterson_blur_radius"
