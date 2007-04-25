@@ -55,6 +55,8 @@ Options * set_defaults(){
   opt->max_iterations = 0;
   opt->object_area = 0;
   opt->patterson_level_algorithm = FIXED;
+  opt->image_blur_radius = 0.0;
+  opt->image_blur_period = 0;
   return opt;
 }
 
@@ -256,6 +258,12 @@ void read_options_file(char * filename, Options * res){
   if(config_lookup(&config,"max_iterations")){
     res->max_iterations = config_lookup_int(&config,"max_iterations");  
   }
+  if(config_lookup(&config,"image_blur_period")){
+    res->image_blur_period = config_lookup_int(&config,"image_blur_period");  
+  }
+  if(config_lookup(&config,"image_blur_radius")){
+    res->image_blur_radius = config_lookup_float(&config,"image_blur_radius");  
+  }
 
 
 }
@@ -418,6 +426,12 @@ void write_options_file(char * filename, Options * res){
 
   s = config_setting_add(root,"max_iterations",CONFIG_TYPE_INT);
   config_setting_set_int(s,res->max_iterations);
+
+  s = config_setting_add(root,"image_blur_period",CONFIG_TYPE_INT);
+  config_setting_set_int(s,res->image_blur_period);
+
+  s = config_setting_add(root,"image_blur_radius",CONFIG_TYPE_FLOAT);
+  config_setting_set_float(s,res->image_blur_radius);
 
   config_write_file(&config,filename);
 }

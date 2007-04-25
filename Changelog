@@ -1,3 +1,19 @@
+2007-04-19	Filipe Maia	<filipe@xray.bmc.uu.se>
+
+	* Added the image_blur_radius and image_blur_period options.
+	When image_blur_period is different than 0, the real image
+	image will be gaussian blurred using a standard deviation
+	of image_blur_radius every image_blur_period iteration.
+
+2007-04-19	Filipe Maia	<filipe@xray.bmc.uu.se>
+
+	* Introduced the "object_area" option, which is a floating point
+	number which quantifies what's the area of the object compared
+	to the size of the image. It can take values between 0.0 and 1.0.
+	* Added a new support update algorithm called "constant_area". 
+	It simply keeps the area of the support fixed. The support area
+	is given by the new "object_area" option.
+
 2007-04-18	Filipe Maia	<filipe@xray.bmc.uu.se>
 	
 	* Fixed the fourier space error calculation for the RAAR algorithm.

@@ -213,6 +213,12 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
     
   for(;!opts->reconstruction_finished && (!opts->max_iterations || opts->cur_iteration < opts->max_iterations);opts->cur_iteration++){
 
+    if(opts->image_blur_period && opts->cur_iteration%opts->image_blur_period == opts->image_blur_period-1){
+      sp_image_free(real_in);
+      real_in = gaussian_blur(real_out,opts->image_blur_radius);
+      sp_image_memcpy(real_out,real_in);
+    }
+
     if(opts->iterations && opts->cur_iteration%opts->iterations == opts->iterations-1){
       for(i = 0;i<opts->error_reduction_iterations_after_loop;i++){
 	sp_image_free(real_in);

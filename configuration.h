@@ -69,6 +69,8 @@ typedef struct {
   int max_iterations;
   int patterson_level_algorithm;
   real object_area;
+  int image_blur_period;
+  real image_blur_radius;
 }Options;
 
 void read_options_file(char * filename, Options * opt);

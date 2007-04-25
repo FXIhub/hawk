@@ -247,7 +247,7 @@ real get_support_level(Image * input, real * previous_size , real radius, Log * 
     res = gaussian_blur(input, radius);
     qsort(res->image->data,sp_cmatrix_size(res->image),sizeof(Complex),descend_complex_compare);
     /* the level is always a fraction of the maximum value so we divide by the maximum (data[0]) */
-    return creal(res->image->data[(int)(sp_image_size(res)*opts->object_area)])/creal(res->image->data[0]);    
+    return cabsr(res->image->data[(int)(sp_image_size(res)*opts->object_area)])/cabsr(res->image->data[0]);    
   }else{
     fprintf(stderr,"Unkown algorithm!\n");
     abort();
@@ -278,7 +278,7 @@ real get_patterson_level(Image * input, real radius, Options * opts){
     sp_image_dephase(res);
     qsort(res->image->data,sp_cmatrix_size(res->image),sizeof(Complex),descend_complex_compare);
     /* the level is always a fraction of the maximum value so we divide by the maximum (data[0]) */
-    return creal(res->image->data[(int)(sp_image_size(res)*opts->object_area)])/creal(res->image->data[0]);    
+    return cabsr(res->image->data[(int)(sp_image_size(res)*opts->object_area)])/cabsr(res->image->data[0]);    
   }else{
     fprintf(stderr,"Unkown algorithm!\n");
     abort();
