@@ -24,8 +24,10 @@ int main(int argc, char ** argv){
   sp_image_write(img,filename,0);
   if(argc > 3){
     tmp = sp_image_get_phases(img);
-    sp_image_write(tmp,argv[3],0);
-    sp_image_free(tmp);
+    if(tmp){
+      sp_image_write(tmp,argv[3],0);
+      sp_image_free(tmp);
+    }
   }
   if(argc > 4){
     for(i = 0;i<sp_cmatrix_size(img->image);i++){
