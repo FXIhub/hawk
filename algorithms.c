@@ -3,6 +3,7 @@
 #include "uwrapc.h"
 #include "configuration.h"
 #include "algorithms.h"
+#include "support.h"
 
 int real_compare(const void * a, const void * b){
   if((*(real *)a) <(*(real *)b)){
@@ -387,8 +388,8 @@ Image * basic_cflip_iteration(Image * exp_amp, Image * real_in, Image * support,
   if(opts->perturb_weak_reflections && !weak_reflections){
     weak_reflections = malloc(sp_cmatrix_size(exp_amp->image)*sizeof(char));
     tmp = malloc(sp_cmatrix_size(exp_amp->image)*sizeof(real));
-    memcpy(tmp,exp_amp->image,sp_cmatrix_size(exp_amp->image)*sizeof(real));
-    qsort(tmp,sp_cmatrix_size(exp_amp->image),sizeof(real),real_compare);
+    memcpy(tmp,exp_amp->image->data,sp_cmatrix_size(exp_amp->image)*sizeof(real));
+    qsort(tmp,sp_cmatrix_size(exp_amp->image),sizeof(real),descend_complex_compare);
     /* get the weak reflections threshold */
     max = tmp[(int)(sp_cmatrix_size(exp_amp->image)*opts->perturb_weak_reflections)];
     fprintf(stderr,"max - %f\nindex - %d\n",max,(int)(sp_cmatrix_size(exp_amp->image)*opts->perturb_weak_reflections));
@@ -418,8 +419,7 @@ Image * basic_cflip_iteration(Image * exp_amp, Image * real_in, Image * support,
     }else{
       if(opts->perturb_weak_reflections && weak_reflections[i]){
 	/* take the calculated phases, rotate PI/2 and apply to the experimental intensities */
-	/* BUG This does not seems like a PI/2 rotation to me! */
-	pattern->image->data[i] = exp_amp->image->data[i]*conj(fft_out->image->data[i])/cabs(fft_out->image->data[i]);
+	pattern->image->data[i] = exp_amp->image->data[i]*I*fft_out->image->data[i]/cabs(fft_out->image->data[i]);
       }else{
 	/* take the calculated phases and apply to the experimental intensities */	
 	pattern->image->data[i] = exp_amp->image->data[i]*fft_out->image->data[i]/cabs(fft_out->image->data[i]);
