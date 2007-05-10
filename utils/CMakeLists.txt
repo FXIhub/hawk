@@ -33,6 +33,7 @@ ADD_EXECUTABLE(autocorrelate autocorrelate.c)
 #ADD_EXECUTABLE(stretch stretch.c)
 ADD_EXECUTABLE(image_to_png image_to_png.c)
 ADD_EXECUTABLE(png_to_image png_to_image.c)
+ADD_EXECUTABLE(propagate propagate.c)
 
 
 
@@ -59,10 +60,11 @@ TARGET_LINK_LIBRARIES(image_to_png ${LIBRARY_LIST})
 TARGET_LINK_LIBRARIES(png_to_image ${LIBRARY_LIST})
 TARGET_LINK_LIBRARIES(denoise ${LIBRARY_LIST})
 TARGET_LINK_LIBRARIES(background_subtract ${LIBRARY_LIST})
+TARGET_LINK_LIBRARIES(propagate ${LIBRARY_LIST})
 #TARGET_LINK_LIBRARIES(stretch ${LIBRARY_LIST})
 
 INSTALL(TARGETS tiff2h5 image_to_vtk gif2h5image
-	image_to_png png_to_image tiff2png autocorrelate prtf denoise background_subtract
+	image_to_png png_to_image tiff2png autocorrelate prtf denoise background_subtract propagate
             RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
             LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
             ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
