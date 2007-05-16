@@ -11,9 +11,7 @@
 #include <fftw3.h>
 #include <getopt.h>
 #include <spimage.h>
-
-
-
+#include "propagate.h"
 
 
 Options * parse_options(int argc, char ** argv){
@@ -25,12 +23,11 @@ Options * parse_options(int argc, char ** argv){
     -o: Output file\n\
     -d: Distance to detector (mm)\n\
     -w: Wavelength (nm)\n\
-    -W: Detector width (mm)\n\
-    -H: Detector height (mm)\n\
+    -p: pixel size (um)\n\
     -z: Delta z (nm)\n\
     -h: help\n\
 ";
-  static char optstring[] = "i:o:d:w:W:H:z:h";
+  static char optstring[] = "i:o:d:w:p:z:h";
   Options * res = calloc(1,sizeof(Options));
   set_defaults(res);
 
@@ -50,7 +47,7 @@ Options * parse_options(int argc, char ** argv){
       res->pixel_size = atof(optarg);
       break;
     case 'z':
-      res->delta_z = atof(optarg);
+      res->delta_z = atof(optarg)/1.0e9;
       break;
     case 'i':
       strcpy(res->input,optarg);
@@ -72,28 +69,99 @@ Options * parse_options(int argc, char ** argv){
 void set_defaults(Options * opt){
   opt->distance = 0;
   opt->lambda = 0;
-  opt->width = 0;
-  opt->height = 0;
+  opt->pixel_size = 0;
   opt->input[0] = 0;
   opt->output[0] = 0;
   opt->delta_z = 0;
 }
 
 
+Image * get_fresnel_propagator(Image * in, real delta_z){
+  Image * res = sp_image_duplicate(in,SP_COPY_DATA|SP_COPY_MASK);
+  /* number of pixels */
+  int nx, ny;
+  /* pixel index */
+  int x,y;
+  /* physical location of pixel*/
+  real px,py;
+  nx = sp_image_width(in);
+  ny = sp_image_height(in);
+  real lambda = in->detector->lambda;
+
+  real det_width = in->detector->pixel_size * sp_image_width(in);
+  real det_height = in->detector->pixel_size * sp_image_height(in);
+
+  for(x = 0;x<nx;x++){
+    for(y = 0;y<ny;y++){
+      /* 
+	 Calculate the pixel coordinates in reciprocal space 	 
+	 by dividing the physical position by detector_distance*wavelength.
+	 
+ 	 CCD center at image_center
+
+	 Upper left corner of the detector with negative x and positive y
+      */
+      px = ((x-in->detector->image_center[0])/nx)*det_width;
+      py = ((in->detector->image_center[1]-y)/ny)*det_height;
+      sp_image_set(res,x,y,cexp(-(I*M_PI/(delta_z*lambda))*(px*px+py*py)));
+    }
+  }
+  return res;
+}
+
+
+Image * get_fourier_fresnel_propagator(Image * in,sp_matrix * k_x, sp_matrix *k_y, real delta_z){
+  Image * res = sp_image_duplicate(in,SP_COPY_DATA|SP_COPY_MASK);
+  Image * tmp;
+  /* number of pixels */
+  int nx, ny;
+  /* pixel index */
+  int x,y;
+  /* physical location of pixel*/
+  real lambda = in->detector->lambda;
+  real k_x2;
+  real k_y2;
+  nx = sp_image_width(in);
+  ny = sp_image_height(in);
+  for(x = 0;x<nx;x++){
+    for(y = 0;y<ny;y++){
+      k_x2 = sp_matrix_get(k_x,x,y);
+      k_x2 *= k_x2;
+      k_y2 = sp_matrix_get(k_y,x,y);
+      k_y2 *= k_y2;
+      sp_image_set(res,x,y,cexp((I*delta_z*lambda/(4*M_PI))*(k_x2+k_y2)));
+    }
+  }
+  tmp = sp_image_shift(res);
+  sp_image_free(res);
+  return tmp;
+}
 
 int main(int argc, char ** argv){
   Image * img;
+  Image * fresnel_prop;
+  Image * fresnel_prop_shifted;
   Image * out;
   Options * opts;  
   char buffer[1024] = "";
   char buffer2[1024] = "";
   sp_matrix *k_x,*k_y;
-  int i;
   FILE * f;
-  int tmp;
-  real max =0;
   opts = malloc(sizeof(Options));
   set_defaults(opts);
+  int i;
+
+#if defined(_MSC_VER) || defined(__MINGW32__)
+  _getcwd(buffer,1023);
+#else
+  getcwd(buffer,1023);
+#endif
+  strcat(buffer,"> ");
+  for(i = 0;i<argc;i++){
+    strcat(buffer,argv[i]);
+    strcat(buffer," ");
+  }
+  opts = parse_options(argc,argv);
   /* write log */
   sprintf(buffer2,"%s.log",opts->output);
   f = fopen(buffer2,"w");
@@ -105,17 +173,26 @@ int main(int argc, char ** argv){
   }
 
   img = sp_image_read(opts->input,0);
-  if(img->shifted){
-    img = sp_image_shift(img);
-  }
 
   k_x = sp_matrix_alloc(sp_image_width(img),sp_image_height(img));
   k_y = sp_matrix_alloc(sp_image_width(img),sp_image_height(img));
   
   /* Make sure to set the image properties */
-  img->detector->distance_to_detector = opts->distance;
-  img->detector->lambda = opts->lambda;
-  img->detector->pixel_size = opts->pixel_size;
+  /* convet all to meters */
+  
+  img->detector->detector_distance = opts->distance/1.0e3;
+  img->detector->lambda = opts->lambda/1.0e9;
+  img->detector->pixel_size = opts->pixel_size/1.0e6;
+  img->detector->image_center[0] = (sp_image_width(img)-1.0)/2.0;
+  img->detector->image_center[1] = (sp_image_height(img)-1.0)/2.0;
+  
   sp_image_fourier_coords(img,k_x,k_y,NULL);
+  
+  /* Convolute input with the fresnel propagator */
+  fresnel_prop = get_fourier_fresnel_propagator(img,k_x,k_y,opts->delta_z);
+
+  out = sp_image_duplicate(img,SP_COPY_DATA|SP_COPY_MASK);
+  sp_image_mul_elements(out,fresnel_prop);
+  sp_image_write(sp_image_ifft(out),opts->output,0);   
   return 0;
 }

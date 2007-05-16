@@ -3,13 +3,14 @@
 #include <spimage.h>
 #include <minmaxtau.h>
 
+#define DEBUG_SPO 1
 
 void rebracketxy(sp_vector * xmin,sp_vector * xmax,real x,real y,int init){
   if(init){
     xmin->data[0] = x;
     xmin->data[1] = y;
-    xmin->data[0] = REAL_MAX;
-    xmin->data[1] = -REAL_MAX;
+    xmax->data[0] = REAL_MAX;
+    xmax->data[1] = -REAL_MAX;
     return;
   }
   if(y<0 && x<xmax->data[0]){
@@ -146,7 +147,7 @@ real linminab(sp_cmatrix * Gs, sp_cmatrix * Gns, sp_cmatrix * DGs, sp_cmatrix * 
     % and the analytic one:
     % dy=cprod(dab,-Habi*HesL(Gs,Gns,DGs,DGns,F0,ab(1)+dab(1)*x,ab(2)+dab(2)*x)*dab);
     %-------------------------------------------------------------
-  */
+r  */
 
   /* start from 0 step length */
   x = 0;
@@ -393,6 +394,8 @@ void Hfit(sp_matrix * _taui, sp_matrix * _dtaui, int iter, sp_vector * tau, sp_v
   Dtau->data[1] = tau->data[1]-taur->data[1];      
   sp_matrix_free(dtaui);
   sp_matrix_free(taui);
+  sp_matrix_free(x_trans);
+  sp_matrix_free(y_trans);
 }
 
 void goright(sp_matrix * H){
@@ -447,7 +450,7 @@ void goright(sp_matrix * H){
   sp_matrix_memcpy(H,tmp2);
   sp_matrix_free(tmp);
   sp_matrix_free(tmp2);
-  
+  sp_matrix_free(redM);
   if(ND==4){
     /* make sure eigenvalues of alpha1,alpha2 hessian and beta1,beta2 hessian
      * H([1,3],[1,3]),H([2,4],[2,4]) are positive
@@ -633,6 +636,8 @@ void gradLrho(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * S,sp_cmatrix * F0,re
     sp_cmatrix_add(DGns,tmp,NULL);
     sp_cmatrix_free(tmp);
   }        
+  sp_cmatrix_free(Gms);
+  sp_cmatrix_free(Gm);
 }
 
 int minmaxtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGns,sp_cmatrix * F0,real TolY,int maxiter, sp_vector * tau, sp_matrix * Hi){
@@ -715,10 +720,16 @@ int minmaxtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGn
   sp_vector_memcpy(dtaumin,dtau);
 
   if(nav < 4){
+#ifdef DEBUG_SPO
+    printf("Calculating explicit Hessian\n");
+#endif
     hesLtau(Gs,Gns,DGs,DGns,F0,NULL,H,Hi);
     goright(Hi);
   }else{
     /* %let's see if we can get away with this one */
+#ifdef DEBUG_SPO
+    printf("Copying previous Hessian\n");
+#endif
     sp_matrix_memcpy(Hi,Hiav);
   }
   
@@ -745,11 +756,20 @@ int minmaxtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGn
     
     if(((ii+11) % 20) == 0){ /* try a fit */
       Hfit(taui,dtaui,ii+1,tau,dtau,Dtau,Hi); /* linear fit  */
+#ifdef DEBUG_SPO
+      printf("Trying linear fit for Hi\n");
+#endif
+
     }
     if(((ii+1) % 20) == 0){
       /* Newton with line search, go back to minimum value */
       /* Use smallest gradient */
       mintaultmp = 0;
+
+#ifdef DEBUG_SPO
+      printf("Trying newton with line search\n");
+#endif
+
       for(i = 0;i<ii;i++){
 	r = sqrt(sp_matrix_get(dtaui,0,i)*sp_matrix_get(dtaui,0,i)+sp_matrix_get(dtaui,1,i)*sp_matrix_get(dtaui,1,i));
 	if(r < mintaultmp || !mintaultmp){
@@ -814,8 +834,12 @@ int minmaxtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGn
     sp_vector_sub(Hi_y_minus_s,s);    
     /* erquad=sqrt(cnorm2(Hi*y-s)/(cnorm2(s)+cnorm2(Hi*y))); */
     erquad = sqrt(sp_vector_dot_prod(Hi_y_minus_s,Hi_y_minus_s)/(sp_vector_dot_prod(s,s)+sp_vector_dot_prod(Hi_y,Hi_y)));
-/*    fprintf(stdout,"ii - %d   erquad - %f\n",ii,erquad); */
+    fprintf(stdout,"ii - %d   erquad - %f\n",ii,erquad); 
     if (erquad>1){ /* real hessian */
+#ifdef DEBUG_SPO
+      printf("Real Hessian update\n");
+#endif
+
       fprintf(stdout,"iter=%d, erquad=%lf\n",ii,erquad);
       maxstep=sp_max(maxstep/4,minmaxstep);  /* %decrease step size */
       hesLtau(Gs,Gns,DGs,DGns,F0,tau,H,Hi);
@@ -825,6 +849,10 @@ int minmaxtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGn
       x=linminab(Gs,Gns,DGs,DGns,F0,tau,Dtau,Hi,-1); /*%optimize length*/
       sp_matrix_scale(Hi,x);
     }else if(erquad>1e-2){ /* SR1 update */
+#ifdef DEBUG_SPO
+      printf("SR1 update\n");
+#endif
+
       /* erquad1=abs(y'*(s-Hi*y))/sqrt(cnorm2(y)*cnorm2(s-Hi*y)); */
       sp_vector_memcpy(s_minus_Hi_y,Hi_y_minus_s);
       sp_vector_scale(s_minus_Hi_y,-1);
@@ -847,9 +875,13 @@ int minmaxtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGn
 
     }else{
       /* no update */
+#ifdef DEBUG_SPO
+      printf("No update\n");
+#endif
+
       maxstep = sp_min(maxstep*3,fixmaxstep);							 
     }
-      
+    sp_vector_free(Dtau);
   }
 
   fprintf(stdout,"iter=%d\n",ii);
@@ -890,7 +922,6 @@ int minmaxtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGn
   sp_vector_free(s_minus_Hi_y);
   sp_vector_free(tmp_v);
   sp_vector_free(tau_plus_step);
-  sp_vector_free(Dtau);
   sp_vector_free(Dtauold);
   sp_vector_free(taumin);
   sp_vector_free(dtaumin);

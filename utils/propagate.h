@@ -14,5 +14,6 @@ typedef struct {
 
 Options * parse_options(int argc, char ** argv);
 void set_defaults(Options * opt);
+Image * get_fresnel_propagator(Image * in, real delta_z);
 
 #endif
