@@ -1,9 +1,9 @@
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
 
-#define VERSION "1.12"
+#define VERSION "1.13"
 
-typedef enum{HIO=1,RAAR,HPR,CFLIP,RAAR_CFLIP} Phasing_Algorithms;
+typedef enum{HIO=1,RAAR,HPR,CFLIP,RAAR_CFLIP,HAAR} Phasing_Algorithms;
 
 
 

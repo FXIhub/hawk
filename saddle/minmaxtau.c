@@ -95,9 +95,9 @@ sp_vector * gradL(sp_cmatrix * Gs, sp_cmatrix * Gns, sp_cmatrix * DGs, sp_cmatri
   dab(2)=-cprod(DGns,Gm);                     %-<DGns|Pm G>
 
    */
-  dab->data[1] = -creal(sp_cmatrix_froebius_prod(DGns,Gm));
+  dab->data[1] = -creal(sp_cmatrix_froenius_prod(DGns,Gm));
   sp_cmatrix_sub(Gm,Gab);
-  dab->data[0] = -creal(sp_cmatrix_froebius_prod(DGs,Gm));
+  dab->data[0] = -creal(sp_cmatrix_froenius_prod(DGs,Gm));
   sp_cmatrix_free(Gm);
   sp_cmatrix_free(Gab);
   return dab;
@@ -503,15 +503,15 @@ int hesLtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGns,
   /* Hab(0,0)=-cprod(DGs,Fratio.*DGs)/2+cprod(DGs,ph2.*conj(DGs))/2 +cnorm2(DGs); */
   tmp = sp_cmatrix_duplicate(Fratio);
   sp_cmatrix_mul_elements(tmp,DGs);  
-  rtmp = creal(sp_cmatrix_froebius_prod(DGs,tmp))/-2;
+  rtmp = creal(sp_cmatrix_froenius_prod(DGs,tmp))/-2;
   sp_cmatrix_conj(DGs);
   sp_cmatrix_free(tmp);
   tmp = sp_cmatrix_duplicate(ph2);
   sp_cmatrix_mul_elements(tmp,DGs);
   sp_cmatrix_conj(DGs);  
-  rtmp += creal(sp_cmatrix_froebius_prod(DGs,tmp))/2;
+  rtmp += creal(sp_cmatrix_froenius_prod(DGs,tmp))/2;
   sp_cmatrix_free(tmp);
-  rtmp += creal(sp_cmatrix_froebius_prod(DGs,DGs));
+  rtmp += creal(sp_cmatrix_froenius_prod(DGs,DGs));
   sp_matrix_set(Hab,0,0,rtmp);
 
   /* ph2=conj(ph2).*DGns; */
@@ -523,16 +523,16 @@ int hesLtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGns,
   
   
   /* Hab(1,1)=-cprod(Fratio,DGns)/2+cprod(ph2,conj(DGns))/2; */
-  rtmp = -creal(sp_cmatrix_froebius_prod(Fratio,DGns))/2;
+  rtmp = -creal(sp_cmatrix_froenius_prod(Fratio,DGns))/2;
   sp_cmatrix_conj(DGns);  
-  rtmp += creal(sp_cmatrix_froebius_prod(ph2,DGns))/2;
+  rtmp += creal(sp_cmatrix_froenius_prod(ph2,DGns))/2;
   sp_cmatrix_conj(DGns);  
   sp_matrix_set(Hab,1,1,rtmp);
 
   /* Hab(0,1)=-cprod(Fratio,DGs)/2+cprod(ph2,conj(DGs))/2; */
-  rtmp = -creal(sp_cmatrix_froebius_prod(Fratio,DGs))/2;
+  rtmp = -creal(sp_cmatrix_froenius_prod(Fratio,DGs))/2;
   sp_cmatrix_conj(DGs);  
-  rtmp += creal(sp_cmatrix_froebius_prod(ph2,DGs))/2;
+  rtmp += creal(sp_cmatrix_froenius_prod(ph2,DGs))/2;
   sp_cmatrix_conj(DGs);  
   sp_matrix_set(Hab,0,1,rtmp);
 
@@ -687,8 +687,8 @@ int minmaxtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGn
   real Dtaulold;
     
   
-  RDGs_cp = creal(sp_cmatrix_froebius_prod(DGs,DGs));
-  RDGns_cp = creal(sp_cmatrix_froebius_prod(DGns,DGns));
+  RDGs_cp = creal(sp_cmatrix_froenius_prod(DGs,DGs));
+  RDGns_cp = creal(sp_cmatrix_froenius_prod(DGns,DGns));
   /* this is the same as tauove but faster */
   real dtaul0 = sqrt(RDGs_cp*RDGs_cp+RDGns_cp*RDGns_cp); 
   

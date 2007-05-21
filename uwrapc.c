@@ -204,6 +204,8 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
     real_out = basic_hpr_iteration(amp, real_in, support,opts,&log);
   }else if(get_algorithm(opts,&log) == CFLIP){
     real_out = basic_cflip_iteration(amp, real_in, support,opts,&log);
+  }else if(get_algorithm(opts,&log) == HAAR){
+    real_out = basic_haar_iteration(amp, exp_sigma, real_in, support,opts,&log);
   }else{
     fprintf(stderr,"Error: Undefined algorithm!\n");
     exit(-1);
@@ -301,6 +303,8 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
       real_out = basic_hpr_iteration(amp, real_in, support,opts,&log);
     }else if(get_algorithm(opts,&log) == CFLIP){     
       real_out = basic_cflip_iteration(amp, real_in, support,opts,&log);
+    }else if(get_algorithm(opts,&log) == HAAR){     
+      real_out = basic_haar_iteration(amp, exp_sigma,real_in, support,opts,&log);
     }
   }  
 
@@ -408,7 +412,7 @@ int main(int argc, char ** argv){
   }else if(opts->diffraction){
     img = sp_image_duplicate(opts->diffraction,SP_COPY_DATA|SP_COPY_MASK);
   }else{
-    fprintf(stderr,"Error: either -d or -i have to be specified!\n");
+    fprintf(stderr,"Error: either real_image_file or amplitudes_file have to be specified!\n");
     exit(1);
   }
   sp_image_high_pass(img, opts->beamstop);

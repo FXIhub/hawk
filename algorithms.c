@@ -469,3 +469,72 @@ int get_algorithm(Options * opts,Log * log){
 }
 
 
+
+/*! Haugazeau operator Q that describes the projector onto the intersection of two half spaces.
+
+ * Check "A strongly convergent reflection method for finding the projection onto the intersection of two closed convex sets in a Hilbert space"
+ * Journal of Approximation Theory Volume 141 ,  Issue 1  (July 2006) Pages: 63 - 69 
+ * http://people.ok.ubc.ca/bauschke/Research/39.pdf
+ *
+ */
+
+static Image * Q_operator(Image * x, Image * y, Image *z){
+  sp_cmatrix * x_minus_y = sp_cmatrix_duplicate(x->image);
+  sp_cmatrix * y_minus_z = sp_cmatrix_duplicate(y->image);
+  sp_cmatrix * z_minus_y;
+  sp_cmatrix_sub(x_minus_y,y->image);
+  sp_cmatrix_sub(y_minus_z,z->image);
+  z_minus_y = sp_cmatrix_duplicate(y_minus_z);
+  sp_cmatrix_scale(z_minus_y,-1);
+  Complex s;
+  
+  Complex pi = sp_cmatrix_froenius_prod(x_minus_y,y_minus_z);
+  Complex mu = sp_cmatrix_froenius_prod(x_minus_y,x_minus_y);
+  Complex nu = sp_cmatrix_froenius_prod(y_minus_z,y_minus_z);
+  Complex rho = mu*nu-pi*pi;
+  if(cabs(rho) == 0 && cabs(pi) >= 0){
+    sp_cmatrix_free(x_minus_y);
+    sp_cmatrix_free(y_minus_z);
+    sp_cmatrix_free(z_minus_y);
+    return sp_image_duplicate(z,SP_COPY_DATA|SP_COPY_MASK);
+  }else if(cabs(rho) > 0 && cabs(pi*nu) >= cabs(rho)){
+    s = cabs(1+pi/nu);
+    printf("s - %f\n",cabs(s));
+    sp_cmatrix_add(x->image,z_minus_y,&s);
+    sp_cmatrix_free(x_minus_y);
+    sp_cmatrix_free(y_minus_z);
+    sp_cmatrix_free(z_minus_y);
+    return sp_image_duplicate(x,SP_COPY_DATA|SP_COPY_MASK);
+  }else if(cabs(rho) > 0 && cabs(pi*nu) < cabs(rho)){
+    s = cabs(pi*nu/rho);
+    sp_cmatrix_add(y->image,x_minus_y,&s);
+    s = cabs(mu*nu/rho);
+    printf("s - %f\n",cabs(s));
+    sp_cmatrix_add(y->image,z_minus_y,&s);
+    sp_cmatrix_free(x_minus_y);
+    sp_cmatrix_free(y_minus_z);
+    sp_cmatrix_free(z_minus_y);
+    return sp_image_duplicate(y,SP_COPY_DATA|SP_COPY_MASK);
+  }else{
+    fprintf(stderr,"Cannot reach here!\n");
+    abort();
+  }
+  return NULL;
+}
+
+
+Image * basic_haar_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in, Image * support, 
+			     Options * opts, Log * log){
+  static Image * x = NULL;
+  Image * y;
+  Image * z;
+  Image * ret;
+  if(!x){
+    x = sp_image_duplicate(real_in,SP_COPY_DATA|SP_COPY_MASK);
+  }
+  y = real_in;
+  z = basic_raar_iteration(exp_amp,exp_sigma,real_in,support,opts,log);  
+  ret = Q_operator(x,y,z);
+  sp_image_free(z);
+  return ret;
+}

@@ -199,6 +199,8 @@ void read_options_file(char * filename, Options * res){
       res->algorithm = CFLIP;
     }else if(strcmp(tmp,"RAAR_CFLIP") == 0|| strcmp(tmp,"raar_cflip") == 0){
       res->algorithm = RAAR_CFLIP;
+    }else if(strcmp(tmp,"HAAR") == 0|| strcmp(tmp,"haar") == 0){
+      res->algorithm = HAAR;
     }else{
       fprintf(stderr,"Warning: Unrecongnized algorithm \"%s\". Using default.\n",tmp);
     }    
