@@ -2,8 +2,8 @@
 #include <math.h>
 #include <spimage.h>
 #include <minmaxtau.h>
+#include <assert.h>
 
-#define DEBUG_SPO 1
 
 void rebracketxy(sp_vector * xmin,sp_vector * xmax,real x,real y,int init){
   if(init){
@@ -25,7 +25,7 @@ void rebracketxy(sp_vector * xmin,sp_vector * xmax,real x,real y,int init){
 								       
 
 
-void bisect2(real x0, real x1, real y0, real y1, real dy, sp_vector * xmax, sp_vector * xmin, real *xn, real * dyn){
+void bisect2(double x0, double x1, double y0, double y1, double dy, sp_vector * xmax, sp_vector * xmin, double *xn, double * dyn){
   /*
     %[xn,dyn]=bisect2(x0,x1,y0,y1,dy,xmax,xmin)
     % use values at the interval between
@@ -36,7 +36,7 @@ void bisect2(real x0, real x1, real y0, real y1, real dy, sp_vector * xmax, sp_v
     % xmax=[x max; y max];
     %
    */
-  real Dx,Dy,d2y;
+  double Dx,Dy,d2y;
 
   if(x1>xmax->data[0]){  /*%too big*/
     x1=xmax->data[0];
@@ -52,10 +52,14 @@ void bisect2(real x0, real x1, real y0, real y1, real dy, sp_vector * xmax, sp_v
   Dy=(y1-y0);
   
   /* %derivative (average) */
+
+  assert(Dx != 0);
   *dyn=Dy/Dx;
+
 
   /*   %second derivative (using 'dy' as first derivative at x0) */
   d2y=(Dy-Dx*dy)/(Dx*Dx);                /*   %second derivative */
+  assert(d2y != 0);
   *xn=x0+(-dy-sqrt(dy*dy-4*y0*d2y))/d2y/2; /* %root (the one inside the brackets) */
   *dyn=dy+d2y*(*xn-x0);                     /* %update derivative */
 
@@ -68,7 +72,7 @@ void bisect2(real x0, real x1, real y0, real y1, real dy, sp_vector * xmax, sp_v
   }
 }
 
-sp_vector * gradL(sp_cmatrix * Gs, sp_cmatrix * Gns, sp_cmatrix * DGs, sp_cmatrix * DGns, sp_cmatrix * F0, real aa, real bb){
+sp_vector * gradL(sp_cmatrix * Gs, sp_cmatrix * Gns, sp_cmatrix * DGs, sp_cmatrix * DGns, Image * F0, real aa, real bb){
   sp_vector * dab = sp_vector_alloc(2);
   sp_cmatrix * Gab;
   sp_cmatrix * Gm;
@@ -86,7 +90,10 @@ sp_vector * gradL(sp_cmatrix * Gs, sp_cmatrix * Gns, sp_cmatrix * DGs, sp_cmatri
   */
   Gm = sp_cmatrix_duplicate(Gab);
   for(i = 0;i<sp_cmatrix_size(Gab);i++){
-    Gm->data[i] = F0->data[i]*(Gm->data[i]/cabs(Gm->data[i]));
+    assert(cabs(Gm->data[i]) != 0);
+    if(F0->mask->data[i]){
+      Gm->data[i] = F0->image->data[i]*(Gm->data[i]/cabs(Gm->data[i]));
+    }
   }
   
   /*
@@ -103,7 +110,7 @@ sp_vector * gradL(sp_cmatrix * Gs, sp_cmatrix * Gns, sp_cmatrix * DGs, sp_cmatri
   return dab;
 }
 
-real linminab(sp_cmatrix * Gs, sp_cmatrix * Gns, sp_cmatrix * DGs, sp_cmatrix * DGns, sp_cmatrix * F0, sp_vector * ab, sp_vector * dab, sp_matrix * Habi, real TolY){
+real linminab(sp_cmatrix * Gs, sp_cmatrix * Gns, sp_cmatrix * DGs, sp_cmatrix * DGns, Image * F0, sp_vector * ab, sp_vector * dab, sp_matrix * Habi, real TolY){
   /*
     % function x=linminab(Gs,Gns,DGs,DGns,F0,ab,dab,Habi);
     % line search for ab:
@@ -117,15 +124,15 @@ real linminab(sp_cmatrix * Gs, sp_cmatrix * Gns, sp_cmatrix * DGs, sp_cmatrix * 
     %
    */
   int maxiter = 10; /* don't waste too much time */
-  real y,yold,dy;
+  double y,yold,dy;
   sp_vector * tmp;
   sp_vector * tmp2;
   sp_vector * xmin = sp_vector_alloc(2);
   sp_vector * xmax = sp_vector_alloc(2);
   sp_matrix * minus_Habi = sp_matrix_alloc(2,2);
-  real dyn,xold,x;
-  real Dx,Dy,xn;
-  real errslp,d2y;
+  double dyn,xold,x;
+  double Dx,Dy,xn;
+  double errslp,d2y;
   int ii;
   
 
@@ -179,7 +186,9 @@ r  */
     Dx=-y/dy;
     x=x+Dx;
     */
+    assert(dy != 0);
     Dx=-y/dy;
+    assert(Dx != 0);
     x=x+Dx;
     
 
@@ -259,6 +268,7 @@ r  */
 	
 	I don't get the i on the previous line
       */
+      assert(Dx != 0);
       dyn=Dy/Dx;
       errslp=fabs((dyn-dy)/((dy+1*REAL_EPSILON)));
       errslp *= errslp;
@@ -282,6 +292,7 @@ r  */
 	     %           dy*(Dx+d2y*Dx^2*xx)
 	     dy=dy+d2y*Dx;                        %update derivative
 	*/	    
+	assert(Dx != 0);
 	d2y=(Dy-Dx*dy)/(Dx*Dx);
 	dy=dy+d2y*Dx;	    
       }
@@ -468,7 +479,7 @@ void goright(sp_matrix * H){
   }
 }
 
-int hesLtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGns,sp_cmatrix * F0,sp_vector * tau,sp_matrix * Hab, sp_matrix * Habi){
+int hesLtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGns,Image * F0,sp_vector * tau,sp_matrix * Hab, sp_matrix * Habi){
   sp_cmatrix * Gab;
   sp_cmatrix * Fratio;
   sp_cmatrix * tmp;
@@ -491,13 +502,19 @@ int hesLtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGns,
 /*  fprintf(stdout,"HesLtau\n"); */
 
 /* Fratio = F0/abs(Gab);  */
-  Fratio = sp_cmatrix_duplicate(F0);
+  Fratio = sp_cmatrix_duplicate(F0->image);
   for(i = 0;i<sp_cmatrix_size(Gab);i++){
-    Fratio->data[i] /= cabsr(Gab->data[i]);
+    assert(cabsr(Gab->data[i] != 0));
+    if(F0->mask->data[i]){
+      Fratio->data[i] /= cabsr(Gab->data[i]);
+    }else{
+      Fratio->data[i] = 1;
+    }
   }
 /* ph2 = (Gab/abs(Gab))^2 * Fratio */
   ph2 = sp_cmatrix_duplicate(Gab);
   for(i = 0;i<sp_cmatrix_size(ph2);i++){
+    assert(cabsr(ph2->data[i] != 0));
     ph2->data[i] = (ph2->data[i]/cabsr(ph2->data[i]))*(ph2->data[i]/cabsr(ph2->data[i]))*Fratio->data[i];
   }
   /* Hab(0,0)=-cprod(DGs,Fratio.*DGs)/2+cprod(DGs,ph2.*conj(DGs))/2 +cnorm2(DGs); */
@@ -548,10 +565,12 @@ int hesLtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGns,
   return 0;
 }
 
-int gradLtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGns,sp_cmatrix * F0,sp_vector * tau,sp_vector * dtau){
+int gradLtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGns,Image * F0,sp_vector * tau,sp_vector * dtau){
 
-  Complex Gm,Gab;
+  complex double Gm,Gab;
   int i;
+  complex double dtau0 = 0;
+  complex double dtau1 = 0;
   dtau->data[0] = 0;
   dtau->data[1] = 0;
     /* Gab = Gs+Gns+tau(0)*DGs+tau(1)*DGns */
@@ -562,24 +581,36 @@ int gradLtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGns
   */
   if(!tau){
     for(i = 0;i<sp_cmatrix_size(DGs);i++){
-      Gab = Gs->data[i]+Gns->data[i];
-      Gm =F0->data[i]*Gab/cabsr(Gab);
-      dtau->data[0] -= DGs->data[i]*conjr(Gm-Gab);
-      dtau->data[1] -= DGns->data[i]*conjr(Gm);
+      Gab = (complex double)Gs->data[i]+Gns->data[i];
+      assert(cabsr(Gab) != 0);
+      if(F0->mask->data[i]){
+	Gm =F0->image->data[i]*Gab/cabsr(Gab);
+      }else{
+	Gm = Gab;
+      }
+      dtau0 -= DGs->data[i]*conjr(Gm-Gab);
+      dtau1 -= DGns->data[i]*conjr(Gm);
     }
   }else{
     for(i = 0;i<sp_cmatrix_size(DGs);i++){
-      Gab = Gs->data[i]+Gns->data[i]+tau->data[0]*DGs->data[i]+tau->data[1]*DGns->data[i];
-      Gm =F0->data[i]*Gab/cabsr(Gab);
-      dtau->data[0] -= DGs->data[i]*conjr(Gm-Gab);
-      dtau->data[1] -= DGns->data[i]*conjr(Gm);
+      Gab = (complex double)Gs->data[i]+Gns->data[i]+tau->data[0]*(complex double)DGs->data[i]+tau->data[1]*DGns->data[i];
+      assert(cabsr(Gab) != 0);
+      if(F0->mask->data[i]){
+	Gm =F0->image->data[i]*Gab/cabsr(Gab);
+      }else{
+	Gm = Gab;
+      }
+      dtau0 -= DGs->data[i]*conjr(Gm-Gab);
+      dtau1 -= DGns->data[i]*conjr(Gm);
     }
   }
+  dtau->data[0] = dtau0;
+  dtau->data[1] = dtau1;
   return 0;
 }
 
 
-void gradLrho(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * S,sp_cmatrix * F0,real * w, sp_cmatrix * DGs, sp_cmatrix * DGns){
+void gradLrho(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * S,Image * F0,real * w, sp_cmatrix * DGs, sp_cmatrix * DGns){
 /*
   %[DGs,DGns]=gradLrho(Gs,Gns,S,F0,w);
   %
@@ -602,7 +633,12 @@ void gradLrho(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * S,sp_cmatrix * F0,re
   int i;
   real norm = 1.0/sp_cmatrix_size(Gs);
   for(i = 0;i<sp_cmatrix_size(Gs);i++){
-    Gm->data[i] = (Gs->data[i]+Gns->data[i])/cabs(Gs->data[i]+Gns->data[i])*F0->data[i];
+    assert(cabs(Gs->data[i]+Gns->data[i]) != 0);
+    if(F0->mask->data[i]){
+      Gm->data[i] = (Gs->data[i]+Gns->data[i])/cabs(Gs->data[i]+Gns->data[i])*F0->image->data[i];
+    }else{
+      Gm->data[i] = (Gs->data[i]+Gns->data[i]);
+    }
   }
 /*  Gm = sp_proj_module(tmp,F0);*/
 
@@ -640,7 +676,7 @@ void gradLrho(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * S,sp_cmatrix * F0,re
   sp_cmatrix_free(Gm);
 }
 
-int minmaxtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGns,sp_cmatrix * F0,real TolY,int maxiter, sp_vector * tau, sp_matrix * Hi){
+int minmaxtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGns,Image * F0,real TolY,int maxiter, sp_vector * tau, sp_matrix * Hi){
   static sp_vector * tauav = NULL;
   static sp_matrix * Hiav = NULL;
   static int nav = 0;
@@ -740,7 +776,7 @@ int minmaxtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGn
   /* smallest step limit */
   minmaxstep=.1;                                      
   /* maximum  step limit */
-  fixmaxstep=1;                                       
+  fixmaxstep=1;
 
   for(ii = 0;ii<maxiter;ii++){
     sp_vector_memcpy(dtauold,dtau);
@@ -769,7 +805,8 @@ int minmaxtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGn
 #ifdef DEBUG_SPO
       printf("Trying newton with line search\n");
 #endif
-
+      
+      jj = 0;
       for(i = 0;i<ii;i++){
 	r = sqrt(sp_matrix_get(dtaui,0,i)*sp_matrix_get(dtaui,0,i)+sp_matrix_get(dtaui,1,i)*sp_matrix_get(dtaui,1,i));
 	if(r < mintaultmp || !mintaultmp){
@@ -798,6 +835,13 @@ int minmaxtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGn
     sp_vector_scale(tau_plus_step,x);
     sp_vector_add(tau_plus_step,tau);    
     gradLtau(Gs,Gns,DGs,DGns,F0,tau_plus_step,dtau); /* new gradient */
+    if(dtau->data[0]-dtauold->data[0] == 0 && dtau->data[1]-dtauold->data[1] == 0){
+      /* we're not moving, lets get out */
+      ii = maxiter;
+      break;
+    }
+    assert(dtau->data[0]-dtauold->data[0] != 0 || dtau->data[1]-dtauold->data[1] != 0);
+
     /* dtaui(:,ii+1)=dtau; */
     sp_matrix_set(dtaui,0,ii+1,dtau->data[0]);
     sp_matrix_set(dtaui,1,ii+1,dtau->data[1]);
@@ -833,14 +877,19 @@ int minmaxtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGn
     sp_vector_memcpy(Hi_y_minus_s,Hi_y);
     sp_vector_sub(Hi_y_minus_s,s);    
     /* erquad=sqrt(cnorm2(Hi*y-s)/(cnorm2(s)+cnorm2(Hi*y))); */
+    assert((sp_vector_dot_prod(s,s)+sp_vector_dot_prod(Hi_y,Hi_y)) != 0);
     erquad = sqrt(sp_vector_dot_prod(Hi_y_minus_s,Hi_y_minus_s)/(sp_vector_dot_prod(s,s)+sp_vector_dot_prod(Hi_y,Hi_y)));
+#ifdef DEBUG_SPO
     fprintf(stdout,"ii - %d   erquad - %f\n",ii,erquad); 
+#endif
     if (erquad>1){ /* real hessian */
 #ifdef DEBUG_SPO
       printf("Real Hessian update\n");
 #endif
 
+#ifdef DEBUG_SPO
       fprintf(stdout,"iter=%d, erquad=%lf\n",ii,erquad);
+#endif
       maxstep=sp_max(maxstep/4,minmaxstep);  /* %decrease step size */
       hesLtau(Gs,Gns,DGs,DGns,F0,tau,H,Hi);
       sp_matrix_memcpy(minus_Hi,Hi);
@@ -857,6 +906,7 @@ int minmaxtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGn
       sp_vector_memcpy(s_minus_Hi_y,Hi_y_minus_s);
       sp_vector_scale(s_minus_Hi_y,-1);
       /* this line is *extremely* fishy */
+      assert(sqrt(sp_vector_dot_prod(y,y)*sp_vector_dot_prod(s_minus_Hi_y,s_minus_Hi_y)) != 0);
       erquad1 = fabs(sp_vector_dot_prod(y,s_minus_Hi_y))/sqrt(sp_vector_dot_prod(y,y)*sp_vector_dot_prod(s_minus_Hi_y,s_minus_Hi_y));
 /*      if(ii > 6){
 	fprintf(stdout,"erquad1 - %f\n",erquad);
@@ -867,6 +917,7 @@ int minmaxtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGn
 	/* extrapolate hessian using SR1 method */
 	/* DHi=(s-Hi*y)*(s-Hi*y)'/((s-Hi*y)'*y); */
 	DHi = sp_vector_outer_prod(s_minus_Hi_y,s_minus_Hi_y);
+	assert(sp_vector_dot_prod(s_minus_Hi_y,y) != 0);
 	sp_matrix_scale(DHi,1.0/sp_vector_dot_prod(s_minus_Hi_y,y));
 	/* Hi=Hi+DHi; %see Nocedal & Wright, Num. Opt. Springer 99 */
 	sp_matrix_add(Hi,DHi);
@@ -884,15 +935,21 @@ int minmaxtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGn
     sp_vector_free(Dtau);
   }
 
+#ifdef DEBUG_SPO
   fprintf(stdout,"iter=%d\n",ii);
+#endif
 
   if (ii==maxiter){
     sp_vector_memcpy(tau,taumin);
     dtaul=dtaulmin;
+#ifdef DEBUG_SPO
     fprintf(stdout,"max iterations exceeded, dtaul/dtau0l=%g, TolY=%g \n",dtaul/dtaul0,TolY);
+#endif
 
     if(dtaul/dtaul0>.5){
+#ifdef DEBUG_SPO
       fprintf(stdout,"back to HIO \n");
+#endif
       tau->data[0] =1;
       tau->data[1] = 0.75;
     }

@@ -206,6 +206,8 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
     real_out = basic_cflip_iteration(amp, real_in, support,opts,&log);
   }else if(get_algorithm(opts,&log) == HAAR){
     real_out = basic_haar_iteration(amp, exp_sigma, real_in, support,opts,&log);
+  }else if(get_algorithm(opts,&log) == SO2D){
+    real_out = basic_so2d_iteration(amp, exp_sigma, real_in, support,opts,&log);
   }else{
     fprintf(stderr,"Error: Undefined algorithm!\n");
     exit(-1);
@@ -305,6 +307,8 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
       real_out = basic_cflip_iteration(amp, real_in, support,opts,&log);
     }else if(get_algorithm(opts,&log) == HAAR){     
       real_out = basic_haar_iteration(amp, exp_sigma,real_in, support,opts,&log);
+    }else if(get_algorithm(opts,&log) == SO2D){     
+      real_out = basic_so2d_iteration(amp, exp_sigma,real_in, support,opts,&log);
     }
   }  
 
@@ -407,9 +411,14 @@ int main(int argc, char ** argv){
   write_options_file("uwrapc.confout",opts);
   sp_init_fft(opts->nthreads);
   if(opts->real_image){
-    img= sp_image_fft(opts->real_image);
-    sp_image_dephase(img);
-  }else if(opts->diffraction){
+    opts->diffraction = sp_image_fft(opts->real_image);    
+    for(i = 0;i<sp_image_size(opts->diffraction);i++){
+      opts->diffraction->mask->data[i] = 1;
+    }
+    sp_image_write(opts->real_image,"real_image.png",COLOR_JET);
+    sp_image_dephase(opts->diffraction);
+  }
+  if(opts->diffraction){
     img = sp_image_duplicate(opts->diffraction,SP_COPY_DATA|SP_COPY_MASK);
   }else{
     fprintf(stderr,"Error: either real_image_file or amplitudes_file have to be specified!\n");

@@ -3,7 +3,7 @@
 
 #define VERSION "1.13"
 
-typedef enum{HIO=1,RAAR,HPR,CFLIP,RAAR_CFLIP,HAAR} Phasing_Algorithms;
+typedef enum{HIO=1,RAAR,HPR,CFLIP,RAAR_CFLIP,HAAR,SO2D} Phasing_Algorithms;
 
 
 

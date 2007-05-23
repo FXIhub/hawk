@@ -201,6 +201,8 @@ void read_options_file(char * filename, Options * res){
       res->algorithm = RAAR_CFLIP;
     }else if(strcmp(tmp,"HAAR") == 0|| strcmp(tmp,"haar") == 0){
       res->algorithm = HAAR;
+    }else if(strcmp(tmp,"SO2D") == 0|| strcmp(tmp,"so2d") == 0){
+      res->algorithm = SO2D;
     }else{
       fprintf(stderr,"Warning: Unrecongnized algorithm \"%s\". Using default.\n",tmp);
     }    
@@ -340,6 +342,10 @@ void write_options_file(char * filename, Options * res){
     config_setting_set_string(s,"CFLIP");
   }else if(res->algorithm == RAAR_CFLIP){
     config_setting_set_string(s,"RAAR_CFLIP");
+  }else if(res->algorithm == HAAR){
+    config_setting_set_string(s,"HAAR");
+  }else if(res->algorithm == SO2D){
+    config_setting_set_string(s,"SO2D");
   }
   s = config_setting_add(root,"blur_radius_reduction_method",CONFIG_TYPE_STRING);
   if(res->blur_radius_reduction_method == GAUSSIAN_BLUR_REDUCTION){

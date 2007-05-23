@@ -4,6 +4,7 @@
 #include "configuration.h"
 #include "algorithms.h"
 #include "support.h"
+#include "saddle/minmaxL.h"
 
 int real_compare(const void * a, const void * b){
   if((*(real *)a) <(*(real *)b)){
@@ -537,4 +538,51 @@ Image * basic_haar_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in
   ret = Q_operator(x,y,z);
   sp_image_free(z);
   return ret;
+}
+
+Image * basic_so2d_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in, Image * support, 
+			     Options * opts, Log * log){
+  static sp_matrix * Hab = NULL;
+  static Image * DGs0 = NULL;
+  static Image * DGns0 = NULL;
+  static Image * Gs = NULL;
+  static Image * Gns = NULL;
+  if(!Hab){
+    Hab = sp_matrix_alloc(2,2);
+  }
+  if(!DGs0){
+    DGs0 = sp_image_duplicate(real_in,SP_COPY_DETECTOR);
+    DGns0 = sp_image_duplicate(real_in,SP_COPY_DETECTOR);    
+  }
+  if(!Gs){
+    Image * gs = sp_image_duplicate(real_in,SP_COPY_DETECTOR);
+    Image * gns = sp_image_duplicate(real_in,SP_COPY_DETECTOR);
+    for(int i = 0;i< sp_image_size(real_in);i++){
+      if(support->image->data[i]){
+	gs->image->data[i] = real_in->image->data[i];
+	gns->image->data[i] = 0;
+      }else{
+	gs->image->data[i] = 0;
+	gns->image->data[i] = real_in->image->data[i];
+      }
+    }
+    Gs = sp_image_fft(gs);
+    Gns = sp_image_fft(gns);    
+    sp_image_free(gs);
+    sp_image_free(gns);
+  }
+  Image * fft_in = sp_image_duplicate(Gs,SP_COPY_DATA);
+  sp_image_add(fft_in,Gns);
+
+  minmaxL(Gs,Gns,exp_amp,support,1,1,DGs0,DGns0,Hab);
+
+  sp_image_add(Gs,Gns);
+  Image * real_out = sp_image_ifft(Gs);
+  sp_image_scale(real_out,1.0/sp_image_size(real_out));
+  sp_image_sub(Gs,Gns);
+  if(opts->cur_iteration%opts->log_output_period == opts->log_output_period-1){
+    output_to_log(exp_amp,real_in, real_out, fft_in,support, opts,log);
+  }
+  sp_image_free(fft_in);
+  return real_out;
 }

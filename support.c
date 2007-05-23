@@ -87,7 +87,7 @@ Image * get_support_from_patterson(Image * input, Options * opts){
   /* Apply oversampling square mask */
   if(opts->square_mask){
     for(i = 0;i<sp_image_size(patterson);i++){
-      if(sp_image_dist(patterson,i,SP_TO_CENTER) > sp_image_width(patterson)/4){
+      if(sp_image_dist(patterson,i,SP_TO_CENTER2) > sp_image_width(patterson)/4){
 	patterson->image->data[i] = 0;
       }
     }

@@ -23,7 +23,7 @@
  * Returns 0 if successful or a negative error number otherwise
  *
  */
-int minmaxtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGns,sp_cmatrix * F0,real TolY,int maxiter, sp_vector * tau, sp_matrix * Hi);
+int minmaxtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGns,Image * F0,real TolY,int maxiter, sp_vector * tau, sp_matrix * Hi);
 
 
 /*! calculate the gradient (|d/da |,|d/db |)      L(Gs+Gns+a*DGs+b+DGns)
@@ -40,7 +40,7 @@ int minmaxtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGn
  * dtau[1]=<DGns|[Ps-Pm] (Gs+Gns+a*DGs+b*DGns)>
  *
  */
-int gradLtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGns,sp_cmatrix * F0,sp_vector * tau,sp_vector * dtau);
+int gradLtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGns,Image * F0,sp_vector * tau,sp_vector * dtau);
 
 /*! Calculate the hessian of L(Gs+Gns+a*DGs+b+DGns)
  *  
@@ -63,7 +63,7 @@ int gradLtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGns
  */
 
 
-int hesLtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGns,sp_cmatrix * F0,sp_vector * tau,sp_matrix * Hab, sp_matrix * Habi);
+int hesLtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGns,Image * F0,sp_vector * tau,sp_matrix * Hab, sp_matrix * Habi);
 
 
 /*! calculate step (gradient with one sign reversal),
@@ -78,5 +78,5 @@ int hesLtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGns,
  *  % DGs          step    inside   "       =Ps (Pm-I)
  *  % DGns         step    outside  "       =-Pns Pm G
 */
-void gradLrho(sp_cmatrix *Gs,sp_cmatrix * Gns,sp_cmatrix * S,sp_cmatrix * F0,real * w,  sp_cmatrix * DGs, sp_cmatrix * DGns);
+void gradLrho(sp_cmatrix *Gs,sp_cmatrix * Gns,sp_cmatrix * S,Image * F0,real * w,  sp_cmatrix * DGs, sp_cmatrix * DGns);
 #endif
