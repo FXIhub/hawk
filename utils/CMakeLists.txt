@@ -21,7 +21,7 @@ ADD_EXECUTABLE(denoise denoise.c)
 ADD_EXECUTABLE(background_subtract background_subtract.c)
 #ADD_EXECUTABLE(h5tospeden h5tospeden.c ${PORTS})
 #ADD_EXECUTABLE(separate_channel separate_channel.c ${PORTS})
-#ADD_EXECUTABLE(matrix2image matrix2image.c ${PORTS})
+ADD_EXECUTABLE(matrix2image matrix2image.c ${PORTS})
 #ADD_EXECUTABLE(fft_bench fft_bench.c)
 #ADD_EXECUTABLE(combine_images combine_images.c)
 #ADD_EXECUTABLE(manual_merge manual_merge.c)
@@ -48,7 +48,7 @@ TARGET_LINK_LIBRARIES(gif2h5image ${LIBRARY_LIST} )
 TARGET_LINK_LIBRARIES(autocorrelate ${LIBRARY_LIST} )
 #TARGET_LINK_LIBRARIES(h5tospeden ${LIBRARY_LIST} )
 #TARGET_LINK_LIBRARIES(separate_channel ${LIBRARY_LIST})
-#TARGET_LINK_LIBRARIES(matrix2image ${LIBRARY_LIST})
+TARGET_LINK_LIBRARIES(matrix2image ${LIBRARY_LIST})
 #TARGET_LINK_LIBRARIES(fft_bench ${LIBRARY_LIST})
 #TARGET_LINK_LIBRARIES(combine_images ${LIBRARY_LIST})
 #TARGET_LINK_LIBRARIES(manual_merge ${LIBRARY_LIST})
@@ -64,7 +64,7 @@ TARGET_LINK_LIBRARIES(propagate ${LIBRARY_LIST})
 #TARGET_LINK_LIBRARIES(stretch ${LIBRARY_LIST})
 
 INSTALL(TARGETS tiff2h5 image_to_vtk gif2h5image
-	image_to_png png_to_image tiff2png autocorrelate prtf denoise background_subtract propagate
+	image_to_png png_to_image tiff2png autocorrelate prtf denoise background_subtract propagate matrix2image
             RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
             LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
             ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)

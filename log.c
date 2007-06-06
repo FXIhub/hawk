@@ -84,6 +84,7 @@ void output_to_log(Image * exp_amp,Image * real_in, Image * real_out, Image * fo
     fprintf(opts->flog,"@ s9 legend \"dSupSize \\N\"\n");
     fprintf(opts->flog,"@ s10 legend \"Blur Radius \\N\"\n");
     fprintf(opts->flog,"@ s11 legend \"Int Cum Fluct \\N\"\n");
+    fprintf(opts->flog,"@ s12 legend \"Object Area \\N\"\n");
 
   }
   for(i = 0;i<sp_cmatrix_size(exp_amp->image);i++){
@@ -128,9 +129,9 @@ void output_to_log(Image * exp_amp,Image * real_in, Image * real_out, Image * fo
 
   log->dEreal += log->Ereal_run_avg;
   log->dSupSize += log->SupSize_run_avg;
-  fprintf(opts->flog,"%d\t%d\t%f\t%f\t%f\t%f\t%f\t%f\t%d\t%f\t%f\t%f\t%f\n",iter,it_outer,
+  fprintf(opts->flog,"%d\t%d\t%f\t%f\t%f\t%f\t%f\t%f\t%d\t%f\t%f\t%f\t%f\t%f\n",iter,it_outer,
 	  Ereal,Efourier,FcFo,SupSize,get_beta(opts),log->threshold,get_algorithm(opts,log),
-	  log->dEreal,log->dSupSize,get_blur_radius(opts),log->int_cum_fluctuation);
+	  log->dEreal,log->dSupSize,get_blur_radius(opts),log->int_cum_fluctuation,get_object_area(opts));
   fflush(opts->flog);
 
   if(Ereal < opts->real_error_tolerance){

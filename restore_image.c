@@ -57,8 +57,105 @@
    This allows us to have an idea of the error in each pixel. If the error
    is very large, we can consider the pixel tainted and mask it out.
 */
-Image * estimate_error(Image * intensities, Image * support, Options * opts){
+
+
+Image * restore_hio_iteration(Image * exp_amp, Image * real_in, Image * support, 
+			    Options * opts, Log * log){
+  Image * real_out;
+  Image * fft_out;
+  Image * pattern;
+  int i;
+  int size = sp_cmatrix_size(real_in->image);
+  real beta = get_beta(opts);
+  fft_out = sp_image_fft(real_in);
   
+  
+  pattern = sp_image_duplicate(exp_amp,SP_COPY_DATA|SP_COPY_MASK);
+
+  sp_image_rephase(pattern,SP_ZERO_PHASE);
+
+  for(i = 0;i<sp_cmatrix_size(exp_amp->image);i++){
+    if(!exp_amp->mask->data[i]){
+      /*
+	use the calculated amplitudes for the places
+	masked out
+      */
+      /* Pattern must always be real */
+      pattern->image->data[i] = cabs(fft_out->image->data[i]);
+    }
+  }
+  real_out = sp_image_ifft(pattern);
+  for(i = 0;i<sp_cmatrix_size(real_out->image);i++){
+    /* normalize */
+    real_out->image->data[i] /= size;
+  }
+  for(i = 0;i<sp_cmatrix_size(real_out->image);i++){
+    /* Treat points outside support*/
+    if(!support->image->data[i]){
+      real_out->image->data[i] = (real_in->image->data[i] - beta*real_out->image->data[i]) ;      
+    }
+  }
+  if(opts->cur_iteration%opts->log_output_period == opts->log_output_period-1){
+    output_to_log(exp_amp,real_in, real_out, fft_out,support, opts,log);
+  }
+  sp_image_free(pattern);
+  sp_image_free(fft_out);
+  return real_out;
+}
+
+Image * restore_raar_iteration(Image * exp_amp, Image * real_in, Image * support, 
+			     Options * opts, Log * log){
+  Image * real_out;
+
+  Image * fft_out;
+  Image * fft_in;
+  int i;
+  real beta = get_beta(opts);
+  real one_minus_2_beta = 1.0-2*beta;
+  fft_out = sp_image_fft(real_in);
+  fft_in = sp_image_duplicate(fft_out,SP_COPY_DATA|SP_COPY_MASK);
+
+  for(i = 0;i<sp_cmatrix_size(exp_amp->image);i++){
+    if(exp_amp->mask->data[i]){
+      fft_out->image->data[i] = exp_amp->image->data[i];
+    }else{
+      fft_out->image->data[i] = cabs(fft_out->image->data[i]);
+    }
+  }
+  real_out = sp_image_ifft(fft_out);
+
+  /* normalize */
+  sp_image_scale(real_out,1.0/sp_image_size(real_out));
+
+  for(i = 0;i<sp_cmatrix_size(real_out->image);i++){
+    /* A bit of documentation about the equation:
+
+     Rs = 2*Ps-I; Rm = 2*Pm-I
+
+     RAAR = 1/2 * beta * (RsRm + I) + (1 - beta) * Pm;    
+     RAAR = 2*beta*Ps*Pm+(1-2*beta)*Pm - beta * (Ps-I)
+
+     Which reduces to:
+
+     Inside the support: Pm
+     Outside the support: (1 - 2*beta)*Pm + beta*I
+     
+    */    
+    if(!support->image->data[i]){
+      real_out->image->data[i] = (one_minus_2_beta)*real_out->image->data[i]+beta*(real_in->image->data[i]);      
+    }
+  }
+
+  if(opts->cur_iteration%opts->log_output_period == opts->log_output_period-1){
+    output_to_log(exp_amp,real_in, real_out, fft_in,support, opts,log);
+  }
+  sp_image_free(fft_out);
+  sp_image_free(fft_in);
+  return real_out;
+}
+
+
+Image * estimate_error(Image * intensities, Image * support, Options * opts){  
 }
 
 /* continue a reconstruction on this directory */
@@ -190,9 +287,9 @@ void complete_restoration(Image * amp, Image * initial_support, Options * opts, 
   sp_image_write(initial_support,"initial_support.png",COLOR_JET);
 
   if(get_algorithm(opts,&log) == HIO){     
-    real_out = basic_hio_iteration(amp, real_in, support,opts,&log);
+    real_out = restore_hio_iteration(amp, real_in, support,opts,&log);
   }else if(get_algorithm(opts,&log) == RAAR){
-    real_out = basic_raar_iteration(amp,NULL, real_in, support,opts,&log);
+    real_out = restore_raar_iteration(amp, real_in, support,opts,&log);
   }else if(get_algorithm(opts,&log) == HPR){
     real_out = basic_hpr_iteration(amp, real_in, support,opts,&log);
   }else if(get_algorithm(opts,&log) == CFLIP){
@@ -204,14 +301,9 @@ void complete_restoration(Image * amp, Image * initial_support, Options * opts, 
 
   radius = opts->max_blur_radius;
     
-  for(;!opts->reconstruction_finished && opts->cur_iteration < opts->max_iterations;opts->cur_iteration++){
+  for(;!opts->reconstruction_finished && (!opts->max_iterations ||opts->cur_iteration < opts->max_iterations);opts->cur_iteration++){
 
     if(opts->iterations && opts->cur_iteration%opts->iterations == opts->iterations-1){
-      for(i = 0;i<opts->error_reduction_iterations_after_loop;i++){
-	sp_image_free(real_in);
-	real_in = real_out;
-	real_out = basic_error_reduction_iteration(amp, real_in, support,opts,&log);
-      }
       sp_image_free(prev_support);
       prev_support = sp_image_duplicate(support,SP_COPY_DATA|SP_COPY_MASK);
       sp_image_free(support);      
@@ -278,9 +370,9 @@ void complete_restoration(Image * amp, Image * initial_support, Options * opts, 
     sp_image_free(real_in);
     real_in = real_out;
     if(get_algorithm(opts,&log) == HIO){     
-      real_out = basic_hio_iteration(amp, real_in, support,opts,&log);
+      real_out = restore_hio_iteration(amp, real_in, support,opts,&log);
     }else if(get_algorithm(opts,&log) == RAAR){     
-      real_out = basic_raar_iteration(amp,NULL, real_in, support,opts,&log);
+      real_out = restore_raar_iteration(amp, real_in, support,opts,&log);
     }else if(get_algorithm(opts,&log) == HPR){     
       real_out = basic_hpr_iteration(amp, real_in, support,opts,&log);
     }else if(get_algorithm(opts,&log) == CFLIP){     
@@ -314,7 +406,6 @@ void complete_restoration(Image * amp, Image * initial_support, Options * opts, 
 #else
   chdir(dir);
 #endif
-  fclose(opts->flog);
 }
 
 
@@ -354,7 +445,11 @@ int main(int argc, char ** argv){
   sp_image_write(img,"intensities.png",COLOR_JET);
 
   if(!opts->init_support){
-    opts->init_support = get_support_from_patterson(img,opts);
+    sp_image_rephase(img,SP_ZERO_PHASE);
+    opts->init_support = sp_image_ifft(img);
+    opts->init_support = get_updated_support(opts->init_support,get_support_level(opts->init_support,NULL,get_blur_radius(opts),NULL,opts),get_blur_radius(opts),opts);
+/*    opts->image_guess = sp_image_ifft(img);
+    sp_image_scale(opts->image_guess,1.0/sp_image_size(opts->init_support));*/
   }
 
      
@@ -363,7 +458,7 @@ int main(int argc, char ** argv){
   }
 
   for(i = 0;i<sp_cmatrix_size(opts->init_support->image);i++){
-    if(opts->init_support->image->data[i]){
+    if(opts->init_support->image->data[i] ){
       opts->init_support->image->data[i] = 1;
     }
   }

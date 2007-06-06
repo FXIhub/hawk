@@ -151,7 +151,7 @@ int main(int argc, char ** argv){
   Image * tmp;
   int i;
   char buffer[1024];
-  img = read_imagefile(argv[1]);
+  img = sp_read_image(argv[1]);
   dephase(img);
 
   ac = cross_correlate_img(img,img,NULL);

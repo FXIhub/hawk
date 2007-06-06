@@ -7,7 +7,7 @@ typedef enum{HIO=1,RAAR,HPR,CFLIP,RAAR_CFLIP,HAAR,SO2D} Phasing_Algorithms;
 
 
 
-typedef enum{FIXED=1,STEPPED,REAL_ERROR_CAPPED,REAL_ERROR_ADAPTATIVE,CONSTANT_AREA} Support_Update_Algorithms;
+typedef enum{FIXED=1,STEPPED,REAL_ERROR_CAPPED,REAL_ERROR_ADAPTATIVE,CONSTANT_AREA,DECREASING_AREA} Support_Update_Algorithms;
 
 
 typedef enum{GAUSSIAN_BLUR_REDUCTION=1,GEOMETRICAL_BLUR_REDUCTION} Blur_Reduction_Method;
@@ -71,6 +71,8 @@ typedef struct {
   real object_area;
   int image_blur_period;
   real image_blur_radius;
+  int iterations_to_min_object_area;
+  real min_object_area;
 }Options;
 
 void read_options_file(char * filename, Options * opt);
@@ -79,5 +81,6 @@ Options * set_defaults(void);
 void write_options_file(char * filename, Options * res);
 real get_beta(Options * opts);
 real get_blur_radius(Options * opts);
+real get_object_area(Options * opts);
 
 #endif

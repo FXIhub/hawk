@@ -287,7 +287,7 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
       sprintf(buffer,"pattern-%07d.h5",opts->cur_iteration);
       sp_image_write(tmp,buffer,opts->output_precision);
       sprintf(buffer,"pattern-%07d.png",opts->cur_iteration);
-      sp_image_write(tmp,buffer,COLOR_JET);
+      sp_image_write(tmp,buffer,COLOR_JET|LOG_SCALE);
       sp_image_free(tmp);
 
     }    
@@ -420,6 +420,8 @@ int main(int argc, char ** argv){
   }
   if(opts->diffraction){
     img = sp_image_duplicate(opts->diffraction,SP_COPY_DATA|SP_COPY_MASK);
+    sp_image_dephase(opts->diffraction);
+    sp_image_to_amplitudes(img);
   }else{
     fprintf(stderr,"Error: either real_image_file or amplitudes_file have to be specified!\n");
     exit(1);

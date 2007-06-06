@@ -10,25 +10,15 @@ Image * read_matrix(char * filename, int x, int y){
   FILE * f = fopen(filename,"r");
   unsigned int bufsiz = 100000;
   char * buffer = malloc(sizeof(char)*bufsiz);
-  real * matrix = malloc(sizeof(real)*x*y);
   char *nptr,*endptr;
   int i = 0;
-  Image * res = malloc(sizeof(Image));
+  Image * res = sp_image_alloc(x,y);
   res->phased = 0;
   res->scaled = 0;
-  res->image = matrix;
-  res->intensities = matrix;
-  res->amplitudes = NULL;
-  res->r = NULL;
-  res->c = NULL;
-  res->mask = malloc(sizeof(real)*x*y);
   for(i =0 ;i<x*y;i++){
-    res->mask[i] = 1;
+    res->mask->data[i] = 1;
   }
-  res->detector = malloc(sizeof(Detector));
   res->shifted = 0;
-  res->detector->size[0] = x;
-  res->detector->size[1] = y;
   res->detector->image_center[0] = 0;
   res->detector->image_center[1] = 0;
   res->detector->lambda = -1;
@@ -47,7 +37,7 @@ Image * read_matrix(char * filename, int x, int y){
     nptr = buffer;
     endptr = NULL;
     while(1){
-      matrix[i++] = strtod(nptr,&endptr);
+      res->image->data[i++] = strtod(nptr,&endptr);
       if(nptr == endptr){
 	i--;
 	break;
@@ -73,6 +63,6 @@ int main(int argc, char ** argv){
     exit(0);
   }
   res = read_matrix(argv[1],atoi(argv[2]),atoi(argv[3]));
-  write_img(res,argv[4],sizeof(real));  
+  sp_image_write(res,argv[4],sizeof(real));  
   return 0;
 }

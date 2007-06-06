@@ -3,6 +3,8 @@
 
 #define RUN_AVG_LEN 500
 
+#include "configuration.h"
+
 typedef struct{
   real Ereal;
   real Efourier;
@@ -23,5 +25,6 @@ typedef struct{
 
 
 void init_log(Log * log);
+void output_to_log(Image * exp_amp,Image * real_in, Image * real_out, Image * fourier_out,Image * support, Options * opts,Log * log);
 
 #endif

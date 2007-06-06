@@ -57,6 +57,8 @@ Options * set_defaults(){
   opt->patterson_level_algorithm = FIXED;
   opt->image_blur_radius = 0.0;
   opt->image_blur_period = 0;
+  opt->min_object_area = 0;
+  opt->iterations_to_min_object_area = 0;
   return opt;
 }
 
@@ -148,6 +150,17 @@ void read_options_file(char * filename, Options * res){
       res->support_update_algorithm = CONSTANT_AREA;
       if(config_lookup(&config,"object_area")){
 	res->object_area = config_lookup_float(&config,"object_area");
+      }
+    }else if(strcmp(tmp,"decreasing_area") == 0){
+      res->support_update_algorithm = DECREASING_AREA;
+      if(config_lookup(&config,"object_area")){
+	res->object_area = config_lookup_float(&config,"object_area");
+      }
+      if(config_lookup(&config,"min_object_area")){
+	res->min_object_area = config_lookup_float(&config,"min_object_area");
+      }
+      if(config_lookup(&config,"iterations_to_min_object_area")){
+	res->iterations_to_min_object_area = config_lookup_int(&config,"iterations_to_min_object_area");
       }
     }else{
       fprintf(stderr,"Warning: Unrecongnized support update algorithm \"%s\". Using default.\n",tmp);
@@ -385,6 +398,8 @@ void write_options_file(char * filename, Options * res){
     config_setting_set_string(s,"real_error_adaptative");
   }else if(res->support_update_algorithm == CONSTANT_AREA){
     config_setting_set_string(s,"constant_area");
+  }else if(res->support_update_algorithm == DECREASING_AREA){
+    config_setting_set_string(s,"decreasing_area");
   }
 
   s = config_setting_add(root,"support_real_error_threshold",CONFIG_TYPE_FLOAT);
@@ -441,6 +456,13 @@ void write_options_file(char * filename, Options * res){
   s = config_setting_add(root,"image_blur_radius",CONFIG_TYPE_FLOAT);
   config_setting_set_float(s,res->image_blur_radius);
 
+
+  s = config_setting_add(root,"min_object_area",CONFIG_TYPE_FLOAT);
+  config_setting_set_float(s,res->min_object_area);
+
+  s = config_setting_add(root,"iterations_to_min_object_area",CONFIG_TYPE_INT);
+  config_setting_set_int(s,res->iterations_to_min_object_area);
+
   config_write_file(&config,filename);
 }
 
@@ -464,6 +486,18 @@ real get_blur_radius(Options * opts){
     return opts->max_blur_radius*pow(a,opts->cur_iteration);
   }else{
     abort();
+  }
+  return -1;
+}
+
+
+real get_object_area(Options * opts){
+  real a;
+  if(opts->support_update_algorithm == CONSTANT_AREA){
+    return opts->object_area;
+  }else if(opts->support_update_algorithm == DECREASING_AREA){
+    a = (3.0*opts->cur_iteration/opts->iterations_to_min_object_area)*(3.0*opts->cur_iteration/opts->iterations_to_min_object_area)*0.5;
+    return (opts->object_area-opts->min_object_area)*exp(-a)+opts->min_object_area;
   }
   return -1;
 }
