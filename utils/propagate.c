@@ -84,12 +84,12 @@ Image * get_fresnel_propagator(Image * in, real delta_z){
   int x,y;
   /* physical location of pixel*/
   real px,py;
-  nx = sp_image_width(in);
-  ny = sp_image_height(in);
+  nx = sp_image_x(in);
+  ny = sp_image_y(in);
   real lambda = in->detector->lambda;
 
-  real det_width = in->detector->pixel_size * sp_image_width(in);
-  real det_height = in->detector->pixel_size * sp_image_height(in);
+  real det_width = in->detector->pixel_size[0] * sp_image_x(in);
+  real det_height = in->detector->pixel_size[1] * sp_image_y(in);
 
   for(x = 0;x<nx;x++){
     for(y = 0;y<ny;y++){
@@ -103,14 +103,29 @@ Image * get_fresnel_propagator(Image * in, real delta_z){
       */
       px = ((x-in->detector->image_center[0])/nx)*det_width;
       py = ((in->detector->image_center[1]-y)/ny)*det_height;
-      sp_image_set(res,x,y,cexp(-(I*M_PI/(delta_z*lambda))*(px*px+py*py)));
+      sp_image_set(res,x,y,0,cexp(-(I*M_PI/(delta_z*lambda))*(px*px+py*py)));
     }
   }
   return res;
 }
 
 
-Image * get_fourier_fresnel_propagator(Image * in,sp_matrix * k_x, sp_matrix *k_y, real delta_z){
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Image * get_fourier_fresnel_propagator(Image * in,sp_3matrix * k_x, sp_3matrix *k_y, real delta_z){
   Image * res = sp_image_duplicate(in,SP_COPY_DATA|SP_COPY_MASK);
   Image * tmp;
   /* number of pixels */
@@ -121,15 +136,15 @@ Image * get_fourier_fresnel_propagator(Image * in,sp_matrix * k_x, sp_matrix *k_
   real lambda = in->detector->lambda;
   real k_x2;
   real k_y2;
-  nx = sp_image_width(in);
-  ny = sp_image_height(in);
+  nx = sp_image_x(in);
+  ny = sp_image_y(in);
   for(x = 0;x<nx;x++){
     for(y = 0;y<ny;y++){
-      k_x2 = sp_matrix_get(k_x,x,y);
+      k_x2 = sp_3matrix_get(k_x,x,y,0);
       k_x2 *= k_x2;
-      k_y2 = sp_matrix_get(k_y,x,y);
+      k_y2 = sp_3matrix_get(k_y,x,y,0);
       k_y2 *= k_y2;
-      sp_image_set(res,x,y,cexp((I*delta_z*lambda/(4*M_PI))*(k_x2+k_y2)));
+      sp_image_set(res,x,y,0,cexp((I*delta_z*lambda/(4*M_PI))*(k_x2+k_y2)));
     }
   }
   tmp = sp_image_shift(res);
@@ -145,7 +160,7 @@ int main(int argc, char ** argv){
   Options * opts;  
   char buffer[1024] = "";
   char buffer2[1024] = "";
-  sp_matrix *k_x,*k_y;
+  sp_3matrix *k_x,*k_y;
   FILE * f;
   opts = malloc(sizeof(Options));
   set_defaults(opts);
@@ -174,17 +189,20 @@ int main(int argc, char ** argv){
 
   img = sp_image_read(opts->input,0);
 
-  k_x = sp_matrix_alloc(sp_image_width(img),sp_image_height(img));
-  k_y = sp_matrix_alloc(sp_image_width(img),sp_image_height(img));
+  k_x = sp_3matrix_alloc(sp_image_x(img),sp_image_y(img),0);
+  k_y = sp_3matrix_alloc(sp_image_x(img),sp_image_y(img),0);
   
   /* Make sure to set the image properties */
   /* convet all to meters */
   
   img->detector->detector_distance = opts->distance/1.0e3;
   img->detector->lambda = opts->lambda/1.0e9;
-  img->detector->pixel_size = opts->pixel_size/1.0e6;
-  img->detector->image_center[0] = (sp_image_width(img)-1.0)/2.0;
-  img->detector->image_center[1] = (sp_image_height(img)-1.0)/2.0;
+  img->detector->pixel_size[0] = opts->pixel_size/1.0e6;
+  img->detector->pixel_size[1] = opts->pixel_size/1.0e6;
+  img->detector->pixel_size[2] = opts->pixel_size/1.0e6;
+  img->detector->image_center[0] = (sp_image_x(img)-1.0)/2.0;
+  img->detector->image_center[1] = (sp_image_y(img)-1.0)/2.0;
+  img->detector->image_center[2] = (sp_image_z(img)-1.0)/2.0;
   
   sp_image_fourier_coords(img,k_x,k_y,NULL);
   

@@ -9,36 +9,46 @@
 
 real phase_error(Image * a, Image * b){
   real error = 0;
-  int i;
+  long long i;
   for(i = 0;i<sp_image_size(a);i++){
     error += fabs(cargr(a->image->data[i])-cargr(b->image->data[i]));
   }
   return error/sp_image_size(a);
 }
 
-void fourier_translation(Image * a, real t_x, real t_y){
+void fourier_translation(Image * a, real t_x, real t_y, real t_z){
   /* fourier frequency x*/
   int f_x;
   /* fourier frequency y*/
   int f_y;
-  int i = 0;
-  real nx_inv = 1.0/sp_image_width(a);
-  real ny_inv = 1.0/sp_image_height(a);
-  int x,y;
+  /* fourier frequency z*/
+  int f_z;
+  long long i = 0;
+  real nx_inv = 1.0/sp_image_x(a);
+  real ny_inv = 1.0/sp_image_y(a);
+  real nz_inv = 1.0/sp_image_z(a);
+  int x,y,z;
   real two_pi = 2*M_PI;
-  for(x = 0;x<sp_image_width(a);x++){    
-    if(x < sp_image_width(a)/2){
-      f_x = x;
+  for(z = 0;z<sp_image_z(a);z++){    
+    if(z < sp_image_z(a)/2){
+      f_z = z;
     }else{
-      f_x = -(sp_image_width(a)-x);
+      f_z = -(sp_image_z(a)-z);
     }
-    for(y = 0;y<sp_image_height(a);y++){
-      if(y < sp_image_height(a)/2){
+    for(y = 0;y<sp_image_y(a);y++){
+      if(y < sp_image_y(a)/2){
 	f_y = y;
       }else{
-	f_y = -(sp_image_height(a)-y);
+	f_y = -(sp_image_y(a)-y);
       }
-      a->image->data[i++] *= cexp(-I * f_x * t_x * nx_inv * two_pi) * cexp(-I * f_y * t_y * ny_inv * two_pi);
+      for(x = 0;x<sp_image_x(a);x++){
+	if(x < sp_image_x(a)/2){
+	  f_x = x;
+	}else{
+	  f_x = -(sp_image_x(a)-x);
+	}
+	a->image->data[i++] *= cexp(-I * f_x * t_x * nx_inv * two_pi) * cexp(-I * f_y * t_y * ny_inv * two_pi) * cexp(-I * f_z * t_z * nz_inv * two_pi);
+      }
     }
   }
 }
@@ -49,7 +59,8 @@ void fourier_translation(Image * a, real t_x, real t_y){
    The translation is done in fourier space and both images
    should be in fourier space */
 void maximize_overlap(Image * a, Image * b){
-  int index,x,y;
+  int x,y,z;
+  long long index;
   real t_max,max;
   Image * cc;
   Image * cc2;
@@ -61,39 +72,43 @@ void maximize_overlap(Image * a, Image * b){
 
   sp_image_free(tmp);
 
-  t_max = sp_image_max(cc,&index,&x,&y);
+  t_max = sp_image_max(cc,&index,&x,&y,&z);
   fprintf(stderr,"t_max = %f\n",t_max);
-  max = sp_image_max(cc2,&index,&x,&y);
+  max = sp_image_max(cc2,&index,&x,&y,&z);
   fprintf(stderr,"max = %f\n",max);
   if( max > t_max){
     fprintf(stderr,"Rotating image\n");
     /* Do the flip in real space */
-    sp_image_reflect(tmp2,IN_PLACE,SP_AXIS_XY);
+    sp_image_reflect(tmp2,IN_PLACE,SP_ORIGO);
     tmp =  sp_image_fft(tmp2);
     /* normalize*/
     sp_image_scale(tmp,1.0/sp_image_size(tmp));
     sp_image_memcpy(b,tmp);
     
   }else{
-    max = sp_image_max(cc,&index,&x,&y);
+    max = sp_image_max(cc,&index,&x,&y,&z);
   }
   sp_image_free(tmp2);
 
-  if(x > sp_image_width(cc)/2){
-    x = -(sp_image_width(cc)-x);
+  if(x > sp_image_x(cc)/2){
+    x = -(sp_image_x(cc)-x);
   }
-  if(y > sp_image_height(cc)/2){
-    y = -(sp_image_height(cc)-y);
+  if(y > sp_image_y(cc)/2){
+    y = -(sp_image_y(cc)-y);
+  }
+  if(z > sp_image_z(cc)/2){
+    z = -(sp_image_z(cc)-z);
   }
   sp_image_free(cc);
   sp_image_free(cc2);
-  if(x != 0 || y != 0){
+  if(x != 0 || y != 0 || z != 0){
     if(max > t_max){
       x = -x;
-      y = -y;    
+      y = -y;
+      z = -z;
     }
-    fprintf(stderr,"Translating by %d %d\n",x,y);
-    fourier_translation(b,x,y);
+    fprintf(stderr,"Translating by %d %d %d\n",x,y,z);
+    fourier_translation(b,x,y,z);
   }
 }
 
@@ -104,39 +119,41 @@ void maximize_overlap(Image * a, Image * b){
 void maximize_phase_overlap(Image * a, Image * b){
   real error;
   real min;
-  real x;
-  real y;
+  real x,y,z;
   real min_x = 0;
   real min_y = 0;
+  real min_z = 0;
   Image * tmp;
   min = phase_error(a,b);
-  for(x = -1;x<=1;x+= 1){  
-    for(y = -1;y<=1;y+= 1){  
-      tmp = sp_image_duplicate(b,SP_COPY_DATA|SP_COPY_MASK);
-      fourier_translation(tmp,x,y);
-      error = phase_error(a,tmp);
-      sp_image_free(tmp);
-      printf("Error - %f  x - %f y - %f\n",error,x,y);
-      if(error < min){
-	min = error;
-	min_x = x;
-	min_y = y;	
+  for(x = -1;x<=1;x+= 1){
+    for(y = -1;y<=1;y+= 1){
+      for(z = -1;z<=1;z+= 1){
+	tmp = sp_image_duplicate(b,SP_COPY_DATA|SP_COPY_MASK);
+	fourier_translation(tmp,x,y,z);
+	error = phase_error(a,tmp);
+	sp_image_free(tmp);
+	printf("Error - %f  x - %f y - %f z - %f\n",error,x,y,z);
+	if(error < min){
+	  min = error;
+	  min_x = x;
+	  min_y = y;
+	  min_z = z;
+	}
       }
     }
   }
-  fourier_translation(b,min_x,min_y);
+  fourier_translation(b,min_x,min_y,min_z);
 
-
-  printf("Min Error - %f  x - %f y - %f\n",error,min_x,min_y);
+  printf("Min Error - %f  x - %f y - %f z - %f\n",error,min_x,min_y,min_z);
 }
 
 void rescale_image(Image * a){
   double sum = 0;
-  int i;
-  for(i = 0;i<sp_cmatrix_size(a->image);i++){
+  long long i;
+  for(i = 0;i<sp_c3matrix_size(a->image);i++){
     sum += a->image->data[i];
   }
-  for(i = 0;i<sp_cmatrix_size(a->image);i++){
+  for(i = 0;i<sp_c3matrix_size(a->image);i++){
     a->image->data[i] /= sum;
   } 
 }
@@ -153,7 +170,7 @@ int main(int argc, char ** argv){
   real max_res;
   Image * prtf;
   int bin;
-  int i;
+  long long i;
   if(argc < 3){
     printf("Usage: %s <image1> [image2] ...\n",argv[0]);
     exit(0);
@@ -178,7 +195,7 @@ int main(int argc, char ** argv){
   }
   prtf = sp_image_duplicate(sum,SP_COPY_DATA|SP_COPY_MASK);
   avg_prtf = 0;
-  max_res = sp_image_dist(sum,(sp_image_width(sum)/2.0)*sp_image_height(sum)+sp_image_height(sum)/2.0,SP_TO_CORNER);
+  max_res = sp_image_dist(sum,(sp_image_z(sum)/2.0)*sp_image_y(sum)*sp_image_x(sum)+(sp_image_y(sum)/2.0)*sp_image_x(sum)+sp_image_x(sum)/2,SP_TO_CORNER);
   for(i = 0;i<NBINS;i++){
     bins[i] = 0;
     bin_count[i] = 0;

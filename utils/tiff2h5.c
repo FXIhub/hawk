@@ -88,8 +88,8 @@ int main(int argc, char ** argv){
   }
   out = sp_image_read(opts->input,0);
 
-  width = sp_image_width(out);
-  height = sp_image_height(out);
+  width = sp_image_x(out);
+  height = sp_image_y(out);
   if(opts->x_center == -1){
     opts->x_center = width/2;
   }
@@ -98,19 +98,21 @@ int main(int argc, char ** argv){
   }
   out->detector->image_center[0] = opts->x_center;
   out->detector->image_center[1] = opts->y_center;
-  out->detector->pixel_size = opts->pixel_size;
+  out->detector->pixel_size[0] = opts->pixel_size;
+  out->detector->pixel_size[1] = opts->pixel_size;
+  out->detector->pixel_size[2] = opts->pixel_size;
   out->detector->detector_distance = opts->detector_distance;
   out->detector->lambda = opts->lambda;
   /* write HDF5 */
   sp_image_write(out,opts->output,sizeof(real));
   sp_image_fft(sp_image_shift(out));
-  autocorrelation = bilinear_rescale(sp_image_shift(sp_image_fft(sp_image_shift(out))),256,256);
+  autocorrelation = bilinear_rescale(sp_image_shift(sp_image_fft(sp_image_shift(out))),256,256,1);
   
-  sp_image_write(autocorrelation,"autocorrelation.png",COLOR_JET|LOG_SCALE);
-  sp_image_write(autocorrelation,"autocorrelation.vtk",0);
+  sp_image_write(autocorrelation,"autocorrelation.png",COLOR_JET|LOG_SCALE|SP_2D);
+  sp_image_write(autocorrelation,"autocorrelation.vtk",SP_2D);
   sprintf(buffer,"%s.png",opts->output);
-  sp_image_write(out,buffer,COLOR_JET|LOG_SCALE);
+  sp_image_write(out,buffer,COLOR_JET|LOG_SCALE|SP_2D);
   sprintf(buffer,"%s.vtk",opts->output);
-  sp_image_write(out,buffer,0);
+  sp_image_write(out,buffer,SP_2D);
   return 0;
 }

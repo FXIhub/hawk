@@ -24,7 +24,7 @@ int main(int argc, char ** argv){
     exit(0);
   }
   a = sp_image_read(argv[1],0);
-  for(i = 0;i<sp_cmatrix_size(a->image);i++){
+  for(i = 0;i<sp_c3matrix_size(a->image);i++){
     if(cabs(a->image->data[i]) > 55000){
       a->image->data[i] = 0;
     }
@@ -39,7 +39,7 @@ int main(int argc, char ** argv){
   sp_image_write(a,buffer,COLOR_JET|LOG_SCALE);
   max = 0;
   min = 1<< 20;
-  for(i = 0;i<sp_cmatrix_size(b->image);i++){
+  for(i = 0;i<sp_c3matrix_size(b->image);i++){
     if(cabs(b->image->data[i]) > max){
       max = cabs(b->image->data[i]);
     }    
@@ -48,7 +48,7 @@ int main(int argc, char ** argv){
     }    
   }
   /* Cap all values higher than 0.05 than the maximum for easier visualization */
-  for(i = 0;i<sp_cmatrix_size(b->image);i++){
+  for(i = 0;i<sp_c3matrix_size(b->image);i++){
     if(cabs(b->image->data[i]) > max*0.15){
       b->image->data[i] = max*0.15;
     }    

@@ -1,7 +1,7 @@
 #include <minmaxtau.h>
 #include <spimage.h>
 
-void minmaxL(Image * Gs,Image * Gns,Image * F0,Image * S,int niter,int method,Image * DGs0,Image * DGns0,sp_matrix * Hab){
+void minmaxL(Image * Gs,Image * Gns,Image * F0,Image * S,int niter,int method,Image * DGs0,Image * DGns0,sp_3matrix * Hab){
 /*
   %[Gs,Gns,Hab,DGs0,DGns0]=minmaxL(Gs,Gns,F0,S,niter,method,DGs0,DGns0);
   % or
@@ -14,7 +14,7 @@ void minmaxL(Image * Gs,Image * Gns,Image * F0,Image * S,int niter,int method,Im
   % 3 2D minmax optimization,  CG  !!NOT IMPLEMENTED!!
   % 4 4D (reduced memory) optimization   !!NOT IMPLEMENTED!!
 */
-  int i;
+  long long i;
   int maxiter = 50;
   real TolY = 1e-5;
 

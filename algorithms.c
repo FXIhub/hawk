@@ -23,7 +23,7 @@ Image * basic_hio_iteration(Image * exp_amp, Image * real_in, Image * support,
   Image * fft_out;
   Image * pattern;
   int i;
-  int size = sp_cmatrix_size(real_in->image);
+  int size = sp_c3matrix_size(real_in->image);
   real beta = get_beta(opts);
   fft_out = sp_image_fft(real_in);
   
@@ -32,7 +32,7 @@ Image * basic_hio_iteration(Image * exp_amp, Image * real_in, Image * support,
 
   sp_image_rephase(pattern,SP_ZERO_PHASE);
 
-  for(i = 0;i<sp_cmatrix_size(exp_amp->image);i++){
+  for(i = 0;i<sp_c3matrix_size(exp_amp->image);i++){
     if(!exp_amp->mask->data[i]){
       /*
 	use the calculated amplitudes for the places
@@ -50,11 +50,11 @@ Image * basic_hio_iteration(Image * exp_amp, Image * real_in, Image * support,
     }
   }
   real_out = sp_image_ifft(pattern);
-  for(i = 0;i<sp_cmatrix_size(real_out->image);i++){
+  for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
     /* normalize */
     real_out->image->data[i] /= size;
   }
-  for(i = 0;i<sp_cmatrix_size(real_out->image);i++){
+  for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
     /* Treat points outside support*/
     if(!support->image->data[i]){
       if(opts->enforce_real){
@@ -65,7 +65,7 @@ Image * basic_hio_iteration(Image * exp_amp, Image * real_in, Image * support,
     }
   }
   if(opts->enforce_positivity){
-    for(i = 0;i<sp_cmatrix_size(real_out->image);i++){
+    for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
       real_out->image->data[i] =  fabs(creal(real_out->image->data[i]))+fabs(cimag(real_out->image->data[i]))*I;
     }
   }
@@ -91,8 +91,8 @@ Image * basic_raar_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in
 
   Image * fft_out;
   Image * fft_in;
-  int i;
-  int size = sp_cmatrix_size(real_in->image);
+  long long i;
+  long long size = sp_c3matrix_size(real_in->image);
   real beta = get_beta(opts);
   real one_minus_2_beta = 1.0-2*beta;
   real tmp;
@@ -103,26 +103,29 @@ Image * basic_raar_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in
   fft_in = sp_image_duplicate(fft_out,SP_COPY_DATA|SP_COPY_MASK);
   if(!exp_amp_minus_sigma){
     exp_amp_minus_sigma = sp_image_duplicate(exp_amp,SP_COPY_DATA|SP_COPY_MASK);
-    for(i = 0;i<sp_cmatrix_size(exp_amp->image);i++){
+    for(i = 0;i<sp_c3matrix_size(exp_amp->image);i++){
       exp_amp_minus_sigma->image->data[i] -= exp_sigma->image->data[i];
     }
   }
   if(!exp_amp_plus_sigma){
     exp_amp_plus_sigma = sp_image_duplicate(exp_amp,SP_COPY_DATA|SP_COPY_MASK);
-    for(i = 0;i<sp_cmatrix_size(exp_amp->image);i++){
+    for(i = 0;i<sp_c3matrix_size(exp_amp->image);i++){
       exp_amp_plus_sigma->image->data[i] += exp_sigma->image->data[i];
     }
   }
 
+  /* Weak reflections doesn't work for images where the data is
+   * largerthan INT_MAX bits /Tomas
+   */
   if(opts->perturb_weak_reflections && !weak_reflections){
-    weak_reflections = malloc(sp_cmatrix_size(exp_amp->image)*sizeof(char));
-    array = malloc(sp_cmatrix_size(exp_amp->image)*sizeof(real));
-    memcpy(array,exp_amp->image,sp_cmatrix_size(exp_amp->image)*sizeof(real));
-    qsort(array,sp_cmatrix_size(exp_amp->image),sizeof(real),real_compare);
+    weak_reflections = malloc(sp_c3matrix_size(exp_amp->image)*sizeof(char));
+    array = malloc(sp_c3matrix_size(exp_amp->image)*sizeof(real));
+    memcpy(array,exp_amp->image,sp_c3matrix_size(exp_amp->image)*sizeof(real));
+    qsort(array,sp_c3matrix_size(exp_amp->image),sizeof(real),real_compare);
     /* get the weak reflections threshold */
-    max = array[(int)(sp_cmatrix_size(exp_amp->image)*opts->perturb_weak_reflections)];
+    max = array[(long long int)(sp_c3matrix_size(exp_amp->image)*opts->perturb_weak_reflections)];
     free(array);
-    for(i = 0;i<sp_cmatrix_size(exp_amp->image);i++){
+    for(i = 0;i<sp_c3matrix_size(exp_amp->image);i++){
       if(exp_amp->mask->data[i] && creal(exp_amp->image->data[i]) <= max){
 	weak_reflections[i] = 1;
       }else{
@@ -130,8 +133,7 @@ Image * basic_raar_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in
       }
     }
   }
-
-  for(i = 0;i<sp_cmatrix_size(exp_amp->image);i++){
+  for(i = 0;i<sp_c3matrix_size(exp_amp->image);i++){
     if(exp_amp->mask->data[i]){
       /* take the calculated phases and apply to the experimental intensities 
 	 leaving room for error */
@@ -158,11 +160,11 @@ Image * basic_raar_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in
   
   /* normalize */
   tmp = 1.0/size;
-  for(i = 0;i<sp_cmatrix_size(real_out->image);i++){  
+  for(i = 0;i<sp_c3matrix_size(real_out->image);i++){  
     real_out->image->data[i] *= tmp;
   }
 
-  for(i = 0;i<sp_cmatrix_size(real_out->image);i++){
+  for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
     /* A bit of documentation about the equation:
 
      Rs = 2*Ps-I; Rm = 2*Pm-I
@@ -181,7 +183,7 @@ Image * basic_raar_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in
     }
   }
   if(opts->enforce_positivity){
-    for(i = 0;i<sp_cmatrix_size(real_out->image);i++){
+    for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
       real_out->image->data[i] =  fabs(creal(real_out->image->data[i]))+fabs(cimag(real_out->image->data[i]))*I;
     }
   }
@@ -199,6 +201,7 @@ Image * basic_raar_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in
 #ifdef MPI
 Image * mpi_raar_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in, Image * support, 
 			     Options * opts, Log * log){
+  printf("mpi raar iteration\n");
   /*We're gonna have 3 kinds of images.
    With only real space constraints (Ps)
    With only fourier space constraints (Pm)
@@ -208,7 +211,7 @@ Image * mpi_raar_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in, 
   Image * real_out;
   Image * fft_out;
   int i;
-  int size = sp_cmatrix_size(real_in->image);
+  int size = sp_c3matrix_size(real_in->image);
   real beta = get_beta(opts);
   int id;
   int p;
@@ -218,18 +221,18 @@ Image * mpi_raar_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in, 
   
   if(!exp_amp_minus_sigma){
     exp_amp_minus_sigma = sp_image_duplicate(exp_amp,SP_COPY_DATA|SP_COPY_MASK);
-    for(i = 0;i<sp_cmatrix_size(exp_amp->image);i++){
+    for(i = 0;i<sp_c3matrix_size(exp_amp->image);i++){
       exp_amp_minus_sigma->image->data[i] -= exp_sigma->image->data[i];
     }
   }
   if(!exp_amp_plus_sigma){
     exp_amp_plus_sigma = sp_image_duplicate(exp_amp,SP_COPY_DATA|SP_COPY_MASK);
-    for(i = 0;i<sp_cmatrix_size(exp_amp->image);i++){
+    for(i = 0;i<sp_c3matrix_size(exp_amp->image);i++){
       exp_amp_plus_sigma->image->data[i] += exp_sigma->image->data[i];
     }
   }
 
-  for(i = (id*sp_cmatrix_size(exp_amp->image))/p;i<(id+1)*sp_cmatrix_size(exp_amp->image)/p;i++){
+  for(i = (id*sp_c3matrix_size(exp_amp->image))/p;i<(id+1)*sp_c3matrix_size(exp_amp->image)/p;i++){
     if(exp_amp->mask->data[i]){
       /* take the calculated phases and apply to the experimental intensities 
        leaving room for error */
@@ -242,11 +245,11 @@ Image * mpi_raar_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in, 
   }
   real_out = sp_image_ifft(fft_out);
 
-  for(i = (id*sp_cmatrix_size(real_out->image))/p;i<(id+1)*sp_cmatrix_size(real_out->image)/p;i++){  
+  for(i = (id*sp_c3matrix_size(real_out->image))/p;i<(id+1)*sp_c3matrix_size(real_out->image)/p;i++){  
     /* normalize */
     real_out->image->data[i] /= size;
   }
-  for(i = (id*sp_cmatrix_size(real_out->image))/p;i<(id+1)*sp_cmatrix_size(real_out->image)/p;i++){  
+  for(i = (id*sp_c3matrix_size(real_out->image))/p;i<(id+1)*sp_c3matrix_size(real_out->image)/p;i++){  
     if(!support->image->data[i]){
       real_out->image->data[i] = (1-2*beta)*real_out->image->data[i]+beta*(real_in->image->data[i]);      
     }else{
@@ -254,7 +257,7 @@ Image * mpi_raar_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in, 
     }
   }
   if(opts->enforce_positivity){
-    for(i = (id*sp_cmatrix_size(real_out->image))/p;i<(id+1)*sp_cmatrix_size(real_out->image)/p;i++){  
+    for(i = (id*sp_c3matrix_size(real_out->image))/p;i<(id+1)*sp_c3matrix_size(real_out->image)/p;i++){  
       real_out->image->data[i] =  fabs(creal(real_out->image->data[i]))+fabs(cimag(real_out->image->data[i]))*I;
     }
   }
@@ -275,13 +278,13 @@ Image * basic_error_reduction_iteration(Image * exp_amp, Image * real_in, Image 
   Image * fft_out;
   Image * pattern;
   int i;
-  int size = sp_cmatrix_size(real_in->image);
+  int size = sp_c3matrix_size(real_in->image);
   fft_out = sp_image_fft(real_in);
   
   
   pattern = sp_image_duplicate(exp_amp,SP_COPY_DATA|SP_COPY_MASK);
   sp_image_rephase(pattern,SP_ZERO_PHASE);
-  for(i = 0;i<sp_cmatrix_size(exp_amp->image);i++){
+  for(i = 0;i<sp_c3matrix_size(exp_amp->image);i++){
     if(!exp_amp->mask->data[i]){
       /*
 	use the calculated amplitudes for the places
@@ -294,18 +297,18 @@ Image * basic_error_reduction_iteration(Image * exp_amp, Image * real_in, Image 
     }
   }
   real_out = sp_image_ifft(pattern);
-  for(i = 0;i<sp_cmatrix_size(real_out->image);i++){
+  for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
     /* normalize */
     real_out->image->data[i] /= size;
   }
-  for(i = 0;i<sp_cmatrix_size(real_out->image);i++){
+  for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
     /* Treat points outside support*/
     if(!support->image->data[i]){
       real_out->image->data[i] = 0;
     }
   }
   if(opts->enforce_positivity){
-    for(i = 0;i<sp_cmatrix_size(real_out->image);i++){
+    for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
       real_out->image->data[i] =  fabs(creal(real_out->image->data[i]))+fabs(cimag(real_out->image->data[i]))*I;
     }
   }
@@ -325,14 +328,14 @@ Image * basic_hpr_iteration(Image * exp_amp, Image * real_in, Image * support,
   Image * fft_out;
   Image * pattern;
   int i;
-  int size = sp_cmatrix_size(real_in->image);
+  int size = sp_c3matrix_size(real_in->image);
   real beta = get_beta(opts);
   fft_out = sp_image_fft(real_in);
   
   
   pattern = sp_image_duplicate(exp_amp,SP_COPY_DATA|SP_COPY_MASK);
   sp_image_rephase(pattern,SP_ZERO_PHASE);
-  for(i = 0;i<sp_cmatrix_size(exp_amp->image);i++){
+  for(i = 0;i<sp_c3matrix_size(exp_amp->image);i++){
     if(!exp_amp->mask->data[i]){
       /*
 	use the calculated amplitudes for the places
@@ -345,11 +348,11 @@ Image * basic_hpr_iteration(Image * exp_amp, Image * real_in, Image * support,
     }
   }
   real_out = sp_image_ifft(pattern);
-  for(i = 0;i<sp_cmatrix_size(real_out->image);i++){
+  for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
     /* normalize */
     real_out->image->data[i] /= size;
   }
-  for(i = 0;i<sp_cmatrix_size(real_out->image);i++){
+  for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
     /* Treat points outside support*/
     if(!support->image->data[i] || cabs(2*real_out->image->data[i]-real_in->image->data[i]) < cabs((1-beta)*(real_out->image->data[i]))){
       if(opts->enforce_real){
@@ -360,7 +363,7 @@ Image * basic_hpr_iteration(Image * exp_amp, Image * real_in, Image * support,
     }
   }
   if(opts->enforce_positivity){
-    for(i = 0;i<sp_cmatrix_size(real_out->image);i++){
+    for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
       real_out->image->data[i] =  fabs(creal(real_out->image->data[i]))+fabs(cimag(real_out->image->data[i]))*I;
     }
   }
@@ -383,20 +386,20 @@ Image * basic_cflip_iteration(Image * exp_amp, Image * real_in, Image * support,
   static char * weak_reflections = NULL;
   real * tmp;
   int i,j;
-  int size = sp_cmatrix_size(real_in->image);
+  int size = sp_c3matrix_size(real_in->image);
   real max = 0;
   fft_out = sp_image_fft(real_in);
   if(opts->perturb_weak_reflections && !weak_reflections){
-    weak_reflections = malloc(sp_cmatrix_size(exp_amp->image)*sizeof(char));
-    tmp = malloc(sp_cmatrix_size(exp_amp->image)*sizeof(real));
-    memcpy(tmp,exp_amp->image->data,sp_cmatrix_size(exp_amp->image)*sizeof(real));
-    qsort(tmp,sp_cmatrix_size(exp_amp->image),sizeof(real),descend_complex_compare);
+    weak_reflections = malloc(sp_c3matrix_size(exp_amp->image)*sizeof(char));
+    tmp = malloc(sp_c3matrix_size(exp_amp->image)*sizeof(real));
+    memcpy(tmp,exp_amp->image->data,sp_c3matrix_size(exp_amp->image)*sizeof(real));
+    qsort(tmp,sp_c3matrix_size(exp_amp->image),sizeof(real),descend_complex_compare);
     /* get the weak reflections threshold */
-    max = tmp[(int)(sp_cmatrix_size(exp_amp->image)*opts->perturb_weak_reflections)];
-    fprintf(stderr,"max - %f\nindex - %d\n",max,(int)(sp_cmatrix_size(exp_amp->image)*opts->perturb_weak_reflections));
+    max = tmp[(int)(sp_c3matrix_size(exp_amp->image)*opts->perturb_weak_reflections)];
+    fprintf(stderr,"max - %f\nindex - %d\n",max,(int)(sp_c3matrix_size(exp_amp->image)*opts->perturb_weak_reflections));
     free(tmp);
     j = 0;
-    for(i = 0;i<sp_cmatrix_size(exp_amp->image);i++){
+    for(i = 0;i<sp_c3matrix_size(exp_amp->image);i++){
       if(exp_amp->mask->data[i] && creal(exp_amp->image->data[i]) <= max){
 	weak_reflections[i] = 1;
 	j++;
@@ -410,7 +413,7 @@ Image * basic_cflip_iteration(Image * exp_amp, Image * real_in, Image * support,
   
   pattern = sp_image_duplicate(exp_amp,SP_COPY_DATA|SP_COPY_MASK);
   sp_image_rephase(pattern,SP_ZERO_PHASE);
-  for(i = 0;i<sp_cmatrix_size(exp_amp->image);i++){
+  for(i = 0;i<sp_c3matrix_size(exp_amp->image);i++){
     if(!exp_amp->mask->data[i]){
       /*
 	use the calculated amplitudes for the places
@@ -428,7 +431,7 @@ Image * basic_cflip_iteration(Image * exp_amp, Image * real_in, Image * support,
     }
   }
   real_out = sp_image_ifft(pattern);
-  for(i = 0;i<sp_cmatrix_size(real_out->image);i++){
+  for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
     /* normalize */
     if(opts->enforce_real){
       real_out->image->data[i] = creal(real_out->image->data[i])/size;
@@ -439,14 +442,14 @@ Image * basic_cflip_iteration(Image * exp_amp, Image * real_in, Image * support,
       max = cabs(real_out->image->data[i]);
     }
   }
-  for(i = 0;i<sp_cmatrix_size(real_out->image);i++){
+  for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
     /* charge flipping doesn't know about support */
     if(cabs(real_out->image->data[i]) < opts->charge_flip_sigma*max){
       real_out->image->data[i] *= -1;
     }
   }
   if(opts->enforce_positivity){
-    for(i = 0;i<sp_cmatrix_size(real_out->image);i++){
+    for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
       real_out->image->data[i] =  fabs(creal(real_out->image->data[i]))+fabs(cimag(real_out->image->data[i]))*I;
     }
   }
@@ -480,41 +483,41 @@ int get_algorithm(Options * opts,Log * log){
  */
 
 static Image * Q_operator(Image * x, Image * y, Image *z){
-  sp_cmatrix * x_minus_y = sp_cmatrix_duplicate(x->image);
-  sp_cmatrix * y_minus_z = sp_cmatrix_duplicate(y->image);
-  sp_cmatrix * z_minus_y;
-  sp_cmatrix_sub(x_minus_y,y->image);
-  sp_cmatrix_sub(y_minus_z,z->image);
-  z_minus_y = sp_cmatrix_duplicate(y_minus_z);
-  sp_cmatrix_scale(z_minus_y,-1);
+  sp_c3matrix * x_minus_y = sp_c3matrix_duplicate(x->image);
+  sp_c3matrix * y_minus_z = sp_c3matrix_duplicate(y->image);
+  sp_c3matrix * z_minus_y;
+  sp_c3matrix_sub(x_minus_y,y->image);
+  sp_c3matrix_sub(y_minus_z,z->image);
+  z_minus_y = sp_c3matrix_duplicate(y_minus_z);
+  sp_c3matrix_scale(z_minus_y,-1);
   Complex s;
   
-  Complex pi = sp_cmatrix_froenius_prod(x_minus_y,y_minus_z);
-  Complex mu = sp_cmatrix_froenius_prod(x_minus_y,x_minus_y);
-  Complex nu = sp_cmatrix_froenius_prod(y_minus_z,y_minus_z);
+  Complex pi = sp_c3matrix_froenius_prod(x_minus_y,y_minus_z);
+  Complex mu = sp_c3matrix_froenius_prod(x_minus_y,x_minus_y);
+  Complex nu = sp_c3matrix_froenius_prod(y_minus_z,y_minus_z);
   Complex rho = mu*nu-pi*pi;
   if(cabs(rho) == 0 && cabs(pi) >= 0){
-    sp_cmatrix_free(x_minus_y);
-    sp_cmatrix_free(y_minus_z);
-    sp_cmatrix_free(z_minus_y);
+    sp_c3matrix_free(x_minus_y);
+    sp_c3matrix_free(y_minus_z);
+    sp_c3matrix_free(z_minus_y);
     return sp_image_duplicate(z,SP_COPY_DATA|SP_COPY_MASK);
   }else if(cabs(rho) > 0 && cabs(pi*nu) >= cabs(rho)){
     s = cabs(1+pi/nu);
     printf("s - %f\n",cabs(s));
-    sp_cmatrix_add(x->image,z_minus_y,&s);
-    sp_cmatrix_free(x_minus_y);
-    sp_cmatrix_free(y_minus_z);
-    sp_cmatrix_free(z_minus_y);
+    sp_c3matrix_add(x->image,z_minus_y,&s);
+    sp_c3matrix_free(x_minus_y);
+    sp_c3matrix_free(y_minus_z);
+    sp_c3matrix_free(z_minus_y);
     return sp_image_duplicate(x,SP_COPY_DATA|SP_COPY_MASK);
   }else if(cabs(rho) > 0 && cabs(pi*nu) < cabs(rho)){
     s = cabs(pi*nu/rho);
-    sp_cmatrix_add(y->image,x_minus_y,&s);
+    sp_c3matrix_add(y->image,x_minus_y,&s);
     s = cabs(mu*nu/rho);
     printf("s - %f\n",cabs(s));
-    sp_cmatrix_add(y->image,z_minus_y,&s);
-    sp_cmatrix_free(x_minus_y);
-    sp_cmatrix_free(y_minus_z);
-    sp_cmatrix_free(z_minus_y);
+    sp_c3matrix_add(y->image,z_minus_y,&s);
+    sp_c3matrix_free(x_minus_y);
+    sp_c3matrix_free(y_minus_z);
+    sp_c3matrix_free(z_minus_y);
     return sp_image_duplicate(y,SP_COPY_DATA|SP_COPY_MASK);
   }else{
     fprintf(stderr,"Cannot reach here!\n");
@@ -542,13 +545,13 @@ Image * basic_haar_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in
 
 Image * basic_so2d_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in, Image * support, 
 			     Options * opts, Log * log){
-  static sp_matrix * Hab = NULL;
+  static sp_3matrix * Hab = NULL;
   static Image * DGs0 = NULL;
   static Image * DGns0 = NULL;
   static Image * Gs = NULL;
   static Image * Gns = NULL;
   if(!Hab){
-    Hab = sp_matrix_alloc(2,2);
+    Hab = sp_3matrix_alloc(2,2,2);
   }
   if(!DGs0){
     DGs0 = sp_image_duplicate(real_in,SP_COPY_DETECTOR);

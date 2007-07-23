@@ -115,16 +115,17 @@ Image * calculate_average(char ** img_list,int list_size,int cross_correlate){
   Image * res;
   Image * cc;
   Image * a;
-  int size[2];
+  int size[3];
 
-  int i,j,trans;
+  long long i,j,trans;
   real max;
   if(!list_size){
     return NULL;
   }
   a = sp_image_read(img_list[0],0);
-  size[0] = sp_cmatrix_cols(a->image);
-  size[1] = sp_cmatrix_rows(a->image);
+  size[0] = sp_c3matrix_x(a->image);
+  size[1] = sp_c3matrix_y(a->image);
+  size[2] = sp_c3matrix_z(a->image);
   res = sp_image_duplicate(a,SP_COPY_DATA|SP_COPY_MASK);
   sp_image_free(a);
   fprintf(stderr,"Images processed - ");
@@ -132,19 +133,19 @@ Image * calculate_average(char ** img_list,int list_size,int cross_correlate){
     a = sp_image_read(img_list[i],0);
     if(cross_correlate){
       cc = sp_image_cross_correlate(res, a, size);
-      max = creal(sp_cmatrix_max(cc->image,&trans));
+      max = creal(sp_c3matrix_max(cc->image,&trans));
 /*      trans /= 2;*/
       sp_image_free(cc);
     }else{
       trans = 0;
     }
-    for(j = 0;j<sp_cmatrix_size(a->image);j++){
-      res->image->data[j] += a->image->data[(sp_cmatrix_size(a->image)+j-trans)%(sp_cmatrix_size(a->image))];
+    for(j = 0;j<sp_c3matrix_size(a->image);j++){
+      res->image->data[j] += a->image->data[(sp_c3matrix_size(a->image)+j-trans)%(sp_c3matrix_size(a->image))];
     }
     sp_image_free(a);
   fprintf(stderr,".");
   }
-  for(j = 0;j<sp_cmatrix_size(res->image);j++){
+  for(j = 0;j<sp_c3matrix_size(res->image);j++){
     res->image->data[j] /= list_size;
   }
   return res;    
@@ -157,8 +158,8 @@ int main(int argc, char ** argv){
   int list_size;
   int i;
   real max;
-  int trans;
-  int temp_trans;
+  long long trans;
+  long long temp_trans;
   opts = parse_options(argc,argv);
   if(opts.average){
     img_list = read_filelist(opts.input,&list_size);
@@ -174,20 +175,20 @@ int main(int argc, char ** argv){
     trans = 0;
     if(opts.cross_correlate){
       cc = sp_image_cross_correlate(tmp, tmp2,NULL);
-      max = creal(sp_cmatrix_max(cc->image,&trans));
+      max = creal(sp_c3matrix_max(cc->image,&trans));
       sp_image_free(cc);
-      max = creal(sp_cmatrix_max(tmp->image,&trans));
-      max = creal(sp_cmatrix_max(tmp2->image,&temp_trans));
+      max = creal(sp_c3matrix_max(tmp->image,&trans));
+      max = creal(sp_c3matrix_max(tmp2->image,&temp_trans));
       trans -= temp_trans;
     }
-    for(i = 0;i<sp_cmatrix_size(tmp->image);i++){ 
-      tmp->image->data[i] -= tmp2->image->data[(sp_cmatrix_size(tmp->image)+i-trans)%(sp_cmatrix_size(tmp->image))];
+    for(i = 0;i<sp_c3matrix_size(tmp->image);i++){ 
+      tmp->image->data[i] -= tmp2->image->data[(sp_c3matrix_size(tmp->image)+i-trans)%(sp_c3matrix_size(tmp->image))];
     }
     sp_image_write(tmp,opts.output,sizeof(real));    
   }else if(opts.rescale){
     tmp = sp_image_read(opts.input,0);
-    tmp2 = bilinear_rescale(tmp, sp_cmatrix_cols(tmp->image)*opts.rescale, sp_cmatrix_rows(tmp->image)*opts.rescale);
-    sp_image_write(tmp2,opts.output,sizeof(real));        
+    tmp2 = bilinear_rescale(tmp, sp_c3matrix_x(tmp->image)*opts.rescale, sp_c3matrix_y(tmp->image)*opts.rescale, sp_c3matrix_z(tmp->image)*opts.rescale);
+    sp_image_write(tmp2,opts.output,sizeof(real)|SP_2D);
   }
   return 0;
 }

@@ -64,8 +64,8 @@ Image * restore_hio_iteration(Image * exp_amp, Image * real_in, Image * support,
   Image * real_out;
   Image * fft_out;
   Image * pattern;
-  int i;
-  int size = sp_cmatrix_size(real_in->image);
+  long long i;
+  int size = sp_c3matrix_size(real_in->image);
   real beta = get_beta(opts);
   fft_out = sp_image_fft(real_in);
   
@@ -74,7 +74,7 @@ Image * restore_hio_iteration(Image * exp_amp, Image * real_in, Image * support,
 
   sp_image_rephase(pattern,SP_ZERO_PHASE);
 
-  for(i = 0;i<sp_cmatrix_size(exp_amp->image);i++){
+  for(i = 0;i<sp_c3matrix_size(exp_amp->image);i++){
     if(!exp_amp->mask->data[i]){
       /*
 	use the calculated amplitudes for the places
@@ -85,11 +85,11 @@ Image * restore_hio_iteration(Image * exp_amp, Image * real_in, Image * support,
     }
   }
   real_out = sp_image_ifft(pattern);
-  for(i = 0;i<sp_cmatrix_size(real_out->image);i++){
+  for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
     /* normalize */
     real_out->image->data[i] /= size;
   }
-  for(i = 0;i<sp_cmatrix_size(real_out->image);i++){
+  for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
     /* Treat points outside support*/
     if(!support->image->data[i]){
       real_out->image->data[i] = (real_in->image->data[i] - beta*real_out->image->data[i]) ;      
@@ -109,13 +109,13 @@ Image * restore_raar_iteration(Image * exp_amp, Image * real_in, Image * support
 
   Image * fft_out;
   Image * fft_in;
-  int i;
+  long long i;
   real beta = get_beta(opts);
   real one_minus_2_beta = 1.0-2*beta;
   fft_out = sp_image_fft(real_in);
   fft_in = sp_image_duplicate(fft_out,SP_COPY_DATA|SP_COPY_MASK);
 
-  for(i = 0;i<sp_cmatrix_size(exp_amp->image);i++){
+  for(i = 0;i<sp_c3matrix_size(exp_amp->image);i++){
     if(exp_amp->mask->data[i]){
       fft_out->image->data[i] = exp_amp->image->data[i];
     }else{
@@ -127,7 +127,7 @@ Image * restore_raar_iteration(Image * exp_amp, Image * real_in, Image * support
   /* normalize */
   sp_image_scale(real_out,1.0/sp_image_size(real_out));
 
-  for(i = 0;i<sp_cmatrix_size(real_out->image);i++){
+  for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
     /* A bit of documentation about the equation:
 
      Rs = 2*Ps-I; Rm = 2*Pm-I
@@ -168,11 +168,11 @@ void continue_reconstruction(Options * opts){
 
 void rescale_image(Image * a){
   double sum = 0;
-  int i;
-  for(i = 0;i<sp_cmatrix_size(a->image);i++){
+  long long i;
+  for(i = 0;i<sp_c3matrix_size(a->image);i++){
     sum += a->image->data[i];
   }
-  for(i = 0;i<sp_cmatrix_size(a->image);i++){
+  for(i = 0;i<sp_c3matrix_size(a->image);i++){
     a->image->data[i] /= sum;
   } 
 }
@@ -180,20 +180,21 @@ void rescale_image(Image * a){
 
 
 void harmonize_sizes(Options * opts){
-  int i;
+  long long i;
   Image * exp;
   Image * tmp;
   exp = opts->diffraction;
   tmp = opts->support_mask;
   if(tmp &&
-     (sp_cmatrix_cols(tmp->image) != sp_cmatrix_cols(exp->image) ||
-      sp_cmatrix_rows(tmp->image) != sp_cmatrix_rows(exp->image))){
+     (sp_c3matrix_x(tmp->image) != sp_c3matrix_x(exp->image) ||
+      sp_c3matrix_y(tmp->image) != sp_c3matrix_y(exp->image) ||
+      sp_c3matrix_z(tmp->image) != sp_c3matrix_z(exp->image))){
     fprintf(stderr,"Rescaling support_mask\n");
-    tmp = bilinear_rescale(opts->support_mask,sp_cmatrix_cols(exp->image),sp_cmatrix_rows(exp->image));
+    tmp = bilinear_rescale(opts->support_mask,sp_c3matrix_x(exp->image),sp_c3matrix_y(exp->image),sp_c3matrix_z(exp->image));
     sp_image_free(opts->support_mask);
     opts->support_mask = tmp;
     /* Stop rounding errors in the supports */
-    for(i = 0;i<sp_cmatrix_size(tmp->image);i++){
+    for(i = 0;i<sp_c3matrix_size(tmp->image);i++){
       if(creal(tmp->image->data[i]) < 1e-6){
 	tmp->image->data[i] = 0;
       }else{
@@ -203,14 +204,15 @@ void harmonize_sizes(Options * opts){
   }
   tmp = opts->init_support;
   if(tmp &&
-     (sp_cmatrix_cols(tmp->image) != sp_cmatrix_cols(exp->image) ||
-      sp_cmatrix_rows(tmp->image) != sp_cmatrix_rows(exp->image))){
+     (sp_c3matrix_x(tmp->image) != sp_c3matrix_x(exp->image) ||
+      sp_c3matrix_y(tmp->image) != sp_c3matrix_y(exp->image) ||
+      sp_c3matrix_z(tmp->image) != sp_c3matrix_z(exp->image))){
     fprintf(stderr,"Rescaling init_support\n");
-    tmp = bilinear_rescale(opts->init_support,sp_cmatrix_cols(exp->image),sp_cmatrix_rows(exp->image));
+    tmp = bilinear_rescale(opts->init_support,sp_c3matrix_x(exp->image),sp_c3matrix_y(exp->image),sp_c3matrix_z(exp->image));
     sp_image_free(opts->init_support);
     opts->init_support = tmp;
     /* Stop rounding errors in the supports */
-    for(i = 0;i<sp_cmatrix_size(tmp->image);i++){
+    for(i = 0;i<sp_c3matrix_size(tmp->image);i++){
       if(creal(tmp->image->data[i]) < 1e-1){
 	tmp->image->data[i] = 0;
       }else{
@@ -220,13 +222,14 @@ void harmonize_sizes(Options * opts){
   }
   tmp = opts->image_guess;
   if(tmp &&
-     (sp_cmatrix_cols(tmp->image) != sp_cmatrix_cols(exp->image) ||
-      sp_cmatrix_rows(tmp->image) != sp_cmatrix_rows(exp->image))){
+     (sp_c3matrix_x(tmp->image) != sp_c3matrix_x(exp->image) ||
+      sp_c3matrix_y(tmp->image) != sp_c3matrix_y(exp->image) ||
+      sp_c3matrix_z(tmp->image) != sp_c3matrix_z(exp->image))){
     fprintf(stderr,"Rescaling image_guess\n");
-    tmp = fourier_rescale(opts->image_guess,sp_cmatrix_cols(exp->image),sp_cmatrix_rows(exp->image));
+    tmp = fourier_rescale(opts->image_guess,sp_c3matrix_x(exp->image),sp_c3matrix_y(exp->image),sp_c3matrix_z(exp->image));
     sp_image_free(opts->image_guess);
     opts->image_guess = tmp;
-    sp_image_write(tmp,"rescaled_guess.png",COLOR_JET);
+    sp_image_write(tmp,"rescaled_guess.png",COLOR_JET|SP_2D);
   }
 }
 
@@ -246,7 +249,7 @@ void complete_restoration(Image * amp, Image * initial_support, Options * opts, 
   real support_threshold = opts->new_level;
   real support_size = -support_threshold;
   const int stop_threshold = 10;
-  int i;
+  long long i;
 
   init_log(&log);
   log.threshold = support_threshold;
@@ -258,7 +261,7 @@ void complete_restoration(Image * amp, Image * initial_support, Options * opts, 
   }
   
   support = sp_image_duplicate(initial_support,SP_COPY_DATA|SP_COPY_MASK);
-  sp_image_write(initial_support,"support.vtk",0);
+  sp_image_write(initial_support,"support.vtk",SP_3D);
   prev_support = sp_image_duplicate(initial_support,SP_COPY_DATA|SP_COPY_MASK);
 
   /* Set the initial guess */
@@ -281,10 +284,10 @@ void complete_restoration(Image * amp, Image * initial_support, Options * opts, 
   mkdir(dir,0755);
   chdir(dir);
 #endif
-  sp_image_write(support,"support.png",COLOR_JET);
-  sp_image_write(real_in,"initial_guess.png",COLOR_JET);
-  sp_image_write(real_in,"initial_guess.h5",sizeof(real));
-  sp_image_write(initial_support,"initial_support.png",COLOR_JET);
+  sp_image_write(support,"support.png",COLOR_JET|SP_2D);
+  sp_image_write(real_in,"initial_guess.png",COLOR_JET|SP_2D);
+  sp_image_write(real_in,"initial_guess.h5",sizeof(real)|SP_2D);
+  sp_image_write(initial_support,"initial_support.png",COLOR_JET|SP_2D);
 
   if(get_algorithm(opts,&log) == HIO){     
     real_out = restore_hio_iteration(amp, real_in, support,opts,&log);
@@ -331,17 +334,17 @@ void complete_restoration(Image * amp, Image * initial_support, Options * opts, 
     }
     if(opts->cur_iteration%opts->output_period == opts->output_period-1){
       sprintf(buffer,"real_out-%07d.h5",opts->cur_iteration);
-      sp_image_write(real_out,buffer,opts->output_precision);
+      sp_image_write(real_out,buffer,opts->output_precision|SP_2D);
       sprintf(buffer,"real_out-%07d.png",opts->cur_iteration);
-      sp_image_write(real_out,buffer,COLOR_JET);
+      sp_image_write(real_out,buffer,COLOR_JET|SP_2D);
       sprintf(buffer,"real_out_phase-%07d.png",opts->cur_iteration);
-      sp_image_write(real_out,buffer,COLOR_JET|COLOR_PHASE);
+      sp_image_write(real_out,buffer,COLOR_JET|COLOR_PHASE|SP_2D);
       sprintf(buffer,"support-%07d.png",opts->cur_iteration);
-      sp_image_write(support,buffer,COLOR_JET);
+      sp_image_write(support,buffer,COLOR_JET|SP_2D);
       sprintf(buffer,"support-%07d.h5",opts->cur_iteration);
-      sp_image_write(support,buffer,opts->output_precision);
+      sp_image_write(support,buffer,opts->output_precision|SP_2D);
       tmp = sp_image_duplicate(real_out,SP_COPY_DATA|SP_COPY_MASK);
-      for(i = 0;i<sp_cmatrix_size(tmp->image);i++){
+      for(i = 0;i<sp_c3matrix_size(tmp->image);i++){
 	if(support->image->data[i]){
 	  tmp->image->data[i] = cabs(tmp->image->data[i]);
 	}else{
@@ -357,13 +360,13 @@ void complete_restoration(Image * amp, Image * initial_support, Options * opts, 
       tmp2 = sp_image_fft(tmp); 
       sp_image_free(tmp);
       tmp = tmp2;
-      for(i = 0;i<sp_cmatrix_size(tmp->image);i++){
+      for(i = 0;i<sp_c3matrix_size(tmp->image);i++){
 	tmp->mask->data[i] = 1;
       }
       sprintf(buffer,"pattern-%07d.h5",opts->cur_iteration);
-      sp_image_write(tmp,buffer,opts->output_precision);
+      sp_image_write(tmp,buffer,opts->output_precision|SP_2D);
       sprintf(buffer,"pattern-%07d.png",opts->cur_iteration);
-      sp_image_write(tmp,buffer,COLOR_JET);
+      sp_image_write(tmp,buffer,COLOR_JET|SP_2D);
       sp_image_free(tmp);
 
     }    
@@ -380,28 +383,28 @@ void complete_restoration(Image * amp, Image * initial_support, Options * opts, 
     }
   }  
 
-  sp_image_write(real_out,"real_out_final.h5",opts->output_precision);
-  sp_image_write(real_out,"real_out_final.png",COLOR_JET);
+  sp_image_write(real_out,"real_out_final.h5",opts->output_precision|SP_2D);
+  sp_image_write(real_out,"real_out_final.png",COLOR_JET|SP_2D);
   sprintf(buffer,"support-final.png");
-  sp_image_write(support,buffer,COLOR_JET);
+  sp_image_write(support,buffer,COLOR_JET|SP_2D);
   sprintf(buffer,"support-final.h5");
-  sp_image_write(support,buffer,opts->output_precision);
+  sp_image_write(support,buffer,opts->output_precision|SP_2D);
   tmp = sp_image_fft(real_out); 
-  for(i = 0;i<sp_cmatrix_size(tmp->image);i++){
+  for(i = 0;i<sp_c3matrix_size(tmp->image);i++){
     tmp->mask->data[i] = 1;
   }
   sprintf(buffer,"pattern-final.h5");
-  sp_image_write(tmp,buffer,opts->output_precision);
+  sp_image_write(tmp,buffer,opts->output_precision|SP_2D);
   sprintf(buffer,"pattern-final.png");
-  sp_image_write(tmp,buffer,COLOR_JET);
+  sp_image_write(tmp,buffer,COLOR_JET|SP_2D);
   sp_image_free(tmp);
   
-  sp_image_write(real_out,"phases_out_final.png",COLOR_PHASE|COLOR_JET);
+  sp_image_write(real_out,"phases_out_final.png",COLOR_PHASE|COLOR_JET|SP_2D);
   sp_image_free(support);
   sp_image_free(prev_support);
   sp_image_free(real_in);
   sp_image_free(real_out);
-  #if defined(_MSC_VER) || defined(__MINGW32__)
+#if defined(_MSC_VER) || defined(__MINGW32__)
   _chdir(dir);
 #else
   chdir(dir);
@@ -414,7 +417,7 @@ int main(int argc, char ** argv){
   Image * img = NULL;
   Image * exp_sigma = NULL;
   char dir[1024];
-  int i;
+  long long i;
   FILE * f;
   Options * opts;
 #ifdef MPI
@@ -430,7 +433,7 @@ int main(int argc, char ** argv){
     fclose(f);
     read_options_file("restore_image.conf",opts);
   }else{
-	perror("Could not open restore_image.conf");
+    perror("Could not open restore_image.conf");
   }
   parse_options(argc,argv,opts);
   write_options_file("restore_image.confout",opts);
@@ -442,7 +445,7 @@ int main(int argc, char ** argv){
     fprintf(stderr,"Error: Diffraction pattern not specified!\n");
     exit(1);
   }
-  sp_image_write(img,"intensities.png",COLOR_JET);
+  sp_image_write(img,"intensities.png",COLOR_JET|SP_2D);
 
   if(!opts->init_support){
     sp_image_rephase(img,SP_ZERO_PHASE);
@@ -457,7 +460,7 @@ int main(int argc, char ** argv){
     sp_image_add(opts->init_support,opts->support_mask);
   }
 
-  for(i = 0;i<sp_cmatrix_size(opts->init_support->image);i++){
+  for(i = 0;i<sp_c3matrix_size(opts->init_support->image);i++){
     if(opts->init_support->image->data[i] ){
       opts->init_support->image->data[i] = 1;
     }

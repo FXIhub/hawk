@@ -72,24 +72,24 @@ void bisect2(double x0, double x1, double y0, double y1, double dy, sp_vector * 
   }
 }
 
-sp_vector * gradL(sp_cmatrix * Gs, sp_cmatrix * Gns, sp_cmatrix * DGs, sp_cmatrix * DGns, Image * F0, real aa, real bb){
+sp_vector * gradL(sp_c3matrix * Gs, sp_c3matrix * Gns, sp_c3matrix * DGs, sp_c3matrix * DGns, Image * F0, real aa, real bb){
   sp_vector * dab = sp_vector_alloc(2);
-  sp_cmatrix * Gab;
-  sp_cmatrix * Gm;
-  int i;
+  sp_c3matrix * Gab;
+  sp_c3matrix * Gm;
+  long long i;
   Complex x;
   /* Gab = Gs+Gns+tau(0)*DGs+tau(1)*DGns */
-  Gab = sp_cmatrix_duplicate(Gs);    
-  sp_cmatrix_add(Gab,Gns,NULL);
+  Gab = sp_c3matrix_duplicate(Gs);    
+  sp_c3matrix_add(Gab,Gns,NULL);
   x = aa;
-  sp_cmatrix_add(Gab,DGs,&x);
+  sp_c3matrix_add(Gab,DGs,&x);
   x = bb;
-  sp_cmatrix_add(Gab,DGns,&x);
+  sp_c3matrix_add(Gab,DGns,&x);
   /*
     Gm=Gab./abs(Gab).*F0;
   */
-  Gm = sp_cmatrix_duplicate(Gab);
-  for(i = 0;i<sp_cmatrix_size(Gab);i++){
+  Gm = sp_c3matrix_duplicate(Gab);
+  for(i = 0;i<sp_c3matrix_size(Gab);i++){
     assert(cabs(Gm->data[i]) != 0);
     if(F0->mask->data[i]){
       Gm->data[i] = F0->image->data[i]*(Gm->data[i]/cabs(Gm->data[i]));
@@ -102,15 +102,15 @@ sp_vector * gradL(sp_cmatrix * Gs, sp_cmatrix * Gns, sp_cmatrix * DGs, sp_cmatri
   dab(2)=-cprod(DGns,Gm);                     %-<DGns|Pm G>
 
    */
-  dab->data[1] = -creal(sp_cmatrix_froenius_prod(DGns,Gm));
-  sp_cmatrix_sub(Gm,Gab);
-  dab->data[0] = -creal(sp_cmatrix_froenius_prod(DGs,Gm));
-  sp_cmatrix_free(Gm);
-  sp_cmatrix_free(Gab);
+  dab->data[1] = -creal(sp_c3matrix_froenius_prod(DGns,Gm));
+  sp_c3matrix_sub(Gm,Gab);
+  dab->data[0] = -creal(sp_c3matrix_froenius_prod(DGs,Gm));
+  sp_c3matrix_free(Gm);
+  sp_c3matrix_free(Gab);
   return dab;
 }
 
-real linminab(sp_cmatrix * Gs, sp_cmatrix * Gns, sp_cmatrix * DGs, sp_cmatrix * DGns, Image * F0, sp_vector * ab, sp_vector * dab, sp_matrix * Habi, real TolY){
+real linminab(sp_c3matrix * Gs, sp_c3matrix * Gns, sp_c3matrix * DGs, sp_c3matrix * DGns, Image * F0, sp_vector * ab, sp_vector * dab, sp_3matrix * Habi, real TolY){
   /*
     % function x=linminab(Gs,Gns,DGs,DGns,F0,ab,dab,Habi);
     % line search for ab:
@@ -129,7 +129,7 @@ real linminab(sp_cmatrix * Gs, sp_cmatrix * Gns, sp_cmatrix * DGs, sp_cmatrix * 
   sp_vector * tmp2;
   sp_vector * xmin = sp_vector_alloc(2);
   sp_vector * xmax = sp_vector_alloc(2);
-  sp_matrix * minus_Habi = sp_matrix_alloc(2,2);
+  sp_3matrix * minus_Habi = sp_3matrix_alloc(2,2,1);
   double dyn,xold,x;
   double Dx,Dy,xn;
   double errslp,d2y;
@@ -138,8 +138,8 @@ real linminab(sp_cmatrix * Gs, sp_cmatrix * Gns, sp_cmatrix * DGs, sp_cmatrix * 
 
 /*  fprintf(stdout,"linminab\n");*/
 
-  sp_matrix_memcpy(minus_Habi,Habi);
-  sp_matrix_scale(minus_Habi,-1);
+  sp_3matrix_memcpy(minus_Habi,Habi);
+  sp_3matrix_scale(minus_Habi,-1);
   if(TolY < 0){
     TolY = 1e-1;
   }
@@ -161,7 +161,7 @@ r  */
   /* %function to send to 0 (but we are forcing it to go toward a min */
   /* y=cprod(dab,-Habi*gradL(Gs,Gns,DGs,DGns,F0,ab(1)+dab(1)*x,ab(2)+dab(2)*x)); */
   tmp = gradL(Gs,Gns,DGs,DGns,F0,ab->data[0]+dab->data[0]*x,ab->data[1]+dab->data[1]*x);
-  tmp2 = sp_matrix_vector_prod(minus_Habi,tmp);
+  tmp2 = sp_3matrix_vector_prod(minus_Habi,tmp);
   y = sp_vector_dot_prod(dab,tmp2);
   sp_vector_free(tmp);
   sp_vector_free(tmp2);
@@ -197,7 +197,7 @@ r  */
       y=cprod(dab,-Habi*gradL(Gs,Gns,DGs,DGns,F0,ab(1)+dab(1)*x,ab(2)+dab(2)*x));
     */
     tmp = gradL(Gs,Gns,DGs,DGns,F0,ab->data[0]+dab->data[0]*x,ab->data[1]+dab->data[1]*x);
-    tmp2 = sp_matrix_vector_prod(minus_Habi,tmp);
+    tmp2 = sp_3matrix_vector_prod(minus_Habi,tmp);
     y = sp_vector_dot_prod(dab,tmp2);
     sp_vector_free(tmp);
     sp_vector_free(tmp2);
@@ -208,7 +208,7 @@ r  */
     if(fabs(y) < TolY){
       sp_vector_free(xmin);
       sp_vector_free(xmax);
-      sp_matrix_free(minus_Habi);
+      sp_3matrix_free(minus_Habi);
       return x;
     }
     /*
@@ -235,7 +235,7 @@ r  */
       y=cprod(dab,-Habi*gradL(Gs,Gns,DGs,DGns,F0,ab(1)+dab(1)*x,ab(2)+dab(2)*x));
       */
       tmp = gradL(Gs,Gns,DGs,DGns,F0,ab->data[0]+dab->data[0]*x,ab->data[1]+dab->data[1]*x);
-      tmp2 = sp_matrix_vector_prod(minus_Habi,tmp);
+      tmp2 = sp_3matrix_vector_prod(minus_Habi,tmp);
       y = sp_vector_dot_prod(dab,tmp2);
       sp_vector_free(tmp);
       sp_vector_free(tmp2);
@@ -278,7 +278,7 @@ r  */
 	  dy=cprod(dab,-Habi*hesL(Gs,Gns,DGs,DGns,F0,ab(1)+dab(1)*x,ab(2)+dab(2)*x)*dab);
 	*/
 	tmp = gradL(Gs,Gns,DGs,DGns,F0,ab->data[0]+dab->data[0]*x,ab->data[1]+dab->data[1]*x);
-	tmp2 = sp_matrix_vector_prod(minus_Habi,tmp);
+	tmp2 = sp_3matrix_vector_prod(minus_Habi,tmp);
 	dy = sp_vector_dot_prod(dab,tmp2);
 	sp_vector_free(tmp);
 	sp_vector_free(tmp2);
@@ -305,22 +305,22 @@ r  */
 }
 
 
-void Hfit(sp_matrix * _taui, sp_matrix * _dtaui, int iter, sp_vector * tau, sp_vector * dtau, sp_vector * Dtau, sp_matrix * Hi){
+void Hfit(sp_3matrix * _taui, sp_3matrix * _dtaui, int iter, sp_vector * tau, sp_vector * dtau, sp_vector * Dtau, sp_3matrix * Hi){
   /* linear fit */
-  sp_matrix * dtaui = sp_matrix_alloc(2,iter);
-  sp_matrix * taui = sp_matrix_alloc(2,iter);
+  sp_3matrix * dtaui = sp_3matrix_alloc(2,iter,1);
+  sp_3matrix * taui = sp_3matrix_alloc(2,iter,1);
   sp_vector * dtaum = sp_vector_alloc(2);
   sp_vector * taum = sp_vector_alloc(2);
-  sp_matrix * x = sp_matrix_alloc(2,iter);
-  sp_matrix * y = sp_matrix_alloc(2,iter);
-  sp_matrix * x_trans = sp_matrix_alloc(2,iter);
-  sp_matrix * y_trans = sp_matrix_alloc(2,iter);
-  sp_matrix * H;
-  sp_matrix * tmp;
-  sp_matrix * tmp2;
+  sp_3matrix * x = sp_3matrix_alloc(2,iter,1);
+  sp_3matrix * y = sp_3matrix_alloc(2,iter,1);
+  sp_3matrix * x_trans = sp_3matrix_alloc(2,iter,1);
+  sp_3matrix * y_trans = sp_3matrix_alloc(2,iter,1);
+  sp_3matrix * H;
+  sp_3matrix * tmp;
+  sp_3matrix * tmp2;
   sp_vector * taur = sp_vector_alloc(2);
   real r;
-  int i;
+  long long i;
   int jj = 0;
 
   real mintaultmp;
@@ -330,62 +330,62 @@ void Hfit(sp_matrix * _taui, sp_matrix * _dtaui, int iter, sp_vector * tau, sp_v
    */
 
   for(i = 0;i<iter;i++){
-    sp_matrix_set(dtaui,0,i,sp_matrix_get(_dtaui,0,i));
-    sp_matrix_set(dtaui,1,i,sp_matrix_get(_dtaui,1,i));
-    sp_matrix_set(taui,0,i,sp_matrix_get(_taui,0,i));
-    sp_matrix_set(taui,1,i,sp_matrix_get(_taui,1,i));
+    sp_3matrix_set(dtaui,0,i,0,sp_3matrix_get(_dtaui,0,i,0));
+    sp_3matrix_set(dtaui,1,i,0,sp_3matrix_get(_dtaui,1,i,0));
+    sp_3matrix_set(taui,0,i,0,sp_3matrix_get(_taui,0,i,0));
+    sp_3matrix_set(taui,1,i,0,sp_3matrix_get(_taui,1,i,0));
   }
-  for(i = 0;i<sp_matrix_cols(dtaui);i++){
-    dtaum->data[0] += sp_matrix_get(dtaui,0,i);
-    dtaum->data[1] += sp_matrix_get(dtaui,1,i);
-    taum->data[0] += sp_matrix_get(taui,0,i);
-    taum->data[1] += sp_matrix_get(taui,1,i);
+  for(i = 0;i<sp_3matrix_x(dtaui);i++){
+    dtaum->data[0] += sp_3matrix_get(dtaui,0,i,0);
+    dtaum->data[1] += sp_3matrix_get(dtaui,1,i,0);
+    taum->data[0] += sp_3matrix_get(taui,0,i,0);
+    taum->data[1] += sp_3matrix_get(taui,1,i,0);
   }
-  dtaum->data[0] /= sp_matrix_cols(dtaui);
-  dtaum->data[1] /= sp_matrix_cols(dtaui);
-  taum->data[0] /= sp_matrix_cols(dtaui);
-  taum->data[1] /= sp_matrix_cols(dtaui);
+  dtaum->data[0] /= sp_3matrix_x(dtaui);
+  dtaum->data[1] /= sp_3matrix_x(dtaui);
+  taum->data[0] /= sp_3matrix_x(dtaui);
+  taum->data[1] /= sp_3matrix_x(dtaui);
   /* x=[taui(1,:)-taum(1);taui(2,:)-taum(2)]; 
    * y=[dtaui(1,:)-dtaum(1);dtaui(2,:)-dtaum(2)];
    */
-  for(i = 0;i<sp_matrix_cols(dtaui);i++){
-    sp_matrix_set(x,0,i,sp_matrix_get(taui,0,i)-taum->data[0]);
-    sp_matrix_set(x,1,i,sp_matrix_get(taui,1,i)-taum->data[1]);
-    sp_matrix_set(y,0,i,sp_matrix_get(dtaui,0,i)-dtaum->data[0]);
-    sp_matrix_set(y,1,i,sp_matrix_get(dtaui,1,i)-dtaum->data[1]);
+  for(i = 0;i<sp_3matrix_x(dtaui);i++){
+    sp_3matrix_set(x,0,i,0,sp_3matrix_get(taui,0,i,0)-taum->data[0]);
+    sp_3matrix_set(x,1,i,0,sp_3matrix_get(taui,1,i,0)-taum->data[1]);
+    sp_3matrix_set(y,0,i,0,sp_3matrix_get(dtaui,0,i,0)-dtaum->data[0]);
+    sp_3matrix_set(y,1,i,0,sp_3matrix_get(dtaui,1,i,0)-dtaum->data[1]);
   }
-  sp_matrix_memcpy(x_trans,x);
-  sp_matrix_transpose(x_trans);
-  sp_matrix_memcpy(y_trans,y);
-  sp_matrix_transpose(y_trans);
+  sp_3matrix_memcpy(x_trans,x);
+  sp_3matrix_transpose(x_trans);
+  sp_3matrix_memcpy(y_trans,y);
+  sp_3matrix_transpose(y_trans);
   
   /* %Fitted Hessian */
   /* H=(x*x')^-1*x*y'; */
-  tmp = sp_matrix_mul(x,x_trans);
-  sp_matrix_invert(tmp);
-  tmp2 = sp_matrix_mul(x,y_trans);
-  H = sp_matrix_mul(tmp,tmp2);
-  sp_matrix_free(tmp);
-  sp_matrix_free(tmp2);
+  tmp = sp_3matrix_mul(x,x_trans);
+  sp_3matrix_invert(tmp);
+  tmp2 = sp_3matrix_mul(x,y_trans);
+  H = sp_3matrix_mul(tmp,tmp2);
+  sp_3matrix_free(tmp);
+  sp_3matrix_free(tmp2);
   
   /* Hi=H^-1; */
-  sp_matrix_memcpy(Hi,H);
-  sp_matrix_invert(Hi);
+  sp_3matrix_memcpy(Hi,H);
+  sp_3matrix_invert(Hi);
 
   /* fitted root */
-  tmp = sp_matrix_mul(Hi,dtaui);
-  for(i = 0;i<sp_matrix_cols(dtaui);i++){
-    taur->data[0] += -(sp_matrix_get(tmp,0,i)-sp_matrix_get(taui,0,i));
-    taur->data[1] += -(sp_matrix_get(tmp,1,i)-sp_matrix_get(taui,1,i));
+  tmp = sp_3matrix_mul(Hi,dtaui);
+  for(i = 0;i<sp_3matrix_x(dtaui);i++){
+    taur->data[0] += -(sp_3matrix_get(tmp,0,i,0)-sp_3matrix_get(taui,0,i,0));
+    taur->data[1] += -(sp_3matrix_get(tmp,1,i,0)-sp_3matrix_get(taui,1,i,0));
   }
-  taur->data[0] /= dtaui->cols; 
-  taur->data[1] /= dtaui->cols; 
+  taur->data[0] /= dtaui->x; 
+  taur->data[1] /= dtaui->x; 
   
   /* Newton with line search, go back to minimum value */
   /* Use smallest gradient */
   mintaultmp = 0;
-  for(i = 0;i<sp_matrix_cols(dtaui);i++){
-    r = sqrt(sp_matrix_get(dtaui,0,i)*sp_matrix_get(dtaui,0,i)+sp_matrix_get(dtaui,1,i)*sp_matrix_get(dtaui,1,i));
+  for(i = 0;i<sp_3matrix_x(dtaui);i++){
+    r = sqrt(sp_3matrix_get(dtaui,0,i,0)*sp_3matrix_get(dtaui,0,i,0)+sp_3matrix_get(dtaui,1,i,0)*sp_3matrix_get(dtaui,1,i,0));
     if(r < mintaultmp || !mintaultmp){
       mintaultmp = r;
       jj = i;
@@ -393,30 +393,30 @@ void Hfit(sp_matrix * _taui, sp_matrix * _dtaui, int iter, sp_vector * tau, sp_v
   }
   /* tau=taui(:,jj);  */
   /*go back to that point  */
-  tau->data[0] = sp_matrix_get(taui,0,jj);
-  tau->data[1] = sp_matrix_get(taui,1,jj);
+  tau->data[0] = sp_3matrix_get(taui,0,jj,0);
+  tau->data[1] = sp_3matrix_get(taui,1,jj,0);
   /* %use its gradient */
   /*  dtau=dtaui(:,jj); */
-  dtau->data[0] = sp_matrix_get(dtaui,0,jj); 
-  dtau->data[1] = sp_matrix_get(dtaui,1,jj);
+  dtau->data[0] = sp_3matrix_get(dtaui,0,jj,0); 
+  dtau->data[1] = sp_3matrix_get(dtaui,1,jj,0);
   /* step to root */
   /* Dtau=tau-taur; */
   Dtau->data[0] = tau->data[0]-taur->data[0];
   Dtau->data[1] = tau->data[1]-taur->data[1];      
-  sp_matrix_free(dtaui);
-  sp_matrix_free(taui);
-  sp_matrix_free(x_trans);
-  sp_matrix_free(y_trans);
+  sp_3matrix_free(dtaui);
+  sp_3matrix_free(taui);
+  sp_3matrix_free(x_trans);
+  sp_3matrix_free(y_trans);
 }
 
-void goright(sp_matrix * H){
-  int ND = H->rows;
+void goright(sp_3matrix * H){
+  int ND = H->y;
   sp_vector *  rightdir = sp_vector_alloc(ND);
   sp_vector *  isright = sp_vector_alloc(ND);
   real Hmin;
-  sp_matrix * redM = sp_matrix_alloc(ND,ND);
-  sp_matrix * tmp;
-  sp_matrix * tmp2;
+  sp_3matrix * redM = sp_3matrix_alloc(ND,ND,0);
+  sp_3matrix * tmp;
+  sp_3matrix * tmp2;
   int i;
   /* rightdir=repmat([1,-1],1,ND/2); %alternate min-max */
   for(i = 0;i<ND/2;i++){
@@ -427,7 +427,7 @@ void goright(sp_matrix * H){
   /* modify diagonal elements so that the sign is right */
   /* H(sub2ind(size(H),1:ND,1:ND))=rightdir.*abs(H(sub2ind(size(H),1:ND,1:ND))); */
   for(i = 0;i<ND;i++){
-    sp_matrix_set(H,i,i,fabs(sp_matrix_get(H,i,i))*rightdir->data[i]);
+    sp_3matrix_set(H,i,i,0,fabs(sp_3matrix_get(H,i,i,0))*rightdir->data[i]);
   }
   /* %reduce wrong elements to 1/2 of smallest right element */
   /* diagH=diag(H) */
@@ -438,10 +438,10 @@ void goright(sp_matrix * H){
   /* Hmin=min(abs(H(sub2ind(size(H),find(isright),find(isright))))); */
   Hmin = 0;
   for(i = 0;i<ND;i++){
-    if(sp_matrix_get(H,i,i)*rightdir->data[i] > 0){
+    if(sp_3matrix_get(H,i,i,0)*rightdir->data[i] > 0){
       sp_vector_set(isright,i,1);
-      if(fabs(sp_matrix_get(H,i,i)) < Hmin || !Hmin){ 
-	Hmin = fabs(sp_matrix_get(H,i,i));
+      if(fabs(sp_3matrix_get(H,i,i,0)) < Hmin || !Hmin){ 
+	Hmin = fabs(sp_3matrix_get(H,i,i,0));
       }
     }else{
       sp_vector_set(isright,i,0);
@@ -450,60 +450,60 @@ void goright(sp_matrix * H){
   /* redM=diag(sqrt(Hmin/1)./sqrt(abs(diag(H))).*(~isright'))+diag(isright); */
   for(i = 0;i<ND;i++){
     if(isright->data[i]){
-      sp_matrix_set(redM,i,i,1);
+      sp_3matrix_set(redM,i,i,0,1);
     }else{
-      sp_matrix_set(redM,i,i,sqrt(Hmin)/sqrt(fabs(sp_matrix_get(H,i,i))));
+      sp_3matrix_set(redM,i,i,0,sqrt(Hmin)/sqrt(fabs(sp_3matrix_get(H,i,i,0))));
     }
   }
   /* H=redM*H*redM; */
-  tmp = sp_matrix_mul(redM,H);
-  tmp2 = sp_matrix_mul(tmp,redM);
-  sp_matrix_memcpy(H,tmp2);
-  sp_matrix_free(tmp);
-  sp_matrix_free(tmp2);
-  sp_matrix_free(redM);
+  tmp = sp_3matrix_mul(redM,H);
+  tmp2 = sp_3matrix_mul(tmp,redM);
+  sp_3matrix_memcpy(H,tmp2);
+  sp_3matrix_free(tmp);
+  sp_3matrix_free(tmp2);
+  sp_3matrix_free(redM);
   if(ND==4){
     /* make sure eigenvalues of alpha1,alpha2 hessian and beta1,beta2 hessian
      * H([1,3],[1,3]),H([2,4],[2,4]) are positive
      */
-    if(sp_matrix_get(H,2,4)*sp_matrix_get(H,2,4) > sp_matrix_get(H,2,2)*sp_matrix_get(H,4,4)){
+    if(sp_3matrix_get(H,2,4,0)*sp_3matrix_get(H,2,4,0) > sp_3matrix_get(H,2,2,0)*sp_3matrix_get(H,4,4,0)){
       /* remove diag components if too big */
-      sp_matrix_set(H,2,4,0);
-      sp_matrix_set(H,4,2,0);
+      sp_3matrix_set(H,2,4,0,0);
+      sp_3matrix_set(H,4,2,0,0);
     }
-    if(sp_matrix_get(H,1,3)*sp_matrix_get(H,1,3) > sp_matrix_get(H,1,1)*sp_matrix_get(H,3,3)){
+    if(sp_3matrix_get(H,1,3,0)*sp_3matrix_get(H,1,3,0) > sp_3matrix_get(H,1,1,0)*sp_3matrix_get(H,3,3,0)){
       /* remove diag components if too big */
-      sp_matrix_set(H,1,3,0);
-      sp_matrix_set(H,3,1,0);
+      sp_3matrix_set(H,1,3,0,0);
+      sp_3matrix_set(H,3,1,0,0);
     }
   }
 }
 
-int hesLtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGns,Image * F0,sp_vector * tau,sp_matrix * Hab, sp_matrix * Habi){
-  sp_cmatrix * Gab;
-  sp_cmatrix * Fratio;
-  sp_cmatrix * tmp;
-  sp_cmatrix * ph2;
+int hesLtau(sp_c3matrix * Gs,sp_c3matrix * Gns,sp_c3matrix * DGs,sp_c3matrix * DGns,Image * F0,sp_vector * tau,sp_3matrix * Hab, sp_3matrix * Habi){
+  sp_c3matrix * Gab;
+  sp_c3matrix * Fratio;
+  sp_c3matrix * tmp;
+  sp_c3matrix * ph2;
   real rtmp;
   Complex x;
-  int i;
+  long long i;
   if(!tau){
-    Gab = sp_cmatrix_duplicate(Gs);
-    sp_cmatrix_add(Gab,Gns,NULL);
+    Gab = sp_c3matrix_duplicate(Gs);
+    sp_c3matrix_add(Gab,Gns,NULL);
   }else{
     /* Gab = Gs+Gns+tau(0)*DGs+tau(1)*DGns */
-    Gab = sp_cmatrix_duplicate(Gs);    
-    sp_cmatrix_add(Gab,Gns,NULL);    
+    Gab = sp_c3matrix_duplicate(Gs);    
+    sp_c3matrix_add(Gab,Gns,NULL);    
     x = tau->data[0];
-    sp_cmatrix_add(Gab,DGs,&x);
+    sp_c3matrix_add(Gab,DGs,&x);
     x = tau->data[1];
-    sp_cmatrix_add(Gab,DGns,&x);
+    sp_c3matrix_add(Gab,DGns,&x);
   }
 /*  fprintf(stdout,"HesLtau\n"); */
 
 /* Fratio = F0/abs(Gab);  */
-  Fratio = sp_cmatrix_duplicate(F0->image);
-  for(i = 0;i<sp_cmatrix_size(Gab);i++){
+  Fratio = sp_c3matrix_duplicate(F0->image);
+  for(i = 0;i<sp_c3matrix_size(Gab);i++){
     assert(cabsr(Gab->data[i] != 0));
     if(F0->mask->data[i]){
       Fratio->data[i] /= cabsr(Gab->data[i]);
@@ -512,63 +512,63 @@ int hesLtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGns,
     }
   }
 /* ph2 = (Gab/abs(Gab))^2 * Fratio */
-  ph2 = sp_cmatrix_duplicate(Gab);
-  for(i = 0;i<sp_cmatrix_size(ph2);i++){
+  ph2 = sp_c3matrix_duplicate(Gab);
+  for(i = 0;i<sp_c3matrix_size(ph2);i++){
     assert(cabsr(ph2->data[i] != 0));
     ph2->data[i] = (ph2->data[i]/cabsr(ph2->data[i]))*(ph2->data[i]/cabsr(ph2->data[i]))*Fratio->data[i];
   }
   /* Hab(0,0)=-cprod(DGs,Fratio.*DGs)/2+cprod(DGs,ph2.*conj(DGs))/2 +cnorm2(DGs); */
-  tmp = sp_cmatrix_duplicate(Fratio);
-  sp_cmatrix_mul_elements(tmp,DGs);  
-  rtmp = creal(sp_cmatrix_froenius_prod(DGs,tmp))/-2;
-  sp_cmatrix_conj(DGs);
-  sp_cmatrix_free(tmp);
-  tmp = sp_cmatrix_duplicate(ph2);
-  sp_cmatrix_mul_elements(tmp,DGs);
-  sp_cmatrix_conj(DGs);  
-  rtmp += creal(sp_cmatrix_froenius_prod(DGs,tmp))/2;
-  sp_cmatrix_free(tmp);
-  rtmp += creal(sp_cmatrix_froenius_prod(DGs,DGs));
-  sp_matrix_set(Hab,0,0,rtmp);
+  tmp = sp_c3matrix_duplicate(Fratio);
+  sp_c3matrix_mul_elements(tmp,DGs);  
+  rtmp = creal(sp_c3matrix_froenius_prod(DGs,tmp))/-2;
+  sp_c3matrix_conj(DGs);
+  sp_c3matrix_free(tmp);
+  tmp = sp_c3matrix_duplicate(ph2);
+  sp_c3matrix_mul_elements(tmp,DGs);
+  sp_c3matrix_conj(DGs);  
+  rtmp += creal(sp_c3matrix_froenius_prod(DGs,tmp))/2;
+  sp_c3matrix_free(tmp);
+  rtmp += creal(sp_c3matrix_froenius_prod(DGs,DGs));
+  sp_3matrix_set(Hab,0,0,0,rtmp);
 
   /* ph2=conj(ph2).*DGns; */
-  sp_cmatrix_conj(ph2);
-  sp_cmatrix_mul_elements(ph2,DGns);  
+  sp_c3matrix_conj(ph2);
+  sp_c3matrix_mul_elements(ph2,DGns);  
   
   /* Fratio=Fratio.*DGns; */
-  sp_cmatrix_mul_elements(Fratio,DGns);  
+  sp_c3matrix_mul_elements(Fratio,DGns);  
   
   
   /* Hab(1,1)=-cprod(Fratio,DGns)/2+cprod(ph2,conj(DGns))/2; */
-  rtmp = -creal(sp_cmatrix_froenius_prod(Fratio,DGns))/2;
-  sp_cmatrix_conj(DGns);  
-  rtmp += creal(sp_cmatrix_froenius_prod(ph2,DGns))/2;
-  sp_cmatrix_conj(DGns);  
-  sp_matrix_set(Hab,1,1,rtmp);
+  rtmp = -creal(sp_c3matrix_froenius_prod(Fratio,DGns))/2;
+  sp_c3matrix_conj(DGns);  
+  rtmp += creal(sp_c3matrix_froenius_prod(ph2,DGns))/2;
+  sp_c3matrix_conj(DGns);  
+  sp_3matrix_set(Hab,1,1,0,rtmp);
 
   /* Hab(0,1)=-cprod(Fratio,DGs)/2+cprod(ph2,conj(DGs))/2; */
-  rtmp = -creal(sp_cmatrix_froenius_prod(Fratio,DGs))/2;
-  sp_cmatrix_conj(DGs);  
-  rtmp += creal(sp_cmatrix_froenius_prod(ph2,DGs))/2;
-  sp_cmatrix_conj(DGs);  
-  sp_matrix_set(Hab,0,1,rtmp);
+  rtmp = -creal(sp_c3matrix_froenius_prod(Fratio,DGs))/2;
+  sp_c3matrix_conj(DGs);  
+  rtmp += creal(sp_c3matrix_froenius_prod(ph2,DGs))/2;
+  sp_c3matrix_conj(DGs);  
+  sp_3matrix_set(Hab,0,1,0,rtmp);
 
   /* Hab(2,1)=Hab(1,2); */
-  sp_matrix_set(Hab,1,0,rtmp);
+  sp_3matrix_set(Hab,1,0,0,rtmp);
   if(Habi){
-    sp_matrix_memcpy(Habi,Hab);
-    sp_matrix_invert(Habi);
+    sp_3matrix_memcpy(Habi,Hab);
+    sp_3matrix_invert(Habi);
   }
-  sp_cmatrix_free(Gab);
-  sp_cmatrix_free(ph2);
-  sp_cmatrix_free(Fratio);
+  sp_c3matrix_free(Gab);
+  sp_c3matrix_free(ph2);
+  sp_c3matrix_free(Fratio);
   return 0;
 }
 
-int gradLtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGns,Image * F0,sp_vector * tau,sp_vector * dtau){
+int gradLtau(sp_c3matrix * Gs,sp_c3matrix * Gns,sp_c3matrix * DGs,sp_c3matrix * DGns,Image * F0,sp_vector * tau,sp_vector * dtau){
 
   complex double Gm,Gab;
-  int i;
+  long long i;
   complex double dtau0 = 0;
   complex double dtau1 = 0;
   dtau->data[0] = 0;
@@ -580,7 +580,7 @@ int gradLtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGns
     dtau(2)=-cprod(DGns,Gm);                         %-<DGns|Pm G>    
   */
   if(!tau){
-    for(i = 0;i<sp_cmatrix_size(DGs);i++){
+    for(i = 0;i<sp_c3matrix_size(DGs);i++){
       Gab = (complex double)Gs->data[i]+Gns->data[i];
       assert(cabsr(Gab) != 0);
       if(F0->mask->data[i]){
@@ -592,7 +592,7 @@ int gradLtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGns
       dtau1 -= DGns->data[i]*conjr(Gm);
     }
   }else{
-    for(i = 0;i<sp_cmatrix_size(DGs);i++){
+    for(i = 0;i<sp_c3matrix_size(DGs);i++){
       Gab = (complex double)Gs->data[i]+Gns->data[i]+tau->data[0]*(complex double)DGs->data[i]+tau->data[1]*DGns->data[i];
       assert(cabsr(Gab) != 0);
       if(F0->mask->data[i]){
@@ -610,7 +610,7 @@ int gradLtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGns
 }
 
 
-void gradLrho(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * S,Image * F0,real * w, sp_cmatrix * DGs, sp_cmatrix * DGns){
+void gradLrho(sp_c3matrix * Gs,sp_c3matrix * Gns,sp_c3matrix * S,Image * F0,real * w, sp_c3matrix * DGs, sp_c3matrix * DGns){
 /*
   %[DGs,DGns]=gradLrho(Gs,Gns,S,F0,w);
   %
@@ -627,12 +627,12 @@ void gradLrho(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * S,Image * F0,real * 
   % DGns         step    outside  "       =-Pns Pm G
 */
   /*  Gm=F0.*(Gs+Gns)./abs(Gs+Gns);  %½ Pm G */
-  sp_cmatrix * Gm =sp_cmatrix_alloc(sp_cmatrix_rows(Gs),sp_cmatrix_cols(Gs));;
-  sp_cmatrix * Gms;
-  sp_cmatrix * tmp;
-  int i;
-  real norm = 1.0/sp_cmatrix_size(Gs);
-  for(i = 0;i<sp_cmatrix_size(Gs);i++){
+  sp_c3matrix * Gm =sp_c3matrix_alloc(sp_c3matrix_x(Gs),sp_c3matrix_y(Gs),1);;
+  sp_c3matrix * Gms;
+  sp_c3matrix * tmp;
+  long long i;
+  real norm = 1.0/sp_c3matrix_size(Gs);
+  for(i = 0;i<sp_c3matrix_size(Gs);i++){
     assert(cabs(Gs->data[i]+Gns->data[i]) != 0);
     if(F0->mask->data[i]){
       Gm->data[i] = (Gs->data[i]+Gns->data[i])/cabs(Gs->data[i]+Gns->data[i])*F0->image->data[i];
@@ -643,42 +643,42 @@ void gradLrho(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * S,Image * F0,real * 
 /*  Gm = sp_proj_module(tmp,F0);*/
 
   /*  Gms=fft2(ifft2(Gm).*S);        %½ Ps Pm G */
-  tmp = sp_cmatrix_ifft(Gm);
-  Gms = sp_cmatrix_alloc(sp_cmatrix_rows(Gm),sp_cmatrix_cols(Gm));
-  for(i = 0;i<sp_cmatrix_size(Gs);i++){
+  tmp = sp_c3matrix_ifft(Gm);
+  Gms = sp_c3matrix_alloc(sp_c3matrix_x(Gm),sp_c3matrix_y(Gm),0);
+  for(i = 0;i<sp_c3matrix_size(Gs);i++){
     if(S->data[i]){
       Gms->data[i] = tmp->data[i];
     }
   }
 /*  Gms = sp_proj_support(tmp,S); */
   
-  sp_cmatrix_free(tmp);
+  sp_c3matrix_free(tmp);
   tmp = Gms;
-  Gms = sp_cmatrix_fft(tmp);
-  sp_cmatrix_free(tmp);
+  Gms = sp_c3matrix_fft(tmp);
+  sp_c3matrix_free(tmp);
   /* normalize */
-  sp_cmatrix_scale(Gms,norm);
+  sp_c3matrix_scale(Gms,norm);
 
   /* DGs=(Gms-Gs);                  %½ Ps (Pm-I)      %reversed sign */
-  sp_cmatrix_memcpy(DGs,Gms);
-  sp_cmatrix_sub(DGs,Gs);
+  sp_c3matrix_memcpy(DGs,Gms);
+  sp_c3matrix_sub(DGs,Gs);
   /* DGns=-(Gm-Gms);                %½ -Pns Pm G */ 
-  sp_cmatrix_memcpy(DGns,Gms);
-  sp_cmatrix_sub(DGns,Gm);
+  sp_c3matrix_memcpy(DGns,Gms);
+  sp_c3matrix_sub(DGns,Gm);
   if(w){
     /*DGns=DGns+(1-w)*Gns;       %½ -Pns (Pm -(1-w)I) G*/
-    tmp = sp_cmatrix_duplicate(Gns);
-    sp_cmatrix_scale(tmp,1-*w);
-    sp_cmatrix_add(DGns,tmp,NULL);
-    sp_cmatrix_free(tmp);
+    tmp = sp_c3matrix_duplicate(Gns);
+    sp_c3matrix_scale(tmp,1-*w);
+    sp_c3matrix_add(DGns,tmp,NULL);
+    sp_c3matrix_free(tmp);
   }        
-  sp_cmatrix_free(Gms);
-  sp_cmatrix_free(Gm);
+  sp_c3matrix_free(Gms);
+  sp_c3matrix_free(Gm);
 }
 
-int minmaxtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGns,Image * F0,real TolY,int maxiter, sp_vector * tau, sp_matrix * Hi){
+int minmaxtau(sp_c3matrix * Gs,sp_c3matrix * Gns,sp_c3matrix * DGs,sp_c3matrix * DGns,Image * F0,real TolY,int maxiter, sp_vector * tau, sp_3matrix * Hi){
   static sp_vector * tauav = NULL;
-  static sp_matrix * Hiav = NULL;
+  static sp_3matrix * Hiav = NULL;
   static int nav = 0;
   real r;
   real RDGs_cp;
@@ -689,8 +689,8 @@ int minmaxtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGn
   real x;
 
   /* data will be stored as "tau0[0],tau0[1],tau1[0],tau1[1],tau2[0],tau2[1],...*/
-  sp_matrix * taui = sp_matrix_alloc(2,maxiter+1);
-  sp_matrix * dtaui = sp_matrix_alloc(2,maxiter+1);
+  sp_3matrix * taui = sp_3matrix_alloc(2,maxiter+1,1);
+  sp_3matrix * dtaui = sp_3matrix_alloc(2,maxiter+1,1);
   sp_vector * dtau = sp_vector_alloc(2);
   real dtaul;
   real Dtaul;
@@ -707,8 +707,8 @@ int minmaxtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGn
   real erquad1;
   sp_vector * Dtauold = sp_vector_alloc(2);
   sp_vector * Dtau = sp_vector_alloc(2);
-  sp_matrix * H = sp_matrix_alloc(2,2);
-  sp_matrix * minus_Hi = sp_matrix_alloc(2,2);
+  sp_3matrix * H = sp_3matrix_alloc(2,2,1);
+  sp_3matrix * minus_Hi = sp_3matrix_alloc(2,2,1);
   sp_vector * tau_plus_step = sp_vector_alloc(2);
 
   sp_vector * y = sp_vector_alloc(2);
@@ -719,12 +719,12 @@ int minmaxtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGn
 
   sp_vector * tmp_v = sp_vector_alloc(2);
 
-  sp_matrix * DHi = sp_matrix_alloc(2,2);
+  sp_3matrix * DHi = sp_3matrix_alloc(2,2,1);
   real Dtaulold;
     
   
-  RDGs_cp = creal(sp_cmatrix_froenius_prod(DGs,DGs));
-  RDGns_cp = creal(sp_cmatrix_froenius_prod(DGns,DGns));
+  RDGs_cp = creal(sp_c3matrix_froenius_prod(DGs,DGs));
+  RDGns_cp = creal(sp_c3matrix_froenius_prod(DGns,DGns));
   /* this is the same as tauove but faster */
   real dtaul0 = sqrt(RDGs_cp*RDGs_cp+RDGns_cp*RDGns_cp); 
   
@@ -737,10 +737,10 @@ int minmaxtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGn
   }
   gradLtau(Gs,Gns,DGs,DGns,F0,tau,dtau); /* get gradient */
   
-  sp_matrix_set(taui,0,0,tau->data[0]);
-  sp_matrix_set(taui,1,0,tau->data[1]);
-  sp_matrix_set(dtaui,0,0,dtau->data[0]);
-  sp_matrix_set(dtaui,1,0,dtau->data[1]);
+  sp_3matrix_set(taui,0,0,0,tau->data[0]);
+  sp_3matrix_set(taui,1,0,0,tau->data[1]);
+  sp_3matrix_set(dtaui,0,0,0,dtau->data[0]);
+  sp_3matrix_set(dtaui,1,0,0,dtau->data[1]);
 
 
   sp_vector_memcpy(dtauold,dtau);
@@ -766,7 +766,7 @@ int minmaxtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGn
 #ifdef DEBUG_SPO
     printf("Copying previous Hessian\n");
 #endif
-    sp_matrix_memcpy(Hi,Hiav);
+    sp_3matrix_memcpy(Hi,Hiav);
   }
   
   sp_vector_memcpy(Dtauold,tau);
@@ -782,13 +782,13 @@ int minmaxtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGn
     sp_vector_memcpy(dtauold,dtau);
     dtaulo=dtaul;
     /* force it to go in the descent-ascent direction */
-    sp_matrix_set(Hi,0,0,fabs(sp_matrix_get(Hi,0,0)));
-    sp_matrix_set(Hi,1,1,-fabs(sp_matrix_get(Hi,1,1)));
+    sp_3matrix_set(Hi,0,0,0,fabs(sp_3matrix_get(Hi,0,0,0)));
+    sp_3matrix_set(Hi,1,1,0,-fabs(sp_3matrix_get(Hi,1,1,0)));
     /* Dtau=-Hi*dtau; */
-    sp_matrix_memcpy(minus_Hi,Hi);
-    sp_matrix_scale(minus_Hi,-1);
+    sp_3matrix_memcpy(minus_Hi,Hi);
+    sp_3matrix_scale(minus_Hi,-1);
 
-    Dtau = sp_matrix_vector_prod(minus_Hi,dtau); /* newton step */
+    Dtau = sp_3matrix_vector_prod(minus_Hi,dtau); /* newton step */
     
     if(((ii+11) % 20) == 0){ /* try a fit */
       Hfit(taui,dtaui,ii+1,tau,dtau,Dtau,Hi); /* linear fit  */
@@ -808,20 +808,20 @@ int minmaxtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGn
       
       jj = 0;
       for(i = 0;i<ii;i++){
-	r = sqrt(sp_matrix_get(dtaui,0,i)*sp_matrix_get(dtaui,0,i)+sp_matrix_get(dtaui,1,i)*sp_matrix_get(dtaui,1,i));
+	r = sqrt(sp_3matrix_get(dtaui,0,i,0)*sp_3matrix_get(dtaui,0,i,0)+sp_3matrix_get(dtaui,1,i,0)*sp_3matrix_get(dtaui,1,i,0));
 	if(r < mintaultmp || !mintaultmp){
 	  mintaultmp = r;
 	  jj = i;
 	}
       }
-      dtau->data[0] = sp_matrix_get(dtaui,0,jj);
-      dtau->data[1] = sp_matrix_get(dtaui,1,jj);
+      dtau->data[0] = sp_3matrix_get(dtaui,0,jj,0);
+      dtau->data[1] = sp_3matrix_get(dtaui,1,jj,0);
       /* Hessian */
       hesLtau(Gs,Gns,DGs,DGns,F0,tau,H,Hi);
       /* Dtau=-Hi*dtau; */
-      sp_matrix_memcpy(minus_Hi,Hi);
-      sp_matrix_scale(minus_Hi,-1);
-      Dtau = sp_matrix_vector_prod(minus_Hi,dtau); /* newton step */
+      sp_3matrix_memcpy(minus_Hi,Hi);
+      sp_3matrix_scale(minus_Hi,-1);
+      Dtau = sp_3matrix_vector_prod(minus_Hi,dtau); /* newton step */
       x = linminab(Gs,Gns,DGs,DGns,F0,tau,Dtau,Hi,-1); /* step length */
       /* Dtau = Dtau*x;*/
       sp_vector_scale(Dtau,x);
@@ -843,8 +843,8 @@ int minmaxtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGn
     assert(dtau->data[0]-dtauold->data[0] != 0 || dtau->data[1]-dtauold->data[1] != 0);
 
     /* dtaui(:,ii+1)=dtau; */
-    sp_matrix_set(dtaui,0,ii+1,dtau->data[0]);
-    sp_matrix_set(dtaui,1,ii+1,dtau->data[1]);
+    sp_3matrix_set(dtaui,0,ii+1,dtau->data[0],0);
+    sp_3matrix_set(dtaui,1,ii+1,dtau->data[1],0);
     /* dtaul=sqrt(cnorm2(dtau)); */
     dtaul =  sp_vector_norm(dtau); /* length */
     
@@ -856,8 +856,8 @@ int minmaxtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGn
     }
     
     sp_vector_memcpy(tau,tau_plus_step); /* new tau */ 
-    sp_matrix_set(taui,0,ii+1,tau->data[0]);
-    sp_matrix_set(taui,1,ii+1,tau->data[1]);
+    sp_3matrix_set(taui,0,ii+1,0,tau->data[0]);
+    sp_3matrix_set(taui,1,ii+1,0,tau->data[1]);
     sp_vector_memcpy(Dtauold,Dtau);
     if(dtaul/dtaul0<TolY){
       break; /* good enough, get out */
@@ -873,7 +873,7 @@ int minmaxtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGn
 
     /* how bad is the quadratic model? */
     /* Hi*y-s */
-    Hi_y = sp_matrix_vector_prod(Hi,y);
+    Hi_y = sp_3matrix_vector_prod(Hi,y);
     sp_vector_memcpy(Hi_y_minus_s,Hi_y);
     sp_vector_sub(Hi_y_minus_s,s);    
     /* erquad=sqrt(cnorm2(Hi*y-s)/(cnorm2(s)+cnorm2(Hi*y))); */
@@ -892,11 +892,11 @@ int minmaxtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGn
 #endif
       maxstep=sp_max(maxstep/4,minmaxstep);  /* %decrease step size */
       hesLtau(Gs,Gns,DGs,DGns,F0,tau,H,Hi);
-      sp_matrix_memcpy(minus_Hi,Hi);
-      sp_matrix_scale(minus_Hi,-1);
-      Dtau = sp_matrix_vector_prod(minus_Hi,dtau); /* newton step */
+      sp_3matrix_memcpy(minus_Hi,Hi);
+      sp_3matrix_scale(minus_Hi,-1);
+      Dtau = sp_3matrix_vector_prod(minus_Hi,dtau); /* newton step */
       x=linminab(Gs,Gns,DGs,DGns,F0,tau,Dtau,Hi,-1); /*%optimize length*/
-      sp_matrix_scale(Hi,x);
+      sp_3matrix_scale(Hi,x);
     }else if(erquad>1e-2){ /* SR1 update */
 #ifdef DEBUG_SPO
       printf("SR1 update\n");
@@ -918,10 +918,10 @@ int minmaxtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGn
 	/* DHi=(s-Hi*y)*(s-Hi*y)'/((s-Hi*y)'*y); */
 	DHi = sp_vector_outer_prod(s_minus_Hi_y,s_minus_Hi_y);
 	assert(sp_vector_dot_prod(s_minus_Hi_y,y) != 0);
-	sp_matrix_scale(DHi,1.0/sp_vector_dot_prod(s_minus_Hi_y,y));
+	sp_3matrix_scale(DHi,1.0/sp_vector_dot_prod(s_minus_Hi_y,y));
 	/* Hi=Hi+DHi; %see Nocedal & Wright, Num. Opt. Springer 99 */
-	sp_matrix_add(Hi,DHi);
-	sp_matrix_free(DHi);
+	sp_3matrix_add(Hi,DHi);
+	sp_3matrix_free(DHi);
       }
 
     }else{
@@ -958,8 +958,8 @@ int minmaxtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGn
     /* initialize tau average */
     tauav = sp_vector_alloc(2);
     sp_vector_memcpy(tauav,tau);
-    Hiav = sp_matrix_alloc(2,2);
-    sp_matrix_memcpy(Hiav,Hi);
+    Hiav = sp_3matrix_alloc(2,2,1);
+    sp_3matrix_memcpy(Hiav,Hi);
     nav = 1;
   }else{
     /* tauav=(tauav*nav+tau)/(nav+1); */
@@ -967,9 +967,9 @@ int minmaxtau(sp_cmatrix * Gs,sp_cmatrix * Gns,sp_cmatrix * DGs,sp_cmatrix * DGn
     sp_vector_add(tauav,tau);
     sp_vector_scale(tauav,1.0/(nav+1));
     /* Hiav=(Hiav*nav+Hi)/(nav+1); */
-    sp_matrix_scale(Hiav,nav);
-    sp_matrix_add(Hiav,Hi);
-    sp_matrix_scale(Hiav,1.0/(nav+1));
+    sp_3matrix_scale(Hiav,nav);
+    sp_3matrix_add(Hiav,Hi);
+    sp_3matrix_scale(Hiav,1.0/(nav+1));
     nav = sp_min(nav+1,5);        
   }
   sp_vector_free(s);

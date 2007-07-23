@@ -140,39 +140,39 @@ int main(int argc, char ** argv){
   TIFFClose(tif);
   
   /* Transpose image (Why?!?)*/
-  out->image = sp_cmatrix_alloc(height,width);
-  out->mask = sp_imatrix_alloc(height,width);
+  out->image = sp_c3matrix_alloc(width,height,1);
+  out->mask = sp_i3matrix_alloc(width,height,1);
   if(datatype == SAMPLEFORMAT_UINT){
     tmpui = img;
     for(x = 0;x<width;x++){
       for(y = 0;y<height;y++){
 	tmpui = img+y*width*bpp+x*bpp;
-	out->image->data[x*height+y] = *tmpui;
+	out->image->data[y*width+x] = *tmpui;
       }    
     }
   }else if(datatype == SAMPLEFORMAT_IEEEFP){
     for(x = 0;x<width;x++){
       for(y = 0;y<height;y++){
 	tmpf = img+y*width*bpp+x*bpp;
-	out->image->data[x*height+y] = *tmpf;
+	out->image->data[y*width+x] = *tmpf;
       }    
     }
   }else if(datatype == SAMPLEFORMAT_VOID){
     for(x = 0;x<width;x++){
       for(y = 0;y<height;y++){
 	tmpuc = img+y*width*bpp+x*bpp;
-	out->image->data[x*height+y] = *tmpuc;
+	out->image->data[y*width+x] = *tmpuc;
       }    
     }
   }else if(datatype == SAMPLEFORMAT_INT){
     for(x = 0;x<width;x++){
       for(y = 0;y<height;y++){
 	tmpi = img+y*width*bpp+x*bpp;
-	out->image->data[x*height+y] = *tmpi;
+	out->image->data[y*width+x] = *tmpi;
       }    
     }
   }
-  for(i = 0;i<sp_cmatrix_size(out->image);i++){
+  for(i = 0;i<sp_c3matrix_size(out->image);i++){
     out->mask->data[i] = 1;
   }
   out->scaled = 0;
@@ -180,12 +180,15 @@ int main(int argc, char ** argv){
   out->shifted = 0;
   out->detector->image_center[0] = opts->x_center;
   out->detector->image_center[1] = opts->y_center;
-  out->detector->pixel_size = opts->pixel_size;
+  out->detector->image_center[2] = 0;
+  out->detector->pixel_size[0] = opts->pixel_size;
+  out->detector->pixel_size[1] = opts->pixel_size;
+  out->detector->pixel_size[2] = opts->pixel_size;
   out->detector->detector_distance = opts->detector_distance;
   out->detector->lambda = opts->lambda;
   /* write HDF5 */
   sprintf(buffer,"%s.png",opts->output);
-  sp_image_write(out,buffer,COLOR_JET|LOG_SCALE);
+  sp_image_write(out,buffer,COLOR_JET|LOG_SCALE|SP_2D);
   sprintf(buffer,"%s.vtk",opts->output);
   /*  write_vtk(out,buffer);*/
   return 0;

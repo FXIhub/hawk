@@ -24,7 +24,7 @@ int main(int argc, char ** argv){
   dataset_id = H5Dopen(file_id, buffer);
   space = H5Dget_space(dataset_id);
   H5Sget_simple_extent_dims(space,dims,NULL);
-  image->image = sp_cmatrix_alloc(dims[1],dims[0]);
+  image->image = sp_c3matrix_alloc(dims[0],dims[1],1);
   img_i = malloc(sizeof(unsigned char)*dims[0]*dims[1]);
   status = H5Dread(dataset_id, H5T_STD_U8LE, H5S_ALL, H5S_ALL,
 		   H5P_DEFAULT, img_i);
@@ -35,8 +35,8 @@ int main(int argc, char ** argv){
   for(i = 0;(unsigned int)i<dims[0]*dims[1];i++){
     image->image->data[i] = img_i[i];
   }
-  image->mask = sp_imatrix_alloc(dims[1],dims[0]);
-  for(i= 0;i<sp_cmatrix_size(image->image);i++){
+  image->mask = sp_i3matrix_alloc(dims[0],dims[1],1);
+  for(i= 0;i<sp_c3matrix_size(image->image);i++){
     image->mask->data[i] =1;
   }
   if(argc == 4){

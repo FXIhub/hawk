@@ -13,9 +13,9 @@ void output_to_log(Image * exp_amp,Image * real_in, Image * real_out, Image * fo
   real Efourier = 0;
   real Efourier_den = 0;
   real FcFo = 0;
-  int FcFo_den = 0;
+  long long FcFo_den = 0;
   real SupSize = 0;
-  int i;
+  long long i;
   int iter = opts->cur_iteration;
   static Image * previous_out = NULL;
 /*  char buffer[1024];*/
@@ -28,7 +28,7 @@ void output_to_log(Image * exp_amp,Image * real_in, Image * real_out, Image * fo
       previous_out = sp_image_duplicate(real_out,SP_COPY_DATA|SP_COPY_MASK);
     }else{
       log->int_cum_fluctuation = 0;
-      for(i = 0;i<sp_cmatrix_size(real_in->image);i++){
+      for(i = 0;i<sp_c3matrix_size(real_in->image);i++){
 	/*      log->cumulative_fluctuation->image->data[i] += fabs(real_in->image->data[i] - real_out->image->data[i]);*/
 	log->int_cum_fluctuation += fabs(previous_out->image->data[i] - real_out->image->data[i]);    
       }
@@ -87,7 +87,7 @@ void output_to_log(Image * exp_amp,Image * real_in, Image * real_out, Image * fo
     fprintf(opts->flog,"@ s12 legend \"Object Area \\N\"\n");
 
   }
-  for(i = 0;i<sp_cmatrix_size(exp_amp->image);i++){
+  for(i = 0;i<sp_c3matrix_size(exp_amp->image);i++){
     if(support->image->data[i]){
       SupSize++;
       Ereal_den += cabsr(real_out->image->data[i])*cabsr(real_out->image->data[i]);
@@ -104,7 +104,7 @@ void output_to_log(Image * exp_amp,Image * real_in, Image * real_out, Image * fo
   Ereal /= Ereal_den;
   Efourier /= Efourier_den;
   FcFo /= FcFo_den;
-  SupSize /= sp_cmatrix_size(exp_amp->image);
+  SupSize /= sp_c3matrix_size(exp_amp->image);
   SupSize *= 100;
   log->iter = iter;
   log->it_outer = it_outer;
