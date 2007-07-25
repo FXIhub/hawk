@@ -1,0 +1,1 @@
+The program spheres.c generates an image, spheres.h5 which is the diffraction pattern of four spheres of different size and density. The pattern can be rectonstructedby uwrapc with the configuration file in this directory.
