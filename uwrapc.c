@@ -225,11 +225,7 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
 
     if(opts->image_blur_period && opts->cur_iteration%opts->image_blur_period == opts->image_blur_period-1){
       sp_image_free(real_in);
-      if(sp_image_z(real_out) == 1){
-	real_in = gaussian_blur(real_out,opts->image_blur_radius,SP_2D);
-      }else{
-	real_in = gaussian_blur(real_out,opts->image_blur_radius,SP_3D);
-      }
+      real_in = gaussian_blur(real_out,opts->image_blur_radius);
       sp_image_memcpy(real_out,real_in);
     }
 

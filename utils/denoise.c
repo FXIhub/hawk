@@ -126,11 +126,8 @@ int main(int argc, char ** argv){
     exit(0);
   }
   in = sp_image_read(argv[1],0);
-  if(sp_image_z(in) == 1){
-    out = gaussian_blur(in,3,SP_2D);
-  }else{
-    out = gaussian_blur(in,3,SP_3D);
-  }
+  out = gaussian_blur(in,3);
+
 
 
   denoise(in,out,atof(argv[3]),atoi(argv[4]));

@@ -10,11 +10,7 @@ Image * get_updated_support(Image * input, real level , real radius, Options * o
   real avg_int = 0;
   Image * res;
   long long i;
-  if(sp_image_z(input) == 1){
-    res = gaussian_blur(input, radius, SP_2D);
-  }else{
-    res = gaussian_blur(input, radius, SP_3D);
-  }
+  res = gaussian_blur(input, radius);
   sp_image_dephase(res);
 
   for(i = 0;i<sp_image_size(res);i++){
@@ -65,11 +61,7 @@ Image * get_support_from_patterson(Image * input, Options * opts){
   sp_image_write(patterson,"autocorrelation.vtk",SP_3D);
 
   if(opts->patterson_blur_radius){
-    if(sp_image_z(patterson) == 1){
-      tmp_img = gaussian_blur(patterson,opts->patterson_blur_radius,SP_2D);
-    }else{
-      tmp_img = gaussian_blur(patterson,opts->patterson_blur_radius,SP_3D);
-    }
+    tmp_img = gaussian_blur(patterson,opts->patterson_blur_radius);
     sp_image_free(patterson);
     patterson = tmp_img;
   }
@@ -123,11 +115,7 @@ Image * get_filtered_support(Image * input, real level , real radius, Options * 
   real avg_int = 0;
   Image * res;
   Image * running_average;
-  if(sp_image_z(input) == 1){
-    res = gaussian_blur(input, radius, SP_2D);
-  }else{
-    res = gaussian_blur(input, radius, SP_3D);
-  }
+  res = gaussian_blur(input, radius);
   if(sp_image_z(res) == 1){
     running_average = square_blur(res, radius, SP_2D);
   }else{
@@ -242,11 +230,7 @@ real get_support_level(Image * input, real * previous_size , real radius, Log * 
 
     reduction = 1-(real_error_threshold-log->Ereal)/10.0;
 
-    if(sp_image_z(input) == 1){
-      res = gaussian_blur(input, radius, SP_2D);
-    }else{
-      res = gaussian_blur(input, radius, SP_3D);
-    }
+    res = gaussian_blur(input, radius);
     sp_image_dephase(res);
     
     for(i = 0;i<sp_c3matrix_size(res->image);i++){
@@ -270,11 +254,7 @@ real get_support_level(Image * input, real * previous_size , real radius, Log * 
     return new_level;
   }else if(opts->support_update_algorithm == CONSTANT_AREA){
     /* Keeps a constant area for the support */    
-    if(sp_image_z(input) == 1){
-      res = gaussian_blur(input, radius, SP_2D);
-    }else{
-      res = gaussian_blur(input, radius, SP_3D);
-    }
+    res = gaussian_blur(input, radius);
     qsort(res->image->data,sp_c3matrix_size(res->image),sizeof(Complex),descend_complex_compare);
     /* the level is always a fraction of the maximum value so we divide by the maximum (data[0]) */
     new_level = cabsr(res->image->data[(int)(sp_image_size(res)*opts->object_area)])/cabsr(res->image->data[0]);
@@ -282,11 +262,7 @@ real get_support_level(Image * input, real * previous_size , real radius, Log * 
     return new_level;
   }else if(opts->support_update_algorithm == DECREASING_AREA){
     /* Keeps a constant area for the support */    
-    if(sp_image_z(input) == 1){
-      res = gaussian_blur(input, radius, SP_2D);
-    }else{
-      res = gaussian_blur(input, radius, SP_3D);
-    }
+    res = gaussian_blur(input, radius);
     qsort(res->image->data,sp_c3matrix_size(res->image),sizeof(Complex),descend_complex_compare);
     /* the level is always a fraction of the maximum value so we divide by the maximum (data[0]) */
     new_level =  cabsr(res->image->data[(int)(sp_image_size(res)*get_object_area(opts))])/cabsr(res->image->data[0]);    
@@ -315,11 +291,7 @@ real get_patterson_level(Image * input, real radius, Options * opts){
   }else if(opts->patterson_level_algorithm == CONSTANT_AREA){
     /* Keeps a constant area for the support */    
     if(radius){
-      if(sp_image_z(input) == 1){
-	res = gaussian_blur(input, radius, SP_2D);
-      }else{
-	res = gaussian_blur(input, radius, SP_3D);
-      }
+      res = gaussian_blur(input, radius);
     }else{
       res = sp_image_duplicate(input,SP_COPY_DATA|SP_COPY_MASK);
     }
