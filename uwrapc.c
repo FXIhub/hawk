@@ -200,7 +200,7 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
   //sp_image_write(real_in,"initial_guess.png",COLOR_JET|SP_2D);
   //sp_image_write(real_in,"initial_guess.h5",sizeof(real)|SP_2D);
   //sp_image_write(initial_support,"initial_support.png",COLOR_JET|SP_2D);
-  sp_image_write(support,"support.vtk",SP_3D);
+  sp_image_write(support,"support.vtk",0);
 
   if(get_algorithm(opts,&log) == HIO){     
     real_out = basic_hio_iteration(amp, real_in, support,opts,&log);
@@ -237,7 +237,7 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
       }
       sp_image_free(prev_support);
       prev_support = sp_image_duplicate(support,SP_COPY_DATA|SP_COPY_MASK);
-      sp_image_free(support);      
+      sp_image_free(support);
       support_threshold = get_support_level(real_out,&support_size,radius,&log,opts);
       log.threshold = support_threshold;
       if(support_threshold > 0){

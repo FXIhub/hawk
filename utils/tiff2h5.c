@@ -103,6 +103,7 @@ int main(int argc, char ** argv){
   out->detector->pixel_size[2] = opts->pixel_size;
   out->detector->detector_distance = opts->detector_distance;
   out->detector->lambda = opts->lambda;
+  out->num_dimensions = SP_2D;
   /* write HDF5 */
   sp_image_write(out,opts->output,sizeof(real));
   sp_image_fft(sp_image_shift(out));

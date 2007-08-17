@@ -6,11 +6,14 @@
 #include "support.h"
 
 Image * get_updated_support(Image * input, real level , real radius, Options * opts){
+  
   real max_int = 0;
   real avg_int = 0;
   Image * res;
   long long i;
+
   res = gaussian_blur(input, radius);
+
   sp_image_dephase(res);
 
   for(i = 0;i<sp_image_size(res);i++){
@@ -20,6 +23,7 @@ Image * get_updated_support(Image * input, real level , real radius, Options * o
     avg_int += creal(res->image->data[i]);
   }
   avg_int /= sp_c3matrix_size(res->image);
+
   for(i = 0;i<sp_c3matrix_size(res->image);i++){
     if(creal(res->image->data[i]) < max_int*level){
       res->image->data[i] = 0;
@@ -58,7 +62,7 @@ Image * get_support_from_patterson(Image * input, Options * opts){
   level =  get_patterson_level(patterson, opts->patterson_blur_radius,opts);
 
   //sp_image_write(patterson,"autocorrelation.png",COLOR_JET|LOG_SCALE|SP_2D);
-  sp_image_write(patterson,"autocorrelation.vtk",SP_3D);
+  sp_image_write(patterson,"autocorrelation.vtk",0);
 
   if(opts->patterson_blur_radius){
     tmp_img = gaussian_blur(patterson,opts->patterson_blur_radius);

@@ -419,29 +419,31 @@ int main(int argc, char ** argv){
   }
 
   img = sp_image_read(opts->input,0);
+  printf("1 (%i,%i,%i)\n",sp_image_x(img),sp_image_y(img),sp_image_z(img));
   if(img->shifted){
     img = sp_image_shift(img);
   }
   if(opts->dark[0]){
     if(opts->verbose){
-      sp_image_write(img,"before_minus_dark.png",COLOR_JET|LOG_SCALE|SP_2D);
+      sp_image_write(img,"before_minus_dark.png",COLOR_JET|LOG_SCALE);
     }
     dark = sp_image_read(opts->dark,0);
     subtract_dark(img,dark);
     if(opts->verbose){
-      sp_image_write(img,"after_minus_dark.png",COLOR_JET|LOG_SCALE|SP_2D);
+      sp_image_write(img,"after_minus_dark.png",COLOR_JET|LOG_SCALE);
     }
   }
   if(opts->noise[0]){
     if(opts->verbose){
-      sp_image_write(img,"before_minus_noise.png",COLOR_JET|LOG_SCALE|SP_2D);
+      sp_image_write(img,"before_minus_noise.png",COLOR_JET|LOG_SCALE);
     }
     noise = sp_image_read(opts->noise,0);
     remove_noise(img,noise);
     if(opts->verbose){
-      sp_image_write(img,"after_minus_noise.png",COLOR_JET|LOG_SCALE|SP_2D);
+      sp_image_write(img,"after_minus_noise.png",COLOR_JET|LOG_SCALE);
     }
   }
+  printf("2 (%i,%i,%i)\n",sp_image_x(img),sp_image_y(img),sp_image_z(img));
   if(opts->mask[0]){
     mask = sp_image_read(opts->mask,0);
     if(sp_c3matrix_size(mask->image) != sp_c3matrix_size(img->image)){
@@ -457,6 +459,7 @@ int main(int argc, char ** argv){
       write_mask_to_png(img,"after_apllying_mask.png",COLOR_GRAYSCALE);
     }
   }
+  printf("3 (%i,%i,%i)\n",sp_image_x(img),sp_image_y(img),sp_image_z(img));
 /*  sp_image_write(img,"really_before.png",COLOR_JET);*/
 
 /*  write_vtk(img,"before.vtk");*/
@@ -470,26 +473,29 @@ int main(int argc, char ** argv){
   if(opts->saturation){
     mask_overexposure(img,opts->saturation); 
   }
+  printf("4 (%i,%i,%i)\n",sp_image_x(img),sp_image_y(img),sp_image_z(img));
   if(opts->verbose){
      write_mask_to_png(img,"after_saturation_mask.png",COLOR_JET);
   }
 
-
+  printf("5 (%i,%i,%i)\n",sp_image_x(img),sp_image_y(img),sp_image_z(img));
   if(opts->verbose){
-    sp_image_write(img,"before_smooth.vtk",SP_2D);
+    sp_image_write(img,"before_smooth.vtk",0);
   }
 
+  printf("6 (%i,%i,%i)\n",sp_image_x(img),sp_image_y(img),sp_image_z(img));
   real value = 5;
   Image * soft_edge = sp_image_duplicate(img,SP_COPY_MASK|SP_COPY_DATA);
   sp_image_smooth_edges(soft_edge,soft_edge->mask,SP_GAUSSIAN,&value);
   if(opts->verbose){
     sp_image_write(soft_edge,"after_smooth.vtk",0);
   }
+  printf("7 (%i,%i,%i)\n",sp_image_x(img),sp_image_y(img),sp_image_z(img));
   
   autocorrelation = sp_image_patterson(soft_edge);
   sp_image_adaptative_constrast_stretch(autocorrelation,20,20);
-  sp_image_write(autocorrelation,"autocorrelation.vtk",SP_2D);
-
+  sp_image_write(autocorrelation,"autocorrelation.vtk",0);
+  printf("8 (%i,%i,%i)\n",sp_image_x(img),sp_image_y(img),sp_image_z(img));
 
   if(opts->oversampling_factor){
     out = downsample(img,opts->oversampling_factor);
@@ -497,8 +503,9 @@ int main(int argc, char ** argv){
     img = sp_image_duplicate(out,SP_COPY_DATA|SP_COPY_MASK);
     sp_image_free(out);
   }
+  printf("8 (%i,%i,%i)\n",sp_image_x(img),sp_image_y(img),sp_image_z(img));
   if(opts->verbose){
-    sp_image_write(img,"after_resampling.png",COLOR_JET|LOG_SCALE|SP_2D);
+    sp_image_write(img,"after_resampling.png",COLOR_JET|LOG_SCALE);
     write_mask_to_png(img,"after_resampling_mask.png",COLOR_JET);
   }
   
@@ -514,6 +521,7 @@ int main(int argc, char ** argv){
     intensity_to_amplitudes(img);
   }
 
+  printf("(%i,%i,%i)\n",sp_image_x(img),sp_image_y(img),sp_image_z(img));
   if(opts->user_center_x > 0){
     img->detector->image_center[0] = opts->user_center_x;
     img->detector->image_center[1] = opts->user_center_y;
@@ -539,6 +547,7 @@ int main(int argc, char ** argv){
     sp_image_write(img,"after_beamstop.png",COLOR_JET|SP_2D);
   }
 
+  printf("(%i,%i,%i)\n",sp_image_x(img),sp_image_y(img),sp_image_z(img));
   if(opts->centrosymetry){
     out = centrosymetry_average(img);
     sp_image_free(img);
@@ -564,6 +573,7 @@ int main(int argc, char ** argv){
     write_mask_to_png(img,"after_shift_and_lim_mask.png",COLOR_JET);
   }
 
+  printf("(%i,%i,%i)\n",sp_image_x(img),sp_image_y(img),sp_image_z(img));
   if(opts->pad){
     out = speed_pad_image(img);
   }else{
@@ -575,6 +585,13 @@ int main(int argc, char ** argv){
       img->image->data[i] = 0;
     }  
   }
+  
+  if(sp_image_z(out) == 1){
+    out->num_dimensions = SP_2D;
+  }else{
+    out->num_dimensions = SP_3D;
+  }
+
   sp_image_write(out,opts->output,sizeof(real));
 
   /* also write the autocorrelation */
