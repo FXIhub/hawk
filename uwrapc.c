@@ -22,6 +22,7 @@
 #include "configuration.h"
 #include "algorithms.h"
 #include "support.h"
+#include "network_communication.h"
 
 
 
@@ -409,23 +410,51 @@ int main(int argc, char ** argv){
   int i;
   FILE * f;
   Options * opts;
+  void * socket = 0;
 #ifdef MPI
   MPI_Init(&argc, &argv);
 #endif  
   opts = set_defaults();
 
-  
+#ifdef NETWORK_SUPPORT
+  /* Decide if should connect to hawk GUI or not */
+  init_qt(argc,argv);
+  char * server = 0;
+  int server_port = 0;
+  if(argc != 1){
+    if(argc == 3 || argc == 5){
+      for(i = 1;i<argc-1;i++){
+	if(strcmp(argv[i],"-s") == 0){
+	  server = argv[i+1];
+	}else if(strcmp(argv[i],"-p") == 0){
+	  server_port = atoi(argv[i+1]);
+	}
+      }
+      socket = attempt_connection(server,server_port);
+    }else{
+      printf("Usage: uwrapc [-s server [-p port]]\n");
+    }
+  }
+#else
+  if(argc != 1){
+    perror("uwrapc not compileed with network support!\n");
+  }
+#endif  
   srand(getpid());
+
   
   f = fopen("uwrapc.conf","rb");
   if(f){
     fclose(f);
     read_options_file("uwrapc.conf",opts);
-  }else{
+    parse_options(argc,argv,opts);
+    write_options_file("uwrapc.confout",opts);
+  }else if(!socket){
     perror("Could not open uwrapc.conf");
   }
-  parse_options(argc,argv,opts);
-  write_options_file("uwrapc.confout",opts);
+  if(socket){
+    wait_for_server_instructions(socket);
+  }
   sp_init_fft(opts->nthreads);
   if(opts->real_image){
     opts->diffraction = sp_image_fft(opts->real_image);    
@@ -493,6 +522,10 @@ int main(int argc, char ** argv){
       complete_reconstruction(img, opts->init_support, exp_sigma, opts,dir);
     }
   }
+#ifdef NETWORK_SUPPORT
+  cleanup_qt();
+#endif
+
   return 0;  
 }
 
