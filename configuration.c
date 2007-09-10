@@ -309,7 +309,7 @@ const VariableMetadata variable_metadata[100] = {
     .variable_address = &(global_options.work_dir)
   },
   {
-    .variable_name = "real_error_threshold",
+    .variable_name = "support_real_error_threshold",
     .variable_type = Type_Real,
     .id = Id_Real_Error_Threshold,
     .parent = &(variable_metadata[0]),
