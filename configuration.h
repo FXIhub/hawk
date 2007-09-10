@@ -3,17 +3,24 @@
 
 #define VERSION "1.13"
 
-typedef enum{HIO=1,RAAR,HPR,CFLIP,RAAR_CFLIP,HAAR,SO2D} Phasing_Algorithms;
+#include "libconfig.h"
 
 
 
-typedef enum{FIXED=1,STEPPED,REAL_ERROR_CAPPED,REAL_ERROR_ADAPTATIVE,CONSTANT_AREA,DECREASING_AREA} Support_Update_Algorithms;
+#define OPTION_STRING_SIZE 1024
+
+typedef enum{HIO=0,RAAR,HPR,CFLIP,RAAR_CFLIP,HAAR,SO2D} Phasing_Algorithms;
 
 
-typedef enum{GAUSSIAN_BLUR_REDUCTION=1,GEOMETRICAL_BLUR_REDUCTION} Blur_Reduction_Method;
+
+typedef enum{FIXED=0,STEPPED,REAL_ERROR_CAPPED,REAL_ERROR_ADAPTATIVE,CONSTANT_AREA,DECREASING_AREA} Support_Update_Algorithms;
 
 
-typedef enum {Type_Real = 1, Type_Int, Type_String, Type_List,Type_Bool}Variable_Type;
+typedef enum{GAUSSIAN_BLUR_REDUCTION=0,GEOMETRICAL_BLUR_REDUCTION} Blur_Reduction_Method;
+
+
+typedef enum {Type_Real=0, Type_Int, Type_String, 
+	      Type_MultipleChoice,Type_Bool, Type_Group}Variable_Type;
 
 typedef enum {Id_Diffraction_Filename=0,Id_Real_Image_Filename,Id_Max_Blur_Radius,Id_Init_Level,
 	      Id_Beta,Id_Iterations,Id_Support_Mask_Filename,Id_Init_Support_Filename,Id_Image_Guess_Filename,
@@ -33,11 +40,11 @@ typedef enum {Id_Diffraction_Filename=0,Id_Real_Image_Filename,Id_Max_Blur_Radiu
 
 typedef enum {isSettableBeforeRun = 1, isSettableDuringRun = 2, isGettableBeforeRun = 4,
 				 isGettableDuringRun = 8, isMandatory = 16} Variable_Properties;
-typedef struct{
+typedef struct VariableMetadata{
   const char * variable_name;
   const Variable_Type variable_type;
   const Variable_Id id;
-  const Variable_Id parent;
+  const struct VariableMetadata * parent;
   const Variable_Properties variable_properties;
   const int list_valid_values[10];
   /* No more than 10 possible values per list */
@@ -49,19 +56,19 @@ typedef struct{
 
 typedef struct {
   Image * diffraction;
-  char diffraction_filename[1024];
+  char diffraction_filename[OPTION_STRING_SIZE];
   Image * real_image;
-  char real_image_filename[1024];
+  char real_image_filename[OPTION_STRING_SIZE];
   real max_blur_radius;
   real init_level;
   real beta;
   int iterations;
   Image * support_mask;
-  char support_mask_filename[1024];
+  char support_mask_filename[OPTION_STRING_SIZE];
   Image * init_support;
-  char init_support_filename[1024];
+  char init_support_filename[OPTION_STRING_SIZE];
   Image * image_guess;
-  char image_guess_filename[1024];
+  char image_guess_filename[OPTION_STRING_SIZE];
   real noise;
   real beamstop;
   real new_level;
@@ -71,7 +78,7 @@ typedef struct {
   int enforce_real;
   /* given sufficiently long parameters this will seg fault
      but i don't really care as the program in not secure in any way*/
-  char log_file[1024];  
+  char log_file[OPTION_STRING_SIZE];  
   char commandline[10024];
   int output_period;
   int log_output_period;
@@ -83,7 +90,7 @@ typedef struct {
   int cur_iteration;
   int adapt_thres;
   int automatic;
-  char work_dir[1024];
+  char work_dir[OPTION_STRING_SIZE];
   FILE * flog;
   real real_error_threshold;
   int support_update_algorithm;
@@ -94,7 +101,7 @@ typedef struct {
   real charge_flip_sigma;
   int rescale_amplitudes;
   real square_mask;
-  float patterson_blur_radius;
+  real patterson_blur_radius;
   int remove_central_pixel_phase;
   real perturb_weak_reflections;
   int nthreads;

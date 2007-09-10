@@ -1,6 +1,7 @@
 #include <string.h>
 #include <libconfig.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 #include "spimage.h"
 
@@ -11,12 +12,27 @@
 
 Options global_options;
 
+const int number_of_global_options = 51;
+
+static char * get_path(const VariableMetadata * vm);
+static int get_config_type(Variable_Type vt);
+
 const VariableMetadata variable_metadata[100] = {
   {
-    .variable_name = "diffraction_filename",
+    .variable_name = "ROOT",
+    .variable_type = Type_Group,
+    .id = Id_Root,
+    .parent = NULL,
+    .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
+    .list_valid_values = {0},
+    .list_valid_names = {0},
+    .variable_address = &(global_options.diffraction_filename)
+  },
+  {
+    .variable_name = "amplitudes_file",
     .variable_type = Type_String,
     .id = Id_Diffraction_Filename,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
@@ -26,7 +42,7 @@ const VariableMetadata variable_metadata[100] = {
     .variable_name = "real_image_filename",
     .variable_type = Type_String,
     .id = Id_Real_Image_Filename,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
@@ -36,7 +52,7 @@ const VariableMetadata variable_metadata[100] = {
     .variable_name = "max_blur_radius",
     .variable_type = Type_Real,
     .id = Id_Max_Blur_Radius,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
@@ -46,7 +62,7 @@ const VariableMetadata variable_metadata[100] = {
     .variable_name = "init_level",
     .variable_type = Type_Real,
     .id = Id_Init_Level,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
@@ -56,7 +72,7 @@ const VariableMetadata variable_metadata[100] = {
     .variable_name = "beta",
     .variable_type = Type_Real,
     .id = Id_Beta,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
@@ -66,67 +82,67 @@ const VariableMetadata variable_metadata[100] = {
     .variable_name = "iterations",
     .variable_type = Type_Int,
     .id = Id_Iterations,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.iterations)
   },
   {
-    .variable_name = "support_mask_filename",
+    .variable_name = "fixed_support_mask",
     .variable_type = Type_String,
     .id = Id_Support_Mask_Filename,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.support_mask_filename)
   },
   {
-    .variable_name = "init_support_filename",
+    .variable_name = "initial_support",
     .variable_type = Type_String,
     .id = Id_Init_Support_Filename,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.init_support_filename)
   },
   {
-    .variable_name = "image_guess_filename",
+    .variable_name = "image_guess",
     .variable_type = Type_String,
     .id = Id_Image_Guess_Filename,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.image_guess_filename)
   },
   {
-    .variable_name = "noise",
+    .variable_name = "added_noise",
     .variable_type = Type_Real,
     .id = Id_Noise,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.beta)
+    .variable_address = &(global_options.noise)
   },
   {
-    .variable_name = "beamstop",
+    .variable_name = "beamstop_radius",
     .variable_type = Type_Real,
     .id = Id_Beamstop,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.beamstop)
   },
   {
-    .variable_name = "new_level",
+    .variable_name = "support_intensity_threshold",
     .variable_type = Type_Real,
     .id = Id_New_Level,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
@@ -136,7 +152,7 @@ const VariableMetadata variable_metadata[100] = {
     .variable_name = "iterations_to_min_blur",
     .variable_type = Type_Int,
     .id = Id_Iterations_To_Min_Blur,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
@@ -144,29 +160,29 @@ const VariableMetadata variable_metadata[100] = {
   },
   {
     .variable_name = "blur_radius_reduction_method",
-    .variable_type = Type_List,
+    .variable_type = Type_MultipleChoice,
     .id = Id_Blur_Radius_Reduction_Method,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {GAUSSIAN_BLUR_REDUCTION,GEOMETRICAL_BLUR_REDUCTION,0},
     .list_valid_names = {"gaussian","geometrical",0},
     .variable_address = &(global_options.blur_radius_reduction_method)
   },
   {
-    .variable_name = "min_blur",
+    .variable_name = "minimum_blur_radius",
     .variable_type = Type_Real,
     .id = Id_Min_Blur,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.min_blur)
   },
   {
-    .variable_name = "log_file",
+    .variable_name = "logfile",
     .variable_type = Type_String,
     .id = Id_Log_File,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
@@ -176,7 +192,7 @@ const VariableMetadata variable_metadata[100] = {
     .variable_name = "commandline",
     .variable_type = Type_String,
     .id = Id_Commandline,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
@@ -186,7 +202,7 @@ const VariableMetadata variable_metadata[100] = {
     .variable_name = "output_period",
     .variable_type = Type_Int,
     .id = Id_Output_Period,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
@@ -196,7 +212,7 @@ const VariableMetadata variable_metadata[100] = {
     .variable_name = "log_output_period",
     .variable_type = Type_Int,
     .id = Id_Log_Output_Period,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
@@ -204,49 +220,49 @@ const VariableMetadata variable_metadata[100] = {
   },
   {
     .variable_name = "algorithm",
-    .variable_type = Type_List,
+    .variable_type = Type_MultipleChoice,
     .id = Id_Algorithm,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {HIO,RAAR,HPR,CFLIP,RAAR_CFLIP,HAAR,SO2D,0},
     .list_valid_names = {"hio","raar","hpr","cflip","raar_cflip","haar","so2d",0},
     .variable_address = &(global_options.algorithm)
   },
   {
-    .variable_name = "exp_sigma",
+    .variable_name = "RAAR_sigma",
     .variable_type = Type_Real,
     .id = Id_Exp_Sigma,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.exp_sigma)
   },
   {
-    .variable_name = "dyn_beta",
+    .variable_name = "dynamic_beta",
     .variable_type = Type_Real,
     .id = Id_Dyn_Beta,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.dyn_beta)
   },
   {
-    .variable_name = "rand_phases",
+    .variable_name = "random_initial_phases",
     .variable_type = Type_Bool,
     .id = Id_Rand_Phases,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.rand_phases)
   },
   {
-    .variable_name = "rand_intensities",
+    .variable_name = "random_initial_intensities",
     .variable_type = Type_Bool,
     .id = Id_Rand_Intensities,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
@@ -256,7 +272,7 @@ const VariableMetadata variable_metadata[100] = {
     .variable_name = "cur_iteration",
     .variable_type = Type_Int,
     .id = Id_Cur_Iteration,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
@@ -266,7 +282,7 @@ const VariableMetadata variable_metadata[100] = {
     .variable_name = "adapt_thres",
     .variable_type = Type_Bool,
     .id = Id_Adapt_Thres,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
@@ -276,17 +292,17 @@ const VariableMetadata variable_metadata[100] = {
     .variable_name = "automatic",
     .variable_type = Type_Bool,
     .id = Id_Automatic,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.dyn_beta)
   },
   {
-    .variable_name = "work_dir",
+    .variable_name = "work_directory",
     .variable_type = Type_String,
     .id = Id_Work_Dir,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
@@ -296,7 +312,7 @@ const VariableMetadata variable_metadata[100] = {
     .variable_name = "real_error_threshold",
     .variable_type = Type_Real,
     .id = Id_Real_Error_Threshold,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
@@ -304,9 +320,9 @@ const VariableMetadata variable_metadata[100] = {
   },
   {
     .variable_name = "support_update_algorithm",
-    .variable_type = Type_List,
+    .variable_type = Type_MultipleChoice,
     .id = Id_Support_Update_Algorithm,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {FIXED,STEPPED,REAL_ERROR_CAPPED,REAL_ERROR_ADAPTATIVE,CONSTANT_AREA,DECREASING_AREA,0},
     .list_valid_names = {"fixed","stepped","real_error_capped","real_error_adaptative","constant_area","decreasing_area",0},
@@ -316,7 +332,7 @@ const VariableMetadata variable_metadata[100] = {
     .variable_name = "output_precision",
     .variable_type = Type_Int,
     .id = Id_Output_Precision,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
@@ -326,7 +342,7 @@ const VariableMetadata variable_metadata[100] = {
     .variable_name = "error_reduction_iterations_after_loop",
     .variable_type = Type_Int,
     .id = Id_Error_Reduction_Iterations_After_Loop,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
@@ -336,7 +352,7 @@ const VariableMetadata variable_metadata[100] = {
     .variable_name = "enforce_positivity",
     .variable_type = Type_Real,
     .id = Id_Enforce_Positivity,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
@@ -346,7 +362,7 @@ const VariableMetadata variable_metadata[100] = {
     .variable_name = "genetic_optimization",
     .variable_type = Type_Bool,
     .id = Id_Genetic_Optimization,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
@@ -356,7 +372,7 @@ const VariableMetadata variable_metadata[100] = {
     .variable_name = "charge_flip_sigma",
     .variable_type = Type_Real,
     .id = Id_Charge_Flip_Sigma,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
@@ -366,7 +382,7 @@ const VariableMetadata variable_metadata[100] = {
     .variable_name = "rescale_amplitudes",
     .variable_type = Type_Bool,
     .id = Id_Rescale_Amplitudes,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
@@ -376,7 +392,7 @@ const VariableMetadata variable_metadata[100] = {
     .variable_name = "square_mask",
     .variable_type = Type_Real,
     .id = Id_Square_Mask,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
@@ -386,7 +402,7 @@ const VariableMetadata variable_metadata[100] = {
     .variable_name = "patterson_blur_radius",
     .variable_type = Type_Real,
     .id = Id_Patterson_Blur_Radius,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
@@ -396,7 +412,7 @@ const VariableMetadata variable_metadata[100] = {
     .variable_name = "remove_central_pixel_phase",
     .variable_type = Type_Bool,
     .id = Id_Remove_Central_Pixel_phase,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
@@ -404,9 +420,9 @@ const VariableMetadata variable_metadata[100] = {
   },
   {
     .variable_name = "perturb_weak_reflections",
-    .variable_type = Type_Bool,
+    .variable_type = Type_Real,
     .id = Id_Perturb_Weak_Reflections,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
@@ -416,7 +432,7 @@ const VariableMetadata variable_metadata[100] = {
     .variable_name = "nthreads",
     .variable_type = Type_Int,
     .id = Id_Nthreads,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
@@ -426,7 +442,7 @@ const VariableMetadata variable_metadata[100] = {
     .variable_name = "break_centrosym_period",
     .variable_type = Type_Int,
     .id = Id_Break_Centrosym_Period,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
@@ -436,7 +452,7 @@ const VariableMetadata variable_metadata[100] = {
     .variable_name = "reconstruction_finished",
     .variable_type = Type_Bool,
     .id = Id_Reconstruction_Finished,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
@@ -446,7 +462,7 @@ const VariableMetadata variable_metadata[100] = {
     .variable_name = "real_error_tolerance",
     .variable_type = Type_Real,
     .id = Id_Real_Error_Tolerance,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
@@ -456,7 +472,7 @@ const VariableMetadata variable_metadata[100] = {
     .variable_name = "max_iterations",
     .variable_type = Type_Int,
     .id = Id_Max_Iterations,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
@@ -464,9 +480,9 @@ const VariableMetadata variable_metadata[100] = {
   },
   {
     .variable_name = "patterson_level_algorithm",
-    .variable_type = Type_List,
+    .variable_type = Type_MultipleChoice,
     .id = Id_Patterson_Level_Algorithm,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {FIXED,STEPPED,REAL_ERROR_CAPPED,REAL_ERROR_ADAPTATIVE,CONSTANT_AREA,DECREASING_AREA,0},
     .list_valid_names = {"fixed","stepped","real_error_capped","real_error_adaptative","constant_area","decreasing_area",0},
@@ -476,7 +492,7 @@ const VariableMetadata variable_metadata[100] = {
     .variable_name = "object_area",
     .variable_type = Type_Real,
     .id = Id_Object_Area,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
@@ -486,7 +502,7 @@ const VariableMetadata variable_metadata[100] = {
     .variable_name = "image_blur_period",
     .variable_type = Type_Int,
     .id = Id_Image_Blur_Period,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
@@ -496,7 +512,7 @@ const VariableMetadata variable_metadata[100] = {
     .variable_name = "image_blur_radius",
     .variable_type = Type_Real,
     .id = Id_Image_Blur_Radius,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
@@ -506,7 +522,7 @@ const VariableMetadata variable_metadata[100] = {
     .variable_name = "iterations_to_min_object_area",
     .variable_type = Type_Int,
     .id = Id_Iterations_To_Min_Object_Area,
-    .parent = Id_Root,
+    .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
@@ -514,6 +530,40 @@ const VariableMetadata variable_metadata[100] = {
   }
 };
 
+
+
+char * get_path(const VariableMetadata * vm){
+  const VariableMetadata * parent = vm->parent;
+  char * buffer1 = malloc(sizeof(char)*OPTION_STRING_SIZE);
+  char * buffer2 = malloc(sizeof(char)*OPTION_STRING_SIZE);
+  strcpy(buffer1,vm->variable_name);
+  while(parent->id != Id_Root){
+    strcpy(buffer2,buffer1);
+    sprintf(buffer1,"%s.",parent->variable_name);
+    strcat(buffer1,buffer2);
+  }
+  free(buffer2);
+  return buffer1;
+}
+
+int get_config_type(Variable_Type vt){
+  if(vt == Type_Real){
+    return CONFIG_TYPE_FLOAT;
+  }else if(vt == Type_Int){
+    return CONFIG_TYPE_INT;
+  }else if(vt == Type_String){
+    return CONFIG_TYPE_STRING;
+  }else if(vt == Type_MultipleChoice){
+    return CONFIG_TYPE_STRING;
+  }else if(vt == Type_Bool){
+    return CONFIG_TYPE_BOOL;
+  }else if(vt == Type_Group){
+    return CONFIG_TYPE_GROUP;
+  }
+  fprintf(stderr,"Unkown variable type\n");
+  abort();
+  return -1;
+}
 
   
   
@@ -573,7 +623,6 @@ Options * set_defaults(){
 
 void read_options_file(char * filename, Options * res){
   config_t config;
-  const char * tmp;
   config_init(&config);
   if(!config_read_file(&config,filename)){
     fprintf(stderr,"Error parsing %s on line %d:\n,%s\n",
@@ -581,13 +630,64 @@ void read_options_file(char * filename, Options * res){
     exit(1);
   }
 
-  if((tmp = (char *)config_lookup_string(&config,"amplitudes_file"))){
-    res->diffraction = sp_image_read(tmp,0);
-    strcpy(res->diffraction_filename,tmp);
-  }else if((tmp = config_lookup_string(&config,"real_image_file"))){
-    res->real_image = sp_image_read(tmp,0);
-    strcpy(res->real_image_filename,tmp);
+
+  /* Loop around all the options and put them inside their groups */
+  for(int i = 0; i< number_of_global_options; i++){
+    if(variable_metadata[i].variable_type != Type_Group && (variable_metadata[i].variable_properties & isSettableBeforeRun)){
+      if(config_lookup(&config,get_path(&(variable_metadata[i])))){	
+	if(variable_metadata[i].variable_type == Type_String){
+	  strcpy((char *)variable_metadata[i].variable_address,config_lookup_string(&config,get_path(&(variable_metadata[i]))));
+	}else if(variable_metadata[i].variable_type == Type_Int){
+	  *((int *)variable_metadata[i].variable_address) = config_lookup_int(&config,get_path(&(variable_metadata[i])));
+	}else if(variable_metadata[i].variable_type == Type_Real){
+	  if(config_setting_type(config_lookup(&config,get_path(&(variable_metadata[i])))) == CONFIG_TYPE_FLOAT){
+	    *((real *)variable_metadata[i].variable_address) = config_lookup_float(&config,get_path(&(variable_metadata[i])));
+	  }else{
+	    *((real *)variable_metadata[i].variable_address) = config_lookup_int(&config,get_path(&(variable_metadata[i])));
+	  }
+	}else if(variable_metadata[i].variable_type == Type_Bool){
+	  if(config_setting_type(config_lookup(&config,get_path(&(variable_metadata[i])))) == CONFIG_TYPE_BOOL){
+	    *((int *)variable_metadata[i].variable_address) = config_lookup_bool(&config,get_path(&(variable_metadata[i])));
+	  }else{
+	    *((int *)variable_metadata[i].variable_address) = config_lookup_int(&config,get_path(&(variable_metadata[i])));
+	  }
+
+	}else if(variable_metadata[i].variable_type == Type_MultipleChoice){
+	  /* Change string to lowercase for comparison */
+	  char buffer[OPTION_STRING_SIZE];
+	  strcpy(buffer,config_lookup_string(&config,get_path(&(variable_metadata[i]))));
+	  for(int j = 0;j<strlen(buffer);j++){
+	    buffer[j] = tolower(buffer[j]);
+	  }
+	  /* Compare with list of known good strings */
+	  for(int j = 0;;j++){
+	    if(variable_metadata[i].list_valid_names[j] == NULL){
+	      fprintf(stderr,"Error invalid list value %s for option %s\n",
+		      config_lookup_string(&config,get_path(&(variable_metadata[i]))),
+		      variable_metadata[i].variable_name);
+	      abort();
+	    }
+	    if(strcmp(variable_metadata[i].list_valid_names[j],buffer) == 0){
+	      *((int *)variable_metadata[i].variable_address) = variable_metadata[i].list_valid_values[j];
+	      break;
+	    }
+	  }
+	}else{
+	  fprintf(stderr,"Variable type not yet supported!\n");	
+	  abort();
+	}
+      }
+    }
   }
+
+  if(global_options.diffraction_filename){    
+    global_options.diffraction = sp_image_read(global_options.diffraction_filename,0);
+  }else if(global_options.real_image_filename){
+    global_options.real_image = sp_image_read(global_options.real_image_filename,0);
+  }
+#if 0
+
+
   
   if(config_lookup(&config,"initial_blur_radius")){
     res->max_blur_radius = config_lookup_float(&config,"initial_blur_radius");
@@ -791,7 +891,7 @@ void read_options_file(char * filename, Options * res){
     res->image_blur_radius = config_lookup_float(&config,"image_blur_radius");  
   }
 
-
+#endif
 }
 
 
@@ -805,172 +905,74 @@ void write_options_file(char * filename, Options * res){
   config_setting_t * s;
   config_init(&config);
   root = config_root_setting(&config);
-  if(res->diffraction){
-    s = config_setting_add(root,"amplitudes_file",CONFIG_TYPE_STRING);
-    config_setting_set_string(s,res->diffraction_filename);
+  int n_groups = 0;
+  /* first calculate the total number of groups that exist */
+  for(int i = 0; i< number_of_global_options; i++){
+    if(variable_metadata[i].variable_type == Type_Group && variable_metadata[i].id != Id_Root){
+      n_groups++;
+    }
   }
-  if(res->real_image){
-    s = config_setting_add(root,"real_image_file",CONFIG_TYPE_STRING);
-    config_setting_set_string(s,res->real_image_filename);
+  /* Now create all groups */
+  while(n_groups){
+    for(int i = 0; i< number_of_global_options; i++){      
+      if(variable_metadata[i].variable_type == Type_Group && variable_metadata[i].id != Id_Root){
+	/* it's a group */
+	if(config_lookup(&config,variable_metadata[i].variable_name) == NULL){
+	  /* it still doesn't exist */
+	  if((s = config_lookup(&config,variable_metadata[i].parent->variable_name)) != NULL){
+	    /* parent exists */
+	    config_setting_add(s,variable_metadata[i].variable_name,variable_metadata[i].variable_type);
+	    n_groups--;
+	  }
+	  if(variable_metadata[i].parent->id == Id_Root){
+	    /* parent is Root */
+	    config_setting_add(root,variable_metadata[i].variable_name,variable_metadata[i].variable_type);
+	    n_groups--;
+	  }
+	}
+      }
+    }
   }
-  s = config_setting_add(root,"initial_blur_radius",CONFIG_TYPE_FLOAT);
-  config_setting_set_float(s,res->max_blur_radius);
-  s = config_setting_add(root,"patterson_threshold",CONFIG_TYPE_FLOAT);
-  config_setting_set_float(s,res->init_level);
-  s = config_setting_add(root,"beta",CONFIG_TYPE_FLOAT);
-  config_setting_set_float(s,res->beta);
-  s = config_setting_add(root,"innerloop_iterations",CONFIG_TYPE_INT);
-  config_setting_set_int(s,res->iterations);
-  if(res->support_mask){
-    s = config_setting_add(root,"fixed_support_mask",CONFIG_TYPE_STRING);
-    config_setting_set_string(s,res->support_mask_filename);
+	  
+  /* Loop around all the options and put them inside their groups */
+  for(int i = 0; i< number_of_global_options; i++){
+    config_setting_t * parent;
+    if(variable_metadata[i].variable_type != Type_Group && (variable_metadata[i].variable_properties & isSettableBeforeRun)){
+      if(variable_metadata[i].parent->id == Id_Root){
+	parent = root;
+      }else{
+	parent = config_lookup(&config,variable_metadata[i].parent->variable_name);
+      }
+      if(!parent){
+	fprintf(stderr,"Could not find parent of %s\n",variable_metadata[i].variable_name);
+	abort();
+      }
+      s = config_setting_add(parent,variable_metadata[i].variable_name,get_config_type(variable_metadata[i].variable_type));
+      if(variable_metadata[i].variable_type == Type_String){
+	config_setting_set_string(s,(char *)variable_metadata[i].variable_address);
+      }else if(variable_metadata[i].variable_type == Type_Int){
+	config_setting_set_int(s,*((int *)variable_metadata[i].variable_address));
+      }else if(variable_metadata[i].variable_type == Type_Real){
+	config_setting_set_float(s,*((real *)variable_metadata[i].variable_address));
+      }else if(variable_metadata[i].variable_type == Type_Bool){
+	config_setting_set_bool(s,*((int *)variable_metadata[i].variable_address));
+      }else if(variable_metadata[i].variable_type == Type_MultipleChoice){
+	for(int j = 0;;j++){
+	  if(variable_metadata[i].list_valid_names[j] == NULL){
+	    fprintf(stderr,"Error invalid list value\n");
+	    abort();
+	  }
+	  if(*((int *)variable_metadata[i].variable_address) == variable_metadata[i].list_valid_values[j]){
+	    config_setting_set_string(s,variable_metadata[i].list_valid_names[j]);
+	    break;
+	  }
+	}
+      }else{
+	fprintf(stderr,"Variable type not yet supported!\n");	
+	abort();
+      }
+    }
   }
-  if(res->init_support){
-    s = config_setting_add(root,"initial_support",CONFIG_TYPE_STRING);
-    config_setting_set_string(s,res->init_support_filename);
-  }
-  if(res->image_guess){
-    s = config_setting_add(root,"image_guess",CONFIG_TYPE_STRING);
-    config_setting_set_string(s,res->image_guess_filename);
-  }
-  s = config_setting_add(root,"added_noise",CONFIG_TYPE_FLOAT);
-  config_setting_set_float(s,res->noise);
-  s = config_setting_add(root,"beamstop_radius",CONFIG_TYPE_FLOAT);
-  config_setting_set_float(s,res->beamstop);
-  s = config_setting_add(root,"support_intensity_threshold",CONFIG_TYPE_FLOAT);
-  config_setting_set_float(s,res->new_level);
-/*  s = config_setting_add(root,"support_real_error_threshold",CONFIG_TYPE_FLOAT);
-  config_setting_set_float(s,res->);*/
-  s = config_setting_add(root,"iterations_to_min_blur",CONFIG_TYPE_INT);
-  config_setting_set_int(s,res->iterations_to_min_blur);
-  s = config_setting_add(root,"minimum_blur_radius",CONFIG_TYPE_FLOAT);
-  config_setting_set_float(s,res->min_blur); 
-  s = config_setting_add(root,"enforce_reality",CONFIG_TYPE_INT);
-  config_setting_set_int(s,res->enforce_real);
-  s = config_setting_add(root,"logfile",CONFIG_TYPE_STRING);
-  config_setting_set_string(s,res->log_file);
-  s = config_setting_add(root,"output_period",CONFIG_TYPE_INT);
-  config_setting_set_int(s,res->output_period);
-  s = config_setting_add(root,"log_output_period",CONFIG_TYPE_INT);
-  config_setting_set_int(s,res->log_output_period);
-  s = config_setting_add(root,"algorithm",CONFIG_TYPE_STRING);
-  if(res->algorithm == RAAR){
-    config_setting_set_string(s,"RAAR");
-  }else if(res->algorithm == HIO){
-    config_setting_set_string(s,"HIO");
-  }else if(res->algorithm == HPR){
-    config_setting_set_string(s,"HPR");
-  }else if(res->algorithm == CFLIP){
-    config_setting_set_string(s,"CFLIP");
-  }else if(res->algorithm == RAAR_CFLIP){
-    config_setting_set_string(s,"RAAR_CFLIP");
-  }else if(res->algorithm == HAAR){
-    config_setting_set_string(s,"HAAR");
-  }else if(res->algorithm == SO2D){
-    config_setting_set_string(s,"SO2D");
-  }
-  s = config_setting_add(root,"blur_radius_reduction_method",CONFIG_TYPE_STRING);
-  if(res->blur_radius_reduction_method == GAUSSIAN_BLUR_REDUCTION){
-    config_setting_set_string(s,"gaussian");
-  }else if(res->blur_radius_reduction_method == GEOMETRICAL_BLUR_REDUCTION){
-    config_setting_set_string(s,"geometrical");
-  }else{
-    fprintf(stderr,"Error: unkown blur_radius_reduction_method!\n");
-    abort();
-  }
-  s = config_setting_add(root,"RAAR_sigma",CONFIG_TYPE_FLOAT);
-  config_setting_set_float(s,res->exp_sigma);
-  s = config_setting_add(root,"dynamic_beta",CONFIG_TYPE_FLOAT);
-  config_setting_set_float(s,res->dyn_beta);
-  s = config_setting_add(root,"random_initial_intensities",CONFIG_TYPE_INT);
-  config_setting_set_int(s,res->rand_intensities);
-  s = config_setting_add(root,"random_initial_phases",CONFIG_TYPE_INT);
-  config_setting_set_int(s,res->rand_phases);
-  s = config_setting_add(root,"work_directory",CONFIG_TYPE_STRING);
-  config_setting_set_string(s,res->work_dir);
-
-  s = config_setting_add(root,"patterson_level_algorithm",CONFIG_TYPE_STRING);
-  if(res->patterson_level_algorithm == FIXED){
-    config_setting_set_string(s,"fixed");
-  }else if(res->patterson_level_algorithm == CONSTANT_AREA){
-    config_setting_set_string(s,"constant_area");
-  }
-
-  s = config_setting_add(root,"support_update_algorithm",CONFIG_TYPE_STRING);
-  if(res->support_update_algorithm == FIXED){
-    config_setting_set_string(s,"fixed");
-  }else if(res->support_update_algorithm == STEPPED){
-    config_setting_set_string(s,"stepped");
-  }else if(res->support_update_algorithm == REAL_ERROR_CAPPED){
-    config_setting_set_string(s,"real_error_capped");
-  }else if(res->support_update_algorithm == REAL_ERROR_ADAPTATIVE){
-    config_setting_set_string(s,"real_error_adaptative");
-  }else if(res->support_update_algorithm == CONSTANT_AREA){
-    config_setting_set_string(s,"constant_area");
-  }else if(res->support_update_algorithm == DECREASING_AREA){
-    config_setting_set_string(s,"decreasing_area");
-  }
-
-  s = config_setting_add(root,"support_real_error_threshold",CONFIG_TYPE_FLOAT);
-  config_setting_set_float(s,res->real_error_threshold);
-  s = config_setting_add(root,"output_precision",CONFIG_TYPE_STRING);
-  if(res->output_precision == sizeof(float)){
-    config_setting_set_string(s,"single");
-  }else if(res->output_precision == sizeof(double)){
-    config_setting_set_string(s,"double");
-  }
-
-  s = config_setting_add(root,"error_reduction_iterations_after_loop",CONFIG_TYPE_INT);
-  config_setting_set_int(s,res->error_reduction_iterations_after_loop);
-
-  s = config_setting_add(root,"enforce_positivity",CONFIG_TYPE_INT);
-  config_setting_set_int(s,res->enforce_positivity);
-
-  s = config_setting_add(root,"genetic_optimization",CONFIG_TYPE_INT);
-  config_setting_set_int(s,res->genetic_optimization);
-
-  s = config_setting_add(root,"charge_flip_sigma",CONFIG_TYPE_FLOAT);
-  config_setting_set_float(s,res->charge_flip_sigma);
-
-  s = config_setting_add(root,"rescale_amplitudes",CONFIG_TYPE_INT);
-  config_setting_set_int(s,res->rescale_amplitudes);
-
-  s = config_setting_add(root,"square_mask",CONFIG_TYPE_FLOAT);
-  config_setting_set_float(s,res->square_mask);
-
-  s = config_setting_add(root,"patterson_blur_radius",CONFIG_TYPE_FLOAT);
-  config_setting_set_float(s,res->patterson_blur_radius);
-
-  s = config_setting_add(root,"remove_central_pixel_phase",CONFIG_TYPE_INT);
-  config_setting_set_int(s,res->remove_central_pixel_phase);
-
-  s = config_setting_add(root,"perturb_weak_reflections",CONFIG_TYPE_FLOAT);
-  config_setting_set_float(s,res->perturb_weak_reflections);
-
-  s = config_setting_add(root,"nthreads",CONFIG_TYPE_INT);
-  config_setting_set_int(s,res->nthreads);
-
-  s = config_setting_add(root,"break_centrosym_period",CONFIG_TYPE_INT);
-  config_setting_set_int(s,res->break_centrosym_period);
-
-  s = config_setting_add(root,"real_error_tolerance",CONFIG_TYPE_FLOAT);
-  config_setting_set_float(s,res->real_error_tolerance);
-
-  s = config_setting_add(root,"max_iterations",CONFIG_TYPE_INT);
-  config_setting_set_int(s,res->max_iterations);
-
-  s = config_setting_add(root,"image_blur_period",CONFIG_TYPE_INT);
-  config_setting_set_int(s,res->image_blur_period);
-
-  s = config_setting_add(root,"image_blur_radius",CONFIG_TYPE_FLOAT);
-  config_setting_set_float(s,res->image_blur_radius);
-
-
-  s = config_setting_add(root,"min_object_area",CONFIG_TYPE_FLOAT);
-  config_setting_set_float(s,res->min_object_area);
-
-  s = config_setting_add(root,"iterations_to_min_object_area",CONFIG_TYPE_INT);
-  config_setting_set_int(s,res->iterations_to_min_object_area);
 
   config_write_file(&config,filename);
 }

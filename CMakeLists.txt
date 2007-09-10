@@ -2,7 +2,6 @@ PROJECT (uwrapc)
 
 
 FIND_PATH (SPIMAGE_INCLUDE_DIR spimage.h PATHS /usr/include /sw/include)
-FIND_PATH (LIBCONFIG_INCLUDE_DIR libconfig.h PATHS /usr/include /sw/include)
 FIND_PATH (TIFF_INCLUDE_DIR tiff.h PATHS /usr/include /sw/include)
 FIND_PATH (HDF5_INCLUDE_DIR hdf5.h PATHS /usr/include /sw/include)
 FIND_PATH (FFTW3_INCLUDE_DIR fftw3.h PATHS /usr/include /sw/include)
@@ -10,7 +9,6 @@ FIND_PATH (PNG_INCLUDE_DIR png.h PATHS /usr/include /sw/include)
 FIND_PATH (QT_INCLUDE_DIR png.h PATHS /usr/include /sw/include)
 
 FIND_LIBRARY (SPIMAGE_LIBRARY spimage /usr/lib /sw/lib)
-FIND_LIBRARY (LIBCONFIG_LIBRARY config /usr/lib /sw/lib)
 FIND_LIBRARY (HDF5_LIBRARY hdf5 /usr/lib /sw/lib)
 FIND_LIBRARY (TIFF_LIBRARY tiff /usr/lib /sw/lib)
 FIND_LIBRARY (PNG_LIBRARY png /usr/lib /sw/lib)
@@ -46,21 +44,21 @@ ELSE(WIN32)
 	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -Wall -std=c99")
 ENDIF(WIN32)
 
-SET(LIBRARY_LIST ${SPIMAGE_LIBRARY} ${LIBCONFIG_LIBRARY} ${HDF5_LIBRARY} ${TIFF_LIBRARY} ${PNG_LIBRARY} ${FFTW_LIBRARY} ${JPEG_LIBRARY} ${Z_LIBRARY} ${MATH_LIBRARY} ${C_LIBRARY} QtNetwork QtCore )
+SET(LIBRARY_LIST ${SPIMAGE_LIBRARY}  ${HDF5_LIBRARY} ${TIFF_LIBRARY} ${PNG_LIBRARY} ${FFTW_LIBRARY} ${JPEG_LIBRARY} ${Z_LIBRARY} ${MATH_LIBRARY} ${C_LIBRARY} QtNetwork QtCore )
 
 IF(QT4_FOUND)
-	INCLUDE_DIRECTORIES(${SPIMAGE_INCLUDE_DIR} ${LIBCONFIG_INCLUDE_DIR} ${TIFF_INCLUDE_DIR} ${HDF5_INCLUDE_DIR} ${FFTW3_INCLUDE_DIR} ${PNG_INCLUDE_DIR} ${QT_INCLUDES} saddle)
+	INCLUDE_DIRECTORIES(${SPIMAGE_INCLUDE_DIR} ${TIFF_INCLUDE_DIR} ${HDF5_INCLUDE_DIR} ${FFTW3_INCLUDE_DIR} ${PNG_INCLUDE_DIR} ${QT_INCLUDES} saddle libconfig)
 	SET(LIBRARY_LIST ${LIBRARY_LIST} QtNetwork QtCore)
 ELSE(QT4_FOUND)
-	INCLUDE_DIRECTORIES(${SPIMAGE_INCLUDE_DIR} ${LIBCONFIG_INCLUDE_DIR} ${TIFF_INCLUDE_DIR} ${HDF5_INCLUDE_DIR} ${FFTW3_INCLUDE_DIR} ${PNG_INCLUDE_DIR}  saddle)
+	INCLUDE_DIRECTORIES(${SPIMAGE_INCLUDE_DIR} ${TIFF_INCLUDE_DIR} ${HDF5_INCLUDE_DIR} ${FFTW3_INCLUDE_DIR} ${PNG_INCLUDE_DIR}  saddle libconfig)
 ENDIF(QT4_FOUND)
 
 IF(QT4_FOUND)
 QT_WRAP_CPP(uwrapc project_moc_files communicator.h)
 ENDIF(QT4_FOUND)
 
-ADD_EXECUTABLE(uwrapc uwrapc.c configuration.c support.c algorithms.c log.c saddle/minmaxtau.c saddle/minmaxL.c ${project_moc_files} communicator.cpp network_communication.cpp)
-ADD_EXECUTABLE(restore_image restore_image.c configuration.c support.c algorithms.c log.c saddle/minmaxtau.c saddle/minmaxL.c)
+ADD_EXECUTABLE(uwrapc uwrapc.c configuration.c support.c algorithms.c log.c saddle/minmaxtau.c saddle/minmaxL.c ${project_moc_files} communicator.cpp network_communication.cpp libconfig/libconfig.c libconfig/scanner.c libconfig/grammar.c)
+ADD_EXECUTABLE(restore_image restore_image.c configuration.c support.c algorithms.c log.c saddle/minmaxtau.c saddle/minmaxL.c libconfig/libconfig.c libconfig/scanner.c libconfig/grammar.c)
 ADD_EXECUTABLE(process_image process_image.c ${GETOPT})
 ADD_EXECUTABLE(post_process post_process.c ${GETOPT})
 
