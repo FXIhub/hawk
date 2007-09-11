@@ -36,6 +36,9 @@
 
 #include <stdlib.h>
 
+char *strdup(const char *s);
+
+
 #define PATH_TOKENS ":./"
 #define CHUNK_SIZE 10
 

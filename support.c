@@ -4,6 +4,9 @@
 #include "uwrapc.h"
 #include "configuration.h"
 #include "support.h"
+#ifdef _USE_DMALLOC
+#include <dmalloc.h>
+#endif
 
 Image * get_updated_support(Image * input, real level , real radius, Options * opts){
   

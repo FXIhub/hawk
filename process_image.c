@@ -12,6 +12,10 @@
 #include <hdf5.h>
 #include <fftw3.h>
 #include <getopt.h>
+#ifdef _USE_DMALLOC
+#include <dmalloc.h>
+#endif
+
 #include "spimage.h"
 #include "process_image.h"
 

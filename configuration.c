@@ -2,6 +2,9 @@
 #include <libconfig.h>
 #include <stdlib.h>
 #include <ctype.h>
+#ifdef _USE_DMALLOC
+#include <dmalloc.h>
+#endif
 
 #include "spimage.h"
 
@@ -534,15 +537,15 @@ const VariableMetadata variable_metadata[100] = {
 
 char * get_path(const VariableMetadata * vm){
   const VariableMetadata * parent = vm->parent;
-  char * buffer1 = malloc(sizeof(char)*OPTION_STRING_SIZE);
-  char * buffer2 = malloc(sizeof(char)*OPTION_STRING_SIZE);
+  char * buffer1 = sp_malloc(sizeof(char)*OPTION_STRING_SIZE);
+  char * buffer2 = sp_malloc(sizeof(char)*OPTION_STRING_SIZE);
   strcpy(buffer1,vm->variable_name);
   while(parent->id != Id_Root){
     strcpy(buffer2,buffer1);
     sprintf(buffer1,"%s.",parent->variable_name);
     strcat(buffer1,buffer2);
   }
-  free(buffer2);
+  sp_free(buffer2);
   return buffer1;
 }
 
@@ -634,28 +637,29 @@ void read_options_file(char * filename, Options * res){
   /* Loop around all the options and put them inside their groups */
   for(int i = 0; i< number_of_global_options; i++){
     if(variable_metadata[i].variable_type != Type_Group && (variable_metadata[i].variable_properties & isSettableBeforeRun)){
-      if(config_lookup(&config,get_path(&(variable_metadata[i])))){	
+      char * path = get_path(&(variable_metadata[i]));   
+      if(config_lookup(&config,path)){	
 	if(variable_metadata[i].variable_type == Type_String){
-	  strcpy((char *)variable_metadata[i].variable_address,config_lookup_string(&config,get_path(&(variable_metadata[i]))));
+	  strcpy((char *)variable_metadata[i].variable_address,config_lookup_string(&config,path));
 	}else if(variable_metadata[i].variable_type == Type_Int){
-	  *((int *)variable_metadata[i].variable_address) = config_lookup_int(&config,get_path(&(variable_metadata[i])));
+	  *((int *)variable_metadata[i].variable_address) = config_lookup_int(&config,path);
 	}else if(variable_metadata[i].variable_type == Type_Real){
 	  if(config_setting_type(config_lookup(&config,get_path(&(variable_metadata[i])))) == CONFIG_TYPE_FLOAT){
-	    *((real *)variable_metadata[i].variable_address) = config_lookup_float(&config,get_path(&(variable_metadata[i])));
+	    *((real *)variable_metadata[i].variable_address) = config_lookup_float(&config,path);
 	  }else{
-	    *((real *)variable_metadata[i].variable_address) = config_lookup_int(&config,get_path(&(variable_metadata[i])));
+	    *((real *)variable_metadata[i].variable_address) = config_lookup_int(&config,path);
 	  }
 	}else if(variable_metadata[i].variable_type == Type_Bool){
-	  if(config_setting_type(config_lookup(&config,get_path(&(variable_metadata[i])))) == CONFIG_TYPE_BOOL){
-	    *((int *)variable_metadata[i].variable_address) = config_lookup_bool(&config,get_path(&(variable_metadata[i])));
+	  if(config_setting_type(config_lookup(&config,path)) == CONFIG_TYPE_BOOL){
+	    *((int *)variable_metadata[i].variable_address) = config_lookup_bool(&config,path);
 	  }else{
-	    *((int *)variable_metadata[i].variable_address) = config_lookup_int(&config,get_path(&(variable_metadata[i])));
+	    *((int *)variable_metadata[i].variable_address) = config_lookup_int(&config,path);
 	  }
 
 	}else if(variable_metadata[i].variable_type == Type_MultipleChoice){
 	  /* Change string to lowercase for comparison */
 	  char buffer[OPTION_STRING_SIZE];
-	  strcpy(buffer,config_lookup_string(&config,get_path(&(variable_metadata[i]))));
+	  strcpy(buffer,config_lookup_string(&config,path));
 	  for(int j = 0;j<strlen(buffer);j++){
 	    buffer[j] = tolower(buffer[j]);
 	  }
@@ -663,7 +667,7 @@ void read_options_file(char * filename, Options * res){
 	  for(int j = 0;;j++){
 	    if(variable_metadata[i].list_valid_names[j] == NULL){
 	      fprintf(stderr,"Error invalid list value %s for option %s\n",
-		      config_lookup_string(&config,get_path(&(variable_metadata[i]))),
+		      config_lookup_string(&config,path),
 		      variable_metadata[i].variable_name);
 	      abort();
 	    }
@@ -677,6 +681,7 @@ void read_options_file(char * filename, Options * res){
 	  abort();
 	}
       }
+      sp_free(path);
     }
   }
 

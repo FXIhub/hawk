@@ -20,7 +20,7 @@ int main(int argc, char ** argv)
   for(x=0; x<sp_image_x(density); x++){
     for(y=0; y<sp_image_y(density); y++){
       for(z=0; z<sp_image_z(density); z++){
-	if((x-45)*(x-45)+(y-47)*(y-47)+(z-50)*(z-50) <= 7){
+	if((x-45)*(x-45)+(y-47)*(y-47)+(z-40)*(z-40) <= 5){
 	  sp_image_set(density,x,y,z,5);
 	}
 	if((x-55)*(x-55)+(y-47)*(y-47)+(z-49)*(z-49) <= 9){

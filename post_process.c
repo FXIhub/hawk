@@ -2,6 +2,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <getopt.h>
+#ifdef _USE_DMALLOC
+#include <dmalloc.h>
+#endif
+
 #include "spimage.h"
 #include "post_process.h"
 

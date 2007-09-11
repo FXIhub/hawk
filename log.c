@@ -4,6 +4,9 @@
 #include "configuration.h"
 #include "log.h"
 #include "algorithms.h"
+#ifdef _USE_DMALLOC
+#include <dmalloc.h>
+#endif
 
 void output_to_log(Image * exp_amp,Image * real_in, Image * real_out, Image * fourier_out,Image * support, Options * opts,Log * log){
   int it_outer;

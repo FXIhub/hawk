@@ -14,6 +14,9 @@
 #ifdef MPI
 #include <mpi.h>
 #endif
+#ifdef _USE_DMALLOC
+#include <dmalloc.h>
+#endif
 
 
 #include "spimage.h"
@@ -524,6 +527,9 @@ int main(int argc, char ** argv){
   }
 #ifdef NETWORK_SUPPORT
   cleanup_qt();
+#endif
+#ifdef _USE_DMALLOC
+  dmalloc_shutdown();
 #endif
 
   return 0;  

@@ -118,13 +118,13 @@ Image * basic_raar_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in
    * largerthan INT_MAX bits /Tomas
    */
   if(opts->perturb_weak_reflections && !weak_reflections){
-    weak_reflections = malloc(sp_c3matrix_size(exp_amp->image)*sizeof(char));
-    array = malloc(sp_c3matrix_size(exp_amp->image)*sizeof(real));
+    weak_reflections = sp_malloc(sp_c3matrix_size(exp_amp->image)*sizeof(char));
+    array = sp_malloc(sp_c3matrix_size(exp_amp->image)*sizeof(real));
     memcpy(array,exp_amp->image,sp_c3matrix_size(exp_amp->image)*sizeof(real));
     qsort(array,sp_c3matrix_size(exp_amp->image),sizeof(real),real_compare);
     /* get the weak reflections threshold */
     max = array[(long long int)(sp_c3matrix_size(exp_amp->image)*opts->perturb_weak_reflections)];
-    free(array);
+    sp_free(array);
     for(i = 0;i<sp_c3matrix_size(exp_amp->image);i++){
       if(exp_amp->mask->data[i] && creal(exp_amp->image->data[i]) <= max){
 	weak_reflections[i] = 1;
@@ -390,14 +390,14 @@ Image * basic_cflip_iteration(Image * exp_amp, Image * real_in, Image * support,
   real max = 0;
   fft_out = sp_image_fft(real_in);
   if(opts->perturb_weak_reflections && !weak_reflections){
-    weak_reflections = malloc(sp_c3matrix_size(exp_amp->image)*sizeof(char));
-    tmp = malloc(sp_c3matrix_size(exp_amp->image)*sizeof(real));
+    weak_reflections = sp_malloc(sp_c3matrix_size(exp_amp->image)*sizeof(char));
+    tmp = sp_malloc(sp_c3matrix_size(exp_amp->image)*sizeof(real));
     memcpy(tmp,exp_amp->image->data,sp_c3matrix_size(exp_amp->image)*sizeof(real));
     qsort(tmp,sp_c3matrix_size(exp_amp->image),sizeof(real),descend_complex_compare);
     /* get the weak reflections threshold */
     max = tmp[(int)(sp_c3matrix_size(exp_amp->image)*opts->perturb_weak_reflections)];
     fprintf(stderr,"max - %f\nindex - %d\n",max,(int)(sp_c3matrix_size(exp_amp->image)*opts->perturb_weak_reflections));
-    free(tmp);
+    sp_free(tmp);
     j = 0;
     for(i = 0;i<sp_c3matrix_size(exp_amp->image);i++){
       if(exp_amp->mask->data[i] && creal(exp_amp->image->data[i]) <= max){
