@@ -359,7 +359,12 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
 #else
   chdir(dir);
 #endif
-  fclose(opts->flog);
+  if(opts->flog){
+    fclose(opts->flog);
+  }
+  if(log.cumulative_fluctuation){
+    sp_image_free(log.cumulative_fluctuation);
+  }
 }
 
 
@@ -525,13 +530,25 @@ int main(int argc, char ** argv){
       complete_reconstruction(img, opts->init_support, exp_sigma, opts,dir);
     }
   }
+  /* cleanup stuff */
+  if(opts->init_support){
+    sp_image_free(opts->init_support);
+  }
+  if(opts->diffraction){
+    sp_image_free(opts->diffraction);
+  }
+  if(img){
+    sp_image_free(img);
+  }
+  if(exp_sigma){
+    sp_image_free(exp_sigma);
+  }
 #ifdef NETWORK_SUPPORT
   cleanup_qt();
 #endif
 #ifdef _USE_DMALLOC
   dmalloc_shutdown();
 #endif
-
   return 0;  
 }
 

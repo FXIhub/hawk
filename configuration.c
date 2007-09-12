@@ -644,7 +644,7 @@ void read_options_file(char * filename, Options * res){
 	}else if(variable_metadata[i].variable_type == Type_Int){
 	  *((int *)variable_metadata[i].variable_address) = config_lookup_int(&config,path);
 	}else if(variable_metadata[i].variable_type == Type_Real){
-	  if(config_setting_type(config_lookup(&config,get_path(&(variable_metadata[i])))) == CONFIG_TYPE_FLOAT){
+	  if(config_setting_type(config_lookup(&config,path)) == CONFIG_TYPE_FLOAT){
 	    *((real *)variable_metadata[i].variable_address) = config_lookup_float(&config,path);
 	  }else{
 	    *((real *)variable_metadata[i].variable_address) = config_lookup_int(&config,path);
