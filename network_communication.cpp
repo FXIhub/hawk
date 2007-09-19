@@ -12,7 +12,7 @@ void init_qt(int argc, char ** argv){
 
 void * attempt_connection(char * server, int server_port){
   QTcpSocket * socket = new QTcpSocket;
-    socket->connectToHost(server,server_port);
+  socket->connectToHost(server,server_port);
   if(socket->waitForConnected()){
     printf("Valid socket!\n");
     return socket;
@@ -23,6 +23,9 @@ void * attempt_connection(char * server, int server_port){
 
 void wait_for_server_instructions(void * _socket){
   QTcpSocket * socket = reinterpret_cast<QTcpSocket *>(_socket);
+  Communicator communicator(socket);  
+  /* Start event loop */
+  qapp->exec();
   
 }
 

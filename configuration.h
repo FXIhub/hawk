@@ -4,10 +4,12 @@
 #define VERSION "1.13"
 
 #include "libconfig.h"
+#include "spimage.h"
 
 
 
 #define OPTION_STRING_SIZE 1024
+
 
 typedef enum{HIO=0,RAAR,HPR,CFLIP,RAAR_CFLIP,HAAR,SO2D} Phasing_Algorithms;
 
@@ -117,6 +119,10 @@ typedef struct {
   real min_object_area;
 }Options;
 
+
+
+extern Options global_options;
+extern const int number_of_global_options;
 
 void init_options_metadata(Options * opt);
 void read_options_file(char * filename, Options * opt);

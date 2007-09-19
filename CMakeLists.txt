@@ -1,12 +1,19 @@
 PROJECT (uwrapc)
 
+IF(WIN32)
+	ADD_DEFINITIONS(-D_HDF5USEDLL_)
+	ADD_DEFINITIONS(-D_CRT_SECURE_NO_DEPRECATE)
+ELSE(WIN32)
+	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -std=c99")
+	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+ENDIF(WIN32)
 
 FIND_PATH (SPIMAGE_INCLUDE_DIR spimage.h PATHS /usr/include /sw/include)
 FIND_PATH (TIFF_INCLUDE_DIR tiff.h PATHS /usr/include /sw/include)
 FIND_PATH (HDF5_INCLUDE_DIR hdf5.h PATHS /usr/include /sw/include)
 FIND_PATH (FFTW3_INCLUDE_DIR fftw3.h PATHS /usr/include /sw/include)
 FIND_PATH (PNG_INCLUDE_DIR png.h PATHS /usr/include /sw/include)
-FIND_PATH (QT_INCLUDE_DIR png.h PATHS /usr/include /sw/include)
+
 
 FIND_LIBRARY (SPIMAGE_LIBRARY spimage /usr/lib /sw/lib)
 FIND_LIBRARY (HDF5_LIBRARY hdf5 /usr/lib /sw/lib)
