@@ -42,7 +42,7 @@ const VariableMetadata variable_metadata[100] = {
     .variable_address = &(global_options.diffraction_filename)
   },
   {
-    .variable_name = "real_image_filename",
+    .variable_name = "real_image_file",
     .variable_type = Type_String,
     .id = Id_Real_Image_Filename,
     .parent = &(variable_metadata[0]),
@@ -62,7 +62,7 @@ const VariableMetadata variable_metadata[100] = {
     .variable_address = &(global_options.max_blur_radius)
   },
   {
-    .variable_name = "init_level",
+    .variable_name = "patterson_threshold",
     .variable_type = Type_Real,
     .id = Id_Init_Level,
     .parent = &(variable_metadata[0]),
@@ -82,11 +82,11 @@ const VariableMetadata variable_metadata[100] = {
     .variable_address = &(global_options.beta)
   },
   {
-    .variable_name = "iterations",
+    .variable_name = "innerloop_iterations",
     .variable_type = Type_Int,
     .id = Id_Iterations,
     .parent = &(variable_metadata[0]),
-    .variable_properties = isGettableBeforeRun|isGettableDuringRun,
+    .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.iterations)
@@ -685,7 +685,8 @@ void read_options_file(char * filename, Options * res){
     }
   }
 
-  if(global_options.diffraction_filename){    
+  /* Make sure option is set and is not empty */
+  if(global_options.diffraction_filename && strcmp(global_options.diffraction_filename,"")){    
     global_options.diffraction = sp_image_read(global_options.diffraction_filename,0);
   }else if(global_options.real_image_filename){
     global_options.real_image = sp_image_read(global_options.real_image_filename,0);

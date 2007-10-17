@@ -137,20 +137,20 @@ Image * calculate_average(char ** img_list,int list_size,int cross_correlate){
     a = sp_image_read(img_list[i],0);
     if(cross_correlate){
       cc = sp_image_cross_correlate(res, a, size);
-      max = creal(sp_c3matrix_max(cc->image,&trans));
+      max = sp_c3matrix_max(cc->image,&trans);
 /*      trans /= 2;*/
       sp_image_free(cc);
     }else{
       trans = 0;
     }
     for(j = 0;j<sp_c3matrix_size(a->image);j++){
-      res->image->data[j] += a->image->data[(sp_c3matrix_size(a->image)+j-trans)%(sp_c3matrix_size(a->image))];
+      sp_cincr(res->image->data[j],a->image->data[(sp_c3matrix_size(a->image)+j-trans)%(sp_c3matrix_size(a->image))]);
     }
     sp_image_free(a);
   fprintf(stderr,".");
   }
   for(j = 0;j<sp_c3matrix_size(res->image);j++){
-    res->image->data[j] /= list_size;
+    res->image->data[j] = sp_cscale(res->image->data[j],1.0/list_size);
   }
   return res;    
 }
@@ -179,14 +179,14 @@ int main(int argc, char ** argv){
     trans = 0;
     if(opts.cross_correlate){
       cc = sp_image_cross_correlate(tmp, tmp2,NULL);
-      max = creal(sp_c3matrix_max(cc->image,&trans));
+      max = sp_c3matrix_max(cc->image,&trans);
       sp_image_free(cc);
-      max = creal(sp_c3matrix_max(tmp->image,&trans));
-      max = creal(sp_c3matrix_max(tmp2->image,&temp_trans));
+      max = sp_c3matrix_max(tmp->image,&trans);
+      max = sp_c3matrix_max(tmp2->image,&temp_trans);
       trans -= temp_trans;
     }
     for(i = 0;i<sp_c3matrix_size(tmp->image);i++){ 
-      tmp->image->data[i] -= tmp2->image->data[(sp_c3matrix_size(tmp->image)+i-trans)%(sp_c3matrix_size(tmp->image))];
+      tmp->image->data[i] = sp_csub(tmp->image->data[i],tmp2->image->data[(sp_c3matrix_size(tmp->image)+i-trans)%(sp_c3matrix_size(tmp->image))]);
     }
     sp_image_write(tmp,opts.output,sizeof(real));    
   }else if(opts.rescale){

@@ -41,8 +41,8 @@ Image * basic_hio_iteration(Image * exp_amp, Image * real_in, Image * support,
       pattern->image->data[i] = fft_out->image->data[i];
     }else{
       /* take the calculated phases and apply to the experimental intensities */
-      if(cabsr(fft_out->image->data[i])){
-	pattern->image->data[i] = exp_amp->image->data[i]*fft_out->image->data[i]/cabsr(fft_out->image->data[i]);
+      if(sp_cabs(fft_out->image->data[i])){
+	pattern->image->data[i] = sp_cscale(fft_out->image->data[i],sp_real(exp_amp->image->data[i])/sp_cabs(fft_out->image->data[i]));
 /*      }else{
 	real phase = p_drand48()*2*M_PI;
 	pattern->image->data[i] = cos(phase)*exp_amp->image->data[i]+I+sin(phase)*exp_amp->image->data[i];*/
@@ -52,21 +52,21 @@ Image * basic_hio_iteration(Image * exp_amp, Image * real_in, Image * support,
   real_out = sp_image_ifft(pattern);
   for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
     /* normalize */
-    real_out->image->data[i] /= size;
+    real_out->image->data[i] = sp_cscale(real_out->image->data[i],1.0/size);
   }
   for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
     /* Treat points outside support*/
-    if(!support->image->data[i]){
+    if(!sp_real(support->image->data[i])){
       if(opts->enforce_real){
-	real_out->image->data[i] = creal(real_in->image->data[i] - beta*real_out->image->data[i]);      
+	real_out->image->data[i] = sp_cinit(sp_real(sp_csub(real_in->image->data[i],sp_cscale(real_out->image->data[i],beta))),0); 
       }else{
-	real_out->image->data[i] = (real_in->image->data[i] - beta*real_out->image->data[i]) ;      
+	real_out->image->data[i] = sp_csub(real_in->image->data[i],sp_cscale(real_out->image->data[i],beta)); 
       }
     }
   }
   if(opts->enforce_positivity){
     for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
-      real_out->image->data[i] =  fabs(creal(real_out->image->data[i]))+fabs(cimag(real_out->image->data[i]))*I;
+      real_out->image->data[i] =  sp_cinit(fabs(sp_real(real_out->image->data[i])),fabs(sp_imag(real_out->image->data[i])));
     }
   }
 
@@ -104,13 +104,13 @@ Image * basic_raar_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in
   if(!exp_amp_minus_sigma){
     exp_amp_minus_sigma = sp_image_duplicate(exp_amp,SP_COPY_DATA|SP_COPY_MASK);
     for(i = 0;i<sp_c3matrix_size(exp_amp->image);i++){
-      exp_amp_minus_sigma->image->data[i] -= exp_sigma->image->data[i];
+      sp_real(exp_amp_minus_sigma->image->data[i]) -= sp_real(exp_sigma->image->data[i]);
     }
   }
   if(!exp_amp_plus_sigma){
     exp_amp_plus_sigma = sp_image_duplicate(exp_amp,SP_COPY_DATA|SP_COPY_MASK);
     for(i = 0;i<sp_c3matrix_size(exp_amp->image);i++){
-      exp_amp_plus_sigma->image->data[i] += exp_sigma->image->data[i];
+      sp_real(exp_amp_plus_sigma->image->data[i]) += sp_real(exp_sigma->image->data[i]);
     }
   }
 
@@ -126,7 +126,7 @@ Image * basic_raar_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in
     max = array[(long long int)(sp_c3matrix_size(exp_amp->image)*opts->perturb_weak_reflections)];
     sp_free(array);
     for(i = 0;i<sp_c3matrix_size(exp_amp->image);i++){
-      if(exp_amp->mask->data[i] && creal(exp_amp->image->data[i]) <= max){
+      if(exp_amp->mask->data[i] && sp_real(exp_amp->image->data[i]) <= max){
 	weak_reflections[i] = 1;
       }else{
 	weak_reflections[i] = 0;
@@ -137,15 +137,15 @@ Image * basic_raar_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in
     if(exp_amp->mask->data[i]){
       /* take the calculated phases and apply to the experimental intensities 
 	 leaving room for error */
-      if(cabs(fft_out->image->data[i]) < creal(exp_amp_minus_sigma->image->data[i])){
-	if(fft_out->image->data[i]){
-	  fft_out->image->data[i] = (exp_amp_minus_sigma->image->data[i])*fft_out->image->data[i]/cabs(fft_out->image->data[i]);
+      if(sp_cabs(fft_out->image->data[i]) < sp_real(exp_amp_minus_sigma->image->data[i])){
+	if(sp_real(fft_out->image->data[i])){
+	  fft_out->image->data[i] = sp_cscale(fft_out->image->data[i],sp_real(exp_amp_minus_sigma->image->data[i])/sp_cabs(fft_out->image->data[i]));
 	}else{
 	  fft_out->image->data[i] = exp_amp_minus_sigma->image->data[i];
 	}
-      }else if(cabs(fft_out->image->data[i]) > creal(exp_amp_plus_sigma->image->data[i])){
-	if(fft_out->image->data[i]){
-	  fft_out->image->data[i] = (exp_amp_plus_sigma->image->data[i])*fft_out->image->data[i]/cabs(fft_out->image->data[i]);
+      }else if(sp_cabs(fft_out->image->data[i]) > sp_real(exp_amp_plus_sigma->image->data[i])){
+	if(sp_real(fft_out->image->data[i])){
+	  fft_out->image->data[i] = sp_cscale(fft_out->image->data[i],sp_real(exp_amp_plus_sigma->image->data[i])/sp_cabs(fft_out->image->data[i]));
 	}else{
 	  fft_out->image->data[i] = exp_amp_plus_sigma->image->data[i];
 	}
@@ -153,7 +153,7 @@ Image * basic_raar_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in
     }
   }
   if(opts->remove_central_pixel_phase){
-    fft_out->image->data[0] = cabs(fft_out->image->data[0]);
+    fft_out->image->data[0] = sp_cinit(sp_cabs(fft_out->image->data[0]),0);
   }
 
   real_out = sp_image_ifft(fft_out);
@@ -161,7 +161,7 @@ Image * basic_raar_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in
   /* normalize */
   tmp = 1.0/size;
   for(i = 0;i<sp_c3matrix_size(real_out->image);i++){  
-    real_out->image->data[i] *= tmp;
+    real_out->image->data[i] = sp_cscale(real_out->image->data[i],tmp);
   }
 
   for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
@@ -178,13 +178,13 @@ Image * basic_raar_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in
      Outside the support: (1 - 2*beta)*Pm + beta*I
      
     */    
-    if(!support->image->data[i]){
-      real_out->image->data[i] = (one_minus_2_beta)*real_out->image->data[i]+beta*(real_in->image->data[i]);      
+    if(!sp_cabs(support->image->data[i])){
+      real_out->image->data[i] = sp_cadd(sp_cscale(real_out->image->data[i],one_minus_2_beta),sp_cscale(real_in->image->data[i],beta));      
     }
   }
   if(opts->enforce_positivity){
     for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
-      real_out->image->data[i] =  fabs(creal(real_out->image->data[i]))+fabs(cimag(real_out->image->data[i]))*I;
+      real_out->image->data[i] =  sp_cinit(fabs(sp_real(real_out->image->data[i])),fabs(sp_imag(real_out->image->data[i])));
     }
   }
 
@@ -236,10 +236,10 @@ Image * mpi_raar_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in, 
     if(exp_amp->mask->data[i]){
       /* take the calculated phases and apply to the experimental intensities 
        leaving room for error */
-      if(cabs(fft_out->image->data[i]) < creal(exp_amp_minus_sigma->image->data[i])){
-	fft_out->image->data[i] = (exp_amp_minus_sigma->image->data[i])*fft_out->image->data[i]/cabs(fft_out->image->data[i]);
-      }else if(cabs(fft_out->image->data[i]) > creal(exp_amp_plus_sigma->image->data[i])){
-	fft_out->image->data[i] = (exp_amp_plus_sigma->image->data[i])*fft_out->image->data[i]/cabs(fft_out->image->data[i]);
+      if(sp_cabs(fft_out->image->data[i]) < sp_real(exp_amp_minus_sigma->image->data[i])){
+	fft_out->image->data[i] = (exp_amp_minus_sigma->image->data[i])*fft_out->image->data[i]/sp_cabs(fft_out->image->data[i]);
+      }else if(sp_cabs(fft_out->image->data[i]) > sp_real(exp_amp_plus_sigma->image->data[i])){
+	fft_out->image->data[i] = (exp_amp_plus_sigma->image->data[i])*fft_out->image->data[i]/sp_cabs(fft_out->image->data[i]);
       }
     }
   }
@@ -258,7 +258,7 @@ Image * mpi_raar_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in, 
   }
   if(opts->enforce_positivity){
     for(i = (id*sp_c3matrix_size(real_out->image))/p;i<(id+1)*sp_c3matrix_size(real_out->image)/p;i++){  
-      real_out->image->data[i] =  fabs(creal(real_out->image->data[i]))+fabs(cimag(real_out->image->data[i]))*I;
+      real_out->image->data[i] =  fabs(sp_real(real_out->image->data[i]))+fabs(sp_imag(real_out->image->data[i]))*I;
     }
   }
 
@@ -293,23 +293,23 @@ Image * basic_error_reduction_iteration(Image * exp_amp, Image * real_in, Image 
       pattern->image->data[i] = fft_out->image->data[i];
     }else{
       /* take the calculated phases and apply to the experimental intensities */
-      pattern->image->data[i] = exp_amp->image->data[i]*fft_out->image->data[i]/cabs(fft_out->image->data[i]);
+      pattern->image->data[i] = sp_cscale(fft_out->image->data[i],sp_real(exp_amp->image->data[i])/sp_cabs(fft_out->image->data[i]));
     }
   }
   real_out = sp_image_ifft(pattern);
   for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
     /* normalize */
-    real_out->image->data[i] /= size;
+    real_out->image->data[i] = sp_cscale(real_out->image->data[i],1.0/size);
   }
   for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
     /* Treat points outside support*/
-    if(!support->image->data[i]){
-      real_out->image->data[i] = 0;
+    if(!sp_real(support->image->data[i])){
+      real_out->image->data[i] = sp_cinit(0,0);
     }
   }
   if(opts->enforce_positivity){
     for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
-      real_out->image->data[i] =  fabs(creal(real_out->image->data[i]))+fabs(cimag(real_out->image->data[i]))*I;
+      real_out->image->data[i] =  sp_cinit(fabs(sp_real(real_out->image->data[i])),fabs(sp_imag(real_out->image->data[i])));
     }
   }
 
@@ -344,27 +344,27 @@ Image * basic_hpr_iteration(Image * exp_amp, Image * real_in, Image * support,
       pattern->image->data[i] = fft_out->image->data[i];
     }else{
       /* take the calculated phases and apply to the experimental intensities */
-      pattern->image->data[i] = exp_amp->image->data[i]*fft_out->image->data[i]/cabs(fft_out->image->data[i]);
+      pattern->image->data[i] = sp_cscale(fft_out->image->data[i],sp_real(exp_amp->image->data[i])/sp_cabs(fft_out->image->data[i]));
     }
   }
   real_out = sp_image_ifft(pattern);
   for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
     /* normalize */
-    real_out->image->data[i] /= size;
+    real_out->image->data[i] = sp_cscale(real_out->image->data[i],1.0/size);
   }
   for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
     /* Treat points outside support*/
-    if(!support->image->data[i] || cabs(2*real_out->image->data[i]-real_in->image->data[i]) < cabs((1-beta)*(real_out->image->data[i]))){
+    if(!sp_real(support->image->data[i]) || sp_cabs(sp_csub(sp_cscale(real_out->image->data[i],2),real_in->image->data[i])) < sp_cabs(sp_cscale((real_out->image->data[i]),1-beta))){
       if(opts->enforce_real){
-	real_out->image->data[i] = creal(real_in->image->data[i] - beta*real_out->image->data[i]);      
+	real_out->image->data[i] = sp_cinit(sp_real(sp_csub(real_in->image->data[i],sp_cscale(real_out->image->data[i],beta))),0);
       }else{
-	real_out->image->data[i] = real_in->image->data[i] - beta*real_out->image->data[i];      
+	real_out->image->data[i] = sp_csub(real_in->image->data[i],sp_cscale(real_out->image->data[i],beta));
       }
     }
   }
   if(opts->enforce_positivity){
     for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
-      real_out->image->data[i] =  fabs(creal(real_out->image->data[i]))+fabs(cimag(real_out->image->data[i]))*I;
+      real_out->image->data[i] =  sp_cinit(fabs(sp_real(real_out->image->data[i])),fabs(sp_imag(real_out->image->data[i])));
     }
   }
 
@@ -400,7 +400,7 @@ Image * basic_cflip_iteration(Image * exp_amp, Image * real_in, Image * support,
     sp_free(tmp);
     j = 0;
     for(i = 0;i<sp_c3matrix_size(exp_amp->image);i++){
-      if(exp_amp->mask->data[i] && creal(exp_amp->image->data[i]) <= max){
+      if(exp_amp->mask->data[i] && sp_real(exp_amp->image->data[i]) <= max){
 	weak_reflections[i] = 1;
 	j++;
       }else{
@@ -423,10 +423,10 @@ Image * basic_cflip_iteration(Image * exp_amp, Image * real_in, Image * support,
     }else{
       if(opts->perturb_weak_reflections && weak_reflections[i]){
 	/* take the calculated phases, rotate PI/2 and apply to the experimental intensities */
-	pattern->image->data[i] = exp_amp->image->data[i]*I*fft_out->image->data[i]/cabs(fft_out->image->data[i]);
+	pattern->image->data[i] = sp_cscale(sp_cmul(sp_cinit(0,1),fft_out->image->data[i]),sp_real(exp_amp->image->data[i])/sp_cabs(fft_out->image->data[i]));
       }else{
 	/* take the calculated phases and apply to the experimental intensities */	
-	pattern->image->data[i] = exp_amp->image->data[i]*fft_out->image->data[i]/cabs(fft_out->image->data[i]);
+	pattern->image->data[i] = sp_cscale(fft_out->image->data[i],sp_real(exp_amp->image->data[i])/sp_cabs(fft_out->image->data[i]));
       }
     }
   }
@@ -434,23 +434,23 @@ Image * basic_cflip_iteration(Image * exp_amp, Image * real_in, Image * support,
   for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
     /* normalize */
     if(opts->enforce_real){
-      real_out->image->data[i] = creal(real_out->image->data[i])/size;
+      real_out->image->data[i] = sp_cinit(sp_real(real_out->image->data[i])/size,0);
     }else{
-      real_out->image->data[i] /= size;
+      real_out->image->data[i] = sp_cscale(real_out->image->data[i],1.0/size);
     }
-    if(cabs(real_out->image->data[i]) > max){
-      max = cabs(real_out->image->data[i]);
+    if(sp_cabs(real_out->image->data[i]) > max){
+      max = sp_cabs(real_out->image->data[i]);
     }
   }
   for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
     /* charge flipping doesn't know about support */
-    if(cabs(real_out->image->data[i]) < opts->charge_flip_sigma*max){
-      real_out->image->data[i] *= -1;
+    if(sp_cabs(real_out->image->data[i]) < opts->charge_flip_sigma*max){
+      real_out->image->data[i] = sp_cscale(real_out->image->data[i],-1);
     }
   }
   if(opts->enforce_positivity){
     for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
-      real_out->image->data[i] =  fabs(creal(real_out->image->data[i]))+fabs(cimag(real_out->image->data[i]))*I;
+      real_out->image->data[i] =  sp_cinit(fabs(sp_real(real_out->image->data[i])),fabs(sp_imag(real_out->image->data[i])));
     }
   }
 
@@ -489,31 +489,31 @@ static Image * Q_operator(Image * x, Image * y, Image *z){
   sp_c3matrix_sub(x_minus_y,y->image);
   sp_c3matrix_sub(y_minus_z,z->image);
   z_minus_y = sp_c3matrix_duplicate(y_minus_z);
-  sp_c3matrix_scale(z_minus_y,-1);
+  sp_c3matrix_scale(z_minus_y,sp_cinit(-1,0));
   Complex s;
   
   Complex pi = sp_c3matrix_froenius_prod(x_minus_y,y_minus_z);
   Complex mu = sp_c3matrix_froenius_prod(x_minus_y,x_minus_y);
   Complex nu = sp_c3matrix_froenius_prod(y_minus_z,y_minus_z);
-  Complex rho = mu*nu-pi*pi;
-  if(cabs(rho) == 0 && cabs(pi) >= 0){
+  Complex rho = sp_csub(sp_cmul(mu,nu),sp_cmul(pi,pi));
+  if(sp_cabs(rho) == 0 && sp_cabs(pi) >= 0){
     sp_c3matrix_free(x_minus_y);
     sp_c3matrix_free(y_minus_z);
     sp_c3matrix_free(z_minus_y);
     return sp_image_duplicate(z,SP_COPY_DATA|SP_COPY_MASK);
-  }else if(cabs(rho) > 0 && cabs(pi*nu) >= cabs(rho)){
-    s = cabs(1+pi/nu);
-    printf("s - %f\n",cabs(s));
+  }else if(sp_cabs(rho) > 0 && sp_cabs(sp_cmul(pi,nu)) >= sp_cabs(rho)){
+    s = sp_cinit(sp_cabs(sp_cadd(sp_cinit(1,0),sp_cdiv(pi,nu))),0);
+    printf("s - %f\n",sp_cabs(s));
     sp_c3matrix_add(x->image,z_minus_y,&s);
     sp_c3matrix_free(x_minus_y);
     sp_c3matrix_free(y_minus_z);
     sp_c3matrix_free(z_minus_y);
     return sp_image_duplicate(x,SP_COPY_DATA|SP_COPY_MASK);
-  }else if(cabs(rho) > 0 && cabs(pi*nu) < cabs(rho)){
-    s = cabs(pi*nu/rho);
+  }else if(sp_cabs(rho) > 0 && sp_cabs(sp_cmul(pi,nu)) < sp_cabs(rho)){
+    s = sp_cinit(sp_cabs(sp_cdiv(sp_cmul(pi,nu),rho)),0);
     sp_c3matrix_add(y->image,x_minus_y,&s);
-    s = cabs(mu*nu/rho);
-    printf("s - %f\n",cabs(s));
+    s = sp_cinit(sp_cabs(sp_cdiv(sp_cmul(mu,nu),rho)),0);
+    printf("s - %f\n",sp_cabs(s));
     sp_c3matrix_add(y->image,z_minus_y,&s);
     sp_c3matrix_free(x_minus_y);
     sp_c3matrix_free(y_minus_z);
@@ -561,11 +561,11 @@ Image * basic_so2d_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in
     Image * gs = sp_image_duplicate(real_in,SP_COPY_DETECTOR);
     Image * gns = sp_image_duplicate(real_in,SP_COPY_DETECTOR);
     for(int i = 0;i< sp_image_size(real_in);i++){
-      if(support->image->data[i]){
+      if(sp_real(support->image->data[i])){
 	gs->image->data[i] = real_in->image->data[i];
-	gns->image->data[i] = 0;
+	gns->image->data[i] = sp_cinit(0,0);
       }else{
-	gs->image->data[i] = 0;
+	gs->image->data[i] = sp_cinit(0,0);
 	gns->image->data[i] = real_in->image->data[i];
       }
     }

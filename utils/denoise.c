@@ -11,14 +11,14 @@ real functional(sp_c3matrix * f, sp_c3matrix * u, real beta){
   for(x = 0;x<sp_c3matrix_x(u);x++){
     for(y = 0;y<sp_c3matrix_y(u);y++){
       for(z = 0;z<sp_c3matrix_z(u);z++){
-	dudx = (sp_c3matrix_get(u,(x+1)%sp_c3matrix_x(u),y,z)-
-		sp_c3matrix_get(u,(sp_c3matrix_x(u)+x-1)%sp_c3matrix_x(u),y,z))/2;
-	dudy = (sp_c3matrix_get(u,x,(y+1)%sp_c3matrix_y(u),z)-
-		sp_c3matrix_get(u,x,(sp_c3matrix_y(u)+y-1)%sp_c3matrix_y(u),z))/2;
-	dudz = (sp_c3matrix_get(u,x,y,(z+1)%sp_c3matrix_z(u))-
-		sp_c3matrix_get(u,x,y,(sp_c3matrix_z(u)+z-1)%sp_c3matrix_z(u)))/2;
+	dudx = (sp_real(sp_c3matrix_get(u,(x+1)%sp_c3matrix_x(u),y,z))-
+		sp_real(sp_c3matrix_get(u,(sp_c3matrix_x(u)+x-1)%sp_c3matrix_x(u),y,z)))/2;
+	dudy = (sp_real(sp_c3matrix_get(u,x,(y+1)%sp_c3matrix_y(u),z))-
+		sp_real(sp_c3matrix_get(u,x,(sp_c3matrix_y(u)+y-1)%sp_c3matrix_y(u),z)))/2;
+	dudz = (sp_real(sp_c3matrix_get(u,x,y,(z+1)%sp_c3matrix_z(u)))-
+		sp_real(sp_c3matrix_get(u,x,y,(sp_c3matrix_z(u)+z-1)%sp_c3matrix_z(u))))/2;
 	int_norm += sqrt(dudx*dudx+dudy*dudy+dudz*dudz);
-	int_fide += beta*(sp_c3matrix_get(u,x,y,z)-sp_c3matrix_get(f,x,y,z)*log(cabs(sp_c3matrix_get(u,x,y,z))));
+	int_fide += beta*(sp_real(sp_c3matrix_get(u,x,y,z))-sp_real(sp_c3matrix_get(f,x,y,z))*log(sp_cabs(sp_c3matrix_get(u,x,y,z))));
       }
     }
   }
@@ -51,11 +51,11 @@ void functional_derivative(sp_c3matrix * f, sp_c3matrix * u, real beta, sp_c3mat
   for(x = 0;x<sp_c3matrix_x(u);x++){
     for(y = 0;y<sp_c3matrix_y(u);y++){
       for(z = 0;z<sp_c3matrix_z(u);z++){
-	tmp = (sp_c3matrix_get(u,(x+1)%sp_c3matrix_x(u),y,z)-sp_c3matrix_get(u,(sp_c3matrix_x(u)+x-1)%sp_c3matrix_x(u),y,z))/2;
-	sp_c3matrix_set(dudx,x,y,z,tmp);
-	tmp = (sp_c3matrix_get(u,x,(y+1)%sp_c3matrix_y(u),z)-sp_c3matrix_get(u,x,(sp_c3matrix_y(u)+y-1)%sp_c3matrix_y(u),z))/2;
-	sp_c3matrix_set(dudy,x,y,z,tmp);
-	tmp = (sp_c3matrix_get(u,x,y,(z+1)%sp_c3matrix_z(u))-sp_c3matrix_get(u,x,y,(sp_c3matrix_z(u)+z-1)%sp_c3matrix_z(u)))/2;
+	tmp = (sp_real(sp_c3matrix_get(u,(x+1)%sp_c3matrix_x(u),y,z))-sp_real(sp_c3matrix_get(u,(sp_c3matrix_x(u)+x-1)%sp_c3matrix_x(u),y,z)))/2;
+	sp_c3matrix_set(dudx,x,y,z,sp_cinit(tmp,0));
+	tmp = (sp_real(sp_c3matrix_get(u,x,(y+1)%sp_c3matrix_y(u),z))-sp_real(sp_c3matrix_get(u,x,(sp_c3matrix_y(u)+y-1)%sp_c3matrix_y(u),z)))/2;
+	sp_c3matrix_set(dudy,x,y,z,sp_cinit(tmp,0));
+	tmp = (sp_real(sp_c3matrix_get(u,x,y,(z+1)%sp_c3matrix_z(u)))-sp_real(sp_c3matrix_get(u,x,y,(sp_c3matrix_z(u)+z-1)%sp_c3matrix_z(u))))/2;
       }
     }
   }
@@ -63,22 +63,22 @@ void functional_derivative(sp_c3matrix * f, sp_c3matrix * u, real beta, sp_c3mat
   for(x = 0;x<sp_c3matrix_x(u);x++){
     for(y = 0;y<sp_c3matrix_y(u);y++){
       for(z = 0;z<sp_c3matrix_z(u);z++){
-	dudxdx = (sp_c3matrix_get(dudx,(x+1)%sp_c3matrix_x(u),y,z)-sp_c3matrix_get(dudx,(sp_c3matrix_x(u)+x-1)%sp_c3matrix_x(u),y,z))/2;
-	dudxdy = (sp_c3matrix_get(dudx,x,(y+1)%sp_c3matrix_y(u),z)-sp_c3matrix_get(dudx,x,(sp_c3matrix_y(u)+y-1)%sp_c3matrix_y(u),z))/2;
-	dudxdz = (sp_c3matrix_get(dudx,x,y,(z+1)%sp_c3matrix_z(u))-sp_c3matrix_get(dudx,x,y,(sp_c3matrix_z(u)+z-1)%sp_c3matrix_z(u)))/2;
-	dudydx = (sp_c3matrix_get(dudy,(x+1)%sp_c3matrix_x(u),y,z)-sp_c3matrix_get(dudy,(sp_c3matrix_x(u)+x-1)%sp_c3matrix_x(u),y,z))/2;
-	dudydy = (sp_c3matrix_get(dudy,x,(y+1)%sp_c3matrix_y(u),z)-sp_c3matrix_get(dudy,x,(sp_c3matrix_y(u)+y-1)%sp_c3matrix_y(u),z))/2;      
-	dudydz = (sp_c3matrix_get(dudy,x,y,(z+1)%sp_c3matrix_z(u))-sp_c3matrix_get(dudy,x,y,(sp_c3matrix_z(u)+z-1)%sp_c3matrix_z(u)))/2;
-	dudzdx = (sp_c3matrix_get(dudz,(x+1)%sp_c3matrix_x(u),y,z)-sp_c3matrix_get(dudz,(sp_c3matrix_x(u)+x-1)%sp_c3matrix_x(u),y,z))/2;
-	dudzdy = (sp_c3matrix_get(dudz,x,(y+1)%sp_c3matrix_y(u),z)-sp_c3matrix_get(dudz,x,(sp_c3matrix_y(u)+y-1)%sp_c3matrix_y(u),z))/2;
-	dudzdz = (sp_c3matrix_get(dudz,x,y,(z+1)%sp_c3matrix_z(u))-sp_c3matrix_get(dudz,x,y,(sp_c3matrix_z(u)+z-1)%sp_c3matrix_z(u)))/2;
+	dudxdx = (sp_real(sp_c3matrix_get(dudx,(x+1)%sp_c3matrix_x(u),y,z))-sp_real(sp_c3matrix_get(dudx,(sp_c3matrix_x(u)+x-1)%sp_c3matrix_x(u),y,z)))/2;
+	dudxdy = (sp_real(sp_c3matrix_get(dudx,x,(y+1)%sp_c3matrix_y(u),z))-sp_real(sp_c3matrix_get(dudx,x,(sp_c3matrix_y(u)+y-1)%sp_c3matrix_y(u),z)))/2;
+	dudxdz = (sp_real(sp_c3matrix_get(dudx,x,y,(z+1)%sp_c3matrix_z(u)))-sp_real(sp_c3matrix_get(dudx,x,y,(sp_c3matrix_z(u)+z-1)%sp_c3matrix_z(u))))/2;
+	dudydx = (sp_real(sp_c3matrix_get(dudy,(x+1)%sp_c3matrix_x(u),y,z))-sp_real(sp_c3matrix_get(dudy,(sp_c3matrix_x(u)+x-1)%sp_c3matrix_x(u),y,z)))/2;
+	dudydy = (sp_real(sp_c3matrix_get(dudy,x,(y+1)%sp_c3matrix_y(u),z))-sp_real(sp_c3matrix_get(dudy,x,(sp_c3matrix_y(u)+y-1)%sp_c3matrix_y(u),z)))/2;      
+	dudydz = (sp_real(sp_c3matrix_get(dudy,x,y,(z+1)%sp_c3matrix_z(u)))-sp_real(sp_c3matrix_get(dudy,x,y,(sp_c3matrix_z(u)+z-1)%sp_c3matrix_z(u))))/2;
+	dudzdx = (sp_real(sp_c3matrix_get(dudz,(x+1)%sp_c3matrix_x(u),y,z))-sp_real(sp_c3matrix_get(dudz,(sp_c3matrix_x(u)+x-1)%sp_c3matrix_x(u),y,z)))/2;
+	dudzdy = (sp_real(sp_c3matrix_get(dudz,x,(y+1)%sp_c3matrix_y(u),z))-sp_real(sp_c3matrix_get(dudz,x,(sp_c3matrix_y(u)+y-1)%sp_c3matrix_y(u),z)))/2;
+	dudzdz = (sp_real(sp_c3matrix_get(dudz,x,y,(z+1)%sp_c3matrix_z(u)))-sp_real(sp_c3matrix_get(dudz,x,y,(sp_c3matrix_z(u)+z-1)%sp_c3matrix_z(u))))/2;
 	divergence = (dudxdx+dudxdy+dudxdz+dudydx+dudydy+
 		      dudydz+dudzdx+dudzdy+dudzdz)/
-	  (sqrt(sp_c3matrix_get(dudx,x,y,z)*sp_c3matrix_get(dudx,x,y,z)+
-		sp_c3matrix_get(dudy,x,y,z)*sp_c3matrix_get(dudy,x,y,z)+
-		sp_c3matrix_get(dudz,x,y,z)*sp_c3matrix_get(dudz,x,y,z)));
-	tmp = -divergence+beta/sp_c3matrix_get(u,x,y,z)*(sp_c3matrix_get(u,x,y,z)-sp_c3matrix_get(f,x,y,z));      
-	sp_c3matrix_set(d,x,y,z,tmp);
+	  (sqrt(sp_real(sp_c3matrix_get(dudx,x,y,z))*sp_real(sp_c3matrix_get(dudx,x,y,z))+
+		sp_real(sp_c3matrix_get(dudy,x,y,z))*sp_real(sp_c3matrix_get(dudy,x,y,z))+
+		sp_real(sp_c3matrix_get(dudz,x,y,z))*sp_real(sp_c3matrix_get(dudz,x,y,z))));
+	tmp = -divergence+beta/sp_real(sp_c3matrix_get(u,x,y,z))*(sp_real(sp_c3matrix_get(u,x,y,z))-sp_real(sp_c3matrix_get(f,x,y,z)));      
+	sp_c3matrix_set(d,x,y,z,sp_cinit(tmp,0));
       }
     }
   }
@@ -104,7 +104,7 @@ void denoise(Image * f, Image * u, real beta, int max_iter){
     functional_derivative(f->image,  u->image,  beta, d->image);
     sp_image_sub(u,d);
     for(j = 0;j<sp_image_size(d);j++){
-      u->image->data[i] = cabs(u->image->data[i]);
+      u->image->data[i] = sp_cinit(sp_cabs(u->image->data[i]),0);
     }
 
     norm_d = 0;

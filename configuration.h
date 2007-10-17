@@ -123,6 +123,7 @@ typedef struct {
 
 extern Options global_options;
 extern const int number_of_global_options;
+extern const VariableMetadata variable_metadata[100];
 
 void init_options_metadata(Options * opt);
 void read_options_file(char * filename, Options * opt);

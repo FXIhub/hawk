@@ -33,7 +33,7 @@ int main(int argc, char ** argv){
   image = malloc(sizeof(Image));
   image->detector = malloc(sizeof(Detector));
   for(i = 0;(unsigned int)i<dims[0]*dims[1];i++){
-    image->image->data[i] = img_i[i];
+    image->image->data[i] = sp_cinit(img_i[i],0);
   }
   image->mask = sp_i3matrix_alloc(dims[0],dims[1],1);
   for(i= 0;i<sp_c3matrix_size(image->image);i++){

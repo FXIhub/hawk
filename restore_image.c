@@ -81,18 +81,18 @@ Image * restore_hio_iteration(Image * exp_amp, Image * real_in, Image * support,
 	masked out
       */
       /* Pattern must always be real */
-      pattern->image->data[i] = cabs(fft_out->image->data[i]);
+      pattern->image->data[i] = sp_cinit(sp_cabs(fft_out->image->data[i]),0);
     }
   }
   real_out = sp_image_ifft(pattern);
   for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
     /* normalize */
-    real_out->image->data[i] /= size;
+    real_out->image->data[i] = sp_cscale(real_out->image->data[i],1.0/size);
   }
   for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
     /* Treat points outside support*/
-    if(!support->image->data[i]){
-      real_out->image->data[i] = (real_in->image->data[i] - beta*real_out->image->data[i]) ;      
+    if(!sp_cabs(support->image->data[i])){
+      real_out->image->data[i] = sp_csub(real_in->image->data[i],sp_cscale(real_out->image->data[i],beta));
     }
   }
   if(opts->cur_iteration%opts->log_output_period == opts->log_output_period-1){
@@ -119,7 +119,7 @@ Image * restore_raar_iteration(Image * exp_amp, Image * real_in, Image * support
     if(exp_amp->mask->data[i]){
       fft_out->image->data[i] = exp_amp->image->data[i];
     }else{
-      fft_out->image->data[i] = cabs(fft_out->image->data[i]);
+      fft_out->image->data[i] = sp_cinit(sp_cabs(fft_out->image->data[i]),0);
     }
   }
   real_out = sp_image_ifft(fft_out);
@@ -141,8 +141,8 @@ Image * restore_raar_iteration(Image * exp_amp, Image * real_in, Image * support
      Outside the support: (1 - 2*beta)*Pm + beta*I
      
     */    
-    if(!support->image->data[i]){
-      real_out->image->data[i] = (one_minus_2_beta)*real_out->image->data[i]+beta*(real_in->image->data[i]);      
+    if(!sp_cabs(support->image->data[i])){
+      real_out->image->data[i] = sp_cadd(sp_cscale(real_out->image->data[i],one_minus_2_beta),sp_cscale(real_in->image->data[i],beta));
     }
   }
 
@@ -170,10 +170,10 @@ void rescale_image(Image * a){
   double sum = 0;
   long long i;
   for(i = 0;i<sp_c3matrix_size(a->image);i++){
-    sum += a->image->data[i];
+    sum += sp_cabs(a->image->data[i]);
   }
   for(i = 0;i<sp_c3matrix_size(a->image);i++){
-    a->image->data[i] /= sum;
+    a->image->data[i] = sp_cscale(a->image->data[i],1.0/sum);
   } 
 }
 
@@ -195,10 +195,10 @@ void harmonize_sizes(Options * opts){
     opts->support_mask = tmp;
     /* Stop rounding errors in the supports */
     for(i = 0;i<sp_c3matrix_size(tmp->image);i++){
-      if(creal(tmp->image->data[i]) < 1e-6){
-	tmp->image->data[i] = 0;
+      if(sp_real(tmp->image->data[i]) < 1e-6){
+	tmp->image->data[i] = sp_cinit(0,0);
       }else{
-	tmp->image->data[i] = 1;
+	tmp->image->data[i] = sp_cinit(1,0);
       }
     }
   }
@@ -213,10 +213,10 @@ void harmonize_sizes(Options * opts){
     opts->init_support = tmp;
     /* Stop rounding errors in the supports */
     for(i = 0;i<sp_c3matrix_size(tmp->image);i++){
-      if(creal(tmp->image->data[i]) < 1e-1){
-	tmp->image->data[i] = 0;
+      if(sp_real(tmp->image->data[i]) < 1e-1){
+	tmp->image->data[i] = sp_cinit(0,0);
       }else{
-	tmp->image->data[i] = 1;
+	tmp->image->data[i] = sp_cinit(1,0);
       }
     }
   }
@@ -345,10 +345,10 @@ void complete_restoration(Image * amp, Image * initial_support, Options * opts, 
       sp_image_write(support,buffer,opts->output_precision|SP_2D);
       tmp = sp_image_duplicate(real_out,SP_COPY_DATA|SP_COPY_MASK);
       for(i = 0;i<sp_c3matrix_size(tmp->image);i++){
-	if(support->image->data[i]){
-	  tmp->image->data[i] = cabs(tmp->image->data[i]);
+	if(sp_cabs(support->image->data[i])){
+	  tmp->image->data[i] = sp_cinit(sp_cabs(tmp->image->data[i]),0);
 	}else{
-	  tmp->image->data[i] = 0;
+	  tmp->image->data[i] = sp_cinit(0,0);
 	}
       }
       sprintf(buffer,"pre_pattern-%07d.h5",opts->cur_iteration);
@@ -461,8 +461,8 @@ int main(int argc, char ** argv){
   }
 
   for(i = 0;i<sp_c3matrix_size(opts->init_support->image);i++){
-    if(opts->init_support->image->data[i] ){
-      opts->init_support->image->data[i] = 1;
+    if(sp_cabs(opts->init_support->image->data[i] )){
+      opts->init_support->image->data[i] = sp_cinit(1,0);
     }
   }
 

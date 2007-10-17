@@ -103,7 +103,7 @@ Image * get_fresnel_propagator(Image * in, real delta_z){
       */
       px = ((x-in->detector->image_center[0])/nx)*det_width;
       py = ((in->detector->image_center[1]-y)/ny)*det_height;
-      sp_image_set(res,x,y,0,cexp(-(I*M_PI/(delta_z*lambda))*(px*px+py*py)));
+      sp_image_set(res,x,y,0,sp_cinit(cos(-M_PI/(delta_z*lambda)*(px*px+py*py)),-sin(M_PI/(delta_z*lambda)*(px*px+py*py))));
     }
   }
   return res;
@@ -144,7 +144,7 @@ Image * get_fourier_fresnel_propagator(Image * in,sp_3matrix * k_x, sp_3matrix *
       k_x2 *= k_x2;
       k_y2 = sp_3matrix_get(k_y,x,y,0);
       k_y2 *= k_y2;
-      sp_image_set(res,x,y,0,cexp((I*delta_z*lambda/(4*M_PI))*(k_x2+k_y2)));
+      sp_image_set(res,x,y,0,sp_cinit(cos((delta_z*lambda/(4*M_PI))*(k_x2+k_y2)),sin((delta_z*lambda/(4*M_PI))*(k_x2+k_y2))));
     }
   }
   tmp = sp_image_shift(res);
@@ -155,7 +155,6 @@ Image * get_fourier_fresnel_propagator(Image * in,sp_3matrix * k_x, sp_3matrix *
 int main(int argc, char ** argv){
   Image * img;
   Image * fresnel_prop;
-  Image * fresnel_prop_shifted;
   Image * out;
   Options * opts;  
   char buffer[1024] = "";

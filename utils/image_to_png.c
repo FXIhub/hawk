@@ -19,8 +19,8 @@ int main(int argc, char ** argv){
     sp_image_write(a,argv[3],COLOR_JET|LOG_SCALE|COLOR_PHASE);
   }
   if(argc > 4){
-    for(i = 0;i<sp_cmatrix_size(a->image);i++){
-      a->image->data[i] = a->mask->data[i];
+    for(i = 0;i<sp_c3matrix_size(a->image);i++){
+      a->image->data[i] = sp_cinit(a->mask->data[i],0);
     }
     sp_image_write(a,argv[4],COLOR_JET|LOG_SCALE);
   }

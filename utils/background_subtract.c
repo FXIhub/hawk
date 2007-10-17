@@ -29,10 +29,10 @@ void image_normalize(Image * in){
   real sum;
   return;
   for(int i = 0;i<sp_image_size(in);i++){
-    sum += in->image->data[i];
+    sum += sp_real(in->image->data[i]);
   }
   for(int i = 0;i<sp_image_size(in);i++){
-    in->image->data[i] /= sum;
+    sp_real(in->image->data[i]) /= sum;
   } 
 }
 
@@ -139,11 +139,11 @@ real image_correlation(Image * a, Image * b, Image * corr){
   real sum_sq_x = 0;
   real sum_sq_y = 0;
   real sum_coproduct = 0;
-  real mean_x = a->image->data[0];
+  real mean_x = sp_real(a->image->data[0]);
   real sweep;
   real delta_x;
   real delta_y;
-  real mean_y = b->image->data[1];
+  real mean_y = sp_real(b->image->data[1]);
   real pop_sd_x;
   real pop_sd_y;
   real cov_x_y;
@@ -153,8 +153,8 @@ real image_correlation(Image * a, Image * b, Image * corr){
   for( i=2,k=2;i<=sp_image_size(a);i++){
     if(a->mask->data[i] && b->mask->data[i]){
       sweep = (k - 1.0) / k;
-      delta_x = a->image->data[i-1] - mean_x;
-      delta_y = b->image->data[i-1] - mean_y;
+      delta_x = sp_real(a->image->data[i-1]) - mean_x;
+      delta_y = sp_real(b->image->data[i-1]) - mean_y;
       sum_sq_x += delta_x * delta_x * sweep;
       sum_sq_y += delta_y * delta_y * sweep;
       sum_coproduct += delta_x * delta_y * sweep;
@@ -180,12 +180,12 @@ real scale_image_to_background(Image * img, Image * bg){
   real scale;
   /* set all points below 750 as not background */
   for(int i = 0;i<sp_image_size(bg);i++){
-    if(creal(bg->image->data[i]) < 750){
+    if(sp_real(bg->image->data[i]) < 750){
       bg->mask->data[i] = 0;
     }else{
       bg->mask->data[i] = 1;
-      bg_ph += bg->image->data[i];
-      img_ph += img->image->data[i];
+      bg_ph += sp_real(bg->image->data[i]);
+      img_ph += sp_real(img->image->data[i]);
     }
   }
   tmp = sp_image_duplicate(img,SP_COPY_DATA|SP_COPY_MASK);

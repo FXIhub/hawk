@@ -45,21 +45,21 @@ Image * centrosymetry_average(Image * img){
 	      num = 0;
 	      if(img->mask->data[i]){
 		den++;
-		num += img->image->data[i];
+		num += sp_cabs(img->image->data[i]);
 	      }
 	      if(img->mask->data[is]){
 		den++;
-		num += img->image->data[is];
+		num += sp_cabs(img->image->data[is]);
 	      }
 	      if(den){
-		out->image->data[i] = num/den;
+		out->image->data[i] = sp_cinit(num/den,0);
 		out->mask->data[i] = 1;
-		out->image->data[is] = num/den;
+		out->image->data[is] = sp_cinit(num/den,0);
 		out->mask->data[is] = 1;
 	      }else{
-		out->image->data[i] = 0;
+		out->image->data[i] = sp_cinit(0,0);
 		out->mask->data[i] = 0;
-		out->image->data[is] = 0;
+		out->image->data[is] = sp_cinit(0,0);
 		out->mask->data[is] = 0;
 	      }
 	    }
@@ -74,9 +74,9 @@ Image * centrosymetry_average(Image * img){
 void subtract_dark(Image * img, Image * dark){
   int i;
   for(i = 0;i<sp_c3matrix_size(img->image);i++){
-    img->image->data[i] -= dark->image->data[i];
-    if(creal(img->image->data[i]) < 0){
-      img->image->data[i] = 0;
+    sp_real(img->image->data[i]) -= sp_cabs(dark->image->data[i]);
+    if(sp_real(img->image->data[i]) < 0){
+      img->image->data[i] = sp_cinit(0,0);
     }
   }
 }
@@ -117,7 +117,7 @@ real sum_square(Image * in, int x1, int y1, int z1, int x2, int y2, int z2){
   for(i = x1;i <= x2;i++){
     for(j = y1;j <= y2;j++){
       for(k = z1; k <= z2;k++){
-	sum += in->image->data[k*sp_c3matrix_y(in->image)*sp_c3matrix_x(in->image)+j*sp_c3matrix_x(in->image)+i];
+	sum += sp_cabs(in->image->data[k*sp_c3matrix_y(in->image)*sp_c3matrix_x(in->image)+j*sp_c3matrix_x(in->image)+i]);
       }
     }
   }
@@ -131,11 +131,11 @@ real sum_square_edge(Image * in, int x1, int y1, int x2, int y2){
   for(i = x1;i <= x2;i++){
     for(j = y1;j<=y2;j++){
       if(i != x1 && i != x2){
-	sum += in->image->data[j*sp_c3matrix_x(in->image)+x1];
-	sum += in->image->data[j*sp_c3matrix_x(in->image)+x2];
+	sum += sp_cabs(in->image->data[j*sp_c3matrix_x(in->image)+x1]);
+	sum += sp_cabs(in->image->data[j*sp_c3matrix_x(in->image)+x2]);
 	break;
       }
-      sum += in->image->data[j*sp_c3matrix_y(in->image)+i];
+      sum += sp_cabs(in->image->data[j*sp_c3matrix_y(in->image)+i]);
     }
   }
   return sum;
@@ -148,15 +148,15 @@ real max_square_edge(Image * in, int x1, int y1, int x2, int y2){
   for(i = x1;i <= x2;i++){
     for(j = y1;j<=y2;j++){
       if(i != x1 && i != x2){
-	if(max < creal(in->image->data[j*sp_c3matrix_x(in->image)+x1])){
-	  max = creal(in->image->data[j*sp_c3matrix_x(in->image)+x1]);
-	}else if(max < creal(in->image->data[j*sp_c3matrix_x(in->image)+x2])){
-	  max = creal(in->image->data[j*sp_c3matrix_x(in->image)+x2]);
+	if(max < sp_real(in->image->data[j*sp_c3matrix_x(in->image)+x1])){
+	  max = sp_real(in->image->data[j*sp_c3matrix_x(in->image)+x1]);
+	}else if(max < sp_real(in->image->data[j*sp_c3matrix_x(in->image)+x2])){
+	  max = sp_real(in->image->data[j*sp_c3matrix_x(in->image)+x2]);
 	}
 	break;
       }
-      if(max < creal(in->image->data[j*sp_c3matrix_y(in->image)+i])){
-	max = creal(in->image->data[j*sp_c3matrix_y(in->image)+i]);
+      if(max < sp_real(in->image->data[j*sp_c3matrix_y(in->image)+i])){
+	max = sp_real(in->image->data[j*sp_c3matrix_y(in->image)+i]);
       }
     }
   }
@@ -221,9 +221,9 @@ void mask_overexposure(Image * img,real saturation){
   for(i = 0;i<sp_c3matrix_size(img->image);i++){
     /* 16 bit detector apparently */
     /* mask over 20k */
-    if(creal(img->image->data[i]) >= saturation){
+    if(sp_real(img->image->data[i]) >= saturation){
       img->mask->data[i] = 0;
-      img->image->data[i] = 0;
+      img->image->data[i] = sp_cinit(0,0);
     }
   }  
 }
@@ -232,9 +232,9 @@ void mask_overexposure(Image * img,real saturation){
 void remove_background(Image * img, Options * opt){
   int i;
   for(i = 0;i<sp_c3matrix_size(img->image);i++){
-    img->image->data[i] -= opt->background;
-    if(creal(img->image->data[i]) < 0){
-      img->image->data[i] = 0;
+    sp_real(img->image->data[i]) -= opt->background;
+    if(sp_real(img->image->data[i]) < 0){
+      sp_real(img->image->data[i]) = 0;
       img->mask->data[i] = 0;
     }
   }  
@@ -247,10 +247,10 @@ void remove_noise(Image * img, Image * noise){
   long long i;
 /*  Image * variance = image_local_variance(noise,rectangular_window(10,10,10,10,0));*/
   for(i = 0;i<sp_c3matrix_size(img->image);i++){
-    if(creal(img->image->data[i] - noise->image->data[i]) < sqrt(img->image->data[i])){
-      img->image->data[i] = 0;
+    if((sp_real(img->image->data[i]) - sp_real(noise->image->data[i])) < sqrt(sp_real(img->image->data[i]))){
+      sp_real(img->image->data[i]) = 0;
     }else{
-      img->image->data[i] -= noise->image->data[i];
+      sp_real(img->image->data[i]) -= sp_real(noise->image->data[i]);
     }
   }
 }
@@ -262,9 +262,9 @@ void intensity_to_amplitudes(Image * img){
   img->scaled = 1;
   for(i = 0;i<sp_c3matrix_size(img->image);i++){
     if(img->mask->data[i]){
-      img->image->data[i] = sqrt(img->image->data[i]);
+      sp_real(img->image->data[i]) = sqrt(sp_real(img->image->data[i]));
     }else{
-      img->image->data[i] = 0;
+      sp_real(img->image->data[i]) = 0;
     }
   }
 }
@@ -455,7 +455,7 @@ int main(int argc, char ** argv){
       exit(1);
     }
     for(i = 0;i<sp_c3matrix_size(mask->image);i++){
-      if(mask->image->data[i] == 0){
+      if(sp_real(mask->image->data[i]) == 0){
 	img->mask->data[i] = 0;
       }
     }
@@ -514,8 +514,8 @@ int main(int argc, char ** argv){
   }
   
   for(i = 0;i<sp_c3matrix_size(img->image);i++){
-    if(img->mask->data[i] && creal(img->image->data[i]) > max){
-      max = img->image->data[i];
+    if(img->mask->data[i] && sp_real(img->image->data[i]) > max){
+      max = sp_real(img->image->data[i]);
     }
   }
   printf("max - %f\n",max);
@@ -539,11 +539,11 @@ int main(int argc, char ** argv){
 
   for(i = 0;i<sp_c3matrix_size(img->image);i++){
     if(sp_image_dist(img,i,SP_TO_CENTER) < opts->beamstop /*&& img->img[i] < 1000*/){
-      img->image->data[i] = 0;
+      sp_real(img->image->data[i]) = 0;
       img->mask->data[i] = 0;
     }
     if(sp_image_dist(img,i,SP_TO_AXIS) < opts->cross_removal){
-      img->image->data[i] = 0;
+      sp_real(img->image->data[i]) = 0;
       img->mask->data[i] = 0;
     }
   }
@@ -586,7 +586,7 @@ int main(int argc, char ** argv){
 
   for(i = 0;i<sp_c3matrix_size(img->image);i++){
     if(!img->mask->data[i]){
-      img->image->data[i] = 0;
+      sp_real(img->image->data[i]) = 0;
     }  
   }
   
@@ -597,12 +597,5 @@ int main(int argc, char ** argv){
   }
 
   sp_image_write(out,opts->output,sizeof(real));
-
-  /* also write the autocorrelation */
-  for(i = 0;i<sp_c3matrix_size(out->image);i++){
-    if(!out->mask->data[i]){
-      out->image->data[i] *= out->image->data[i];
-    }
-  }
   return 0;
 }

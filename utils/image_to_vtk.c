@@ -30,8 +30,8 @@ int main(int argc, char ** argv){
     }
   }
   if(argc > 4){
-    for(i = 0;i<sp_cmatrix_size(img->image);i++){
-      img->image->data[i] = img->mask->data[i];
+    for(i = 0;i<sp_image_size(img);i++){
+      img->image->data[i] = sp_cinit(img->mask->data[i],0);
     }
     sp_image_write(img,argv[4],0);
   }

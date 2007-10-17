@@ -11,7 +11,15 @@ real phase_error(Image * a, Image * b){
   real error = 0;
   long long i;
   for(i = 0;i<sp_image_size(a);i++){
-    error += fabs(cargr(a->image->data[i])-cargr(b->image->data[i]));
+    real tmp_error = (sp_carg(a->image->data[i])-sp_carg(b->image->data[i]));
+    /* make sure error is pi at most */
+    while(tmp_error < -M_PI){
+      tmp_error += 2*M_PI;
+    }
+    while(tmp_error > M_PI){
+      tmp_error -= 2*M_PI;
+    }
+    error += fabs(tmp_error);
   }
   return error/sp_image_size(a);
 }
@@ -47,7 +55,10 @@ void fourier_translation(Image * a, real t_x, real t_y, real t_z){
 	}else{
 	  f_x = -(sp_image_x(a)-x);
 	}
-	a->image->data[i++] *= cexp(-I * f_x * t_x * nx_inv * two_pi) * cexp(-I * f_y * t_y * ny_inv * two_pi) * cexp(-I * f_z * t_z * nz_inv * two_pi);
+	a->image->data[i] = sp_cmul(a->image->data[i],
+				       sp_cinit(cos(f_x * t_x * nx_inv * two_pi+f_y * t_y * ny_inv * two_pi+f_z * t_z * nz_inv * two_pi),
+						-sin(f_x * t_x * nx_inv * two_pi+f_y * t_y * ny_inv * two_pi+f_z * t_z * nz_inv * two_pi)));
+	i++;
       }
     }
   }
@@ -151,10 +162,10 @@ void rescale_image(Image * a){
   double sum = 0;
   long long i;
   for(i = 0;i<sp_c3matrix_size(a->image);i++){
-    sum += a->image->data[i];
+    sum += sp_real(a->image->data[i]);
   }
   for(i = 0;i<sp_c3matrix_size(a->image);i++){
-    a->image->data[i] /= sum;
+    sp_real(a->image->data[i]) /= sum;
   } 
 }
 
@@ -202,10 +213,10 @@ int main(int argc, char ** argv){
   }
   sp_image_dephase(prtf);
   for(i = 0;i<sp_image_size(sum);i++){
-    prtf->image->data[i] /= (amps->image->data[i]+FLT_EPSILON);
-    avg_prtf += prtf->image->data[i];
+    sp_real(prtf->image->data[i]) /= (sp_real(amps->image->data[i])+FLT_EPSILON);
+    avg_prtf += sp_real(prtf->image->data[i]);
     bin = (NBINS-1)*sp_image_dist(sum,i,SP_TO_CORNER)/max_res;
-    bins[bin] += prtf->image->data[i];
+    bins[bin] += sp_real(prtf->image->data[i]);
     bin_count[bin]++;
   }
   sp_image_write(sum,"avg_fft.h5",sizeof(real));

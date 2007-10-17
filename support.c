@@ -20,26 +20,26 @@ Image * get_updated_support(Image * input, real level , real radius, Options * o
   sp_image_dephase(res);
 
   for(i = 0;i<sp_image_size(res);i++){
-    if(max_int < creal(res->image->data[i])){
-      max_int = creal(res->image->data[i]);
+    if(max_int < sp_real(res->image->data[i])){
+      max_int = sp_real(res->image->data[i]);
     }
-    avg_int += creal(res->image->data[i]);
+    avg_int += sp_real(res->image->data[i]);
   }
   avg_int /= sp_c3matrix_size(res->image);
 
   for(i = 0;i<sp_c3matrix_size(res->image);i++){
-    if(creal(res->image->data[i]) < max_int*level){
-      res->image->data[i] = 0;
+    if(sp_real(res->image->data[i]) < max_int*level){
+      res->image->data[i] = sp_cinit(0,0);
     }else{
-      res->image->data[i] = 1;
+      res->image->data[i] = sp_cinit(1,0);
     }
   }
   if(opts->support_mask){
     sp_image_add(res,opts->support_mask);
   }
   for(i = 0;i<sp_c3matrix_size(res->image);i++){
-    if(res->image->data[i]){
-      res->image->data[i] = 1;
+    if(sp_cabs(res->image->data[i])){
+      res->image->data[i] = sp_cinit(1,0);
     }
   }
   return res;
@@ -74,17 +74,17 @@ Image * get_support_from_patterson(Image * input, Options * opts){
   }
 
   for(i = 0;i<sp_c3matrix_size(patterson->image);i++){
-    if(max_int < creal(patterson->image->data[i])){
-      max_int = creal(patterson->image->data[i]);
+    if(max_int < sp_real(patterson->image->data[i])){
+      max_int = sp_real(patterson->image->data[i]);
     }
   }
 
 
   for(i = 0;i<sp_c3matrix_size(patterson->image);i++){
-    if(creal(patterson->image->data[i]) < max_int*level){
-      patterson->image->data[i] = 0;
+    if(sp_real(patterson->image->data[i]) < max_int*level){
+      patterson->image->data[i] = sp_cinit(0,0);
     }else{
-      patterson->image->data[i] = 1;
+      patterson->image->data[i] = sp_cinit(1,0);
     }
   }
 
@@ -96,20 +96,23 @@ Image * get_support_from_patterson(Image * input, Options * opts){
   if(opts->square_mask){
     for(i = 0;i<sp_image_size(patterson);i++){
       if(sp_image_dist(patterson,i,SP_TO_CENTER2) > sp_image_x(patterson)/4){
-	patterson->image->data[i] = 0;
+	patterson->image->data[i] = sp_cinit(0,0);
       }
     }
   }
 
   for(i = 0;i<sp_c3matrix_size(patterson->image);i++){
-    if(creal(patterson->image->data[i]) > 1e-6){
-      patterson->image->data[i] = 1;
+    if(sp_real(patterson->image->data[i]) > 1e-6){
+      patterson->image->data[i] = sp_cinit(1,0);
     }else{
-      patterson->image->data[i] = 0;
+      patterson->image->data[i] = sp_cinit(0,0);
     }
   }
-  //sp_image_write(patterson,"patterson_support.png",COLOR_JET|SP_2D);
-  sp_image_write(patterson,"patterson_support.vtk",SP_3D);
+  if(patterson->num_dimensions == SP_2D){
+    sp_image_write(patterson,"patterson_support.png",COLOR_JET|SP_2D);
+  }else if(patterson->num_dimensions == SP_3D){
+    sp_image_write(patterson,"patterson_support.vtk",SP_3D);
+  }
   return patterson;  
 }
 
@@ -134,7 +137,8 @@ Image * get_filtered_support(Image * input, real level , real radius, Options * 
   Image * patterson_mask;*/
   long long i;
   for(i = 0;i<sp_c3matrix_size(input->image);i++){
-    absolute_error->image->data[i] = (res->image->data[i]-running_average->image->data[i])*(res->image->data[i]-running_average->image->data[i]);
+    sp_real(absolute_error->image->data[i]) = (sp_real(res->image->data[i])-sp_real(running_average->image->data[i]))*
+      (sp_real(res->image->data[i])-sp_real(running_average->image->data[i]));
   }
   if(sp_image_z(absolute_error) == 1){
     variance = square_blur(absolute_error,radius,SP_2D);
@@ -151,27 +155,27 @@ Image * get_filtered_support(Image * input, real level , real radius, Options * 
   sp_image_dephase(patterson_mask);*/
 
   for(i = 0;i<sp_c3matrix_size(res->image);i++){
-    if(max_int < creal(res->image->data[i])){
-      max_int = creal(res->image->data[i]);
+    if(max_int < sp_real(res->image->data[i])){
+      max_int = sp_real(res->image->data[i]);
     }
-    avg_int += res->image->data[i];
+    avg_int += sp_cabs(res->image->data[i]);
   }
   avg_int /= sp_c3matrix_size(res->image);
   for(i = 0;i<sp_c3matrix_size(res->image);i++){
-    if(creal(res->image->data[i]) > max_int*level /*|| !mask->image->data[i] || !patterson->image->data[i]*/){
-      res->image->data[i] = 1;
-    }else if(creal(res->image->data[i]) > creal(running_average->image->data[i]) + 3* sqrt(variance->image->data[i])){
-      res->image->data[i] = 1;
+    if(sp_real(res->image->data[i]) > max_int*level /*|| !mask->image->data[i] || !patterson->image->data[i]*/){
+      res->image->data[i] = sp_cinit(1,0);
+    }else if(sp_real(res->image->data[i]) > sp_real(running_average->image->data[i]) + 3* sqrt(sp_real(variance->image->data[i]))){
+      res->image->data[i] = sp_cinit(1,0);
     }else{
-      res->image->data[i] = 0;
+      res->image->data[i] = sp_cinit(0,0);
     }
   }
   if(opts->support_mask){
     sp_image_add(res,opts->support_mask);
   }
   for(i = 0;i<sp_c3matrix_size(res->image);i++){
-    if(res->image->data[i]){
-      res->image->data[i] = 1;
+    if(sp_real(res->image->data[i])){
+      res->image->data[i] = sp_cinit(1,0);
     }
   }
 
@@ -241,14 +245,14 @@ real get_support_level(Image * input, real * previous_size , real radius, Log * 
     sp_image_dephase(res);
     
     for(i = 0;i<sp_c3matrix_size(res->image);i++){
-      if(max_int < creal(res->image->data[i])){
-	max_int = creal(res->image->data[i]);
+      if(max_int < sp_real(res->image->data[i])){
+	max_int = sp_real(res->image->data[i]);
       }
     }
     qsort(res->image->data,sp_c3matrix_size(res->image),sizeof(Complex),descend_complex_compare);
     if((*previous_size) < 0){
       for(i = 0;i<sp_c3matrix_size(res->image);i++){
-	if(creal(res->image->data[i]) < -(*previous_size)){
+	if(sp_real(res->image->data[i]) < -(*previous_size)){
 	  break;
 	}
       }
@@ -256,7 +260,7 @@ real get_support_level(Image * input, real * previous_size , real radius, Log * 
     }
     new_size = (*previous_size)*reduction;
     *previous_size = new_size;
-    new_level = creal(res->image->data[new_size])/max_int;
+    new_level = sp_real(res->image->data[new_size])/max_int;
     sp_image_free(res);
     return new_level;
   }else if(opts->support_update_algorithm == CONSTANT_AREA){
@@ -264,7 +268,7 @@ real get_support_level(Image * input, real * previous_size , real radius, Log * 
     res = gaussian_blur(input, radius);
     qsort(res->image->data,sp_c3matrix_size(res->image),sizeof(Complex),descend_complex_compare);
     /* the level is always a fraction of the maximum value so we divide by the maximum (data[0]) */
-    new_level = cabsr(res->image->data[(int)(sp_image_size(res)*opts->object_area)])/cabsr(res->image->data[0]);
+    new_level = sp_cabs(res->image->data[(int)(sp_image_size(res)*opts->object_area)])/sp_cabs(res->image->data[0]);
     sp_image_free(res);
     return new_level;
   }else if(opts->support_update_algorithm == DECREASING_AREA){
@@ -272,7 +276,7 @@ real get_support_level(Image * input, real * previous_size , real radius, Log * 
     res = gaussian_blur(input, radius);
     qsort(res->image->data,sp_c3matrix_size(res->image),sizeof(Complex),descend_complex_compare);
     /* the level is always a fraction of the maximum value so we divide by the maximum (data[0]) */
-    new_level =  cabsr(res->image->data[(int)(sp_image_size(res)*get_object_area(opts))])/cabsr(res->image->data[0]);    
+    new_level =  sp_cabs(res->image->data[(int)(sp_image_size(res)*get_object_area(opts))])/sp_cabs(res->image->data[0]);    
     sp_image_free(res);
     return new_level;
   }else{
@@ -305,7 +309,7 @@ real get_patterson_level(Image * input, real radius, Options * opts){
     sp_image_dephase(res);
     qsort(res->image->data,sp_c3matrix_size(res->image),sizeof(Complex),descend_complex_compare);
     /* the level is always a fraction of the maximum value so we divide by the maximum (data[0]) */
-    return cabsr(res->image->data[(int)(sp_image_size(res)*opts->object_area)])/cabsr(res->image->data[0]);    
+    return sp_cabs(res->image->data[(int)(sp_image_size(res)*opts->object_area)])/sp_cabs(res->image->data[0]);    
   }else{
     fprintf(stderr,"Unkown algorithm!\n");
     abort();
@@ -330,9 +334,9 @@ int descend_complex_compare(const void * pa,const void * pb){
   Complex a,b;
   a = *((Complex *)pa);
   b = *((Complex *)pb);
-  if(cabsr(a) < cabsr(b)){
+  if(sp_cabs(a) < sp_cabs(b)){
     return 1;
-  }else if(cabsr(a) == cabsr(b)){
+  }else if(sp_cabs(a) == sp_cabs(b)){
     return 0;
   }else{
     return -1;

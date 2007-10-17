@@ -32,6 +32,7 @@ Image * read_3matrix(char * filename, int x, int y, int z){
     return NULL;
   }
   i = 0;
+
   while(fgets(buffer,bufsiz,f)){
     if(strlen(buffer) == bufsiz){
       printf("Please increase bufsiz or split your lines a bit!\n");
@@ -40,7 +41,7 @@ Image * read_3matrix(char * filename, int x, int y, int z){
     nptr = buffer;
     endptr = NULL;
     while(1){
-      res->image->data[i++] = strtod(nptr,&endptr);
+      res->image->data[i++] = sp_cinit(strtod(nptr,&endptr),0);
       if(nptr == endptr){
 	i--;
 	break;

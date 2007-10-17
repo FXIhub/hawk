@@ -81,18 +81,19 @@ sp_vector * gradL(sp_c3matrix * Gs, sp_c3matrix * Gns, sp_c3matrix * DGs, sp_c3m
   /* Gab = Gs+Gns+tau(0)*DGs+tau(1)*DGns */
   Gab = sp_c3matrix_duplicate(Gs);    
   sp_c3matrix_add(Gab,Gns,NULL);
-  x = aa;
+
+  x = sp_cinit(aa,0);
   sp_c3matrix_add(Gab,DGs,&x);
-  x = bb;
+  x = sp_cinit(bb,0);
   sp_c3matrix_add(Gab,DGns,&x);
   /*
     Gm=Gab./abs(Gab).*F0;
   */
   Gm = sp_c3matrix_duplicate(Gab);
   for(i = 0;i<sp_c3matrix_size(Gab);i++){
-    assert(cabs(Gm->data[i]) != 0);
+    assert(sp_cabs(Gm->data[i]) != 0);
     if(F0->mask->data[i]){
-      Gm->data[i] = F0->image->data[i]*(Gm->data[i]/cabs(Gm->data[i]));
+      Gm->data[i] = sp_cscale(Gm->data[i],sp_real(F0->image->data[i])/sp_cabs(Gm->data[i]));
     }
   }
   
@@ -102,9 +103,9 @@ sp_vector * gradL(sp_c3matrix * Gs, sp_c3matrix * Gns, sp_c3matrix * DGs, sp_c3m
   dab(2)=-cprod(DGns,Gm);                     %-<DGns|Pm G>
 
    */
-  dab->data[1] = -creal(sp_c3matrix_froenius_prod(DGns,Gm));
+  dab->data[1] = -sp_real(sp_c3matrix_froenius_prod(DGns,Gm));
   sp_c3matrix_sub(Gm,Gab);
-  dab->data[0] = -creal(sp_c3matrix_froenius_prod(DGs,Gm));
+  dab->data[0] = -sp_real(sp_c3matrix_froenius_prod(DGs,Gm));
   sp_c3matrix_free(Gm);
   sp_c3matrix_free(Gab);
   return dab;
@@ -494,9 +495,9 @@ int hesLtau(sp_c3matrix * Gs,sp_c3matrix * Gns,sp_c3matrix * DGs,sp_c3matrix * D
     /* Gab = Gs+Gns+tau(0)*DGs+tau(1)*DGns */
     Gab = sp_c3matrix_duplicate(Gs);    
     sp_c3matrix_add(Gab,Gns,NULL);    
-    x = tau->data[0];
+    x = sp_cinit(tau->data[0],0);
     sp_c3matrix_add(Gab,DGs,&x);
-    x = tau->data[1];
+    x = sp_cinit(tau->data[1],0);
     sp_c3matrix_add(Gab,DGns,&x);
   }
 /*  fprintf(stdout,"HesLtau\n"); */
@@ -504,31 +505,31 @@ int hesLtau(sp_c3matrix * Gs,sp_c3matrix * Gns,sp_c3matrix * DGs,sp_c3matrix * D
 /* Fratio = F0/abs(Gab);  */
   Fratio = sp_c3matrix_duplicate(F0->image);
   for(i = 0;i<sp_c3matrix_size(Gab);i++){
-    assert(cabsr(Gab->data[i] != 0));
+    assert(sp_cabs(Gab->data[i]) != 0);
     if(F0->mask->data[i]){
-      Fratio->data[i] /= cabsr(Gab->data[i]);
+      sp_real(Fratio->data[i]) /= sp_cabs(Gab->data[i]);
     }else{
-      Fratio->data[i] = 1;
+      Fratio->data[i] = sp_cinit(1,0);
     }
   }
 /* ph2 = (Gab/abs(Gab))^2 * Fratio */
   ph2 = sp_c3matrix_duplicate(Gab);
   for(i = 0;i<sp_c3matrix_size(ph2);i++){
-    assert(cabsr(ph2->data[i] != 0));
-    ph2->data[i] = (ph2->data[i]/cabsr(ph2->data[i]))*(ph2->data[i]/cabsr(ph2->data[i]))*Fratio->data[i];
+    assert(sp_cabs(ph2->data[i]) != 0);
+    ph2->data[i] = sp_cmul(sp_cmul(sp_cscale(ph2->data[i],1.0/sp_cabs(ph2->data[i])),(sp_cscale(ph2->data[i],1.0/sp_cabs(ph2->data[i])))),Fratio->data[i]);
   }
   /* Hab(0,0)=-cprod(DGs,Fratio.*DGs)/2+cprod(DGs,ph2.*conj(DGs))/2 +cnorm2(DGs); */
   tmp = sp_c3matrix_duplicate(Fratio);
   sp_c3matrix_mul_elements(tmp,DGs);  
-  rtmp = creal(sp_c3matrix_froenius_prod(DGs,tmp))/-2;
+  rtmp = sp_real(sp_c3matrix_froenius_prod(DGs,tmp))/-2;
   sp_c3matrix_conj(DGs);
   sp_c3matrix_free(tmp);
   tmp = sp_c3matrix_duplicate(ph2);
   sp_c3matrix_mul_elements(tmp,DGs);
   sp_c3matrix_conj(DGs);  
-  rtmp += creal(sp_c3matrix_froenius_prod(DGs,tmp))/2;
+  rtmp += sp_real(sp_c3matrix_froenius_prod(DGs,tmp))/2;
   sp_c3matrix_free(tmp);
-  rtmp += creal(sp_c3matrix_froenius_prod(DGs,DGs));
+  rtmp += sp_real(sp_c3matrix_froenius_prod(DGs,DGs));
   sp_3matrix_set(Hab,0,0,0,rtmp);
 
   /* ph2=conj(ph2).*DGns; */
@@ -540,16 +541,16 @@ int hesLtau(sp_c3matrix * Gs,sp_c3matrix * Gns,sp_c3matrix * DGs,sp_c3matrix * D
   
   
   /* Hab(1,1)=-cprod(Fratio,DGns)/2+cprod(ph2,conj(DGns))/2; */
-  rtmp = -creal(sp_c3matrix_froenius_prod(Fratio,DGns))/2;
+  rtmp = -sp_real(sp_c3matrix_froenius_prod(Fratio,DGns))/2;
   sp_c3matrix_conj(DGns);  
-  rtmp += creal(sp_c3matrix_froenius_prod(ph2,DGns))/2;
+  rtmp += sp_real(sp_c3matrix_froenius_prod(ph2,DGns))/2;
   sp_c3matrix_conj(DGns);  
   sp_3matrix_set(Hab,1,1,0,rtmp);
 
   /* Hab(0,1)=-cprod(Fratio,DGs)/2+cprod(ph2,conj(DGs))/2; */
-  rtmp = -creal(sp_c3matrix_froenius_prod(Fratio,DGs))/2;
+  rtmp = -sp_real(sp_c3matrix_froenius_prod(Fratio,DGs))/2;
   sp_c3matrix_conj(DGs);  
-  rtmp += creal(sp_c3matrix_froenius_prod(ph2,DGs))/2;
+  rtmp += sp_real(sp_c3matrix_froenius_prod(ph2,DGs))/2;
   sp_c3matrix_conj(DGs);  
   sp_3matrix_set(Hab,0,1,0,rtmp);
 
@@ -566,11 +567,10 @@ int hesLtau(sp_c3matrix * Gs,sp_c3matrix * Gns,sp_c3matrix * DGs,sp_c3matrix * D
 }
 
 int gradLtau(sp_c3matrix * Gs,sp_c3matrix * Gns,sp_c3matrix * DGs,sp_c3matrix * DGns,Image * F0,sp_vector * tau,sp_vector * dtau){
-
-  complex double Gm,Gab;
+  Complex Gm,Gab;
   long long i;
-  complex double dtau0 = 0;
-  complex double dtau1 = 0;
+  Complex dtau0 = sp_cinit(0,0);
+  Complex dtau1 = sp_cinit(0,0);
   dtau->data[0] = 0;
   dtau->data[1] = 0;
     /* Gab = Gs+Gns+tau(0)*DGs+tau(1)*DGns */
@@ -581,31 +581,33 @@ int gradLtau(sp_c3matrix * Gs,sp_c3matrix * Gns,sp_c3matrix * DGs,sp_c3matrix * 
   */
   if(!tau){
     for(i = 0;i<sp_c3matrix_size(DGs);i++){
-      Gab = (complex double)Gs->data[i]+Gns->data[i];
-      assert(cabsr(Gab) != 0);
+      Gab = sp_cadd(Gs->data[i],Gns->data[i]);
+      assert(sp_cabs(Gab) != 0);
       if(F0->mask->data[i]){
-	Gm =F0->image->data[i]*Gab/cabsr(Gab);
+	Gm = sp_cscale(Gab,sp_real(F0->image->data[i])/sp_cabs(Gab));
       }else{
 	Gm = Gab;
       }
-      dtau0 -= DGs->data[i]*conjr(Gm-Gab);
-      dtau1 -= DGns->data[i]*conjr(Gm);
+      dtau0 = sp_csub(dtau0,sp_cmul(DGs->data[i],sp_cconj(sp_csub(Gm,Gab))));
+      dtau1 = sp_csub(dtau1,sp_cmul(DGns->data[i],sp_cconj(Gm)));
     }
   }else{
     for(i = 0;i<sp_c3matrix_size(DGs);i++){
-      Gab = (complex double)Gs->data[i]+Gns->data[i]+tau->data[0]*(complex double)DGs->data[i]+tau->data[1]*DGns->data[i];
-      assert(cabsr(Gab) != 0);
+      Gab = sp_cadd(sp_cadd(Gs->data[i],Gns->data[i]),sp_cadd(sp_cscale(DGs->data[i],tau->data[0]),sp_cscale(DGns->data[i],tau->data[1])));
+      assert(sp_cabs(Gab) != 0);
       if(F0->mask->data[i]){
-	Gm =F0->image->data[i]*Gab/cabsr(Gab);
+	Gm =sp_cscale(Gab,sp_real(F0->image->data[i])/sp_cabs(Gab));
       }else{
 	Gm = Gab;
       }
-      dtau0 -= DGs->data[i]*conjr(Gm-Gab);
-      dtau1 -= DGns->data[i]*conjr(Gm);
+      dtau0 = sp_csub(dtau0,sp_cmul(DGs->data[i],sp_cconj(sp_csub(Gm,Gab))));
+      dtau1 = sp_csub(dtau1,sp_cmul(DGns->data[i],sp_cconj(Gm)));
     }
   }
-  dtau->data[0] = dtau0;
-  dtau->data[1] = dtau1;
+
+#warning Maybe this is very wrong and dtau should be complex
+  dtau->data[0] = sp_cabs(dtau0);
+  dtau->data[1] = sp_cabs(dtau1);
   return 0;
 }
 
@@ -633,11 +635,11 @@ void gradLrho(sp_c3matrix * Gs,sp_c3matrix * Gns,sp_c3matrix * S,Image * F0,real
   long long i;
   real norm = 1.0/sp_c3matrix_size(Gs);
   for(i = 0;i<sp_c3matrix_size(Gs);i++){
-    assert(cabs(Gs->data[i]+Gns->data[i]) != 0);
+    assert(sp_cabs(sp_cadd(Gs->data[i],Gns->data[i])) != 0);
     if(F0->mask->data[i]){
-      Gm->data[i] = (Gs->data[i]+Gns->data[i])/cabs(Gs->data[i]+Gns->data[i])*F0->image->data[i];
+      Gm->data[i] = sp_cscale((sp_cadd(Gs->data[i],Gns->data[i])),sp_real(F0->image->data[i])/sp_cabs(sp_cadd(Gs->data[i],Gns->data[i])));
     }else{
-      Gm->data[i] = (Gs->data[i]+Gns->data[i]);
+      Gm->data[i] = sp_cadd(Gs->data[i],Gns->data[i]);
     }
   }
 /*  Gm = sp_proj_module(tmp,F0);*/
@@ -646,7 +648,7 @@ void gradLrho(sp_c3matrix * Gs,sp_c3matrix * Gns,sp_c3matrix * S,Image * F0,real
   tmp = sp_c3matrix_ifft(Gm);
   Gms = sp_c3matrix_alloc(sp_c3matrix_x(Gm),sp_c3matrix_y(Gm),0);
   for(i = 0;i<sp_c3matrix_size(Gs);i++){
-    if(S->data[i]){
+    if(sp_real(S->data[i])){
       Gms->data[i] = tmp->data[i];
     }
   }
@@ -657,7 +659,7 @@ void gradLrho(sp_c3matrix * Gs,sp_c3matrix * Gns,sp_c3matrix * S,Image * F0,real
   Gms = sp_c3matrix_fft(tmp);
   sp_c3matrix_free(tmp);
   /* normalize */
-  sp_c3matrix_scale(Gms,norm);
+  sp_c3matrix_scale(Gms,sp_cinit(norm,0));
 
   /* DGs=(Gms-Gs);                  %½ Ps (Pm-I)      %reversed sign */
   sp_c3matrix_memcpy(DGs,Gms);
@@ -668,7 +670,7 @@ void gradLrho(sp_c3matrix * Gs,sp_c3matrix * Gns,sp_c3matrix * S,Image * F0,real
   if(w){
     /*DGns=DGns+(1-w)*Gns;       %½ -Pns (Pm -(1-w)I) G*/
     tmp = sp_c3matrix_duplicate(Gns);
-    sp_c3matrix_scale(tmp,1-*w);
+    sp_c3matrix_scale(tmp,sp_cinit((1-*w),0));
     sp_c3matrix_add(DGns,tmp,NULL);
     sp_c3matrix_free(tmp);
   }        
@@ -723,8 +725,8 @@ int minmaxtau(sp_c3matrix * Gs,sp_c3matrix * Gns,sp_c3matrix * DGs,sp_c3matrix *
   real Dtaulold;
     
   
-  RDGs_cp = creal(sp_c3matrix_froenius_prod(DGs,DGs));
-  RDGns_cp = creal(sp_c3matrix_froenius_prod(DGns,DGns));
+  RDGs_cp = sp_real(sp_c3matrix_froenius_prod(DGs,DGs));
+  RDGns_cp = sp_real(sp_c3matrix_froenius_prod(DGns,DGns));
   /* this is the same as tauove but faster */
   real dtaul0 = sqrt(RDGs_cp*RDGs_cp+RDGns_cp*RDGns_cp); 
   

@@ -25,8 +25,8 @@ int main(int argc, char ** argv){
   }
   a = sp_image_read(argv[1],0);
   for(i = 0;i<sp_c3matrix_size(a->image);i++){
-    if(cabs(a->image->data[i]) > 55000){
-      a->image->data[i] = 0;
+    if(sp_cabs(a->image->data[i]) > 55000){
+      a->image->data[i] = sp_cinit(0,0);
     }
   }
   b = sp_image_cross_correlate(a,a,NULL);
@@ -40,17 +40,17 @@ int main(int argc, char ** argv){
   max = 0;
   min = 1<< 20;
   for(i = 0;i<sp_c3matrix_size(b->image);i++){
-    if(cabs(b->image->data[i]) > max){
-      max = cabs(b->image->data[i]);
+    if(sp_cabs(b->image->data[i]) > max){
+      max = sp_cabs(b->image->data[i]);
     }    
-    if(cabs(b->image->data[i]) < min){
-      min = cabs(b->image->data[i]);
+    if(sp_cabs(b->image->data[i]) < min){
+      min = sp_cabs(b->image->data[i]);
     }    
   }
   /* Cap all values higher than 0.05 than the maximum for easier visualization */
   for(i = 0;i<sp_c3matrix_size(b->image);i++){
-    if(cabs(b->image->data[i]) > max*0.15){
-      b->image->data[i] = max*0.15;
+    if(sp_cabs(b->image->data[i]) > max*0.15){
+      b->image->data[i] = sp_cinit(max*0.15,0);
     }    
   }
   sprintf(buffer,"%s_capped_autocorrelation.png",base);

@@ -62,10 +62,10 @@ void rescale_image(Image * a){
   double sum = 0;
   int i;
   for(i = 0;i<sp_c3matrix_size(a->image);i++){
-    sum += a->image->data[i];
+    sum += sp_real(a->image->data[i]);
   }
   for(i = 0;i<sp_c3matrix_size(a->image);i++){
-    a->image->data[i] /= sum;
+    sp_real(a->image->data[i]) /= sum;
   } 
 }
 
@@ -74,8 +74,10 @@ void centrosym_break_attempt(Image * a){
   for(x = 0;x<sp_c3matrix_x(a->image);x++){
     for(y = 0;y<sp_c3matrix_y(a->image);y++){
       for(z = 0;z<sp_c3matrix_z(a->image);z++){
-	a->image->data[z*sp_c3matrix_y(a->image)*sp_c3matrix_x(a->image)+
-		       y*sp_c3matrix_x(a->image)+x] *= 0.5;
+	sp_real(a->image->data[z*sp_c3matrix_y(a->image)*sp_c3matrix_x(a->image)+
+		       y*sp_c3matrix_x(a->image)+x]) *= 0.5;
+	sp_imag(a->image->data[z*sp_c3matrix_y(a->image)*sp_c3matrix_x(a->image)+
+		       y*sp_c3matrix_x(a->image)+x]) *= 0.5;
       }
     }
   }  
@@ -97,10 +99,10 @@ void harmonize_sizes(Options * opts){
     opts->support_mask = tmp;
     /* Stop rounding errors in the supports */
     for(i = 0;i<sp_c3matrix_size(tmp->image);i++){
-      if(creal(tmp->image->data[i]) < 1e-6){
-	tmp->image->data[i] = 0;
+      if(sp_real(tmp->image->data[i]) < 1e-6){
+	tmp->image->data[i] = sp_cinit(0,0);
       }else{
-	tmp->image->data[i] = 1;
+	tmp->image->data[i] = sp_cinit(1,0);
       }
     }
   }
@@ -115,10 +117,10 @@ void harmonize_sizes(Options * opts){
     opts->init_support = tmp;
     /* Stop rounding errors in the supports */
     for(i = 0;i<sp_c3matrix_size(tmp->image);i++){
-      if(creal(tmp->image->data[i]) < 1e-1){
-	tmp->image->data[i] = 0;
+      if(sp_real(tmp->image->data[i]) < 1e-1){
+	tmp->image->data[i] = sp_cinit(0,0);
       }else{
-	tmp->image->data[i] = 1;
+	tmp->image->data[i] = sp_cinit(1,0);
       }
     }
   }
@@ -200,11 +202,14 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
   mkdir(dir,0755);
   chdir(dir);
 #endif
-  //sp_image_write(support,"support.png",COLOR_JET|SP_2D);
-  //sp_image_write(real_in,"initial_guess.png",COLOR_JET|SP_2D);
-  //sp_image_write(real_in,"initial_guess.h5",sizeof(real)|SP_2D);
-  //sp_image_write(initial_support,"initial_support.png",COLOR_JET|SP_2D);
-  sp_image_write(support,"support.vtk",0);
+  if(real_in->num_dimensions == SP_2D){
+    sp_image_write(support,"support.png",COLOR_JET|SP_2D);
+    sp_image_write(real_in,"initial_guess.png",COLOR_JET|SP_2D);
+    sp_image_write(real_in,"initial_guess.h5",sizeof(real)|SP_2D);
+    sp_image_write(initial_support,"initial_support.png",COLOR_JET|SP_2D);
+  }else if(real_in->num_dimensions == SP_3D){
+    sp_image_write(support,"support.vtk",0);
+  }
 
   if(get_algorithm(opts,&log) == HIO){     
     real_out = basic_hio_iteration(amp, real_in, support,opts,&log);
@@ -264,26 +269,31 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
       }
     }
     if(opts->cur_iteration%opts->output_period == opts->output_period-1){
+      if(real_in->num_dimensions == SP_2D){
+	sprintf(buffer,"real_out-%07d.png",opts->cur_iteration);
+	sp_image_write(real_out,buffer,COLOR_JET);
+	sprintf(buffer,"real_out_phase-%07d.png",opts->cur_iteration);
+	sp_image_write(real_out,buffer,COLOR_JET|COLOR_PHASE);
+	sprintf(buffer,"support-%07d.png",opts->cur_iteration);
+	sp_image_write(support,buffer,COLOR_JET);
+	
+      }
+      if(real_in->num_dimensions == SP_3D){
+	sprintf(buffer,"real_out-%07d.vtk",opts->cur_iteration);
+	sp_image_write(real_out,buffer,0);
+	sprintf(buffer,"support-%07d.vtk",opts->cur_iteration);
+	sp_image_write(support,buffer,0);
+      }
       sprintf(buffer,"real_out-%07d.h5",opts->cur_iteration);
-      //sp_image_write(real_out,buffer,opts->output_precision|SP_2D);
-      sprintf(buffer,"real_out-%07d.png",opts->cur_iteration);
-      //sp_image_write(real_out,buffer,COLOR_JET|SP_2D);
-      sprintf(buffer,"real_out-%07d.vtk",opts->cur_iteration);
-      sp_image_write(real_out,buffer,SP_3D);
-      sprintf(buffer,"real_out_phase-%07d.png",opts->cur_iteration);
-      //sp_image_write(real_out,buffer,COLOR_JET|COLOR_PHASE|SP_2D);
-      sprintf(buffer,"support-%07d.png",opts->cur_iteration);
-      //sp_image_write(support,buffer,COLOR_JET|SP_2D);
+      sp_image_write(real_out,buffer,opts->output_precision);
       sprintf(buffer,"support-%07d.h5",opts->cur_iteration);
-      //sp_image_write(support,buffer,opts->output_precision|SP_2D);
-      sprintf(buffer,"support-%07d.vtk",opts->cur_iteration);
-      sp_image_write(support,buffer,SP_3D);
+      sp_image_write(support,buffer,opts->output_precision);
       tmp = sp_image_duplicate(real_out,SP_COPY_DATA|SP_COPY_MASK);
       for(i = 0;i<sp_c3matrix_size(tmp->image);i++){
-	if(support->image->data[i]){
-	  tmp->image->data[i] = cabs(tmp->image->data[i]);
+	if(sp_real(support->image->data[i])){
+	  tmp->image->data[i] = sp_cinit(sp_cabs(tmp->image->data[i]),0);
 	}else{
-	  tmp->image->data[i] = 0;
+	  tmp->image->data[i] = sp_cinit(0,0);
 	}
       }
       sprintf(buffer,"pre_pattern-%07d.h5",opts->cur_iteration);
@@ -380,7 +390,7 @@ void set_rand_phases(Image * real_in, Image * diff){
   r = sp_image_ifft(tmp);
   
   for(i = 0;i<sp_c3matrix_size(real_in->image);i++){
-    real_in->image->data[i] = r->image->data[i]/(sp_image_size(tmp));
+    real_in->image->data[i] = sp_cscale(r->image->data[i],1.0/(sp_image_size(tmp)));
   }
   sp_image_free(tmp);
   sp_image_free(r);	  
@@ -392,15 +402,15 @@ void set_rand_ints(Image * real_in, Image * img){
   real sum = 0;
   int size_in = 0;
   for(i = 0;i<sp_c3matrix_size(img->image);i++){
-    sum += img->image->data[i];    
-    if(real_in->image->data[i]){
+    sum += sp_real(img->image->data[i]);    
+    if(sp_real(real_in->image->data[i])){
       size_in++;
     }
   }
   for(i = 0;i<sp_c3matrix_size(real_in->image);i++){
-    if(real_in->image->data[i]){
-      real_in->image->data[i] = (p_drand48()*sum)+(p_drand48()*sum)*I;
-      real_in->image->data[i]  /= (size_in*sqrt(sp_c3matrix_size(img->image)));
+    if(sp_real(real_in->image->data[i])){
+      real_in->image->data[i] = sp_cinit((p_drand48()*sum),(p_drand48()*sum));
+      real_in->image->data[i]  = sp_cscale(real_in->image->data[i],1.0/(size_in*sqrt(sp_c3matrix_size(img->image))));
     }  
   }
 }
@@ -466,10 +476,13 @@ int main(int argc, char ** argv){
   sp_init_fft(opts->nthreads);
   if(opts->real_image){
     opts->diffraction = sp_image_fft(opts->real_image);    
+    opts->diffraction->scaled = 1;
     for(i = 0;i<sp_image_size(opts->diffraction);i++){
       opts->diffraction->mask->data[i] = 1;
     }
-    //sp_image_write(opts->real_image,"real_image.png",COLOR_JET|SP_2D);
+    if(opts->real_image->num_dimensions == SP_2D){
+      sp_image_write(opts->real_image,"real_image.png",COLOR_JET);
+    }
     sp_image_dephase(opts->diffraction);
   }
   if(opts->diffraction){
@@ -497,7 +510,7 @@ int main(int argc, char ** argv){
 
   exp_sigma = sp_image_duplicate(img,SP_COPY_DATA|SP_COPY_MASK);
   for(i = 0;i<sp_c3matrix_size(img->image);i++){
-    exp_sigma->image->data[i] = img->image->data[i]*opts->exp_sigma;
+    sp_real(exp_sigma->image->data[i]) = sp_real(img->image->data[i])*opts->exp_sigma;
   }
 
   /* Make sure to scale everything to the same size if needed */
@@ -508,8 +521,8 @@ int main(int argc, char ** argv){
   }
 
   for(i = 0;i<sp_c3matrix_size(opts->init_support->image);i++){
-    if(opts->init_support->image->data[i]){
-      opts->init_support->image->data[i] = 1;
+    if(sp_real(opts->init_support->image->data[i])){
+      opts->init_support->image->data[i] = sp_cinit(1,0);
     }
   }
 
