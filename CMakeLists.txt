@@ -79,18 +79,22 @@ ENDIF(WIN32)
 LIST(APPEND LIBRARY_LIST ${SPIMAGE_LIBRARY}  ${HDF5_LIBRARY} ${TIFF_LIBRARY} ${PNG_LIBRARY} ${FFTW_LIBRARY} ${JPEG_LIBRARY} ${Z_LIBRARY} ${MATH_LIBRARY} ${C_LIBRARY})
 
 IF(QT4_FOUND)
-	INCLUDE_DIRECTORIES(${SPIMAGE_INCLUDE_DIR} ${TIFF_INCLUDE_DIR} ${HDF5_INCLUDE_DIR} ${FFTW3_INCLUDE_DIR} ${PNG_INCLUDE_DIR} ${QT_INCLUDES} saddle libconfig)
-	LIST(APPEND LIBRARY_LIST  QtNetwork QtCore)
+	INCLUDE_DIRECTORIES(${SPIMAGE_INCLUDE_DIR} ${TIFF_INCLUDE_DIR} ${HDF5_INCLUDE_DIR} ${FFTW3_INCLUDE_DIR} ${PNG_INCLUDE_DIR} ${QT_INCLUDES} saddle libconfig Hawk)
+	LIST(APPEND LIBRARY_LIST  ${QT_QTNETWORK_LIBRARY} ${QT_QTCORE_LIBRARY})
 ELSE(QT4_FOUND)
 	INCLUDE_DIRECTORIES(${SPIMAGE_INCLUDE_DIR} ${TIFF_INCLUDE_DIR} ${HDF5_INCLUDE_DIR} ${FFTW3_INCLUDE_DIR} ${PNG_INCLUDE_DIR}  saddle libconfig)
 ENDIF(QT4_FOUND)
 
 IF(QT4_FOUND)
-QT_WRAP_CPP(uwrapc project_moc_files communicator.h)
+QT_WRAP_CPP(uwrapc project_moc_files  communicator.h client_decoder.h decoder.h sender.h)
 ENDIF(QT4_FOUND)
 
-ADD_EXECUTABLE(uwrapc uwrapc.c configuration.c support.c algorithms.c log.c saddle/minmaxtau.c saddle/minmaxL.c ${project_moc_files} communicator.cpp network_communication.cpp libconfig/libconfig.c libconfig/scanner.c libconfig/grammar.c)
-ADD_EXECUTABLE(restore_image restore_image.c configuration.c support.c algorithms.c log.c saddle/minmaxtau.c saddle/minmaxL.c libconfig/libconfig.c libconfig/scanner.c libconfig/grammar.c)
+SET(UWRAPC_OBJ uwrapc.c configuration.c support.c algorithms.c log.c saddle/minmaxtau.c saddle/minmaxL.c ${project_moc_files})
+LIST(APPEND UWRAPC_OBJ communicator.cpp network_communication.cpp libconfig/libconfig.c libconfig/scanner.c libconfig/grammar.c)
+LIST(APPEND UWRAPC_OBJ client_decoder.cpp decoder.cpp metadata.c sender.cpp)
+
+ADD_EXECUTABLE(uwrapc ${UWRAPC_OBJ})
+ADD_EXECUTABLE(restore_image restore_image.c configuration.c support.c algorithms.c log.c saddle/minmaxtau.c saddle/minmaxL.c libconfig/libconfig.c libconfig/scanner.c libconfig/grammar.c metadata.c )
 ADD_EXECUTABLE(process_image process_image.c ${GETOPT})
 ADD_EXECUTABLE(post_process post_process.c ${GETOPT})
 
@@ -101,6 +105,7 @@ LIST(APPEND LIBRARY_LIST ${DMALLOC_LIBRARY})
 ENDIF(LINK_TO_DMALLOC)
 
 ADD_SUBDIRECTORY(utils)
+ADD_SUBDIRECTORY(Hawk)
 ADD_SUBDIRECTORY(saddle)
 
 
