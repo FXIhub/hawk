@@ -51,37 +51,34 @@ int max_prime_factor(int a){
 
 void create_fft_bench_table(int iter, FILE * file, int nthreads){
   /* Check all sizes from 10^2 to 2000^2 with prime factors smaller than 8 */
-  Image * test = malloc(sizeof(Image));
+  Image * test = sp_image_alloc(1,1,1);
   int i,j;
   int opt_size = 2000;
   int time_i,time_e;
   struct timeval tv_i;
   struct timeval tv_e;
   int min_time = 1000000000;
-  init_fft(nthreads);
-  test->detector = malloc(sizeof(Detector));
-  test->mask = NULL;
-  test->image = NULL;
-  for(i = 2000;i>10;i--){
+  sp_init_fft(nthreads);
+  for(i = 200;i>190;i--){
     if(max_prime_factor(i) >= 8){
       fprintf(file,"%d\t%d\t%d\n",i,-1,opt_size);
       continue;
     }
-    sp_cmatrix_realloc(test->image,i,i);
-    sp_imatrix_realloc(test->mask,i,i);
+    sp_image_realloc(test,i,i,i);
     test->scaled = 1; 
     test->phased = 1;
     test->shifted = 1;
 
 
-    for(j = 0;j<sp_cmatrix_size(test->image);j++){
-      test->image->data[i] = box_muller(0,200)+box_muller(0,200)*I;
+    for(j = 0;j<sp_image_size(test);j++){
+      sp_real(test->image->data[i]) = sp_box_muller(0,200);
+      sp_imag(test->image->data[i]) = sp_box_muller(0,200);
     }
     gettimeofday(&tv_i,NULL);
     time_i = tv_i.tv_sec*1000000+tv_i.tv_usec;
     for(j = 0;j<iter;j++){
-      freeimg(image_fft(test));
-      freeimg(image_rev_fft(test));
+      sp_image_free(sp_image_fft(test));
+      sp_image_free(sp_image_ifft(test));
     }    
     gettimeofday(&tv_e,NULL);
     time_e = tv_e.tv_sec*1000000+tv_e.tv_usec;

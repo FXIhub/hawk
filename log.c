@@ -148,10 +148,11 @@ void output_to_log(Image * exp_amp,Image * real_in, Image * real_out, Image * fo
   real Efourier = 0;
   real Efourier_den = 0;
   real FcFo = 0;
-  long long FcFo_den = 0;
+  real FcFo_den = 0;
   real SupSize = 0;
   long long i;
   int iter = opts->cur_iteration;
+  static int sol_superimpose_counter = 0;
   static Image * previous_out = NULL;
 /*  char buffer[1024];*/
 
@@ -221,6 +222,7 @@ void output_to_log(Image * exp_amp,Image * real_in, Image * real_out, Image * fo
     fprintf(opts->flog,"@ s11 legend \"Int Cum Fluct \\N\"\n");
     fprintf(opts->flog,"@ s12 legend \"Object Area \\N\"\n");
     fprintf(opts->flog,"@ s13 legend \"Phase Relation Error \\N\"\n");
+    fprintf(opts->flog,"@ s14 legend \"Correlation with solution \\N\"\n");
 
   }
   for(i = 0;i<sp_c3matrix_size(exp_amp->image);i++){
@@ -233,8 +235,8 @@ void output_to_log(Image * exp_amp,Image * real_in, Image * real_out, Image * fo
     if(sp_real(exp_amp->image->data[i]) && exp_amp->mask->data[i]){
       Efourier += (sp_cabs(fourier_out->image->data[i])-sp_cabs(exp_amp->image->data[i]))*(sp_cabs(fourier_out->image->data[i])-sp_cabs(exp_amp->image->data[i]));
       Efourier_den += sp_cabs(exp_amp->image->data[i])*sp_cabs(exp_amp->image->data[i]);
-      FcFo += (sp_cabs(fourier_out->image->data[i])/sp_cabs(exp_amp->image->data[i]));
-      FcFo_den++;
+      FcFo += sp_cabs(fourier_out->image->data[i]);
+      FcFo_den += sp_cabs(exp_amp->image->data[i]) ;
     }
   }  
   Ereal /= Ereal_den;
@@ -254,6 +256,7 @@ void output_to_log(Image * exp_amp,Image * real_in, Image * real_out, Image * fo
   log->dSupSize = -log->SupSize_run_avg;
   log->Ereal_run_avg = 0;
   log->SupSize_run_avg = 0;
+  log->sol_correlation = 0;
   for(i = 0;i<MIN((opts->cur_iteration/opts->log_output_period),RUN_AVG_LEN);i++){
     log->Ereal_run_avg += log->Ereal_list[i];
     log->SupSize_run_avg += log->SupSize_list[i];
@@ -265,9 +268,16 @@ void output_to_log(Image * exp_amp,Image * real_in, Image * real_out, Image * fo
 
   log->dEreal += log->Ereal_run_avg;
   log->dSupSize += log->SupSize_run_avg;
-  fprintf(opts->flog,"%d\t%d\t%f\t%f\t%f\t%f\t%f\t%f\t%d\t%f\t%f\t%f\t%f\t%f\t%f\n",iter,it_outer,
+  if(opts->solution_image){
+    if(sol_superimpose_counter%10 == 0){
+      sp_image_superimpose(real_out,opts->solution_image,SP_ENANTIOMORPH);
+    }
+    sol_superimpose_counter++;
+    log->sol_correlation = sp_image_correlation_coefficient(opts->solution_image,real_out);
+  }
+  fprintf(opts->flog,"%d\t%d\t%f\t%f\t%f\t%f\t%f\t%f\t%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",iter,it_outer,
 	  Ereal,Efourier,FcFo,SupSize,get_beta(opts),log->threshold,get_algorithm(opts,log),
-	  log->dEreal,log->dSupSize,get_blur_radius(opts),log->int_cum_fluctuation,get_object_area(opts),phase_relation_error(fourier_out));
+	  log->dEreal,log->dSupSize,get_blur_radius(opts),log->int_cum_fluctuation,get_object_area(opts),0.0,log->sol_correlation);
   fflush(opts->flog);
 
   if(Ereal < opts->real_error_tolerance){

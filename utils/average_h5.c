@@ -9,17 +9,18 @@ int main(int argc, char ** argv){
   Image * res = NULL;
   Image * cur;
   for(n = 1;n<argc;n++){
-    cur =  read_imagefile(argv[n]);
+    cur =  sp_image_read(argv[n],0);
     if(n == 1){
-      res = imgcpy(cur);
+      res = sp_image_duplicate(cur,SP_COPY_DATA|SP_COPY_MASK);
     }else{
-      add_image(res,cur);
+      sp_image_add(res,cur);
     }
-    freeimg(cur);    
+    sp_image_free(cur);    
   }
-  for(i = 0;i<sp_cmatrix_size(res->image);i++){
-    res->image->data[i] /= (n-1);
+  for(i = 0;i<sp_image_size(res);i++){
+    sp_real(res->image->data[i]) /= (n-1);
+    sp_imag(res->image->data[i]) /= (n-1);
   }
-  write_img(res,"average.h5",sizeof(real));
+  sp_image_write(res,"average.h5",sizeof(real));
   return 0;
 }

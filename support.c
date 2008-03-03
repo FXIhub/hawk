@@ -15,20 +15,24 @@ Image * get_updated_support(Image * input, real level , real radius, Options * o
   Image * res;
   long long i;
 
-  res = gaussian_blur(input, radius);
-
+  sp_image_write(input,"support_input.vtk",0);
+  Image * t = sp_image_duplicate(input,SP_COPY_DATA);
+  sp_image_dephase(t);
+  res = gaussian_blur(t, radius);
+  sp_image_write(res,"support_blur2.vtk",0);
+  sp_image_free(t);
   sp_image_dephase(res);
 
   for(i = 0;i<sp_image_size(res);i++){
-    if(max_int < sp_real(res->image->data[i])){
-      max_int = sp_real(res->image->data[i]);
+    if(max_int < sp_cabs(res->image->data[i])){
+      max_int = sp_cabs(res->image->data[i]);
     }
-    avg_int += sp_real(res->image->data[i]);
+    avg_int += sp_cabs(res->image->data[i]);
   }
   avg_int /= sp_c3matrix_size(res->image);
 
   for(i = 0;i<sp_c3matrix_size(res->image);i++){
-    if(sp_real(res->image->data[i]) < max_int*level){
+    if(sp_cabs(res->image->data[i]) < max_int*level){
       res->image->data[i] = sp_cinit(0,0);
     }else{
       res->image->data[i] = sp_cinit(1,0);
@@ -74,14 +78,14 @@ Image * get_support_from_patterson(Image * input, Options * opts){
   }
 
   for(i = 0;i<sp_c3matrix_size(patterson->image);i++){
-    if(max_int < sp_real(patterson->image->data[i])){
-      max_int = sp_real(patterson->image->data[i]);
+    if(max_int < sp_cabs(patterson->image->data[i])){
+      max_int = sp_cabs(patterson->image->data[i]);
     }
   }
 
 
   for(i = 0;i<sp_c3matrix_size(patterson->image);i++){
-    if(sp_real(patterson->image->data[i]) < max_int*level){
+    if(sp_cabs(patterson->image->data[i]) < max_int*level){
       patterson->image->data[i] = sp_cinit(0,0);
     }else{
       patterson->image->data[i] = sp_cinit(1,0);
@@ -102,7 +106,7 @@ Image * get_support_from_patterson(Image * input, Options * opts){
   }
 
   for(i = 0;i<sp_c3matrix_size(patterson->image);i++){
-    if(sp_real(patterson->image->data[i]) > 1e-6){
+    if(sp_cabs(patterson->image->data[i]) > 1e-6){
       patterson->image->data[i] = sp_cinit(1,0);
     }else{
       patterson->image->data[i] = sp_cinit(0,0);
@@ -137,8 +141,9 @@ Image * get_filtered_support(Image * input, real level , real radius, Options * 
   Image * patterson_mask;*/
   long long i;
   for(i = 0;i<sp_c3matrix_size(input->image);i++){
-    sp_real(absolute_error->image->data[i]) = (sp_real(res->image->data[i])-sp_real(running_average->image->data[i]))*
-      (sp_real(res->image->data[i])-sp_real(running_average->image->data[i]));
+    sp_real(absolute_error->image->data[i]) = (sp_cabs(res->image->data[i])-sp_cabs(running_average->image->data[i]))*
+      (sp_cabs(res->image->data[i])-sp_cabs(running_average->image->data[i]));
+    sp_imag(absolute_error->image->data[i]) = 0;
   }
   if(sp_image_z(absolute_error) == 1){
     variance = square_blur(absolute_error,radius,SP_2D);
@@ -155,16 +160,16 @@ Image * get_filtered_support(Image * input, real level , real radius, Options * 
   sp_image_dephase(patterson_mask);*/
 
   for(i = 0;i<sp_c3matrix_size(res->image);i++){
-    if(max_int < sp_real(res->image->data[i])){
-      max_int = sp_real(res->image->data[i]);
+    if(max_int < sp_cabs(res->image->data[i])){
+      max_int = sp_cabs(res->image->data[i]);
     }
     avg_int += sp_cabs(res->image->data[i]);
   }
   avg_int /= sp_c3matrix_size(res->image);
   for(i = 0;i<sp_c3matrix_size(res->image);i++){
-    if(sp_real(res->image->data[i]) > max_int*level /*|| !mask->image->data[i] || !patterson->image->data[i]*/){
+    if(sp_cabs(res->image->data[i]) > max_int*level /*|| !mask->image->data[i] || !patterson->image->data[i]*/){
       res->image->data[i] = sp_cinit(1,0);
-    }else if(sp_real(res->image->data[i]) > sp_real(running_average->image->data[i]) + 3* sqrt(sp_real(variance->image->data[i]))){
+    }else if(sp_cabs(res->image->data[i]) > sp_cabs(running_average->image->data[i]) + 3* sqrt(sp_cabs(variance->image->data[i]))){
       res->image->data[i] = sp_cinit(1,0);
     }else{
       res->image->data[i] = sp_cinit(0,0);
@@ -174,7 +179,7 @@ Image * get_filtered_support(Image * input, real level , real radius, Options * 
     sp_image_add(res,opts->support_mask);
   }
   for(i = 0;i<sp_c3matrix_size(res->image);i++){
-    if(sp_real(res->image->data[i])){
+    if(sp_cabs(res->image->data[i])){
       res->image->data[i] = sp_cinit(1,0);
     }
   }
@@ -245,14 +250,14 @@ real get_support_level(Image * input, real * previous_size , real radius, Log * 
     sp_image_dephase(res);
     
     for(i = 0;i<sp_c3matrix_size(res->image);i++){
-      if(max_int < sp_real(res->image->data[i])){
-	max_int = sp_real(res->image->data[i]);
+      if(max_int < sp_cabs(res->image->data[i])){
+	max_int = sp_cabs(res->image->data[i]);
       }
     }
     qsort(res->image->data,sp_c3matrix_size(res->image),sizeof(Complex),descend_complex_compare);
     if((*previous_size) < 0){
       for(i = 0;i<sp_c3matrix_size(res->image);i++){
-	if(sp_real(res->image->data[i]) < -(*previous_size)){
+	if(sp_cabs(res->image->data[i]) < -(*previous_size)){
 	  break;
 	}
       }
@@ -260,12 +265,15 @@ real get_support_level(Image * input, real * previous_size , real radius, Log * 
     }
     new_size = (*previous_size)*reduction;
     *previous_size = new_size;
-    new_level = sp_real(res->image->data[new_size])/max_int;
+    new_level = sp_cabs(res->image->data[new_size])/max_int;
     sp_image_free(res);
     return new_level;
   }else if(opts->support_update_algorithm == CONSTANT_AREA){
     /* Keeps a constant area for the support */    
-    res = gaussian_blur(input, radius);
+    Image * t = sp_image_duplicate(input,SP_COPY_DATA);
+    sp_image_dephase(t);
+    res = gaussian_blur(t, radius);
+    sp_image_free(t);
     qsort(res->image->data,sp_c3matrix_size(res->image),sizeof(Complex),descend_complex_compare);
     /* the level is always a fraction of the maximum value so we divide by the maximum (data[0]) */
     new_level = sp_cabs(res->image->data[(int)(sp_image_size(res)*opts->object_area)])/sp_cabs(res->image->data[0]);
@@ -273,7 +281,10 @@ real get_support_level(Image * input, real * previous_size , real radius, Log * 
     return new_level;
   }else if(opts->support_update_algorithm == DECREASING_AREA){
     /* Keeps a constant area for the support */    
-    res = gaussian_blur(input, radius);
+    Image * t = sp_image_duplicate(input,SP_COPY_DATA);
+    sp_image_dephase(t);
+    res = gaussian_blur(t, radius);
+    sp_image_free(t);
     qsort(res->image->data,sp_c3matrix_size(res->image),sizeof(Complex),descend_complex_compare);
     /* the level is always a fraction of the maximum value so we divide by the maximum (data[0]) */
     new_level =  sp_cabs(res->image->data[(int)(sp_image_size(res)*get_object_area(opts))])/sp_cabs(res->image->data[0]);    

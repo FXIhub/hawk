@@ -21,6 +21,7 @@ typedef struct{
   real threshold;
   Image * cumulative_fluctuation;
   real int_cum_fluctuation;
+  real sol_correlation;
 }Log;
 
 

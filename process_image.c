@@ -235,6 +235,7 @@ void remove_background(Image * img, Options * opt){
     sp_real(img->image->data[i]) -= opt->background;
     if(sp_real(img->image->data[i]) < 0){
       sp_real(img->image->data[i]) = 0;
+      sp_imag(img->image->data[i]) = 0;
       img->mask->data[i] = 0;
     }
   }  

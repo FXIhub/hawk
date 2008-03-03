@@ -8,6 +8,7 @@ int main(int argc, char ** argv){
   int i;
   if(argc < 2){
     fprintf(stderr,"Usage: %s <hdf5 file> [vtk file] [vtk phase file] [mask vtk file]\n",argv[0]);
+    exit(0);
   }
   img = sp_image_read(argv[1],0);
   if(argc == 2){

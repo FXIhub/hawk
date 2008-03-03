@@ -1,6 +1,13 @@
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
 
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif /* __cplusplus */
+
+
 #define VERSION "1.13"
 
 #include "libconfig.h"
@@ -22,7 +29,7 @@ typedef enum{GAUSSIAN_BLUR_REDUCTION=0,GEOMETRICAL_BLUR_REDUCTION} Blur_Reductio
 
 
 typedef enum {Type_Real=0, Type_Int, Type_String, 
-	      Type_MultipleChoice,Type_Bool, Type_Group}Variable_Type;
+	      Type_MultipleChoice,Type_Bool, Type_Group, Type_Image, Type_Slice}Variable_Type;
 
 typedef enum {Id_Diffraction_Filename=0,Id_Real_Image_Filename,Id_Max_Blur_Radius,Id_Init_Level,
 	      Id_Beta,Id_Iterations,Id_Support_Mask_Filename,Id_Init_Support_Filename,Id_Image_Guess_Filename,
@@ -36,7 +43,8 @@ typedef enum {Id_Diffraction_Filename=0,Id_Real_Image_Filename,Id_Max_Blur_Radiu
 	      Id_Patterson_Blur_Radius,Id_Remove_Central_Pixel_Phase,Id_Perturb_Weak_Reflections,Id_Nthreads,
 	      Id_Break_Centrosym_Period,Id_Reconstruction_Finished,Id_Real_Error_Tolerance,Id_Root,
 	      Id_Remove_Central_Pixel_phase,Id_Max_Iterations,Id_Patterson_Level_Algorithm,Id_Object_Area,
-	      Id_Image_Blur_Period,Id_Image_Blur_Radius,Id_Iterations_To_Min_Object_Area
+	      Id_Image_Blur_Period,Id_Image_Blur_Radius,Id_Iterations_To_Min_Object_Area,Id_Min_Object_Area,Id_Current_Real_Space_Image,
+	      Id_Current_Support,Id_Solution_File
 }Variable_Id;
 
 
@@ -51,13 +59,15 @@ typedef struct VariableMetadata{
   const int list_valid_values[10];
   /* No more than 10 possible values per list */
   const char * list_valid_names[10];
-  const void * variable_address;
+  void * variable_address;
   /* We should also have a documentation field */
 }VariableMetadata;
 
 
 typedef struct {
   Image * diffraction;
+  Image * amplitudes;
+  Image * amplitudes_sigma;
   char diffraction_filename[OPTION_STRING_SIZE];
   Image * real_image;
   char real_image_filename[OPTION_STRING_SIZE];
@@ -117,13 +127,18 @@ typedef struct {
   real image_blur_radius;
   int iterations_to_min_object_area;
   real min_object_area;
+  Image ** current_real_space_image;
+  Image ** current_support;
+  int is_running;
+  char solution_filename[OPTION_STRING_SIZE];
+  Image * solution_image;
 }Options;
 
 
 
 extern Options global_options;
 extern const int number_of_global_options;
-extern const VariableMetadata variable_metadata[100];
+extern VariableMetadata variable_metadata[100];
 
 void init_options_metadata(Options * opt);
 void read_options_file(char * filename, Options * opt);
@@ -133,5 +148,11 @@ void write_options_file(char * filename, Options * res);
 real get_beta(Options * opts);
 real get_blur_radius(Options * opts);
 real get_object_area(Options * opts);
+
+
+#ifdef __cplusplus
+}  /* extern "C" */
+#endif /* __cplusplus */
+
 
 #endif

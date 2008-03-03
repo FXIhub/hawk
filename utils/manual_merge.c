@@ -35,43 +35,48 @@ int main(int argc, char ** argv){
   fd = fopen(argv[1],"r");
   while(fgets(line,1024,fd)){
     n = sscanf(line,"%lf %lf %s %s",&time,&saturation,img,back);
-    tmp = read_imagefile(img);
+    tmp = sp_image_read(img,0);
     if(res == NULL){
-      res = create_empty_img(tmp);
-      den = create_empty_img(tmp);
+      res = sp_image_duplicate(tmp,0);
+      den = sp_image_duplicate(tmp,0);
     }
+    
 
-
-    if(back[0]){
-      back_tmp = read_imagefile(back);
+    if(n == 4){
+      back_tmp = sp_image_read(back,0);
       sp_image_sub(tmp,back_tmp);
-      freeimg(back_tmp);
+      sp_image_free(back_tmp);
       /* deal with saturation */
-      for(i = 0;i<TSIZE(tmp);i++){
-	if(tmp->image[i]+ back_tmp->image[i] < saturation){
-	  res->image[i] += tmp->image[i]/time;
-	  den->image[i]++;
+      for(i = 0;i<sp_image_size(tmp);i++){
+	if(sp_cabs(tmp->image->data[i])+ sp_cabs(back_tmp->image->data[i]) < saturation){
+	  sp_real(res->image->data[i]) += sp_real(tmp->image->data[i])/time;
+	  sp_imag(res->image->data[i]) += sp_imag(tmp->image->data[i])/time;
+	  sp_real(den->image->data[i])++;
 	}
       }
     }else{
-      for(i = 0;i<TSIZE(tmp);i++){
-	if(tmp->image[i]  < saturation){
-	  res->image[i] += tmp->image[i]/time;
-	  den->image[i]++;
+      for(i = 0;i<sp_image_size(tmp);i++){
+	if(sp_cabs(tmp->image->data[i])  < saturation){
+	  sp_real(res->image->data[i]) += sp_real(tmp->image->data[i])/time;
+	  sp_imag(res->image->data[i]) += sp_imag(tmp->image->data[i])/time;
+	  sp_real(den->image->data[i])++;
 	}
       }
     }
-    freeimg(tmp);
+    sp_image_free(tmp);
   }
-  for(i = 0;i<TSIZE(res);i++){
-    if(den->image[i]){
-      res->image[i] /= den->image[i];
+  for(i = 0;i<sp_image_size(res);i++){
+    if(sp_real(den->image->data[i])){
+      sp_real(res->image->data[i]) /= sp_real(den->image->data[i]);
+      sp_imag(res->image->data[i]) /= sp_real(den->image->data[i]);
     }else{
-      res->mask[i] = 0;
-      res->image[i] = saturation*2;
+      res->mask->data[i] = 0;
+      /* put some unreasonable number on it */
+      sp_real(res->image->data[i]) = saturation*2;
+      sp_imag(res->image->data[i]) = 0;
     }
   }
-  write_img(res,argv[2],sizeof(real));
-  freeimg(res);
+  sp_image_write(res,argv[2],sizeof(real));
+  sp_image_free(res);
   return 0;
 }

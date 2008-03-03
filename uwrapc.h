@@ -1,12 +1,17 @@
 #ifndef _UWRAP_H_
 #define _UWRAP_H_
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif /* __cplusplus */
+
 
 
 
 
 #include "configuration.h"
-
+#include "log.h"
 
 
 
@@ -44,4 +49,12 @@ Image * basic_my_raar_iteration(Image * exp_amp, Image * exp_sigma, Image * real
 				Options * opts, Log * log);
 void rescale_image(Image * a);
 void centrosym_break_attempt(Image * a);
+void init_reconstruction(Options * opts);
+void enforce_parsevals_theorem(Image * master, Image * to_scale);
+
+#ifdef __cplusplus
+}  /* extern "C" */
+#endif /* __cplusplus */
+
+
 #endif

@@ -156,6 +156,7 @@ Image * restore_raar_iteration(Image * exp_amp, Image * real_in, Image * support
 
 
 Image * estimate_error(Image * intensities, Image * support, Options * opts){  
+  return NULL;
 }
 
 /* continue a reconstruction on this directory */

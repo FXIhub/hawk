@@ -57,8 +57,24 @@ void continue_reconstruction(Options * opts){
 } 
 
 
+void synchronize_image_data(Image **  real_out, Image ** support){
+  if(global_options.current_real_space_image != real_out){
+    sp_image_free(*real_out);
+    *real_out = *global_options.current_real_space_image;
+    sp_free(global_options.current_real_space_image);
+    global_options.current_real_space_image = real_out;
+  }
+  if(global_options.current_support != support){
+    sp_image_free(*support);
+    *support = *global_options.current_support;
+    sp_free(global_options.current_support);
+    global_options.current_support = support;
+  }
+}
 
-void rescale_image(Image * a){
+
+/* Make sure that */
+void rescale_images(Image * a,Image * b){
   double sum = 0;
   int i;
   for(i = 0;i<sp_c3matrix_size(a->image);i++){
@@ -67,6 +83,37 @@ void rescale_image(Image * a){
   for(i = 0;i<sp_c3matrix_size(a->image);i++){
     sp_real(a->image->data[i]) /= sum;
   } 
+}
+
+void enforce_parsevals_theorem(Image * master, Image * to_scale){
+  int i;
+  double sum_m = 0;
+  double sum_s = 0;
+  double f;
+  Image * tmp;
+  if(sp_image_size(master) != sp_image_size(to_scale)){
+    fprintf(stderr,"Cannot enforce parsevals_theorem on images of different sizes!\n");
+    return;
+  }
+
+  /* 
+     In theory I should be able to rescale them without the need to explicitly calculate the fourier transform
+     We calculate the fourier transform using unscaled FTT so the result is sqrt(image_size) bigger than the predicted
+     by the parsevals_theorem. So we could do the same without the FFT by dividinf f by sqrt(image_size)
+  */
+  tmp = sp_image_fft(to_scale);
+  for(i = 0;i<sp_image_size(master);i++){
+    sum_m += sp_real(master->image->data[i])*sp_real(master->image->data[i])+sp_imag(master->image->data[i])*sp_imag(master->image->data[i]);
+/*    sum_s += sp_real(to_scale->image->data[i])*sp_real(to_scale->image->data[i])+sp_imag(to_scale->image->data[i])*sp_imag(to_scale->image->data[i]);*/
+    sum_s += sp_real(tmp->image->data[i])*sp_real(tmp->image->data[i])+sp_imag(tmp->image->data[i])*sp_imag(tmp->image->data[i]);
+  }
+  sp_image_free(tmp);
+  f = sqrt(sum_m/sum_s);
+  printf("Scaling to_scale by %f\n",f);
+  for(i = 0;i<sp_image_size(master);i++){
+    sp_real(to_scale->image->data[i]) *= f;
+    sp_imag(to_scale->image->data[i]) *= f;
+  }  
 }
 
 void centrosym_break_attempt(Image * a){
@@ -146,6 +193,8 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
   Image * real_out = NULL;
   Image * tmp = NULL;
   Image * tmp2;
+  global_options.current_support = &support;
+  global_options.current_real_space_image = &real_out;
   char buffer[1024];
   Log log;
   real radius;
@@ -156,7 +205,9 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
   const int stop_threshold = 10;
   int i;
 
+
   init_log(&log);
+
   log.threshold = support_threshold;
   opts->cur_iteration = 0;
   opts->reconstruction_finished = 0;
@@ -169,29 +220,13 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
   sp_image_write(initial_support,"support.vtk",SP_3D);
   prev_support = sp_image_duplicate(initial_support,SP_COPY_DATA|SP_COPY_MASK);
 
-  /* Set the initial guess */
-  if(opts->image_guess){
-    real_in = sp_image_duplicate(opts->image_guess,SP_COPY_DATA|SP_COPY_MASK);
-  }else{
-    real_in = sp_image_duplicate(support,SP_COPY_DATA|SP_COPY_MASK);
-  }
+
+  real_in = sp_image_duplicate(opts->image_guess,SP_COPY_DATA|SP_COPY_MASK);
+  sp_image_write(real_in,"initial_guess.vtk",SP_3D);
 
   /* make sure we make the input complex */
   sp_image_rephase(real_in,SP_ZERO_PHASE);
   
-  /* Set random phases if needed */
-  if(opts->rand_intensities){
-    set_rand_ints(real_in,amp);
-    if(opts->image_guess){
-      fprintf(stderr,"Warning: Using random intensities, with image guess. Think about it...\n");
-    }
-  }
-  if(opts->rand_phases){
-    set_rand_phases(real_in,amp);
-    if(opts->image_guess){
-      fprintf(stderr,"Warning: Using random phases, with image guess. Think about it...\n");
-    }
-  }
 
 #if defined(_MSC_VER) || defined(__MINGW32__)
   _getcwd(prev_dir,1024);
@@ -229,8 +264,14 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
   }
 
   radius = opts->max_blur_radius;
+
+
+  /* Change the status to running */
+  opts->is_running = 1;
     
   for(;!opts->reconstruction_finished && (!opts->max_iterations || opts->cur_iteration < opts->max_iterations);opts->cur_iteration++){
+    /* I'm only going to allow changes to images in the beggining of each iteration */
+    synchronize_image_data(&real_out,&support);
 
     if(opts->image_blur_period && opts->cur_iteration%opts->image_blur_period == opts->image_blur_period-1){
       sp_image_free(real_in);
@@ -291,7 +332,7 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
       tmp = sp_image_duplicate(real_out,SP_COPY_DATA|SP_COPY_MASK);
       for(i = 0;i<sp_c3matrix_size(tmp->image);i++){
 	if(sp_real(support->image->data[i])){
-	  tmp->image->data[i] = sp_cinit(sp_cabs(tmp->image->data[i]),0);
+	  ;
 	}else{
 	  tmp->image->data[i] = sp_cinit(0,0);
 	}
@@ -419,13 +460,121 @@ void set_rand_ints(Image * real_in, Image * img){
 
 
 
-
-
-int main(int argc, char ** argv){
-  Image * img = NULL;
-  Image * exp_sigma = NULL;
+void init_reconstruction(Options * opts){
   char dir[1024];
   int i;
+  sp_init_fft(opts->nthreads);
+  if(opts->real_image){
+    opts->diffraction = sp_image_fft(opts->real_image);    
+    opts->diffraction->scaled = 1;
+    for(i = 0;i<sp_image_size(opts->diffraction);i++){
+      opts->diffraction->mask->data[i] = 1;
+    }
+    if(opts->real_image->num_dimensions == SP_2D){
+      sp_image_write(opts->real_image,"real_image.png",COLOR_JET);
+    }
+    sp_image_dephase(opts->diffraction);
+  }
+  if(opts->diffraction){
+    opts->amplitudes = sp_image_duplicate(opts->diffraction,SP_COPY_DATA|SP_COPY_MASK);
+    sp_image_dephase(opts->diffraction);
+    sp_image_to_amplitudes(opts->amplitudes);
+  }else{
+    fprintf(stderr,"Error: either real_image_file or amplitudes_file have to be specified!\n");
+    exit(1);
+  }
+  if(sp_image_z(opts->amplitudes) == 1){
+    sp_image_high_pass(opts->amplitudes, opts->beamstop, SP_2D);
+  }else{
+    sp_image_high_pass(opts->amplitudes, opts->beamstop, SP_3D);
+  }
+  sp_add_noise(opts->amplitudes,opts->noise,SP_GAUSSIAN);
+/*  if(opts->rescale_amplitudes){
+    rescale_image(opts->amplitudes);
+  }*/
+  sp_image_write(opts->amplitudes,"diffraction.vtk",SP_3D);
+
+  if(!opts->init_support_filename[0]){
+    opts->init_support = get_support_from_patterson(opts->amplitudes,opts);
+  }else{
+    opts->init_support = sp_image_read(opts->init_support_filename,0);
+  }
+
+  if(!opts->solution_filename[0]){
+    opts->solution_image = NULL;
+  }else{
+    opts->solution_image = sp_image_read(opts->solution_filename,0);
+  }
+
+
+
+  opts->amplitudes_sigma = sp_image_duplicate(opts->amplitudes,SP_COPY_DATA|SP_COPY_MASK);
+  for(i = 0;i<sp_c3matrix_size(opts->amplitudes->image);i++){
+    sp_real(opts->amplitudes_sigma->image->data[i]) = sp_real(opts->amplitudes->image->data[i])*opts->exp_sigma;
+  }
+
+  /* Make sure to scale everything to the same size if needed */
+  harmonize_sizes(opts);
+  
+  if(opts->support_mask){
+    sp_image_add(opts->init_support,opts->support_mask);
+  }
+
+  for(i = 0;i<sp_c3matrix_size(opts->init_support->image);i++){
+    if(sp_real(opts->init_support->image->data[i])){
+      opts->init_support->image->data[i] = sp_cinit(1,0);
+    }
+  }
+
+  /* Set the initial guess */
+  if(opts->image_guess_filename[0]){
+    opts->image_guess = sp_image_read(opts->image_guess_filename,0);
+  }else{
+    opts->image_guess = sp_image_duplicate(opts->init_support,SP_COPY_DATA|SP_COPY_MASK);
+  }
+
+
+  /* Set random phases if needed */
+  if(opts->rand_intensities){
+    set_rand_ints(opts->image_guess,opts->amplitudes);
+    if(opts->image_guess_filename[0]){
+      fprintf(stderr,"Warning: Using random intensities, with image guess. Think about it...\n");
+    }
+  }
+  if(opts->rand_phases){
+    set_rand_phases(opts->image_guess,opts->amplitudes);
+    if(opts->image_guess_filename[0]){
+      fprintf(stderr,"Warning: Using random phases, with image guess. Think about it...\n");
+    }
+  }
+
+
+  if(opts->rescale_amplitudes){
+    enforce_parsevals_theorem(opts->amplitudes,opts->image_guess);
+  }
+  
+
+  if(opts->automatic){
+    for(i = 0;i<1000;i++){
+      sprintf(dir,"%s/%04d/",opts->work_dir,i);
+      if(opts->genetic_optimization){
+/*	genetic_reconstruction(img, initial_support, exp_sigma, opts,dir)*/;
+      }else{
+	complete_reconstruction(opts->amplitudes, opts->init_support, opts->amplitudes_sigma, opts,dir);
+      }
+    }
+  }else{
+    sprintf(dir,"%s/",opts->work_dir); 
+    if(opts->genetic_optimization){
+/*      genetic_reconstruction(img, initial_support, opts->amplitudes_sigma, opts,dir)*/;
+    }else{
+      complete_reconstruction(opts->amplitudes, opts->init_support, opts->amplitudes_sigma, opts,dir);
+    }
+  }
+
+}
+
+int main(int argc, char ** argv){
   FILE * f;
   Options * opts;
   void * socket = 0;
@@ -439,9 +588,11 @@ int main(int argc, char ** argv){
   init_qt(argc,argv);
   char * server = 0;
   int server_port = 0;
+  int i;
   if(argc != 1){
     if(argc == 3 || argc == 5){
       for(i = 1;i<argc-1;i++){
+	/*      for(i = 1;i<argc-1;i++){ */
 	if(strcmp(argv[i],"-s") == 0){
 	  server = argv[i+1];
 	}else if(strcmp(argv[i],"-p") == 0){
@@ -470,79 +621,12 @@ int main(int argc, char ** argv){
   }else if(!socket){
     perror("Could not open uwrapc.conf");
   }
+#ifdef NETWORK_SUPPORT
   if(socket){
     wait_for_server_instructions(socket);
   }
-  sp_init_fft(opts->nthreads);
-  if(opts->real_image){
-    opts->diffraction = sp_image_fft(opts->real_image);    
-    opts->diffraction->scaled = 1;
-    for(i = 0;i<sp_image_size(opts->diffraction);i++){
-      opts->diffraction->mask->data[i] = 1;
-    }
-    if(opts->real_image->num_dimensions == SP_2D){
-      sp_image_write(opts->real_image,"real_image.png",COLOR_JET);
-    }
-    sp_image_dephase(opts->diffraction);
-  }
-  if(opts->diffraction){
-    img = sp_image_duplicate(opts->diffraction,SP_COPY_DATA|SP_COPY_MASK);
-    sp_image_dephase(opts->diffraction);
-    sp_image_to_amplitudes(img);
-  }else{
-    fprintf(stderr,"Error: either real_image_file or amplitudes_file have to be specified!\n");
-    exit(1);
-  }
-  if(sp_image_z(img) == 1){
-    sp_image_high_pass(img, opts->beamstop, SP_2D);
-  }else{
-    sp_image_high_pass(img, opts->beamstop, SP_3D);
-  }
-  sp_add_noise(img,opts->noise,SP_GAUSSIAN);
-  if(opts->rescale_amplitudes){
-    rescale_image(img);
-  }
-  //sp_image_write(img,"diffraction.png",COLOR_JET|SP_2D);
-
-  if(!opts->init_support){
-    opts->init_support = get_support_from_patterson(img,opts);
-  }
-
-  exp_sigma = sp_image_duplicate(img,SP_COPY_DATA|SP_COPY_MASK);
-  for(i = 0;i<sp_c3matrix_size(img->image);i++){
-    sp_real(exp_sigma->image->data[i]) = sp_real(img->image->data[i])*opts->exp_sigma;
-  }
-
-  /* Make sure to scale everything to the same size if needed */
-  harmonize_sizes(opts);
-  
-  if(opts->support_mask){
-    sp_image_add(opts->init_support,opts->support_mask);
-  }
-
-  for(i = 0;i<sp_c3matrix_size(opts->init_support->image);i++){
-    if(sp_real(opts->init_support->image->data[i])){
-      opts->init_support->image->data[i] = sp_cinit(1,0);
-    }
-  }
-
-  if(opts->automatic){
-    for(i = 0;i<1000;i++){
-      sprintf(dir,"%s/%04d/",opts->work_dir,i);
-      if(opts->genetic_optimization){
-/*	genetic_reconstruction(img, initial_support, exp_sigma, opts,dir)*/;
-      }else{
-	complete_reconstruction(img, opts->init_support, exp_sigma, opts,dir);
-      }
-    }
-  }else{
-    sprintf(dir,"%s/",opts->work_dir);
-    if(opts->genetic_optimization){
-/*      genetic_reconstruction(img, initial_support, exp_sigma, opts,dir)*/;
-    }else{
-      complete_reconstruction(img, opts->init_support, exp_sigma, opts,dir);
-    }
-  }
+#endif
+  init_reconstruction(opts);
   /* cleanup stuff */
   if(opts->init_support){
     sp_image_free(opts->init_support);
@@ -550,11 +634,11 @@ int main(int argc, char ** argv){
   if(opts->diffraction){
     sp_image_free(opts->diffraction);
   }
-  if(img){
-    sp_image_free(img);
+  if(opts->amplitudes){
+    sp_image_free(opts->amplitudes);
   }
-  if(exp_sigma){
-    sp_image_free(exp_sigma);
+  if(opts->amplitudes_sigma){
+    sp_image_free(opts->amplitudes_sigma);
   }
 #ifdef NETWORK_SUPPORT
   cleanup_qt();
