@@ -3,6 +3,7 @@
 #include "configuration.h"
 #include "communicator.h"
 #include <QTcpSocket>
+#include <QDataStream>
 
 
 Sender::Sender(QTcpSocket * s)

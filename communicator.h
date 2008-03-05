@@ -9,6 +9,7 @@
 #include <QThread>
 #include <QQueue>
 #include <QSemaphore>
+#include <QMap>
 #include "decoder.h"
 #include "sender.h"
 #include "configuration.h"

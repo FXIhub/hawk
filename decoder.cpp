@@ -1,6 +1,7 @@
 #if defined NETWORK_SUPPORT
 #include <QMutex>
 #include <QTime>
+#include <QDataStream>
 #include "decoder.h"
 #include "communicator.h"
 
