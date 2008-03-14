@@ -497,9 +497,9 @@ int main(int argc, char ** argv){
   }
   printf("7 (%i,%i,%i)\n",sp_image_x(img),sp_image_y(img),sp_image_z(img));
   
-  autocorrelation = sp_image_patterson(soft_edge);
+  /*  autocorrelation = sp_image_patterson(soft_edge);
   sp_image_adaptative_constrast_stretch(autocorrelation,20,20);
-  sp_image_write(autocorrelation,"autocorrelation.vtk",0);
+  sp_image_write(autocorrelation,"autocorrelation.vtk",0);*/
   printf("8 (%i,%i,%i)\n",sp_image_x(img),sp_image_y(img),sp_image_z(img));
 
   if(opts->oversampling_factor){

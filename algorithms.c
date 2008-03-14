@@ -79,6 +79,27 @@ Image * basic_hio_iteration(Image * exp_amp, Image * real_in, Image * support,
 }
 
 
+void phase_smoothening_iteration(Image * real_in, Options * opts, Log * log){
+  Image * out = sp_image_duplicate(real_in,SP_COPY_DATA);
+  int i;
+  real * amps = sp_malloc(sp_image_size(out)*sizeof(real));
+  real radius = get_phases_blur_radius(opts);
+  for(i = 0;i<sp_image_size(out);i++){
+    amps[i] = sp_cabs(out->image->data[i]);
+    sp_real(out->image->data[i]) /= amps[i];
+    sp_imag(out->image->data[i]) /= amps[i];
+  }
+  Image * tmp = gaussian_blur(out,radius);
+  sp_image_free(out);
+  for(i = 0;i<sp_image_size(tmp);i++){
+    sp_real(real_in->image->data[i]) = sp_real(tmp->image->data[i])*amps[i];
+    sp_imag(real_in->image->data[i]) = sp_imag(tmp->image->data[i])*amps[i];
+  }
+  sp_free(amps);
+  sp_image_free(tmp);
+}
+
+
 Image * basic_raar_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in, Image * support, 
 			     Options * opts, Log * log){
   /*We're gonna have 3 kinds of images.
@@ -185,6 +206,11 @@ Image * basic_raar_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in
   if(opts->enforce_positivity){
     for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
       real_out->image->data[i] =  sp_cinit(fabs(sp_real(real_out->image->data[i])),fabs(sp_imag(real_out->image->data[i])));
+    }
+  }
+  if(opts->enforce_real){
+    for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
+      real_out->image->data[i] =  sp_cinit(sp_cabs(real_out->image->data[i]),0);
     }
   }
 

@@ -344,6 +344,16 @@ VariableMetadata variable_metadata[100] = {
     .variable_address = &(global_options.enforce_positivity)
   },
   {
+    .variable_name = "enforce_real",
+    .variable_type = Type_Int,
+    .id = Id_Enforce_Real,
+    .parent = &(variable_metadata[0]),
+    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
+    .list_valid_values = {0},
+    .list_valid_names = {0},
+    .variable_address = &(global_options.enforce_real)
+  },
+  {
     .variable_name = "genetic_optimization",
     .variable_type = Type_Bool,
     .id = Id_Genetic_Optimization,
@@ -552,9 +562,39 @@ VariableMetadata variable_metadata[100] = {
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.solution_filename)
+  },
+  {
+    .variable_name = "phases_min_blur_radius",
+    .variable_type = Type_Real,
+    .id = Id_Phases_Min_Blur_Radius,
+    .parent = &(variable_metadata[0]),
+    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
+    .list_valid_values = {0},
+    .list_valid_names = {0},
+    .variable_address = &(global_options.phases_min_blur_radius)
+  },
+  {
+    .variable_name = "phases_max_blur_radius",
+    .variable_type = Type_Real,
+    .id = Id_Phases_Max_Blur_Radius,
+    .parent = &(variable_metadata[0]),
+    .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
+    .list_valid_values = {0},
+    .list_valid_names = {0},
+    .variable_address = &(global_options.phases_max_blur_radius)
+  },
+  {
+    .variable_name = "iterations_to_min_phases_blur",
+    .variable_type = Type_Int,
+    .id = Id_Iterations_To_Min_Phases_Blur,
+    .parent = &(variable_metadata[0]),
+    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
+    .list_valid_values = {0},
+    .list_valid_names = {0},
+    .variable_address = &(global_options.iterations_to_min_phases_blur)
   }
 };
 
 
 /* Don't forget to update this one!! */
-const int number_of_global_options = 55;
+const int number_of_global_options = 59;

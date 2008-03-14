@@ -44,13 +44,13 @@ typedef enum {Id_Diffraction_Filename=0,Id_Real_Image_Filename,Id_Max_Blur_Radiu
 	      Id_Break_Centrosym_Period,Id_Reconstruction_Finished,Id_Real_Error_Tolerance,Id_Root,
 	      Id_Remove_Central_Pixel_phase,Id_Max_Iterations,Id_Patterson_Level_Algorithm,Id_Object_Area,
 	      Id_Image_Blur_Period,Id_Image_Blur_Radius,Id_Iterations_To_Min_Object_Area,Id_Min_Object_Area,Id_Current_Real_Space_Image,
-	      Id_Current_Support,Id_Solution_File
+	      Id_Current_Support,Id_Solution_File,Id_Phases_Min_Blur_Radius,Id_Phases_Max_Blur_Radius,Id_Iterations_To_Min_Phases_Blur
 }Variable_Id;
-
-
-typedef enum {isSettableBeforeRun = 1, isSettableDuringRun = 2, isGettableBeforeRun = 4,
-				 isGettableDuringRun = 8, isMandatory = 16} Variable_Properties;
-typedef struct VariableMetadata{
+  
+  
+  typedef enum {isSettableBeforeRun = 1, isSettableDuringRun = 2, isGettableBeforeRun = 4,
+		isGettableDuringRun = 8, isMandatory = 16} Variable_Properties;
+  typedef struct VariableMetadata{
   const char * variable_name;
   const Variable_Type variable_type;
   const Variable_Id id;
@@ -132,6 +132,9 @@ typedef struct {
   int is_running;
   char solution_filename[OPTION_STRING_SIZE];
   Image * solution_image;
+  int iterations_to_min_phases_blur;
+  real phases_max_blur_radius;
+  real phases_min_blur_radius;
 }Options;
 
 
@@ -147,8 +150,8 @@ Options * set_defaults(void);
 void write_options_file(char * filename, Options * res);
 real get_beta(Options * opts);
 real get_blur_radius(Options * opts);
-real get_object_area(Options * opts);
-
+  real get_object_area(Options * opts);
+  real get_phases_blur_radius(Options * opts);
 
 #ifdef __cplusplus
 }  /* extern "C" */

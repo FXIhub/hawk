@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <spimage.h>
-#include <minmaxtau.h>
+#include "minmaxtau.h"
 #include <assert.h>
 
 

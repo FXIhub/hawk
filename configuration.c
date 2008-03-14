@@ -108,6 +108,9 @@ Options * set_defaults(){
   opt->iterations_to_min_object_area = 0;
   opt->is_running = 0;
   opt->solution_filename[0] = 0;
+  opt->phases_min_blur_radius = 0;
+  opt->phases_max_blur_radius = 0;
+  opt->iterations_to_min_phases_blur = 0;
   return opt;
 }
 
@@ -495,11 +498,21 @@ real get_blur_radius(Options * opts){
 }
 
 
+real get_phases_blur_radius(Options * opts){
+  real a;
+  a = (3.0*opts->cur_iteration/opts->iterations_to_min_phases_blur)*(3.0*opts->cur_iteration/opts->iterations_to_min_phases_blur)*0.5;
+  return (opts->phases_max_blur_radius-opts->phases_min_blur_radius)*exp(-a)+opts->phases_min_blur_radius;
+}
+
+
 real get_object_area(Options * opts){
   real a;
   if(opts->support_update_algorithm == CONSTANT_AREA){
     return opts->object_area;
   }else if(opts->support_update_algorithm == DECREASING_AREA){
+    if(opts->cur_iteration > opts->iterations_to_min_object_area){
+      return opts->min_object_area;
+    }
     a = (3.0*opts->cur_iteration/opts->iterations_to_min_object_area)*(3.0*opts->cur_iteration/opts->iterations_to_min_object_area)*0.5;
     return (opts->object_area-opts->min_object_area)*exp(-a)+opts->min_object_area;
   }

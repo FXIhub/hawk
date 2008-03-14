@@ -1,5 +1,5 @@
 #include <mex.h>
-#include <minmaxtau.h>
+#include "minmaxtau.h"
 
 real mxArray_to_real(const mxArray * a){
   return *mxGetPr(a);
@@ -73,6 +73,21 @@ mxArray * sp_matrix_to_mxArray(const sp_matrix * m){
   return ret;
 }
 
+mxArray * sp_3matrix_to_mxArray(const sp_3matrix * m){
+  double * rdata;
+  int i,j,k;
+  mxArray * ret = mxCreateDoubleMatrix(sp_3matrix_x(m),sp_3matrix_y(m), mxREAL);
+  rdata = mxGetPr(ret);
+  /* Matlab is Column major like we are. Yuppie! */
+  k = 0;
+  for(i = 0;i<sp_3matrix_x(m);i++){
+    for(j = 0;j<sp_3matrix_y(m);j++){
+      rdata[k++] = sp_3matrix_get(m,j,i,0);
+    }      
+  }
+  return ret;
+}
+
 Image * mxArray_to_Image(const mxArray * a){
   double * rdata;
   double * idata;
@@ -84,17 +99,18 @@ Image * mxArray_to_Image(const mxArray * a){
   idata = mxGetPi(a);
   rows = mxGetN(a);
   cols = mxGetM(a);  
-  ret = create_new_img(cols,rows);
+  ret = sp_image_alloc(cols,rows,1);
 
   /* Matlab is Column major like we are. Yuppie! */
   if(idata){
     sp_image_rephase(ret,SP_ZERO_PHASE);
     for(i = 0;i<cols*rows;i++){
-      ret->image->data[i] = rdata[i]+idata[i]*I;
+      ret->image->data[i] = sp_cinit(rdata[i],idata[i]);
     }
   }else{
     for(i = 0;i<cols*rows;i++){
-      ret->image->data[i] = rdata[i];
+      sp_real(ret->image->data[i]) = rdata[i];
+      sp_imag(ret->image->data[i]) = 0;
     }
   }
   return ret;
@@ -108,10 +124,10 @@ void mexFunction(int nlhs, mxArray ** plhs, int nrhs, const mxArray ** prhs){
   Image * DGns = mxArray_to_Image(prhs[3]);
   Image * F0 = mxArray_to_Image(prhs[4]);
   int maxiter = 50;
-  real TolY = 1e-5;
+  real TolY = 1e-2;
   int ii;
   sp_vector * tau = sp_vector_alloc(2);
-  sp_matrix * Hi = sp_matrix_alloc(2,2);
+  sp_3matrix * Hi = sp_3matrix_alloc(2,2,1);
   
 /*  write_img(Gs,"Gs.h5",sizeof(real));
   write_img(Gns,"Gns.h5",sizeof(real));
@@ -126,12 +142,12 @@ void mexFunction(int nlhs, mxArray ** plhs, int nrhs, const mxArray ** prhs){
     maxiter = mxArray_to_real(prhs[6]);
   }
 
-  ii = minmaxtau(Gs->image,Gns->image,DGs->image,DGns->image,F0->image,TolY,maxiter,tau,Hi);
+  ii = minmaxtau(Gs->image,Gns->image,DGs->image,DGns->image,F0,TolY,maxiter,tau,Hi);
   if(nlhs > 0){
     plhs[0] = sp_vector_to_mxArray(tau);
   }
   if(nlhs > 1){
-    plhs[1] = sp_matrix_to_mxArray(Hi);
+    plhs[1] = sp_3matrix_to_mxArray(Hi);
   }
   if(nlhs > 2){
     plhs[2] = real_to_mxArray(ii);  
@@ -141,6 +157,6 @@ void mexFunction(int nlhs, mxArray ** plhs, int nrhs, const mxArray ** prhs){
   sp_image_free(DGs);
   sp_image_free(DGns);
   sp_image_free(F0);
-  sp_matrix_free(Hi);
+  sp_3matrix_free(Hi);
   sp_vector_free(tau);
 }

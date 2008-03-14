@@ -1,6 +1,6 @@
 #include <spimage.h>
-#include <minmaxtau.h>
-#include <minmaxL.h>
+#include "minmaxtau.h"
+#include "minmaxL.h"
 #include <sys/time.h>
 
 #include <time.h>
@@ -30,39 +30,43 @@ int main(){
   long t_gradLrho = 0;
   long t_minmaxtau = 0;
 
-  sp_matrix * Hab = sp_matrix_alloc(2,2);
+  sp_3matrix * Hab = sp_3matrix_alloc(2,2,1);
   int method = 1;
   int ii,x,y,i;
   sp_image_dephase(S);
   ii = 0;  
-  for(x = 0;x<sp_cmatrix_cols(S->image);x++){
-    for(y = 0;y<sp_cmatrix_rows(S->image);y++){
-      if(x < sp_cmatrix_cols(S->image)/4 ||
-	 x > (sp_cmatrix_cols(S->image)*3)/4 ||
-	 y < sp_cmatrix_rows(S->image)/4 ||
-	 y > (sp_cmatrix_rows(S->image)*3)/4){
-	S->image->data[ii] = 0;
+  for(x = 0;x<sp_image_x(S);x++){
+    for(y = 0;y<sp_image_y(S);y++){
+      if(x < sp_image_x(S)/4 ||
+	 x > (sp_image_x(S)*3)/4 ||
+	 y < sp_image_y(S)/4 ||
+	 y > (sp_image_y(S)*3)/4){
+	sp_real(S->image->data[ii]) = 0;
+	sp_imag(S->image->data[ii]) = 0;
       }else{
-	S->image->data[ii] = 1;
+	sp_real(S->image->data[ii]) = 1;
+	sp_imag(S->image->data[ii]) = 0;
       }
       ii++;
     }
   }
-  sp_cmatrix_set(S->image,sp_cmatrix_rows(S->image)/4,sp_cmatrix_cols(S->image)*3/4,0);
-  sp_cmatrix_set(S->image,sp_cmatrix_rows(S->image)*3/4,sp_cmatrix_cols(S->image)/4,0);
+  sp_c3matrix_set(S->image,sp_image_x(S)/4,sp_image_y(S)*3/4,0,sp_cinit(0,0));
+  sp_c3matrix_set(S->image,sp_image_x(S)*3/4,sp_image_y(S)/4,0,sp_cinit(0,0));
 
   
   gs = sp_image_ifft(G);
   gns = sp_image_duplicate(gs,SP_COPY_DATA|SP_COPY_MASK);
   /* normalize */
-  sp_image_scale(gs,1.0/sp_cmatrix_size(gs->image));
-  sp_image_scale(gns,1.0/sp_cmatrix_size(gns->image));
+  sp_image_scale(gs,1.0/sp_image_size(gs));
+  sp_image_scale(gns,1.0/sp_image_size(gns));
 
-  for(i = 0;i<sp_cmatrix_size(S->image);i++){
-    if(S->image->data[i]){
-      gns->image->data[i] = 0;
+  for(i = 0;i<sp_image_size(S);i++){
+    if(sp_real(S->image->data[i])){
+      sp_real(gns->image->data[i]) = 0;
+      sp_imag(gns->image->data[i]) = 0;
     }else{
-      gs->image->data[i] = 0;
+      sp_real(gs->image->data[i]) = 0;
+      sp_imag(gs->image->data[i]) = 0;
     }
   }
   Gs = sp_image_fft(gs);
@@ -98,6 +102,6 @@ int main(){
   sp_image_free(DGs0);
   sp_image_free(DGns0);
   
-  sp_matrix_free(Hab);
+  sp_3matrix_free(Hab);
   return 0;
 }

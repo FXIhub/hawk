@@ -197,7 +197,7 @@ int main(int argc, char ** argv){
     img = sp_image_read(argv[i+1],0);
     sp_image_dephase(img);
     tmp = sp_image_fft(img);
-/*    maximize_overlap(sum,tmp);*/
+    maximize_overlap(sum,tmp);
     sp_image_add(sum,tmp);
     sp_image_dephase(tmp);
     sp_image_add(amps,tmp);
