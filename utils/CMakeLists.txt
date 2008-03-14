@@ -37,8 +37,11 @@ ADD_EXECUTABLE(propagate propagate.c)
 ADD_EXECUTABLE(rs_r_factor rs_r_factor.c)
 ADD_EXECUTABLE(r_factor r_factor.c)
 ADD_EXECUTABLE(shell_plot shell_plot.c)
-ADD_EXECUTABLE(image_math image_math.c)
-
+IF(MATHEVAL_LIBRARY AND MATHEVAL_INCLUDE)
+  ADD_EXECUTABLE(image_math image_math.c)
+  TARGET_LINK_LIBRARIES(image_math ${LIBRARY_LIST} ${MATHEVAL_LIBRARY})
+  LIST(APPEND BINS image_math)
+ENDIF(MATHEVAL_LIBRARY AND MATHEVAL_INCLUDE)
 
 
 
@@ -68,11 +71,11 @@ TARGET_LINK_LIBRARIES(propagate ${LIBRARY_LIST})
 TARGET_LINK_LIBRARIES(rs_r_factor ${LIBRARY_LIST})
 TARGET_LINK_LIBRARIES(r_factor ${LIBRARY_LIST})
 TARGET_LINK_LIBRARIES(shell_plot ${LIBRARY_LIST})
-TARGET_LINK_LIBRARIES(image_math ${LIBRARY_LIST} ${MATHEVAL_LIBRARY})
 #TARGET_LINK_LIBRARIES(stretch ${LIBRARY_LIST})
 
-INSTALL(TARGETS tiff2h5 image_to_vtk gif2h5image
-	image_to_png png_to_image tiff2png autocorrelate prtf denoise background_subtract propagate matrix2image rs_r_factor average_h5 r_factor shell_plot separate_channel fft_bench manual_merge image_math
+LIST(APPEND BINS tiff2h5 image_to_vtk gif2h5image image_to_png png_to_image tiff2png autocorrelate prtf denoise background_subtract propagate matrix2image rs_r_factor average_h5 r_factor shell_plot separate_channel fft_bench manual_merge)
+
+INSTALL(TARGETS ${BINS}
             RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
             LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
             ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)

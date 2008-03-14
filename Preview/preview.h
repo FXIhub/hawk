@@ -26,6 +26,8 @@ class Preview: public QMainWindow, private Ui::Preview
   void on_logScaleCheckBox_stateChanged(int state);
   void loadImageComment(QString filename);
   void on_actionCopyHit_triggered(bool checked);
+  void openDirectory(QString dirname);
+  void openDirectory(QDir dir);
 };
 
 #else

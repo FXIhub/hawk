@@ -14,6 +14,24 @@ Preview::Preview(QMainWindow * parent)
   imageRange->setMaximum(65535);
   imageRange->setMinimum(0);
   imageRange->setValue(65535);
+  openDirectory(QDir::current());
+}
+
+void Preview::openDirectory(QString dirname){
+ dir = QDir(dirname);
+ openDirectory(dir);
+}
+
+void Preview::openDirectory(QDir dir){
+ QStringList filters;
+ filters << "*.tif" << "*.TIF" << "*.TIFF" << "*.tiff";
+ dir.setNameFilters(filters);
+ QStringList filenames = dir.entryList(QDir::Files);
+ filesList->clear();
+ filesList->addItems(filenames);
+ if(!filenames.isEmpty()){
+   filesList->setCurrentRow(0);
+ }
 }
 
 void Preview::on_actionOpen_Directory_triggered(bool checked){
@@ -24,16 +42,7 @@ void Preview::on_actionOpen_Directory_triggered(bool checked){
  if(dirname.isEmpty()){
    return;
  }
- dir = QDir(dirname);
- QStringList filters;
- filters << "*.tif" << "*.TIF" << "*.TIFF" << "*.tiff";
- dir.setNameFilters(filters);
- QStringList filenames = dir.entryList(QDir::Files);
- filesList->clear();
- filesList->addItems(filenames);
- if(!filenames.isEmpty()){
-   filesList->setCurrentRow(0);
- }
+ openDirectory(dirname);
 }
 
 void Preview::on_filesList_itemSelectionChanged(){
@@ -48,7 +57,8 @@ void Preview::openImage(QString filename){
   if(img){
     sp_image_free(img);
   }
-  char * file = dir.absoluteFilePath(filename).toAscii().data();
+  QByteArray file = dir.absoluteFilePath(filename).toAscii();
+  QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
   img = sp_image_read(file,0);
   if(!img){
     return;
@@ -60,6 +70,7 @@ void Preview::openImage(QString filename){
   imageRange->setMaximum(65535);
   imageRange->setMinimum(1);
   on_imageRange_sliderReleased();
+  QApplication::restoreOverrideCursor();
 }
 
 void Preview::on_logScaleCheckBox_stateChanged(int state){

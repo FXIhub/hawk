@@ -13,6 +13,7 @@ FIND_PATH (TIFF_INCLUDE_DIR tiff.h PATHS /usr/include /sw/include ENV TIFF_INC)
 FIND_PATH (HDF5_INCLUDE_DIR hdf5.h PATHS /usr/include /sw/include ENV HDF5_INC)
 FIND_PATH (FFTW3_INCLUDE_DIR fftw3.h PATHS /usr/include /sw/include ENV FFTW_INC)
 FIND_PATH (PNG_INCLUDE_DIR png.h PATHS /usr/include /sw/include ENV PNG_INC)
+FIND_PATH (MATHEVAL_INCLUDE_DIR matheval.h PATHS /usr/include /sw/include ENV MATHEVAL_INC)
 
 
 FIND_LIBRARY (SPIMAGE_LIBRARY spimage /usr/lib /sw/lib ENV SPIMAGE_LIB)
@@ -23,6 +24,7 @@ FIND_LIBRARY (MATH_LIBRARY m /usr/lib /sw/lib)
 FIND_LIBRARY (C_LIBRARY c /usr/lib /sw/lib)
 FIND_LIBRARY (Z_LIBRARY z /usr/lib /sw/lib)
 FIND_LIBRARY (JPEG_LIBRARY jpeg /usr/lib /sw/lib)
+FIND_LIBRARY (MATHEVAL_LIBRARY matheval /usr/lib /sw/lib ENV MATHEVAL_LIB)
 
 SET(DMALLOC_USE OFF CACHE BOOL "If ON link to dmalloc library if possible.")
 SET(DOUBLE_PRECISION OFF CACHE BOOL "If ON use double precision. Otherwise use single precision")
