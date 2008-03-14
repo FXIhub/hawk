@@ -113,9 +113,9 @@ Image * get_support_from_patterson(Image * input, Options * opts){
     }
   }
   if(patterson->num_dimensions == SP_2D){
-    sp_image_write(patterson,"patterson_support.png",COLOR_JET|SP_2D);
+    sp_image_write(patterson,"patterson_support.png",COLOR_JET);
   }else if(patterson->num_dimensions == SP_3D){
-    sp_image_write(patterson,"patterson_support.vtk",SP_3D);
+    sp_image_write(patterson,"patterson_support.vtk",0);
   }
   return patterson;  
 }
@@ -150,8 +150,8 @@ Image * get_filtered_support(Image * input, real level , real radius, Options * 
   }else{
     variance = square_blur(absolute_error,radius,SP_3D);
   }
-  sp_image_write(variance,"variance.vtk",SP_3D);
-  sp_image_write(running_average,"r_avg.vtk",SP_3D);
+  sp_image_write(variance,"variance.vtk",0);
+  sp_image_write(running_average,"r_avg.vtk",0);
   
   sp_image_dephase(res);
 /*  mask = gaussian_blur(previous_support, radius/3);

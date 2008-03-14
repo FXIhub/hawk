@@ -243,10 +243,10 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
   chdir(dir);
 #endif
   if(real_in->num_dimensions == SP_2D){
-    sp_image_write(support,"support.png",COLOR_JET|SP_2D);
-    sp_image_write(real_in,"initial_guess.png",COLOR_JET|SP_2D);
-    sp_image_write(real_in,"initial_guess.h5",sizeof(real)|SP_2D);
-    sp_image_write(initial_support,"initial_support.png",COLOR_JET|SP_2D);
+    sp_image_write(support,"support.png",COLOR_JET);
+    sp_image_write(real_in,"initial_guess.png",COLOR_JET);
+    sp_image_write(real_in,"initial_guess.h5",sizeof(real));
+    sp_image_write(initial_support,"initial_support.png",COLOR_JET);
   }else if(real_in->num_dimensions == SP_3D){
     sp_image_write(support,"support.vtk",0);
   }
@@ -393,13 +393,13 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
 
   //sp_image_write(real_out,"real_out_final.h5",opts->output_precision|SP_2D);
   //sp_image_write(real_out,"real_out_final.png",COLOR_JET|SP_2D);
-  sp_image_write(real_out,"real_out_final.vtk",SP_3D);
+  sp_image_write(real_out,"real_out_final.vtk",0);
   //sprintf(buffer,"support-final.png");
   //sp_image_write(support,buffer,COLOR_JET|SP_2D);
   //sprintf(buffer,"support-final.h5");
   //sp_image_write(support,buffer,opts->output_precision|SP_2D);
   sprintf(buffer,"support-final.vtk");
-  sp_image_write(support,buffer,opts->output_precision|SP_3D);
+  sp_image_write(support,buffer,opts->output_precision);
   tmp = sp_image_fft(real_out); 
   for(i = 0;i<sp_c3matrix_size(tmp->image);i++){
     tmp->mask->data[i] = 1;
@@ -409,7 +409,7 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
   sprintf(buffer,"pattern-final.png");
   //sp_image_write(tmp,buffer,COLOR_JET);
   sprintf(buffer,"pattern-final.vtk");
-  sp_image_write(tmp,buffer,SP_3D);
+  sp_image_write(tmp,buffer,0);
   sp_image_free(tmp);
   
   //sp_image_write(real_out,"phases_out_final.png",COLOR_PHASE|COLOR_JET);
@@ -504,7 +504,7 @@ void init_reconstruction(Options * opts){
 /*  if(opts->rescale_amplitudes){
     rescale_image(opts->amplitudes);
   }*/
-  sp_image_write(opts->amplitudes,"diffraction.vtk",SP_3D);
+  sp_image_write(opts->amplitudes,"diffraction.vtk",0);
 
   if(!opts->init_support_filename[0]){
     opts->init_support = get_support_from_patterson(opts->amplitudes,opts);

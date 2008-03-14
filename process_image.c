@@ -204,7 +204,7 @@ Image * downsample(Image * img, real downsample_factor){
   sp_image_free(mask);*/
 
   Image * downsampled =  bilinear_rescale(img,size_x,size_y,1);
-  sp_image_write(downsampled,"downsampled.png",COLOR_JET|LOG_SCALE|SP_2D);
+  sp_image_write(downsampled,"downsampled.png",COLOR_JET|LOG_SCALE);
 /*  mask = sp_image_duplicate(downsampled,SP_COPY_DATA|SP_COPY_MASK);
   memcpy(mask->image,mask->mask,sp_cmatrix_size(mask->image)*sizeof(real));
   write_png(mask,"downsampled_mask.png",COLOR_JET|LOG_SCALE);
@@ -549,7 +549,7 @@ int main(int argc, char ** argv){
     }
   }
   if(opts->verbose){
-    sp_image_write(img,"after_beamstop.png",COLOR_JET|SP_2D);
+    sp_image_write(img,"after_beamstop.png",COLOR_JET);
   }
 
   printf("(%i,%i,%i)\n",sp_image_x(img),sp_image_y(img),sp_image_z(img));
@@ -561,7 +561,7 @@ int main(int argc, char ** argv){
   if(opts->shift_quadrants){
     out = sp_image_shift(img);
     if(opts->verbose){
-      sp_image_write(out,"after_shift.png",COLOR_JET|SP_2D);
+      sp_image_write(out,"after_shift.png",COLOR_JET);
       write_mask_to_png(out,"after_shift_mask.png",COLOR_JET);
     }
   }else{
@@ -574,7 +574,7 @@ int main(int argc, char ** argv){
     img = sp_image_duplicate(out,SP_COPY_DATA|SP_COPY_MASK);
   }
   if(opts->verbose){
-    sp_image_write(img,"after_shift_and_lim.png",COLOR_JET|SP_2D);
+    sp_image_write(img,"after_shift_and_lim.png",COLOR_JET);
     write_mask_to_png(img,"after_shift_and_lim_mask.png",COLOR_JET);
   }
 

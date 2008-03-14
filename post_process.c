@@ -192,7 +192,7 @@ int main(int argc, char ** argv){
   }else if(opts.rescale){
     tmp = sp_image_read(opts.input,0);
     tmp2 = bilinear_rescale(tmp, sp_c3matrix_x(tmp->image)*opts.rescale, sp_c3matrix_y(tmp->image)*opts.rescale, sp_c3matrix_z(tmp->image)*opts.rescale);
-    sp_image_write(tmp2,opts.output,sizeof(real)|SP_2D);
+    sp_image_write(tmp2,opts.output,sizeof(real));
   }
   return 0;
 }
