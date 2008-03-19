@@ -291,10 +291,14 @@ Options * parse_options(int argc, char ** argv){
     -d: Dark image file\n\
     -S: Do not shift quadrants\n\
     -n: Noise image file\n\
+    -f: High pass filter of a given radius\n\
+    -t: Smoothness of the transition zone between 0 and 1 in the high\n\
+        pass filter mathematically corresponds to the denominator of\n\
+        exponential used in the fermi dirac distribution filter.\n\
     -v: Produce lots of output files for diagnostic\n\
     -h: print this text\n\
 ";
-  static char optstring[] = "c:Cx:s:b:r:hi:o:g:a:pd:m:vSn:";
+  static char optstring[] = "c:Cx:s:b:r:hi:o:g:a:pd:m:vSn:f:t:";
   Options * res = calloc(1,sizeof(Options));
   set_defaults(res);
 
@@ -350,6 +354,12 @@ Options * parse_options(int argc, char ** argv){
     case 'v':
       res->verbose = 1;
       break;
+    case 'f':
+      res->high_pass_radius = atof(optarg);
+      break;
+    case 't':
+      res->high_pass_transition_smoothness = atof(optarg);
+      break;
     case 'S':
       res->shift_quadrants = 0;
       break;
@@ -378,10 +388,30 @@ void set_defaults(Options * opt){
   opt->pad = 0;
   opt->mask[0] = 0;
   opt->verbose = 0;
+  opt->high_pass_radius = 0;
+  opt->high_pass_transition_smoothness = 1;
   opt->centrosymetry = 0;
   opt->shift_quadrants = 1;
   opt->user_center_x = -1;
   opt->user_center_y = -1;
+}
+
+
+void high_pass_filter(Image * a, Options * opt){
+  int i;
+  real factor;
+  real distance;
+  for(i = 0;i<sp_image_size(a);i++){
+    distance = sp_image_dist(a,i,SP_TO_CENTER);
+    factor = 1-1/(1+exp((distance-opt->high_pass_radius)/opt->high_pass_transition_smoothness));
+    sp_real(a->image->data[i]) *= factor;
+    sp_imag(a->image->data[i]) *= factor;
+    /* If we're making the value basically zero we can afford to make the mask 1 because we know
+     that it's value is a well known zero */
+    if(factor < 1e-4){
+      a->mask->data[i] = 1;
+    }
+  }
 }
 
 
@@ -391,7 +421,6 @@ int main(int argc, char ** argv){
   Image * dark;
   Image * noise;
   Image * mask;
-  Image * autocorrelation;
 
   Options * opts;  
   char buffer[1024] = "";
@@ -572,6 +601,9 @@ int main(int argc, char ** argv){
     img = sp_image_low_pass(out, opts->resolution,SP_2D);
   }else{
     img = sp_image_duplicate(out,SP_COPY_DATA|SP_COPY_MASK);
+  }
+  if(opts->high_pass_radius){
+    high_pass_filter(img,opts);
   }
   if(opts->verbose){
     sp_image_write(img,"after_shift_and_lim.png",COLOR_JET);

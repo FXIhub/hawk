@@ -41,7 +41,7 @@ void Communicator::readCommands(){
      allow anyone else to mess with our datastream*/
   socketMutex.lock();
   /* The while is necessary because we might receive more than 1 command at a time*/
-  while(socket->bytesAvailable() >= sizeof(int)){
+  while(socket->bytesAvailable() >= (int)sizeof(int)){
     /* lets read our command */
     int size = (*((int *)socket->read(sizeof(int)).data()));
     while(socket->bytesAvailable() < size){

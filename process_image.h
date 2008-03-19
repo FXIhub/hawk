@@ -19,6 +19,8 @@ typedef struct {
   char noise[1024];
   real user_center_x;
   real user_center_y;
+  real high_pass_radius;
+  real high_pass_transition_smoothness;
 }Options;
 
 

@@ -224,7 +224,7 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
   real_in = sp_image_duplicate(opts->image_guess,SP_COPY_DATA|SP_COPY_MASK);
   sp_image_write(real_in,"initial_guess.vtk",SP_3D);
 
-  sprintf(buffer,"pattern-experimental.png",opts->cur_iteration);
+  sprintf(buffer,"pattern-experimental.png");
   tmp2 = sp_image_shift(amp);
   sp_image_write(tmp2,buffer,COLOR_JET);
   sp_image_free(tmp2);
@@ -660,7 +660,6 @@ int main(int argc, char ** argv){
 #endif
   return 0;  
 }
-
 
 
 

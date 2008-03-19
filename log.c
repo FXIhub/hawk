@@ -9,6 +9,7 @@
 #include <dmalloc.h>
 #endif
 
+/*
 static int hkl_inside_image(sp_vector * hkl, Image *a){
   if(a->num_dimensions == SP_2D){
     if(hkl->data[0] < sp_image_x(a)/2 &&
@@ -29,8 +30,10 @@ static int hkl_inside_image(sp_vector * hkl, Image *a){
   }
   return 0;
 }
+*/
 
 /* this returns the hkl from the xyz of a shifted image in pixel units */
+/*
 static sp_vector * hkl_from_xyz(int x, int y, int z, Image * a){
   sp_vector * hkl = sp_vector_alloc(3);
   if(a->shifted){
@@ -59,8 +62,10 @@ static sp_vector * hkl_from_xyz(int x, int y, int z, Image * a){
   }
   return NULL;
 }
+*/
 
 /* this returns the hkl from the xyz of a shifted image in pixel units */
+/*
 static sp_vector * xyz_from_hkl(sp_vector * hkl, Image * a){
   sp_vector * xyz = sp_vector_alloc(3);
   if(a->shifted){
@@ -85,11 +90,12 @@ static sp_vector * xyz_from_hkl(sp_vector * hkl, Image * a){
   }
   return NULL;
 }
-
+*/
 
 /* this does not really seem to work */
+/* This will try to test the idea that in average phase(h1) = phase(h2) + phase(h1-h2) */
+/*
 static real phase_relation_error(Image * fourier_out){
-  /* This will try to test the idea that in average phase(h1) = phase(h2) + phase(h1-h2) */
   int n = 0;
   real sum_error = 0;
   const int num_points = 5;
@@ -106,8 +112,9 @@ static real phase_relation_error(Image * fourier_out){
     }
   }
   
+*/
   /* only check every 27th point*/
-  for(int z = 0; z < sp_image_z(fourier_out);z+=3){
+/*  for(int z = 0; z < sp_image_z(fourier_out);z+=3){
     for(int y = 0; y < sp_image_y(fourier_out);y+=3){
       for(int x = 0; x < sp_image_x(fourier_out);x+=3){
 	sp_vector * hkl = hkl_from_xyz(x,y,z,fourier_out);
@@ -122,7 +129,9 @@ static real phase_relation_error(Image * fourier_out){
 	      sp_carg(sp_image_get(fourier_out,x,y,z));
 	    sp_vector_free(hkl_minus_point_xyz);
 	    sp_vector_free(points_xyz);
+*/
 	    /* make sure error is in [-Pi,Pi]*/
+	    /*
 	    while(error < M_PI){
 	      error += 2*M_PI;
 	    }
@@ -139,6 +148,7 @@ static real phase_relation_error(Image * fourier_out){
   }
   return sum_error/n;
 }
+*/
 
 void output_to_log(Image * exp_amp,Image * real_in, Image * real_out, Image * fourier_out,Image * support, Options * opts,Log * log){
   int it_outer;

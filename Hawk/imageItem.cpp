@@ -11,21 +11,31 @@ ImageItem::ImageItem(QGraphicsItem * parent)
 ImageItem::ImageItem(const QPixmap & pix, QGraphicsItem * parent )
   :QGraphicsPixmapItem(pix,parent)
 { 
+  
+  setData(0,QString("ImageItem"));
+    
 }
 
 void ImageItem::mouseMoveEvent(QGraphicsSceneMouseEvent * event){
-  setFocus(Qt::MouseFocusReason);
-  if(event->buttons() & Qt::LeftButton){
+
+  /*  if(event->buttons() & Qt::LeftButton){
     QPointF mouse_mov = event->scenePos()-event->lastScenePos();  
     QTransform init = this->transform();
-    /* Take into account the zoom of the item */
+  // Take into account the zoom of the item 
     QLine l = init.map(QLine(1,0,0,0));
     qreal scale = sqrt(l.dx()*l.dx()+l.dy()+l.dy());
     QTransform move = QTransform().translate(mouse_mov.x()/scale, mouse_mov.y()/scale);    
     this->setTransform(init*QTransform().translate(mouse_mov.x(), mouse_mov.y()));
    }
+  */
+  if(event->buttons() & Qt::RightButton){
+    qDebug("Right button drag on item");
+  }
+
+
 }
 void ImageItem::wheelEvent( QGraphicsSceneWheelEvent * event ){
+  qDebug("Mouse Wheel");
   QPointF scene_pos = (event->scenePos());
   QPointF mouse_pos = mapFromScene(scene_pos);
   qreal speed = 0.005;
@@ -38,9 +48,9 @@ void ImageItem::wheelEvent( QGraphicsSceneWheelEvent * event ){
 void ImageItem::keyReleaseEvent ( QKeyEvent * event ){
   if(event->matches(QKeySequence::Delete) ||
      event->matches(QKeySequence::Cut) ||
-     event->key() & Qt::Key_Backspace){
+     event->key() == Qt::Key_Backspace){
     // I don't know if this is safe;
-    this->scene()->removeItem(this);
-    
+    this->scene()->removeItem(this);    
   }
+  
 }

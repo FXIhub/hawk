@@ -24,7 +24,7 @@ void Preview::openDirectory(QString dirname){
 
 void Preview::openDirectory(QDir dir){
  QStringList filters;
- filters << "*.tif" << "*.TIF" << "*.TIFF" << "*.tiff";
+ filters << "*.tif" << "*.TIF" << "*.TIFF" << "*.tiff" << "*.h5";
  dir.setNameFilters(filters);
  QStringList filenames = dir.entryList(QDir::Files);
  filesList->clear();
@@ -78,6 +78,7 @@ void Preview::on_logScaleCheckBox_stateChanged(int state){
 }
 
 void Preview::on_imageRange_sliderReleased(){
+  QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
   int value = imageRange->value();
   int flags;
   if(img){
@@ -96,6 +97,7 @@ void Preview::on_imageRange_sliderReleased(){
       imageLabel->setPixmap(QPixmap::fromImage(qi)); 
     }
   }
+  QApplication::restoreOverrideCursor();
 }
 
 void Preview::loadNextImage(){

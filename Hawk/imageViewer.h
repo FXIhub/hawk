@@ -4,6 +4,7 @@
 
 #include <QGraphicsScene>
 #include <QGraphicsView>
+#include "imageItem.h"
 
 class ImageViewer: public QGraphicsScene
 {
@@ -12,8 +13,16 @@ class ImageViewer: public QGraphicsScene
   ImageViewer(QGraphicsView * view, QWidget * parent = NULL);
   void mouseMoveEvent(QGraphicsSceneMouseEvent * event);
   void wheelEvent ( QGraphicsSceneWheelEvent * event );
+  void mousePressEvent(QGraphicsSceneMouseEvent * event);
+  void mouseReleaseEvent( QGraphicsSceneMouseEvent * mouseEvent );
+  void addImage(ImageItem * item);
+  void keyReleaseEvent ( QKeyEvent * event );
+  void scaleItems(qreal scale);
  private:
   QGraphicsView * graphicsView;
+  QGraphicsItem * dragged;
+  QPointF draggedInitialPos;
+  QPointF itemsScale;
 };
 
 #else

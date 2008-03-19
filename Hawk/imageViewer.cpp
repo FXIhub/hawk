@@ -2,20 +2,39 @@
 #include <QGraphicsSceneWheelEvent>
 #include <QGraphicsSceneMouseEvent>
 #include <QGraphicsItem>
+#include <QKeyEvent>
 #include "imageItem.h"
 
 ImageViewer::ImageViewer(QGraphicsView * view,QWidget * parent)
   :QGraphicsScene(parent)
 {
   graphicsView = view;
-  addEllipse(QRect(-20000,-20000,40000,40000),QPen(),QBrush(Qt::blue));
+  dragged = 0;
+  itemsScale.setX(1);
+  itemsScale.setY(1);
+  //  addEllipse(QRect(-20000,-20000,40000,40000),QPen(),QBrush(Qt::blue));
+}
+
+void ImageViewer::mousePressEvent(QGraphicsSceneMouseEvent * event){
+  if(event->buttons() & Qt::LeftButton){
+    ImageItem * it = (ImageItem *) itemAt(event->scenePos());
+    if(QString("ImageItem") == it->data(0)){
+      it->setFocus(Qt::MouseFocusReason);
+      dragged = it;
+      draggedInitialPos = it->mapFromScene(event->scenePos())-it->pos();
+    }
+  }
+}
+
+void ImageViewer::mouseReleaseEvent( QGraphicsSceneMouseEvent * mouseEvent ){
+  dragged = 0;
 }
 
 void ImageViewer::mouseMoveEvent(QGraphicsSceneMouseEvent * event){
-  ImageItem * it = (ImageItem *) itemAt(event->scenePos());
-  if(it){
-    QPointF pos = it->mapFromScene(event->scenePos());
-    qDebug("Pixel %f %f",pos.x(),pos.y());
+  if(dragged){
+    QPointF mov = event->scenePos()-event->lastScenePos();
+    dragged->moveBy(mov.x(),mov.y());
+
   }
   if(event->buttons() & Qt::LeftButton){
     if(itemAt(event->scenePos())){
@@ -24,17 +43,56 @@ void ImageViewer::mouseMoveEvent(QGraphicsSceneMouseEvent * event){
     }
     QList<QGraphicsItem *> it = items();
     for(int i = 0; i < it.size(); i++){
-      ((ImageItem *)it[i])->mouseMove(event);
+      if(QString("ImageItem") == it[i]->data(0)){
+	QPointF mov = event->scenePos()-event->lastScenePos();
+	it[i]->moveBy(mov.x(),mov.y());
+      }
     }
   }else if(event->buttons() & Qt::RightButton){  
     QPointF mouse_mov = event->screenPos()-event->lastScreenPos();  
     qreal speed = 0.005;
     qreal scale = 1-mouse_mov.y()*speed;
-    graphicsView->scale(scale, scale);
+    scaleItems(scale);
   }
+  event->accept();
 }
 void ImageViewer::wheelEvent( QGraphicsSceneWheelEvent * event ){
   qreal speed = 0.0005;
   qreal scale = 1+event->delta()*speed;
-  graphicsView->scale(scale, scale);
+  scaleItems(scale);
+}
+
+
+void ImageViewer::scaleItems(qreal scale){
+  QPointF screen_center = graphicsView->sceneRect().center();
+  QList<QGraphicsItem *> it = items();
+  for(int i = 0; i < it.size(); i++){
+    QPointF item_sc = it[i]->mapFromScene(screen_center);
+    it[i]->scale(scale, scale);
+    QPointF item_a_sc = it[i]->mapFromScene(screen_center);
+    QPointF mov = item_a_sc-item_sc;
+    it[i]->translate(mov.x(),mov.y());
+    item_a_sc = it[i]->mapFromScene(screen_center);
+    itemsScale.setX(it[i]->transform().m11());
+    itemsScale.setY(it[i]->transform().m22());
+  }
+}
+
+void ImageViewer::addImage(ImageItem * item){
+  addItem(item);
+  item->scale(itemsScale.x(),itemsScale.y());
+  // Set pixmap center in the middle of the screen
+  QPointF center = graphicsView->sceneRect().center();
+  center.setX(center.x()-item->pixmap().width()*itemsScale.x()/2);
+  center.setY(center.y()-item->pixmap().height()*itemsScale.y()/2);
+  item->setPos(center);
+}
+
+void ImageViewer::keyReleaseEvent ( QKeyEvent * event ){
+  if(event->key() == Qt::Key_Plus){
+    scaleItems(1.25);    
+  }
+  if(event->key() == Qt::Key_Minus){
+    scaleItems(0.75);    
+  }
 }

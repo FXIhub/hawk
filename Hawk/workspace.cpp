@@ -19,7 +19,7 @@ Workspace::Workspace(QWidget * parent)
 
 void Workspace::setupViewers(){
   preprocessViewer->setSceneRect(QRect(0,0,400,400));
-  preprocessViewer->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+  /*  preprocessViewer->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);*/
   preprocessViewer->setBackgroundBrush(QBrush(QColor(Qt::black)));
   preprocessScene = new ImageViewer(preprocessViewer);
   preprocessScene->setSceneRect(QRect(-100000,-100000,200000,200000));
@@ -40,5 +40,5 @@ void Workspace::loadImage(QString filename){
   qimage = QImage(colormap_data,sp_image_x(image),sp_image_y(image),QImage::Format_RGB32);
   ImageItem * item = new ImageItem(QPixmap::fromImage(qimage));
   item->setFlags(QGraphicsItem::ItemIsMovable|QGraphicsItem::ItemIsFocusable);
-  preprocessScene->addItem(item);    
+  preprocessScene->addImage(item);    
 }
