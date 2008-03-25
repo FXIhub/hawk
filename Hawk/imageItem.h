@@ -16,10 +16,16 @@ class ImageItem: public QGraphicsPixmapItem
   void wheel( QGraphicsSceneWheelEvent * event ){
     wheelEvent ( event);
   }
+  void select();
+  void deselect();
+  QPointF centeredScale(qreal scale,QPointF screenCenter);
+  void focusInEvent ( QFocusEvent * event );
+  void focusOutEvent ( QFocusEvent * event );
  private:
   void mouseMoveEvent(QGraphicsSceneMouseEvent * event);
   void wheelEvent ( QGraphicsSceneWheelEvent * event );
   void keyReleaseEvent ( QKeyEvent * event );
+  QGraphicsRectItem * selectRect;
 };
 
 #else

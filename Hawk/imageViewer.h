@@ -5,6 +5,7 @@
 #include <QGraphicsScene>
 #include <QGraphicsView>
 #include "imageItem.h"
+#include "imageBay.h"
 
 class ImageViewer: public QGraphicsScene
 {
@@ -18,11 +19,13 @@ class ImageViewer: public QGraphicsScene
   void addImage(ImageItem * item);
   void keyReleaseEvent ( QKeyEvent * event );
   void scaleItems(qreal scale);
+  void createPreprocessBays();
  private:
   QGraphicsView * graphicsView;
-  QGraphicsItem * dragged;
+  ImageItem * dragged;
   QPointF draggedInitialPos;
   QPointF itemsScale;
+  QList<ImageBay *>bayList;
 };
 
 #else

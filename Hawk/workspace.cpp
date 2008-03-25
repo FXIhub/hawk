@@ -24,6 +24,8 @@ void Workspace::setupViewers(){
   preprocessScene = new ImageViewer(preprocessViewer);
   preprocessScene->setSceneRect(QRect(-100000,-100000,200000,200000));
   preprocessViewer->setScene(preprocessScene);    
+  preprocessScene->createPreprocessBays();
+  preprocessScene->scaleItems(0.1);
 }
 
 void Workspace::loadImage(QString filename){

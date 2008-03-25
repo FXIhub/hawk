@@ -11,9 +11,9 @@ ImageItem::ImageItem(QGraphicsItem * parent)
 ImageItem::ImageItem(const QPixmap & pix, QGraphicsItem * parent )
   :QGraphicsPixmapItem(pix,parent)
 { 
-  
+  selectRect = 0;
   setData(0,QString("ImageItem"));
-    
+  setZValue(10);
 }
 
 void ImageItem::mouseMoveEvent(QGraphicsSceneMouseEvent * event){
@@ -51,6 +51,38 @@ void ImageItem::keyReleaseEvent ( QKeyEvent * event ){
      event->key() == Qt::Key_Backspace){
     // I don't know if this is safe;
     this->scene()->removeItem(this);    
+  }  
+}
+
+void ImageItem::select(){
+  selectRect = new QGraphicsRectItem(0,0,pixmap().width(),pixmap().height(),this);
+  selectRect->setPen(QPen(QBrush(Qt::gray),1/transform().m11(),Qt::SolidLine,Qt::RoundCap, Qt::RoundJoin ));
+}
+
+void ImageItem::deselect(){
+  if(selectRect){
+    delete selectRect;
   }
-  
+}
+
+void ImageItem::focusInEvent ( QFocusEvent * event ){
+  select();
+}
+
+void ImageItem::focusOutEvent ( QFocusEvent * event ){
+  deselect();
+}
+
+QPointF ImageItem::centeredScale(qreal s,QPointF screenCenter){
+  QPointF item_sc = mapFromScene(screenCenter);
+  scale(s, s);
+  QPointF mov = mapFromScene(screenCenter)-item_sc;
+  translate(mov.x(),mov.y());
+  if(selectRect){
+    QPen pen = selectRect->pen();
+    // constant width pen regardless of zoom
+    pen.setWidthF(1.0/transform().m11());
+    selectRect->setPen(pen);
+  }
+  return QPointF(transform().m11(),transform().m22());
 }

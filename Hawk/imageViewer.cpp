@@ -4,6 +4,7 @@
 #include <QGraphicsItem>
 #include <QKeyEvent>
 #include "imageItem.h"
+#include "imageBay.h"
 
 ImageViewer::ImageViewer(QGraphicsView * view,QWidget * parent)
   :QGraphicsScene(parent)
@@ -17,17 +18,23 @@ ImageViewer::ImageViewer(QGraphicsView * view,QWidget * parent)
 
 void ImageViewer::mousePressEvent(QGraphicsSceneMouseEvent * event){
   if(event->buttons() & Qt::LeftButton){
-    ImageItem * it = (ImageItem *) itemAt(event->scenePos());
-    if(QString("ImageItem") == it->data(0)){
-      it->setFocus(Qt::MouseFocusReason);
-      dragged = it;
-      draggedInitialPos = it->mapFromScene(event->scenePos())-it->pos();
+    QList<QGraphicsItem *> it = items(event->scenePos());
+    for(int i = 0; i < it.size(); i++){
+      if(QString("ImageItem") == it[i]->data(0)){
+	dragged = (ImageItem *)it[i];
+	draggedInitialPos = it[i]->mapFromScene(event->scenePos())-it[i]->pos();
+	it[i]->setFocus(Qt::MouseFocusReason);
+	break;
+      }
     }
   }
 }
 
 void ImageViewer::mouseReleaseEvent( QGraphicsSceneMouseEvent * mouseEvent ){
-  dragged = 0;
+  if(dragged){
+    /*    dragged->deselect();*/
+    dragged = 0;
+  }
 }
 
 void ImageViewer::mouseMoveEvent(QGraphicsSceneMouseEvent * event){
@@ -43,10 +50,13 @@ void ImageViewer::mouseMoveEvent(QGraphicsSceneMouseEvent * event){
     }
     QList<QGraphicsItem *> it = items();
     for(int i = 0; i < it.size(); i++){
-      if(QString("ImageItem") == it[i]->data(0)){
+      if(!it[i]->parentItem()){
 	QPointF mov = event->scenePos()-event->lastScenePos();
 	it[i]->moveBy(mov.x(),mov.y());
       }
+	/*	if(QString("ImageItem") == it[i]->data(0)){
+	  
+		}*/
     }
   }else if(event->buttons() & Qt::RightButton){  
     QPointF mouse_mov = event->screenPos()-event->lastScreenPos();  
@@ -67,14 +77,18 @@ void ImageViewer::scaleItems(qreal scale){
   QPointF screen_center = graphicsView->sceneRect().center();
   QList<QGraphicsItem *> it = items();
   for(int i = 0; i < it.size(); i++){
-    QPointF item_sc = it[i]->mapFromScene(screen_center);
-    it[i]->scale(scale, scale);
-    QPointF item_a_sc = it[i]->mapFromScene(screen_center);
-    QPointF mov = item_a_sc-item_sc;
-    it[i]->translate(mov.x(),mov.y());
-    item_a_sc = it[i]->mapFromScene(screen_center);
-    itemsScale.setX(it[i]->transform().m11());
-    itemsScale.setY(it[i]->transform().m22());
+    // Only scale the top level items     
+    if(!it[i]->parentItem()){
+      if(QString("ImageItem") == it[i]->data(0)){
+	itemsScale = ((ImageItem *)it[i])->centeredScale(scale,screen_center);
+      }else{
+	QPointF item_sc = it[i]->mapFromScene(screen_center);
+	it[i]->scale(scale, scale);
+	QPointF item_a_sc = it[i]->mapFromScene(screen_center);
+	QPointF mov = item_a_sc-item_sc;
+	it[i]->translate(mov.x(),mov.y());
+      }
+    }
   }
 }
 
@@ -95,4 +109,10 @@ void ImageViewer::keyReleaseEvent ( QKeyEvent * event ){
   if(event->key() == Qt::Key_Minus){
     scaleItems(0.75);    
   }
+}
+
+void ImageViewer::createPreprocessBays(){
+  ImageBay * bay = new ImageBay(Qt::LeftDockWidgetArea,QString("Mask"),QPen(QBrush(Qt::red),1));
+  bayList.append(bay);
+  addItem(bay);
 }

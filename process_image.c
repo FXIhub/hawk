@@ -371,6 +371,12 @@ Options * parse_options(int argc, char ** argv){
       printf ("?? getopt returned character code 0%o ??\n", c);
     }
   }
+  if(res->oversampling_factor &&
+     res->user_center_x >= 0 &&
+     res->user_center_y >= 0){
+    res->user_center_x /= res->oversampling_factor;
+    res->user_center_y /= res->oversampling_factor;    
+  }
   return res;
 }
 
