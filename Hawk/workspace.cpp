@@ -2,6 +2,7 @@
 #include "workspace.h"
 #include "server.h"
 #include <spimage.h>
+#include <QGLWidget>
 
 Workspace::Workspace(QWidget * parent)
   :QWidget(parent)
@@ -18,11 +19,12 @@ Workspace::Workspace(QWidget * parent)
 
 
 void Workspace::setupViewers(){
+  preprocessViewer->setViewport(new QGLWidget);
   preprocessViewer->setSceneRect(QRect(0,0,400,400));
   /*  preprocessViewer->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);*/
   preprocessViewer->setBackgroundBrush(QBrush(QColor(Qt::black)));
   preprocessScene = new ImageViewer(preprocessViewer);
-  preprocessScene->setSceneRect(QRect(-100000,-100000,200000,200000));
+  //  preprocessScene->setSceneRect(QRect(-100000,-100000,200000,200000));
   preprocessViewer->setScene(preprocessScene);    
   preprocessScene->createPreprocessBays();
   preprocessScene->scaleItems(0.1);

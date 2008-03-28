@@ -5,12 +5,17 @@
 #include <QGraphicsPathItem>
 #include <QGraphicsSceneMouseEvent>
 #include <QPen>
+#include <QBrush>
+#include <QGraphicsTextItem>
 
 class ImageBay: public QGraphicsPathItem
 {
  public:
   ImageBay(QGraphicsItem * parent = NULL);
-  ImageBay(Qt::DockWidgetArea position, QString name = QString(), QPen pen = QPen(),QGraphicsItem * parent = NULL);
+  ImageBay(Qt::DockWidgetArea position, QString name = QString(), QPen pen = QPen(),QBrush brush = QBrush(),QGraphicsItem * parent = NULL);
+  QPointF centeredScale(qreal s,QPointF screenCenter);
+ private: 
+  QGraphicsTextItem * label;
 };
 
 #endif

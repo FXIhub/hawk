@@ -68,7 +68,7 @@ Image * get_support_from_patterson(Image * input, Options * opts){
 
   level =  get_patterson_level(patterson, opts->patterson_blur_radius,opts);
 
-  //sp_image_write(patterson,"autocorrelation.png",COLOR_JET|LOG_SCALE|SP_2D);
+  sp_image_write(patterson,"autocorrelation.png",COLOR_JET|LOG_SCALE);
   sp_image_write(patterson,"autocorrelation.vtk",0);
 
   if(opts->patterson_blur_radius){

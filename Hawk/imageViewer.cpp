@@ -17,6 +17,7 @@ ImageViewer::ImageViewer(QGraphicsView * view,QWidget * parent)
 }
 
 void ImageViewer::mousePressEvent(QGraphicsSceneMouseEvent * event){
+    qDebug("Mouse press");
   if(event->buttons() & Qt::LeftButton){
     QList<QGraphicsItem *> it = items(event->scenePos());
     for(int i = 0; i < it.size(); i++){
@@ -38,16 +39,18 @@ void ImageViewer::mouseReleaseEvent( QGraphicsSceneMouseEvent * mouseEvent ){
 }
 
 void ImageViewer::mouseMoveEvent(QGraphicsSceneMouseEvent * event){
-  if(dragged){
+    qDebug("Mouse move up ");
+  if(dragged && event->buttons() & Qt::LeftButton){
     QPointF mov = event->scenePos()-event->lastScenePos();
     dragged->moveBy(mov.x(),mov.y());
-
+    return;
   }
   if(event->buttons() & Qt::LeftButton){
-    if(itemAt(event->scenePos())){
+    qDebug("Mouse move");
+    /*    if(itemAt(event->scenePos())){
       ((ImageItem *)itemAt(event->scenePos()))->mouseMove(event);
       return;
-    }
+      }*/
     QList<QGraphicsItem *> it = items();
     for(int i = 0; i < it.size(); i++){
       if(!it[i]->parentItem()){
@@ -76,11 +79,15 @@ void ImageViewer::wheelEvent( QGraphicsSceneWheelEvent * event ){
 void ImageViewer::scaleItems(qreal scale){
   QPointF screen_center = graphicsView->sceneRect().center();
   QList<QGraphicsItem *> it = items();
+  itemsScale.setX(itemsScale.x()*scale);
+  itemsScale.setY(itemsScale.y()*scale);
   for(int i = 0; i < it.size(); i++){
     // Only scale the top level items     
     if(!it[i]->parentItem()){
       if(QString("ImageItem") == it[i]->data(0)){
-	itemsScale = ((ImageItem *)it[i])->centeredScale(scale,screen_center);
+	((ImageItem *)it[i])->centeredScale(scale,screen_center);
+      }else if(QString("Bay") == it[i]->data(0)){
+	  ((ImageBay *)it[i])->centeredScale(scale,screen_center);
       }else{
 	QPointF item_sc = it[i]->mapFromScene(screen_center);
 	it[i]->scale(scale, scale);
@@ -112,7 +119,40 @@ void ImageViewer::keyReleaseEvent ( QKeyEvent * event ){
 }
 
 void ImageViewer::createPreprocessBays(){
-  ImageBay * bay = new ImageBay(Qt::LeftDockWidgetArea,QString("Mask"),QPen(QBrush(Qt::red),1));
+  QPen pen;
+  QBrush brush;
+  QLinearGradient gradient;
+  pen.setWidthF(2);
+  pen.setCosmetic(true);
+  pen.setStyle(Qt::SolidLine);
+  pen.setJoinStyle(Qt::RoundJoin);
+  gradient.setColorAt(0,QColor("#d9bb7a"));
+  gradient.setColorAt(1,QColor("#fdd99b"));
+  pen.setColor(QColor("#816647"));
+  brush = QBrush(gradient);
+
+  ImageBay * bay = new ImageBay(Qt::LeftDockWidgetArea,QString("Mask"),pen,brush,NULL);
   bayList.append(bay);
   addItem(bay);
+
+  gradient = QLinearGradient();
+  gradient.setColorAt(0,QColor("#6699cc"));
+  gradient.setColorAt(1,QColor("#aaccee"));
+  pen.setColor(QColor("#336699"));
+  brush = QBrush(gradient);
+
+  bay = new ImageBay(Qt::TopDockWidgetArea,QString("Input"),pen,brush,NULL);
+  bayList.append(bay);
+  addItem(bay);
+
+  gradient = QLinearGradient();
+  gradient.setColorAt(0,QColor("#f0a513"));
+  gradient.setColorAt(1,QColor("#eec73e"));
+  pen.setColor(QColor("#fb8b00"));
+  brush = QBrush(gradient);
+
+  bay = new ImageBay(Qt::BottomDockWidgetArea,QString("Output"),pen,brush,NULL);
+  bayList.append(bay);
+  addItem(bay);
+
 }
