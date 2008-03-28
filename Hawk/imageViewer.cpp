@@ -13,11 +13,10 @@ ImageViewer::ImageViewer(QGraphicsView * view,QWidget * parent)
   dragged = 0;
   itemsScale.setX(1);
   itemsScale.setY(1);
-  //  addEllipse(QRect(-20000,-20000,40000,40000),QPen(),QBrush(Qt::blue));
 }
 
 void ImageViewer::mousePressEvent(QGraphicsSceneMouseEvent * event){
-    qDebug("Mouse press");
+  //    qDebug("Mouse press");
   if(event->buttons() & Qt::LeftButton){
     QList<QGraphicsItem *> it = items(event->scenePos());
     for(int i = 0; i < it.size(); i++){
@@ -33,33 +32,24 @@ void ImageViewer::mousePressEvent(QGraphicsSceneMouseEvent * event){
 
 void ImageViewer::mouseReleaseEvent( QGraphicsSceneMouseEvent * mouseEvent ){
   if(dragged){
-    /*    dragged->deselect();*/
     dragged = 0;
   }
 }
 
 void ImageViewer::mouseMoveEvent(QGraphicsSceneMouseEvent * event){
-    qDebug("Mouse move up ");
+  //  qDebug("Mouse move");
   if(dragged && event->buttons() & Qt::LeftButton){
     QPointF mov = event->scenePos()-event->lastScenePos();
     dragged->moveBy(mov.x(),mov.y());
     return;
   }
   if(event->buttons() & Qt::LeftButton){
-    qDebug("Mouse move");
-    /*    if(itemAt(event->scenePos())){
-      ((ImageItem *)itemAt(event->scenePos()))->mouseMove(event);
-      return;
-      }*/
     QList<QGraphicsItem *> it = items();
     for(int i = 0; i < it.size(); i++){
       if(!it[i]->parentItem()){
 	QPointF mov = event->scenePos()-event->lastScenePos();
 	it[i]->moveBy(mov.x(),mov.y());
       }
-	/*	if(QString("ImageItem") == it[i]->data(0)){
-	  
-		}*/
     }
   }else if(event->buttons() & Qt::RightButton){  
     QPointF mouse_mov = event->screenPos()-event->lastScreenPos();  
@@ -154,5 +144,9 @@ void ImageViewer::createPreprocessBays(){
   bay = new ImageBay(Qt::BottomDockWidgetArea,QString("Output"),pen,brush,NULL);
   bayList.append(bay);
   addItem(bay);
-
+  
+  /*  QGraphicsTextItem * t  = new QGraphicsTextItem("test",0);
+  t->setDefaultTextColor(QColor("#ffffff"));
+  t->setAcceptsHoverEvents(true);
+  addItem(t);*/
 }
