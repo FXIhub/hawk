@@ -1,9 +1,12 @@
 <RCC>
     <qresource prefix="/" >
+        <file>images/32x32/brush.png</file>
         <file>images/32x32/configure.png</file>
         <file>images/32x32/exec.png</file>
         <file>images/32x32/run.png</file>
         <file>images/32x32/viewmag.png</file>
         <file>images/big/Hawk.png</file>
+        <file>images/round_cursor.png</file>
+        <file>images/round_cursor.xbm</file>
     </qresource>
 </RCC>

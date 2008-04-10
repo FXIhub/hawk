@@ -18,6 +18,8 @@ class MainWindow: public QMainWindow, private Ui::Hawk
   QList<Workspace *> workspaces;
  private slots:
   void on_actionOpen_triggered(bool checked);
+  void on_actionBrush_toggled(bool checked);
+
 };
 
 #else

@@ -8,11 +8,13 @@
 #include <spimage.h>
 #include "imageViewer.h"
 
+class MainWindow;
+
 class Workspace: public QWidget , private Ui::Workspace
 {
   Q_OBJECT
     public:
-  Workspace(QWidget * parent = NULL);
+  Workspace(QWidget * parent = NULL,MainWindow * main=NULL);
  public slots:
   void loadImage(QString filename);
  private:
@@ -24,6 +26,7 @@ class Workspace: public QWidget , private Ui::Workspace
   real colormap_min;
   real colormap_max;
   QImage qimage;  
+  MainWindow * mainWindow;
 };
 
 #else

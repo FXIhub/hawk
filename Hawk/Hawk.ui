@@ -89,6 +89,8 @@
    <addaction name="actionPreprocess" />
    <addaction name="actionReconstruct" />
    <addaction name="actionAnalyse" />
+   <addaction name="separator" />
+   <addaction name="actionBrush" />
   </widget>
   <action name="actionOpen" >
    <property name="text" >
@@ -167,7 +169,20 @@
     <string>Traditional</string>
    </property>
   </action>
+  <action name="actionBrush" >
+   <property name="checkable" >
+    <bool>true</bool>
+   </property>
+   <property name="icon" >
+    <iconset resource="Hawk.qrc" >:/images/32x32/brush.png</iconset>
+   </property>
+   <property name="text" >
+    <string>Brush</string>
+   </property>
+  </action>
  </widget>
- <resources/>
+ <resources>
+  <include location="Hawk.qrc" />
+ </resources>
  <connections/>
 </ui>

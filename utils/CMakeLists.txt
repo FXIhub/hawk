@@ -12,6 +12,7 @@ ADD_EXECUTABLE(tiff2h5 tiff2h5.c ${PORTS})
 ADD_EXECUTABLE(tiff2png tiff2png.c ${PORTS})
 #ADD_EXECUTABLE(analyze_img analyze_img.c ${PORTS})
 ADD_EXECUTABLE(image_to_vtk image_to_vtk.c ${PORTS})
+ADD_EXECUTABLE(image_fft image_fft.c ${PORTS})
 
 IF(WIN32)
   ADD_DEFINITIONS(-D_HDF5USEDLL_)
@@ -71,9 +72,10 @@ TARGET_LINK_LIBRARIES(propagate ${LIBRARY_LIST})
 TARGET_LINK_LIBRARIES(rs_r_factor ${LIBRARY_LIST})
 TARGET_LINK_LIBRARIES(r_factor ${LIBRARY_LIST})
 TARGET_LINK_LIBRARIES(shell_plot ${LIBRARY_LIST})
+TARGET_LINK_LIBRARIES(image_fft ${LIBRARY_LIST})
 #TARGET_LINK_LIBRARIES(stretch ${LIBRARY_LIST})
 
-LIST(APPEND BINS tiff2h5 image_to_vtk gif2h5image image_to_png png_to_image tiff2png autocorrelate prtf denoise background_subtract propagate matrix2image rs_r_factor average_h5 r_factor shell_plot separate_channel fft_bench manual_merge)
+LIST(APPEND BINS tiff2h5 image_to_vtk gif2h5image image_to_png png_to_image tiff2png autocorrelate prtf denoise background_subtract propagate matrix2image rs_r_factor average_h5 r_factor shell_plot separate_channel fft_bench manual_merge image_fft)
 
 INSTALL(TARGETS ${BINS}
             RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin

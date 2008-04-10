@@ -3,8 +3,10 @@
 #include "server.h"
 #include <spimage.h>
 #include <QGLWidget>
+#include "mainwindow.h"
+#include <QtGui>
 
-Workspace::Workspace(QWidget * parent)
+Workspace::Workspace(QWidget * parent,MainWindow * main)
   :QWidget(parent)
 {
   setupUi(this);
@@ -15,6 +17,7 @@ Workspace::Workspace(QWidget * parent)
   colormap_min = 0;
   colormap_max = 0;
   image = 0;
+  mainWindow = main;
  }
 
 
@@ -46,3 +49,4 @@ void Workspace::loadImage(QString filename){
   item->setFlags(QGraphicsItem::ItemIsMovable|QGraphicsItem::ItemIsFocusable);
   preprocessScene->addImage(item);    
 }
+
