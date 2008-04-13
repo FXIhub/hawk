@@ -35,14 +35,16 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>25</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile" >
     <property name="title" >
-     <string>File</string>
+     <string>&amp;File</string>
     </property>
-    <addaction name="actionOpen" />
+    <addaction name="actionOpenImage" />
+    <addaction name="actionSaveImage" />
+    <addaction name="separator" />
     <addaction name="actionOpen_Project" />
     <addaction name="actionSave_Project" />
     <addaction name="separator" />
@@ -90,17 +92,26 @@
    <addaction name="actionReconstruct" />
    <addaction name="actionAnalyse" />
    <addaction name="separator" />
-   <addaction name="actionBrush" />
+   <addaction name="actionNavigate" />
+   <addaction name="actionExcludeFromMask" />
+   <addaction name="actionIncludeInMask" />
+   <addaction name="actionPickCenter" />
   </widget>
-  <action name="actionOpen" >
+  <action name="actionOpenImage" >
+   <property name="icon" >
+    <iconset resource="Hawk.qrc" >:/images/32x32/fileopen.png</iconset>
+   </property>
    <property name="text" >
-    <string>Open Image</string>
+    <string>&amp;Open Image</string>
    </property>
    <property name="shortcut" >
     <string>Ctrl+O</string>
    </property>
   </action>
   <action name="actionOpen_Project" >
+   <property name="icon" >
+    <iconset resource="Hawk.qrc" >:/images/32x32/project_open.png</iconset>
+   </property>
    <property name="text" >
     <string>Open Project</string>
    </property>
@@ -114,6 +125,9 @@
    </property>
   </action>
   <action name="actionExit" >
+   <property name="icon" >
+    <iconset resource="Hawk.qrc" >:/images/32x32/exit.png</iconset>
+   </property>
    <property name="text" >
     <string>Exit</string>
    </property>
@@ -169,15 +183,68 @@
     <string>Traditional</string>
    </property>
   </action>
-  <action name="actionBrush" >
+  <action name="actionNavigate" >
+   <property name="checkable" >
+    <bool>true</bool>
+   </property>
+   <property name="checked" >
+    <bool>true</bool>
+   </property>
+   <property name="icon" >
+    <iconset resource="Hawk.qrc" >:/images/32x32/arrow_cursor.png</iconset>
+   </property>
+   <property name="text" >
+    <string>Navigate</string>
+   </property>
+  </action>
+  <action name="actionIncludeInMask" >
    <property name="checkable" >
     <bool>true</bool>
    </property>
    <property name="icon" >
-    <iconset resource="Hawk.qrc" >:/images/32x32/brush.png</iconset>
+    <iconset resource="Hawk.qrc" >:/images/32x32/mask_include_icon.png</iconset>
    </property>
    <property name="text" >
-    <string>Brush</string>
+    <string>MaskInclude</string>
+   </property>
+   <property name="toolTip" >
+    <string>Include pixels in mask</string>
+   </property>
+  </action>
+  <action name="actionExcludeFromMask" >
+   <property name="checkable" >
+    <bool>true</bool>
+   </property>
+   <property name="icon" >
+    <iconset resource="Hawk.qrc" >:/images/32x32/mask_exclude_icon.png</iconset>
+   </property>
+   <property name="text" >
+    <string>MaskExclude</string>
+   </property>
+   <property name="toolTip" >
+    <string>Exclude pixels from mask</string>
+   </property>
+  </action>
+  <action name="actionPickCenter" >
+   <property name="checkable" >
+    <bool>true</bool>
+   </property>
+   <property name="icon" >
+    <iconset resource="Hawk.qrc" >:/images/32x32/bullseye.png</iconset>
+   </property>
+   <property name="text" >
+    <string>PickCenter</string>
+   </property>
+   <property name="toolTip" >
+    <string>Pick image's center</string>
+   </property>
+  </action>
+  <action name="actionSaveImage" >
+   <property name="icon" >
+    <iconset resource="Hawk.qrc" >:/images/32x32/filesave.png</iconset>
+   </property>
+   <property name="text" >
+    <string>&amp;Save Image</string>
    </property>
   </action>
  </widget>

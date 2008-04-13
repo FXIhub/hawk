@@ -2,30 +2,54 @@
 #define _IMAGEVIEWER_H_ 1
 #if defined __cplusplus || defined Q_MOC_RUN
 
-#include <QGraphicsScene>
 #include <QGraphicsView>
-#include "imageItem.h"
-#include "imageBay.h"
+#include <QPointF>
+#include <QList>
+#include "applicationmode.h"
 
-class ImageViewer: public QGraphicsScene
+class MainWindow;
+class ImageBay;
+class ImageItem;
+class QGraphicsScene;
+class QMouseEvent;
+class QWheelEvent;
+class QKeyEvent;
+
+
+class ImageViewer: public QGraphicsView
 {
   Q_OBJECT
     public:
-  ImageViewer(QGraphicsView * view, QWidget * parent = NULL);
-  void mouseMoveEvent(QGraphicsSceneMouseEvent * event);
-  void wheelEvent ( QGraphicsSceneWheelEvent * event );
-  void mousePressEvent(QGraphicsSceneMouseEvent * event);
-  void mouseReleaseEvent( QGraphicsSceneMouseEvent * mouseEvent );
+  ImageViewer(QWidget * parent);
+  void mouseMoveEvent(QMouseEvent * event);
+  void wheelEvent ( QWheelEvent * event );
+  void mousePressEvent(QMouseEvent * event);
+  void mouseReleaseEvent( QMouseEvent * mouseEvent );
   void addImage(ImageItem * item);
+  void keyPressEvent ( QKeyEvent * event );
   void keyReleaseEvent ( QKeyEvent * event );
   void scaleItems(qreal scale);
+  void translateItems(QPointF mov);
   void createPreprocessBays();
+  void setup(MainWindow * main);
+  ApplicationMode getMode();
+ public slots:
+  void setMode(ApplicationMode newMode);
+  void setModeCursor();
+  void loadImage(QString filename);
  private:
-  QGraphicsView * graphicsView;
+  QPointF mouseLastScenePos;
+  QGraphicsScene * graphicsScene;
   ImageItem * dragged;
   QPointF draggedInitialPos;
   QPointF itemsScale;
   QList<ImageBay *>bayList;
+  QList<ImageItem *>imageItems;
+  ApplicationMode mode;
+  ApplicationMode alternateMode;
+  MainWindow * mainWindow;
+  bool controlDown;
+  bool mouseInsideImage;
 };
 
 #else

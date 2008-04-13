@@ -4,21 +4,36 @@
 
 #include <QMainWindow>
 #include "ui_Hawk.h"
-#include "workspace.h"
+#include "applicationmode.h"
 
 class Server;
+class Workspace;
+class ImageItem;
 
 class MainWindow: public QMainWindow, private Ui::Hawk
 {
   Q_OBJECT
     public:
   MainWindow(QMainWindow * parent = NULL);
+ public slots:
+  void setSelectedImageItem(ImageItem * it);
+  void fillImagePropertiesTable(ImageItem * it);
+  void imageItemChanged(ImageItem * it);
+ signals:
+  void modeChanged(ApplicationMode mode);
+  void selectedImageItemChanged(ImageItem * it);
  private:
   Server * server;
   QList<Workspace *> workspaces;
+  ImageItem * selectedImageItem;
  private slots:
-  void on_actionOpen_triggered(bool checked);
-  void on_actionBrush_toggled(bool checked);
+  void on_actionOpenImage_triggered(bool checked);
+  void on_actionExcludeFromMask_toggled(bool checked);
+  void on_actionPickCenter_toggled(bool checked);
+  void on_actionIncludeInMask_toggled(bool checked);
+  void on_actionNavigate_toggled(bool checked);
+  void on_actionExit_triggered(bool checked);
+  void on_actionSaveImage_triggered(bool checked);
 
 };
 

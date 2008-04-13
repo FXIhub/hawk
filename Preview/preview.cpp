@@ -125,6 +125,9 @@ void Preview::loadImageComment(QString filename){
     QByteArray line = file.readLine();
     if(line.contains("Master_comment")){
       commentBrowser->setText(line);
+    }
+    if(line.contains("CCD_comment")){
+      commentBrowser->append(line);
       break;
     }
   }

@@ -1,12 +1,29 @@
 <RCC>
     <qresource prefix="/" >
+        <file>images/32x32/arrow_cursor.png</file>
         <file>images/32x32/brush.png</file>
+        <file>images/32x32/brush_cursor.png</file>
+        <file>images/32x32/brush_cursor2.png</file>
+        <file>images/32x32/bullseye.png</file>
         <file>images/32x32/configure.png</file>
         <file>images/32x32/exec.png</file>
+        <file>images/32x32/exit.png</file>
+        <file>images/32x32/fileopen.png</file>
+        <file>images/32x32/filesave.png</file>
+        <file>images/32x32/filesaveas.png</file>
+        <file>images/32x32/mask_exclude.png</file>
+        <file>images/32x32/mask_exclude_icon.png</file>
+        <file>images/32x32/mask_include.png</file>
+        <file>images/32x32/mask_include_icon.png</file>
+        <file>images/32x32/project_open.png</file>
         <file>images/32x32/run.png</file>
         <file>images/32x32/viewmag.png</file>
+        <file>images/64x64/sniper_scope.png</file>
         <file>images/big/Hawk.png</file>
+        <file>images/big/HawkIcon.png</file>
         <file>images/round_cursor.png</file>
         <file>images/round_cursor.xbm</file>
+        <file>images/squareBrushCursor.xbm</file>
+        <file>images/squareBrushCursorMask.xbm</file>
     </qresource>
 </RCC>

@@ -14,6 +14,7 @@ ImageBay::ImageBay(Qt::DockWidgetArea position, QString name, QPen pen,QBrush br
   QRectF bound;
   QPainterPath path;
   label = new QGraphicsTextItem(this);
+  label->setAcceptsHoverEvents(false);
   QFont font = label->font();
   font.setPointSizeF(100);  
   label->setFont(font);
@@ -26,7 +27,6 @@ ImageBay::ImageBay(Qt::DockWidgetArea position, QString name, QPen pen,QBrush br
     ((QLinearGradient*)brush.gradient())->setStart(-1000,-3000);
     ((QLinearGradient*)brush.gradient())->setFinalStop(-1000,-1000);    
     label->setPos(-1000,-2000);
-  
   }
   if(position == Qt::LeftDockWidgetArea){
     qDebug("Left Bay");
