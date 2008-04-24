@@ -74,6 +74,8 @@ Options * set_defaults(){
   opt->log_output_period = 20;
   opt->algorithm = HIO;
   opt->exp_sigma = (real)0.05;
+  opt->intensities_std_dev_filename[0] = 0;
+  opt->autocorrelation_support_filename[0] = 0;
   opt->rand_phases = 0;
   opt->rand_intensities = 0;
   opt->dyn_beta = (real)0;
