@@ -9,9 +9,9 @@
 void set_defaults(Options * opt){
   opt->x_center = -1;
   opt->y_center = -1;
-  opt->detector_distance = 50;
-  opt->pixel_size = 0.020;
-  opt->lambda = 32;
+  opt->detector_distance = -1;
+  opt->pixel_size = -1;
+  opt->lambda = -1;
   opt->input[0] = 0;
   opt->output[0] = 0;
 }
@@ -24,14 +24,15 @@ Options * parse_options(int argc, char ** argv){
     \n\
     -i: Input file\n\
     -o: Output file\n\
-    -x: Center of image x coordinate (690)\n\
-    -y: Center of image y coordinate (608)\n\
-    -d: Distance to detector (in mm) (50)\n\
-    -p: Pixel Size (in mm) (0.020)\n\
-    -l: Wavelength (in nm) (32)\n\
+    -x: Center of image x coordinate\n\
+    -y: Center of image y coordinate\n\
+    -d: Distance to detector (in mm)\n\
+    -p: Pixel Size (in um)\n\
+    -l: Wavelength (in nm)\n\
 ";
   static char optstring[] = "x:y:d:p:l:hi:o:";
   Options * res = calloc(1,sizeof(Options));
+  int flag = 0;
   set_defaults(res);
 
   while(1){
@@ -68,6 +69,21 @@ Options * parse_options(int argc, char ** argv){
     default:
       printf ("?? getopt returned character code 0%o ??\n", c);
     }
+  }
+  if(res->detector_distance < 0){
+    fprintf(stderr,"You HAVE to specify detector distance!\n");    
+    flag = 1;
+  }
+  if(res->pixel_size < 0){
+    fprintf(stderr,"You HAVE to specify pixel size!\n");    
+    flag = 1;
+  }
+  if(res->lambda < 0){
+    fprintf(stderr,"You HAVE to specify the wavelength used!\n");    
+    flag = 1;
+  }
+  if(flag){
+    exit(1);
   }
   return res;
 }
