@@ -67,7 +67,6 @@ typedef enum {Id_Diffraction_Filename=0,Id_Real_Image_Filename,Id_Max_Blur_Radiu
 typedef struct {
   Image * diffraction;
   Image * amplitudes;
-  Image * amplitudes_sigma;
   char diffraction_filename[OPTION_STRING_SIZE];
   Image * real_image;
   char real_image_filename[OPTION_STRING_SIZE];
@@ -135,6 +134,10 @@ typedef struct {
   int iterations_to_min_phases_blur;
   real phases_max_blur_radius;
   real phases_min_blur_radius;
+  char intensities_std_dev_filename[OPTION_STRING_SIZE];
+  Image * intensities_std_dev;
+  char autocorrelation_support_filename[OPTION_STRING_SIZE];
+  Image * autocorrelation_support;
 }Options;
 
 
