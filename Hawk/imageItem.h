@@ -35,6 +35,7 @@ class ImageItem: public QGraphicsPixmapItem
     return filename;
   }
   void setImageCenter(QPointF scenePos);
+  bool isSelected();
  private:
   void mouseMoveEvent(QGraphicsSceneMouseEvent * event);
   void wheelEvent ( QGraphicsSceneWheelEvent * event );
@@ -52,6 +53,7 @@ class ImageItem: public QGraphicsPixmapItem
   QImage mask;
   QImage maskFaint;
   QImage sniperScope;
+  bool selected;
 };
 
 #else
