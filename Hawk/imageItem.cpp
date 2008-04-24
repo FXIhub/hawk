@@ -34,6 +34,8 @@ ImageItem::ImageItem(Image * sp_image,MainWindow * main,QString file,QGraphicsIt
   selectRect = 0;
   setData(0,QString("ImageItem"));
   setZValue(10);
+  selectRect = new QGraphicsRectItem(0,0,pixmap().width(),pixmap().height(),this);
+  selectRect->setVisible(false);
 }
 
 void ImageItem::mouseMoveEvent(QGraphicsSceneMouseEvent * event){
@@ -76,28 +78,35 @@ void ImageItem::keyReleaseEvent ( QKeyEvent * event ){
 }
 
 void ImageItem::select(){
-  selectRect = new QGraphicsRectItem(0,0,pixmap().width(),pixmap().height(),this);
+  selectRect->setVisible(true);
   QPen p = QPen(QBrush(Qt::gray),1,Qt::SolidLine,Qt::RoundCap, Qt::RoundJoin);
   p.setCosmetic(true);
   selectRect->setPen(p);
+  if(mainWindow->selectedImageItem()){
+    mainWindow->selectedImageItem()->deselect();
+  }
   mainWindow->setSelectedImageItem(this);
   setZValue(11);
+  selected = true;
 }
 
 void ImageItem::deselect(){
-  if(selectRect){
-    delete selectRect;
-  }
+  selectRect->setVisible(false);
   mainWindow->setSelectedImageItem(NULL);
   setZValue(10);
+  selected = false;
+}
+
+bool ImageItem::isSelected(){
+  return selected;
 }
 
 void ImageItem::focusInEvent ( QFocusEvent * event ){
-  select();
+  //  select();
 }
 
 void ImageItem::focusOutEvent ( QFocusEvent * event ){
-  deselect();
+  //  deselect();
 }
 
 QPointF ImageItem::centeredScale(qreal s,QPointF screenCenter){
@@ -150,8 +159,8 @@ void ImageItem::setMode(ApplicationMode newMode){
 void ImageItem::excludeFromMask(QRectF area){
   QPointF topLeft = mapFromScene(area.topLeft());
   QPointF bottomRight = mapFromScene(area.bottomRight());
-  for(int x = qMax(round(topLeft.x()),0.0);x<qMin(round(bottomRight.x()),(double)sp_image_x(image));x++){
-    for(int y = qMax(round(topLeft.y()),0.0);y<qMin(round(bottomRight.y()),(double)sp_image_y(image));y++){
+  for(int x = qMax((int)round(topLeft.x()),0);x<qMin((int)round(bottomRight.x()),sp_image_x(image));x++){
+    for(int y = qMax((int)round(topLeft.y()),0);y<qMin((int)round(bottomRight.y()),sp_image_y(image));y++){
       sp_i3matrix_set(image->mask,x,y,0,0);
       mask.setPixel(x,y,0xFF000000U);
       maskFaint.setPixel(x,y,0x66000000U);
@@ -164,8 +173,8 @@ void ImageItem::excludeFromMask(QRectF area){
 void ImageItem::includeInMask(QRectF area){
   QPointF topLeft = mapFromScene(area.topLeft());
   QPointF bottomRight = mapFromScene(area.bottomRight());
-  for(int x = qMax(round(topLeft.x()),0.0);x<qMin(round(bottomRight.x()),(double)sp_image_x(image));x++){
-    for(int y = qMax(round(topLeft.y()),0.0);y<qMin(round(bottomRight.y()),(double)sp_image_y(image));y++){
+  for(int x = qMax((int)round(topLeft.x()),0);x<qMin((int)round(bottomRight.x()),sp_image_x(image));x++){
+    for(int y = qMax((int)round(topLeft.y()),0);y<qMin((int)round(bottomRight.y()),sp_image_y(image));y++){
       sp_i3matrix_set(image->mask,x,y,0,1);
       mask.setPixel(x,y,0x44000000U);
       maskFaint.setPixel(x,y,0x00000000U);
