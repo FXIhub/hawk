@@ -19,7 +19,7 @@ Workspace::Workspace(QWidget * parent,MainWindow * main)
   f.setPointSize(10);
   propertiesTable->setFont(f);
   propertiesTable->verticalHeader()->setVisible(false);
-  //  propertiesTable->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+  propertiesTable->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
 }
 
 
@@ -33,4 +33,29 @@ void Workspace::loadImage(QString filename){
 
 QTableWidget * Workspace::getPropertiesTable(){
   return propertiesTable;
+}
+
+void Workspace::on_propertiesTable_cellActivated(int row, int col){
+  bool ok;
+  QTableWidgetItem * it =  propertiesTable->item(row,col);
+  QString value;
+  if(it->data(Qt::UserRole)  == QString("bool_editable")){
+    QStringList items;
+    items << tr("True") << tr("False");
+     value = QInputDialog::getItem(this, tr("QInputDialog::getItem()"),
+					 propertiesTable->item(row,0)->text(), items, 0, false, &ok);
+  }
+  if(it->data(Qt::UserRole)  == QString("positive_real_editable")){
+    double d = QInputDialog::getDouble(this, tr("QInputDialog::getDouble()"),
+				       propertiesTable->item(row,0)->text(), it->text().toDouble(), 0, 1000000, 2, &ok);
+    value = QString::number(d);
+  }
+  if(it->data(Qt::UserRole)  == QString("real_editable")){
+    double d = QInputDialog::getDouble(this, tr("QInputDialog::getDouble()"),
+				       propertiesTable->item(row,0)->text(), it->text().toDouble(), -1000000, 1000000, 2, &ok);
+    value = QString::number(d);
+  }
+  if (ok && !value.isEmpty()){ 
+    propertiesTable->item(row,col)->setText(value);
+  }
 }

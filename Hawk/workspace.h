@@ -15,6 +15,7 @@ class Workspace: public QWidget , private Ui::Workspace
   QTableWidget * getPropertiesTable();
  public slots:
   void loadImage(QString filename);
+  void on_propertiesTable_cellActivated(int row, int col);
  private:
   void setupViewers();
   MainWindow * mainWindow;

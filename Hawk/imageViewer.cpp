@@ -3,6 +3,7 @@
 #include "imageItem.h"
 #include "imageBay.h"
 #include "mainwindow.h"
+#include <QGLWidget>
 
 ImageViewer::ImageViewer(QWidget * parent)
   :QGraphicsView(parent)
@@ -12,6 +13,7 @@ ImageViewer::ImageViewer(QWidget * parent)
   itemsScale.setY(1);
   mode = ModeDefault;
   controlDown = false;
+  setViewport(new QGLWidget);
 }
 
 void ImageViewer::mousePressEvent(QMouseEvent * event){
@@ -23,7 +25,8 @@ void ImageViewer::mousePressEvent(QMouseEvent * event){
 	if(QString("ImageItem") == it[i]->data(0)){
 	  dragged = (ImageItem *)it[i];
 	  draggedInitialPos = it[i]->mapFromScene(mapToScene(event->pos()))-it[i]->pos();
-	  it[i]->setFocus(Qt::MouseFocusReason);
+	  dragged->select();
+
 	  break;
 	}
       }
@@ -40,14 +43,14 @@ void ImageViewer::mousePressEvent(QMouseEvent * event){
       foreach(QGraphicsItem * item,it){
 	if(QString("ImageItem") == item->data(0)){
 	  ImageItem * ii = (ImageItem *)item;
-	  if(ii->hasFocus()){
+	  if(ii->isSelected()){
 	    if(getMode() == ModeExcludeFromMask){
 	      ii->excludeFromMask(QRectF(mapToScene(pos-cursorHalfLength),mapToScene(pos+cursorHalfLength)));
 	    }else if(getMode() == ModeIncludeInMask){
 	      ii->includeInMask(QRectF(mapToScene(pos-cursorHalfLength),mapToScene(pos+cursorHalfLength)));
 	    }
 	  }else{
-	    ii->setFocus(Qt::MouseFocusReason);
+	    ii->select();
 	  }
 	  break;
 	}      
@@ -59,12 +62,11 @@ void ImageViewer::mousePressEvent(QMouseEvent * event){
       foreach(QGraphicsItem * item,it){
 	if(QString("ImageItem") == item->data(0)){
 	  ImageItem * ii = (ImageItem *)item;
-	  if(ii->hasFocus()){
+	  if(ii->isSelected()){
 	    ii->setImageCenter(mapToScene(event->pos()));
 	  }else{
-	    ii->setFocus(Qt::MouseFocusReason);
+	    ii->select();
 	  }
-
 	  break;
 	}      
       }
@@ -326,6 +328,6 @@ void ImageViewer::loadImage(QString filename){
   item->setMode(mode);
   addImage(item);    
   item->update();
-  item->setFocus(Qt::MouseFocusReason);
+  item->select();
   setModeCursor();
 }

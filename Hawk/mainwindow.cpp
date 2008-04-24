@@ -32,6 +32,7 @@ MainWindow::MainWindow(QMainWindow * parent)
   vboxLayout1->addWidget(workspaces.last()); 
   vboxLayout1->setMargin(4); 
   server = new Server(this,1050);
+  selImageItem = NULL;
   
 }
 
@@ -78,21 +79,21 @@ void MainWindow::on_actionExit_triggered(bool checked){
 
 void MainWindow::on_actionSaveImage_triggered(bool checked){
   QString filename = QFileDialog::getSaveFileName(this, tr("Save Image"),QString(), tr("Images (*.h5;*.vtk;*.png)"));
-  if(!filename.isEmpty() && selectedImageItem){
+  if(!filename.isEmpty() && selImageItem){
     if(QFile::exists(filename)){
       // Seems like the hdf5 library is macosx doesn't like to overwrite files
       QFile::remove(filename);
     }
 
-    sp_image_write(selectedImageItem->getImage(),filename.toAscii(),0);
+    sp_image_write(selImageItem->getImage(),filename.toAscii(),0);
   }
   return;
 }
 
 
 void MainWindow::setSelectedImageItem(ImageItem * it){
-  if(selectedImageItem != it){
-    selectedImageItem = it;
+  if(selImageItem != it){
+    selImageItem = it;
     emit selectedImageItemChanged(it);
   }
   if(it){
@@ -103,7 +104,7 @@ void MainWindow::setSelectedImageItem(ImageItem * it){
 }
 
 void MainWindow::imageItemChanged(ImageItem * it){
-  if(selectedImageItem == it){
+  if(selImageItem == it){
     fillImagePropertiesTable(it);
   }
 }
@@ -116,33 +117,54 @@ void MainWindow::fillImagePropertiesTable(ImageItem * it){
     QTableWidget * table = ws->getPropertiesTable();
     QTableWidgetItem * property;
     QTableWidgetItem * value;
-    qDebug("Before size Hint %d",table->horizontalHeader()->sectionSizeHint(1));
-    //    qDebug("Before size Hint %d",table->horizontalHeader()->sectionSizeFromContents(1).width());
     while(table->rowCount()){
       table->removeRow(0);
     }
     table->insertRow(table->rowCount());
     property = new  QTableWidgetItem;
-    property->setText(tr("Dimensions"));
+    property->setText(tr("Image Width (px)"));
     value = new  QTableWidgetItem;
     value->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
     property->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
-    value->setText("x = " + QString::number(sp_image_x(a)) + ", y = " + QString::number(sp_image_y(a)));
+    value->setText(QString::number(sp_image_x(a)));
     table->setItem(table->rowCount()-1,0,property);
     table->setItem(table->rowCount()-1,1,value);
 
     table->insertRow(table->rowCount());
     property = new  QTableWidgetItem;
-    property->setText(tr("Center"));
+    property->setText(tr("Image Height (px)"));
     value = new  QTableWidgetItem;
     value->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
     property->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
-
-    value->setText("x = " + QString::number(a->detector->image_center[0]) + ", y = " + QString::number((a->detector->image_center[1])));
+    value->setText(QString::number(sp_image_y(a)));
     table->setItem(table->rowCount()-1,0,property);
     table->setItem(table->rowCount()-1,1,value);
 
-    int widestItem = 0;
+
+
+    table->insertRow(table->rowCount());
+    property = new  QTableWidgetItem;
+    property->setText(tr("Center X (px)"));
+    value = new  QTableWidgetItem;
+    value->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+    property->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+    value->setData(Qt::UserRole,QString("real_editable"));
+    value->setText(QString::number(a->detector->image_center[0]));
+    table->setItem(table->rowCount()-1,0,property);
+    table->setItem(table->rowCount()-1,1,value);
+
+    table->insertRow(table->rowCount());
+    property = new  QTableWidgetItem;
+    property->setText(tr("Center Y (px)"));
+    value = new  QTableWidgetItem;
+    value->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+    property->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+    value->setData(Qt::UserRole,QString("real_editable"));
+    value->setText( QString::number((a->detector->image_center[1])));
+    table->setItem(table->rowCount()-1,0,property);
+    table->setItem(table->rowCount()-1,1,value);
+
+    QFileInfo fi(it->getFilename());
 
     table->insertRow(table->rowCount());
     property = new  QTableWidgetItem;
@@ -150,10 +172,7 @@ void MainWindow::fillImagePropertiesTable(ImageItem * it){
     value = new  QTableWidgetItem;
     value->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
     property->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
-    QFileInfo fi(it->getFilename());
     value->setText(QDir::toNativeSeparators(fi.fileName()));
-    QFontMetrics fm(value->font());    
-    widestItem = qMax(fm.width(value->text()+"    "),widestItem);
     table->setItem(table->rowCount()-1,0,property);
     table->setItem(table->rowCount()-1,1,value);
 
@@ -163,10 +182,7 @@ void MainWindow::fillImagePropertiesTable(ImageItem * it){
     value = new  QTableWidgetItem;
     value->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
     property->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
-    fi = QFileInfo(it->getFilename());
     value->setText(QDir::toNativeSeparators(fi.absolutePath()));
-    fm = QFontMetrics(value->font());    
-    widestItem = qMax(fm.width(value->text()+"    "),widestItem);
     table->setItem(table->rowCount()-1,0,property);
     table->setItem(table->rowCount()-1,1,value);
 
@@ -178,23 +194,63 @@ void MainWindow::fillImagePropertiesTable(ImageItem * it){
     value->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
     property->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
     value->setText(QString::number(a->detector->detector_distance));
+    value->setData(Qt::UserRole,QString("positive_real_editable"));
     table->setItem(table->rowCount()-1,0,property);
     table->setItem(table->rowCount()-1,1,value);
 
     table->insertRow(table->rowCount());
     property = new  QTableWidgetItem;
-    property->setText(tr("Pixel Size"));
+    property->setText(tr("Pixel Width (%1m)").arg(QChar(0x03BC)));
     value = new  QTableWidgetItem;
     value->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
     property->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
-    value->setText("x = " + QString::number(a->detector->pixel_size[0]) + QChar(0x03BC) + "m, y = " + QString::number(a->detector->pixel_size[1]) + QChar(0x03BC) + QString("m"));
+    value->setText(QString::number(a->detector->pixel_size[0]));
+    value->setData(Qt::UserRole,QString("positive_real_editable"));
     table->setItem(table->rowCount()-1,0,property);
     table->setItem(table->rowCount()-1,1,value);
+
+    table->insertRow(table->rowCount());
+    property = new  QTableWidgetItem;
+    property->setText(tr("Pixel Height (%1m)").arg(QChar(0x03BC)));
+    value = new  QTableWidgetItem;
+    value->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+    value->setData(Qt::UserRole,QString("positive_real_editable"));
+    property->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+    value->setText(QString::number(a->detector->pixel_size[1]));
+    table->setItem(table->rowCount()-1,0,property);
+    table->setItem(table->rowCount()-1,1,value);
+
+
+    table->insertRow(table->rowCount());
+    property = new  QTableWidgetItem;
+    property->setText(tr("Wavelength (nm)"));
+    value = new  QTableWidgetItem;
+    value->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+    property->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+    value->setData(Qt::UserRole,QString("positive_real_editable"));
+    value->setText( QString::number(a->detector->lambda));
+    table->setItem(table->rowCount()-1,0,property);
+    table->setItem(table->rowCount()-1,1,value);
+
+    table->insertRow(table->rowCount());
+    property = new  QTableWidgetItem;
+    property->setText(tr("Phased"));
+    value = new  QTableWidgetItem;
+    value->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+    value->setData(Qt::UserRole,QString("bool_editable"));
+    property->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+    if(a->phased){
+      value->setText("true");
+    }else{
+      value->setText("false");
+    }
+    table->setItem(table->rowCount()-1,0,property);
+    table->setItem(table->rowCount()-1,1,value);
+
+    table->update();
+    table->horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
     
     
-    qDebug("After size Hint %d",table->horizontalHeader()->sectionSizeHint(1));
-    table->horizontalHeader()->resizeSection(1,widestItem);
-    //    qDebug("After size Hint %d",table->horizontalHeader()->sectionSizeFromContents(1).width());
   }
 
 

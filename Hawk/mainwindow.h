@@ -17,6 +17,9 @@ class MainWindow: public QMainWindow, private Ui::Hawk
   MainWindow(QMainWindow * parent = NULL);
  public slots:
   void setSelectedImageItem(ImageItem * it);
+  ImageItem * selectedImageItem(){
+    return selImageItem;
+  }
   void fillImagePropertiesTable(ImageItem * it);
   void imageItemChanged(ImageItem * it);
  signals:
@@ -25,7 +28,7 @@ class MainWindow: public QMainWindow, private Ui::Hawk
  private:
   Server * server;
   QList<Workspace *> workspaces;
-  ImageItem * selectedImageItem;
+  ImageItem * selImageItem;
  private slots:
   void on_actionOpenImage_triggered(bool checked);
   void on_actionExcludeFromMask_toggled(bool checked);
