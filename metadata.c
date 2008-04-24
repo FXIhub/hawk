@@ -592,9 +592,29 @@ VariableMetadata variable_metadata[100] = {
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.iterations_to_min_phases_blur)
+  },
+  {
+    .variable_name = "intensities_std_dev_file",
+    .variable_type = Type_String,
+    .id = Id_Solution_File,
+    .parent = &(variable_metadata[0]),
+    .variable_properties = isSettableBeforeRun|isGettableBeforeRun,
+    .list_valid_values = {0},
+    .list_valid_names = {0},
+    .variable_address = &(global_options.intensities_std_dev_filename)
+  },
+  {
+    .variable_name = "autocorrelation_support_file",
+    .variable_type = Type_String,
+    .id = Id_Solution_File,
+    .parent = &(variable_metadata[0]),
+    .variable_properties = isSettableBeforeRun|isGettableBeforeRun,
+    .list_valid_values = {0},
+    .list_valid_names = {0},
+    .variable_address = &(global_options.autocorrelation_support_filename)
   }
 };
 
 
 /* Don't forget to update this one!! */
-const int number_of_global_options = 59;
+const int number_of_global_options = 61;
