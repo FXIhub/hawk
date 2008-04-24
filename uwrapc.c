@@ -28,25 +28,22 @@
 #include "network_communication.h"
 
 
+void get_intensities_noise(Options * opts){
+  int i;
+  if(opts->intensities_std_dev_filename[0]){
+    /* read standard deviations from a file */
+    opts->intensities_std_dev = sp_image_read(opts->intensities_std_dev_filename,0);
+  }else if(opts->autocorrelation_support_filename[0]){
+    opts->autocorrelation_support = sp_image_read(opts->autocorrelation_support_filename,0);
+    opts->intensities_std_dev = sp_image_noise_estimate(opts->amplitudes,opts->autocorrelation_support);
+  }else if(opts->exp_sigma){
+    opts->intensities_std_dev = sp_image_duplicate(opts->amplitudes,SP_COPY_DATA|SP_COPY_MASK);
+    for(i = 0;i<sp_c3matrix_size(opts->amplitudes->image);i++){
+      sp_real(opts->intensities_std_dev->image->data[i]) = sp_real(opts->amplitudes->image->data[i])*opts->exp_sigma;
+    }
+  }
+}
 
-/* NOTES:
-   
-  For some strange reason you cannot take half of the patterson diameter to
-  limit the patterson. You need to use something like 1.8.
-  
-  When you start to see very negative peaks close to your patterson
-  (on the outside), it means that the patterson was not big enough.
-
-  
-  When the support stops to include the image the algorithm degrades quite
-  fast. This might be useful for discovering the edges of an object. 
-
-  If the entire object is inside the support, the solution is stable.
-*/
-
-
-/*  There are bugs on the reseting of the log file structure and 
-    options structure */
 
 
 /* continue a reconstruction on this directory */
@@ -519,11 +516,8 @@ void init_reconstruction(Options * opts){
   }
 
 
-
-  opts->amplitudes_sigma = sp_image_duplicate(opts->amplitudes,SP_COPY_DATA|SP_COPY_MASK);
-  for(i = 0;i<sp_c3matrix_size(opts->amplitudes->image);i++){
-    sp_real(opts->amplitudes_sigma->image->data[i]) = sp_real(opts->amplitudes->image->data[i])*opts->exp_sigma;
-  }
+  /* Try to estimate standard deviations */
+  get_intensities_noise(opts);
 
   /* Make sure to scale everything to the same size if needed */
   harmonize_sizes(opts);
@@ -572,7 +566,7 @@ void init_reconstruction(Options * opts){
       if(opts->genetic_optimization){
 /*	genetic_reconstruction(img, initial_support, exp_sigma, opts,dir)*/;
       }else{
-	complete_reconstruction(opts->amplitudes, opts->init_support, opts->amplitudes_sigma, opts,dir);
+	complete_reconstruction(opts->amplitudes, opts->init_support, opts->intensities_std_dev, opts,dir);
       }
     }
   }else{
@@ -580,7 +574,7 @@ void init_reconstruction(Options * opts){
     if(opts->genetic_optimization){
 /*      genetic_reconstruction(img, initial_support, opts->amplitudes_sigma, opts,dir)*/;
     }else{
-      complete_reconstruction(opts->amplitudes, opts->init_support, opts->amplitudes_sigma, opts,dir);
+      complete_reconstruction(opts->amplitudes, opts->init_support, opts->intensities_std_dev, opts,dir);
     }
   }
 
@@ -649,8 +643,8 @@ int main(int argc, char ** argv){
   if(opts->amplitudes){
     sp_image_free(opts->amplitudes);
   }
-  if(opts->amplitudes_sigma){
-    sp_image_free(opts->amplitudes_sigma);
+  if(opts->intensities_std_dev){
+    sp_image_free(opts->intensities_std_dev);
   }
 #ifdef NETWORK_SUPPORT
   cleanup_qt();
