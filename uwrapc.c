@@ -41,6 +41,9 @@ void get_intensities_noise(Options * opts){
     for(i = 0;i<sp_c3matrix_size(opts->amplitudes->image);i++){
       sp_real(opts->intensities_std_dev->image->data[i]) = sp_real(opts->amplitudes->image->data[i])*opts->exp_sigma;
     }
+  }else{
+    /* Take the square root of the intensity as the noise */
+    opts->intensities_std_dev = sp_image_duplicate(opts->amplitudes,SP_COPY_DATA|SP_COPY_MASK);
   }
 }
 
@@ -251,15 +254,17 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
   if(get_algorithm(opts,&log) == HIO){     
     real_out = basic_hio_iteration(amp, real_in, support,opts,&log);
   }else if(get_algorithm(opts,&log) == RAAR){
-    real_out = basic_raar_iteration(amp,exp_sigma, real_in, support,opts,&log);
+    real_out = basic_raar_iteration(amp,NULL, real_in, support,opts,&log);
   }else if(get_algorithm(opts,&log) == HPR){
     real_out = basic_hpr_iteration(amp, real_in, support,opts,&log);
   }else if(get_algorithm(opts,&log) == CFLIP){
     real_out = basic_cflip_iteration(amp, real_in, support,opts,&log);
   }else if(get_algorithm(opts,&log) == HAAR){
-    real_out = basic_haar_iteration(amp, exp_sigma, real_in, support,opts,&log);
+    real_out = basic_haar_iteration(amp, NULL, real_in, support,opts,&log);
   }else if(get_algorithm(opts,&log) == SO2D){
-    real_out = basic_so2d_iteration(amp, exp_sigma, real_in, support,opts,&log);
+    real_out = basic_so2d_iteration(amp, NULL, real_in, support,opts,&log);
+  }else if(get_algorithm(opts,&log) == RAAR_PROJ){
+    real_out = basic_raar_proj_iteration(amp, opts->intensities_std_dev, real_in, support,opts,&log);
   }else{
     fprintf(stderr,"Error: Undefined algorithm!\n");
     exit(-1);
@@ -304,6 +309,9 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
 	  abort();
 	}
       }
+      if(opts->filter_intensities){
+	filter_intensities_with_support(amp,real_out,support,opts);
+      }
       if(opts->cur_iteration <= opts->iterations_to_min_blur){
 	radius = get_blur_radius(opts);
       }
@@ -322,6 +330,8 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
 	sp_image_write(real_out,buffer,COLOR_JET|COLOR_PHASE);
 	sprintf(buffer,"support-%07d.png",opts->cur_iteration);
 	sp_image_write(support,buffer,COLOR_JET);
+	sprintf(buffer,"amplitudes-%07d.png",opts->cur_iteration);
+	sp_image_write(amp,buffer,COLOR_JET);
 	
       }
       if(real_in->num_dimensions == SP_3D){
@@ -329,11 +339,16 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
 	sp_image_write(real_out,buffer,0);
 	sprintf(buffer,"support-%07d.vtk",opts->cur_iteration);
 	sp_image_write(support,buffer,0);
+	sprintf(buffer,"amplitudes-%07d.vtk",opts->cur_iteration);
+	sp_image_write(amp,buffer,0);
       }
       sprintf(buffer,"real_out-%07d.h5",opts->cur_iteration);
       sp_image_write(real_out,buffer,opts->output_precision);
       sprintf(buffer,"support-%07d.h5",opts->cur_iteration);
       sp_image_write(support,buffer,opts->output_precision);
+      sprintf(buffer,"amplitudes-%07d.h5",opts->cur_iteration);
+      sp_image_write(amp,buffer,0);
+	
       tmp = sp_image_duplicate(real_out,SP_COPY_DATA|SP_COPY_MASK);
       for(i = 0;i<sp_c3matrix_size(tmp->image);i++){
 	if(sp_real(support->image->data[i])){
@@ -385,6 +400,8 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
       real_out = basic_haar_iteration(amp, exp_sigma,real_in, support,opts,&log);
     }else if(get_algorithm(opts,&log) == SO2D){     
       real_out = basic_so2d_iteration(amp, exp_sigma,real_in, support,opts,&log);
+   }else if(get_algorithm(opts,&log) == RAAR_PROJ){     
+      real_out = basic_raar_proj_iteration(amp, opts->intensities_std_dev,real_in, support,opts,&log);
     }
   }  
 

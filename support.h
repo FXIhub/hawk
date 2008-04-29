@@ -40,7 +40,10 @@ real get_patterson_level(Image * input, real radius, Options * opts);
  * compared to the region. If it's above 3 sigma + average , it's included 
  *
  */
-
 Image * get_filtered_support(Image * input, real level , real radius, Options * opts);
+
+/*! Filters the intensities using the autocorrelation of the support as a low pass filter
+ */
+void filter_intensities_with_support(Image * amplitudes, Image * real_space_guess, Image * support, Options * opts);
 
 #endif

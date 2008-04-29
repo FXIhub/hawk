@@ -209,8 +209,8 @@ VariableMetadata variable_metadata[100] = {
     .id = Id_Algorithm,
     .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
-    .list_valid_values = {HIO,RAAR,HPR,CFLIP,RAAR_CFLIP,HAAR,SO2D,0},
-    .list_valid_names = {"hio","raar","hpr","cflip","raar_cflip","haar","so2d",0},
+    .list_valid_values = {HIO,RAAR,HPR,CFLIP,RAAR_CFLIP,HAAR,SO2D,RAAR_PROJ,0},
+    .list_valid_names = {"hio","raar","hpr","cflip","raar_cflip","haar","so2d","raar_proj",0},
     .variable_address = &(global_options.algorithm)
   },
   {
@@ -612,9 +612,19 @@ VariableMetadata variable_metadata[100] = {
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.autocorrelation_support_filename)
+  },
+  {
+    .variable_name = "filter_intensities",
+    .variable_type = Type_Bool,
+    .id = Id_Solution_File,
+    .parent = &(variable_metadata[0]),
+    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
+    .list_valid_values = {0},
+    .list_valid_names = {0},
+    .variable_address = &(global_options.filter_intensities)
   }
 };
 
 
 /* Don't forget to update this one!! */
-const int number_of_global_options = 61;
+const int number_of_global_options = 62;

@@ -113,6 +113,7 @@ Options * set_defaults(){
   opt->phases_min_blur_radius = 0;
   opt->phases_max_blur_radius = 0;
   opt->iterations_to_min_phases_blur = 0;
+  opt->filter_intensities = 0;
   return opt;
 }
 

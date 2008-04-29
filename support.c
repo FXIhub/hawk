@@ -354,3 +354,50 @@ int descend_complex_compare(const void * pa,const void * pb){
   }
 }
 
+
+void filter_intensities_with_support(Image * amplitudes, Image * real_space_guess, Image * support, Options * opts){
+  Image * intensities = sp_image_duplicate(opts->diffraction,SP_COPY_ALL);
+  Image * pattern_guess = sp_image_fft(real_space_guess);
+  sp_image_to_intensities(intensities);
+  /* Calculate intensities anre replace unknown intensities
+     with the ones calculated from the current image guess */
+  for(int i = 0;i<sp_image_size(amplitudes);i++){
+    if(amplitudes->mask->data[i] == 0){
+      sp_real(intensities->image->data[i]) = sp_cabs2(pattern_guess->image->data[i]);
+    }
+  }
+  /* Calculate support autocorrelation */
+  Image * support_ac = sp_image_cross_correlate(support,support,NULL);
+  /* Set pixels to either 0 or 1 */
+  for(int i = 0;i<sp_image_size(amplitudes);i++){
+    if(sp_real(support_ac->image->data[i]) < 1){
+      support_ac->image->data[i]  = sp_cinit(0,0);
+    }else{
+      support_ac->image->data[i]  = sp_cinit(1,0);
+    }
+  }
+  /*  Lets blur it a bit to prevent hard edge effects */ 
+  Image * tmp = gaussian_blur(support_ac,3);
+  sp_image_free(support_ac);
+  support_ac = tmp;
+  //  sp_image_write(support_ac,"support_ac.h5",0);
+  Image * ac = sp_image_fft(intensities);
+  //  sp_image_write(ac,"ac.h5",0);
+  sp_image_mul_elements(ac,support_ac);
+  //  sp_image_write(ac,"ac_times_support_ac.h5",0);
+  Image * filtered_intensities = sp_image_ifft(ac);
+  //  sp_image_write(filtered_intensities,"filtered_intensities.h5",0);
+  for(int i = 0;i<sp_image_size(amplitudes);i++){
+    /* We have to use sp_cabs instead of sp_real because numerical errors will make the filtered_intensities complex */
+    sp_real(amplitudes->image->data[i]) = sqrt(sp_cabs(filtered_intensities->image->data[i]) /  sp_image_size(amplitudes));
+    if(!isnormal(sp_real(amplitudes->image->data[i]))){
+      /* Houston we have a problem */
+      abort();
+    }
+  }
+  sp_image_free(filtered_intensities);
+  sp_image_free(ac);
+  sp_image_free(support_ac);
+  sp_image_free(pattern_guess);
+  sp_image_free(intensities);
+}

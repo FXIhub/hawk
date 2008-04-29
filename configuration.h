@@ -18,7 +18,7 @@ extern "C"
 #define OPTION_STRING_SIZE 1024
 
 
-typedef enum{HIO=0,RAAR,HPR,CFLIP,RAAR_CFLIP,HAAR,SO2D} Phasing_Algorithms;
+  typedef enum{HIO=0,RAAR,HPR,CFLIP,RAAR_CFLIP,HAAR,SO2D,RAAR_PROJ} Phasing_Algorithms;
 
 
 
@@ -138,6 +138,7 @@ typedef struct {
   Image * intensities_std_dev;
   char autocorrelation_support_filename[OPTION_STRING_SIZE];
   Image * autocorrelation_support;
+  int filter_intensities;
 }Options;
 
 
