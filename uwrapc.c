@@ -35,6 +35,18 @@ void get_intensities_noise(Options * opts){
     opts->intensities_std_dev = sp_image_read(opts->intensities_std_dev_filename,0);
   }else if(opts->autocorrelation_support_filename[0]){
     opts->autocorrelation_support = sp_image_read(opts->autocorrelation_support_filename,0);
+    /* Make sure the autocorrelation support is shifted */
+    if(!opts->autocorrelation_support->shifted){
+      Image * tmp = sp_image_shift(opts->autocorrelation_support);
+      sp_image_free(opts->autocorrelation_support);
+      opts->autocorrelation_support = tmp;
+    }
+    /* Make sure the support is all 1 and 0 */
+    for(i = 0;i<sp_image_size(opts->autocorrelation_support);i++){
+      if(sp_real(opts->autocorrelation_support->image->data[i])){
+	sp_real(opts->autocorrelation_support->image->data[i]) = 1;
+      }
+    }
     opts->intensities_std_dev = sp_image_noise_estimate(opts->amplitudes,opts->autocorrelation_support);
   }else if(opts->exp_sigma){
     opts->intensities_std_dev = sp_image_duplicate(opts->amplitudes,SP_COPY_DATA|SP_COPY_MASK);
@@ -224,10 +236,12 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
   real_in = sp_image_duplicate(opts->image_guess,SP_COPY_DATA|SP_COPY_MASK);
   sp_image_write(real_in,"initial_guess.vtk",SP_3D);
 
-  sprintf(buffer,"pattern-experimental.png");
-  tmp2 = sp_image_shift(amp);
-  sp_image_write(tmp2,buffer,COLOR_JET);
-  sp_image_free(tmp2);
+  if(amp->num_dimensions == SP_2D){
+    sprintf(buffer,"pattern-experimental.png");
+    tmp2 = sp_image_shift(amp);
+    sp_image_write(tmp2,buffer,COLOR_JET);
+    sp_image_free(tmp2);
+  }
 
   /* make sure we make the input complex */
   sp_image_rephase(real_in,SP_ZERO_PHASE);
@@ -373,9 +387,11 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
       /*      sp_image_write(tmp,buffer,opts->output_precision);*/
       tmp2 = sp_image_shift(tmp);
 
-      sprintf(buffer,"pattern-%07d.png",opts->cur_iteration);
-      sp_image_write(tmp2,buffer,COLOR_JET);
-      sp_image_free(tmp2);
+      if(tmp2->num_dimensions == SP_2D){
+	sprintf(buffer,"pattern-%07d.png",opts->cur_iteration);
+	sp_image_write(tmp2,buffer,COLOR_JET);
+	sp_image_free(tmp2);
+      }
 
       sprintf(buffer,"pattern-%07d.vtk",opts->cur_iteration);
       sp_image_write(tmp,buffer,SP_3D);

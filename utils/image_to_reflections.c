@@ -18,10 +18,12 @@ Options * parse_options(int argc, char ** argv){
     -d: Distance to Detector (mm)\n\
     -x: Pixel width (um)\n\
     -y: Pixel height (um)\n\
+    -z: Pixel depth (um)\n\
+    -s: Stride in pixels (box reduction factor)\n\
     -v: Produce lots of output files for diagnostic\n\
     -h: print this text\n\
 ";
-  static char optstring[] = "i:r:o:w:d:x:y:vh";
+  static char optstring[] = "i:r:o:w:d:x:y:vhs:z:";
   Options * opts = calloc(1,sizeof(Options));
   set_defaults(opts);
 
@@ -48,7 +50,13 @@ Options * parse_options(int argc, char ** argv){
       opts->px = atof(optarg)*1e-6;
       break;
     case 'y':
-      opts->py = atof(optarg)*1e-6;;
+      opts->py = atof(optarg)*1e-6;
+      break;
+    case 'z':
+      opts->pz = atof(optarg)*1e-6;
+      break;
+    case 's':
+      opts->stride = atoi(optarg);
       break;
     case 'd':
       /* the e-3 comes from the conversion from mm to m*/
@@ -78,11 +86,13 @@ void set_defaults(Options * opts){
   opts->distance = -1;
   opts->px = -1;
   opts->py = -1;
+  opts->pz = -1;
   opts->Fc = NULL;
   opts->intensity = NULL;
   opts->k_x = NULL;
   opts->k_y = NULL;
   opts->k_z = NULL;
+  opts->stride = 1;
 }
 
 
@@ -155,50 +165,131 @@ void image_fourier_coords(Image * in, sp_3matrix ** k_x, sp_3matrix ** k_y, sp_3
 	  sp_3matrix_set(*k_y,x,y,0,ry);
 	  sp_3matrix_set(*k_z,x,y,0,0);
 	}else if(image_type == FourierGrid3D){
-	  sp_3matrix_set(*k_x,x,y,0,rx);
-	  sp_3matrix_set(*k_y,x,y,0,ry);
-	  sp_3matrix_set(*k_z,x,y,0,rz);
+	  sp_3matrix_set(*k_x,x,y,z,rx);
+	  sp_3matrix_set(*k_y,x,y,z,ry);
+	  sp_3matrix_set(*k_z,x,y,z,rz);
 	}
       }
     }
   }
 }
 
+void image_fourier_coords_to_hkl(Options * opts){
+  opts->H = sp_3matrix_alloc(sp_image_x(opts->intensity),sp_image_y(opts->intensity),sp_image_z(opts->intensity));
+  opts->K = sp_3matrix_alloc(sp_image_x(opts->intensity),sp_image_y(opts->intensity),sp_image_z(opts->intensity));
+  opts->L = sp_3matrix_alloc(sp_image_x(opts->intensity),sp_image_y(opts->intensity),sp_image_z(opts->intensity));
+  
+  /* Calculate inverse cell sizes */
+  assert(sp_3matrix_get(opts->k_x,opts->intensity->detector->image_center[0],opts->intensity->detector->image_center[1],opts->intensity->detector->image_center[2]) == 0);
+  assert(sp_3matrix_get(opts->k_y,opts->intensity->detector->image_center[0],opts->intensity->detector->image_center[1],opts->intensity->detector->image_center[2]) == 0);
+  assert(sp_3matrix_get(opts->k_z,opts->intensity->detector->image_center[0],opts->intensity->detector->image_center[1],opts->intensity->detector->image_center[2]) == 0);
+  real inv_a = fabs(sp_3matrix_get(opts->k_x,opts->intensity->detector->image_center[0]+opts->stride,
+				   opts->intensity->detector->image_center[1],
+				   opts->intensity->detector->image_center[2]));
+  real inv_b = fabs(sp_3matrix_get(opts->k_y,opts->intensity->detector->image_center[0],
+				   opts->intensity->detector->image_center[1]+opts->stride,
+				   opts->intensity->detector->image_center[2]));
+  real inv_c = fabs(sp_3matrix_get(opts->k_z,opts->intensity->detector->image_center[0],
+				   opts->intensity->detector->image_center[1],
+				   opts->intensity->detector->image_center[2]+opts->stride));
+
+  opts->cell.a = 1.0/inv_a;
+  opts->cell.b = 1.0/inv_b;
+  opts->cell.c = 1.0/inv_c;
+
+  /* In practise with rectangular pixels the cell is always 90 90 90 */
+  opts->cell.alpha = 90.0;
+  opts->cell.beta = 90.0;
+  opts->cell.gamma = 90.0;
+
+  for(int i = 0;i<sp_image_size(opts->intensity);i++){
+    opts->H->data[i] = opts->k_x->data[i] / inv_a;
+    opts->K->data[i] = opts->k_y->data[i] / inv_b;
+    opts->L->data[i] = opts->k_z->data[i] / inv_c;
+  }
+}
+
 void print_output(Options * opts){
   FILE * fp = stdout;
-  char header[10024];
-    "# This file contains a list of reflections in a text format suitable to be processed by CCP4's f2mtz.\n\
-# To process issue to following command:\n\
-# f2mtz HKLIN <this filename> HKLOUT <output filename>\n\
-# SKIP 5\n\
-# TITLE Hawk to MTZ\n\
-# CELL 73.58   38.73   23.19
-";
+  Image * Fc = NULL;
+  if(opts->object){
+    if(opts->Fc->shifted){
+      Fc = sp_image_shift(opts->Fc);
+    }else{
+      Fc = opts->Fc;
+    }
+  }
   if(opts->reflections_filename[0]){
     fp = fopen(opts->reflections_filename,"w");
     if(!fp){
-      sp_fatal("Could not open %s for writing! Aborting.",opts->reflections_filename)
+      sp_error_fatal("Could not open %s for writing! Aborting.",opts->reflections_filename);
     }
   }
   /* Print file header */
+  fprintf(fp,"#!/bin/sh\n");
   fprintf(fp,"# This file contains a list of reflections in a text\n");
   fprintf(fp,"# format suitable to be processed by CCP4's f2mtz.\n");
   fprintf(fp,"# To process issue to following command:\n");
-  fprintf(fp,"# f2mtz HKLIN <this filename> HKLOUT <output filename>\n");
-  fprintf(fp,"# SKIP 5\n");
-  fprintf(fp,"# TITLE Hawk to MTZ\n");
-  fprintf(fp,"# CELL %f %f %f %f %f %f\n",opts->cell->a,opts->cell->b,opts->cell->c,opts->cell->alpha,opts->cell->beta,opts->cell->gamma);
+  fprintf(fp,"f2mtz HKLIN $0 HKLOUT $0.mtz << +\n");
+  fprintf(fp,"SKIP 20\n");
+  fprintf(fp,"TITLE Hawk to MTZ\n");
+  fprintf(fp,"CELL %f %f %f %f %f %f\n",1e10*opts->cell.a,1e10*opts->cell.b,1e10*opts->cell.c,opts->cell.alpha,opts->cell.beta,opts->cell.gamma);
   if(opts->object){
-    fprintf(fp,"# LABOUT H K L I FC PHIC\n");
-    fprintf(fp,"# CTYPE  H H H J F P\n");
-    fprintf(fp,"# FORMAT '(3F5.0,1X,F10.3,1X,F10.3,1X,F10.3)'\n");
+    fprintf(fp,"LABOUT H K L I FC PHIC\n");
+    fprintf(fp,"CTYPE  H H H J F P\n");
+    fprintf(fp,"FORMAT '(3F5.0,1X,F10.3,1X,F10.3,1X,F10.3)'\n");
+    fprintf(fp,"SYMM P1\n");
+    fprintf(fp,"+\n");
+    fprintf(fp,"exit\n");
+    for(int z = 0;z<sp_image_z(opts->intensity);z++){
+      int logic_z = z-opts->intensity->detector->image_center[2];
+      for(int y = 0;y<sp_image_y(opts->intensity);y++){
+	int logic_y = y-opts->intensity->detector->image_center[1];
+	for(int x = 0;x<sp_image_x(opts->intensity);x++){
+	  int logic_x = x-opts->intensity->detector->image_center[0];
+	  real H = sp_3matrix_get(opts->H,x,y,z);
+	  real K = sp_3matrix_get(opts->K,x,y,z);
+	  real L = sp_3matrix_get(opts->L,x,y,z);
+	  Complex F = sp_image_get(Fc,logic_x+Fc->detector->image_center[0],logic_y+Fc->detector->image_center[1],logic_z+Fc->detector->image_center[2]);
+	  if(H-(int)H < 0.01 ){
+	    if(K-(int)K < 0.01 ){
+	      if(L-(int)L < 0.01){
+		/* We are on an integer HKL or we used a stride bigger than 100. Hopefully the former */
+		fprintf(fp,"%5d%5d%5d %10.3e %10.3e %10.3e\n",(int)round(H),(int)round(K),(int)round(L),sp_real(sp_image_get(opts->intensity,x,y,z)),sp_cabs(F),sp_carg(F)*180/M_PI);
+	      }
+	    }
+	  }
+	}
+      }
+    }
   }else{
-    fprintf(fp,"# LABOUT H K L I\n");
-    fprintf(fp,"# CTYPE  H H H J\n");
-    fprintf(fp,"# FORMAT '(3F5.0,1X,F10.3)'\n");
+    fprintf(fp,"LABOUT H K L I\n");
+    fprintf(fp,"CTYPE  H H H J\n");
+    fprintf(fp,"FORMAT '(3F5.0,1X,F10.3)'\n");
+    fprintf(fp,"SYMM P1\n");
+    fprintf(fp,"+\n");
+    fprintf(fp,"exit\n");
+
+    for(int z = 0;z<sp_image_z(opts->intensity);z++){
+      for(int y = 0;y<sp_image_y(opts->intensity);y++){
+	for(int x = 0;x<sp_image_x(opts->intensity);x++){
+	  real H = sp_3matrix_get(opts->H,x,y,z);
+	  real K = sp_3matrix_get(opts->K,x,y,z);
+	  real L = sp_3matrix_get(opts->L,x,y,z);
+	  if(fabs(H-(int)H) < 0.01 ){
+	    if(fabs(K-(int)K) < 0.01 ){
+	      if(fabs(L-(int)L) < 0.01 ){
+		/* We are on an integer HKL or we used a stride bigger than 100. Hopefully the former */
+		fprintf(fp,"%5d%5d%5d %10.3e\n",(int)round(H),(int)round(K),(int)round(L),sp_real(sp_image_get(opts->intensity,x,y,z)));
+	      }
+	    }
+	  }
+	}
+      }
+    }
   }
 
-  fprintf(fp,"# SYMM P1\n");
+  
 }
 
 int main(int argc, char ** argv){
@@ -235,9 +326,11 @@ int main(int argc, char ** argv){
     opts->intensity->detector->pixel_size[2] = opts->pz;
   }
 
-  image_fourier_coords(opts->intensity, &(opts->k_x), &(opts->k_y),&(opts->k_z),FourierEwald2D);
+  image_fourier_coords(opts->intensity, &(opts->k_x), &(opts->k_y),&(opts->k_z),FourierGrid3D);
+  image_fourier_coords_to_hkl(opts);
   if(opts->object){
     opts->Fc = sp_image_fft(opts->object);
+    sp_image_write(opts->Fc,"Fc.h5",0);
   }
 
   print_output(opts);

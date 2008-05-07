@@ -45,13 +45,18 @@ typedef struct {
   sp_3matrix * k_x;
   sp_3matrix * k_y;
   sp_3matrix * k_z;
+  sp_3matrix * H;
+  sp_3matrix * K;
+  sp_3matrix * L;
   Image * Fc;
   Cell cell;
+  int stride;
 }Options;
 
 Options * parse_options(int argc, char ** argv);
 void set_defaults(Options * opt);
 int image_index_to_coords(Image * in,int index,int * x, int * y, int * z, SpOrigin origin);
 void image_fourier_coords(Image * in, sp_3matrix ** k_x, sp_3matrix ** k_y, sp_3matrix ** k_z, SpImageType image_type);
+void image_fourier_coords_to_hkl(Options * opts);
 
 #endif
