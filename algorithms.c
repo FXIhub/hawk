@@ -126,7 +126,7 @@ Image * basic_raar_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in
     exp_amp_minus_sigma = sp_image_duplicate(exp_amp,SP_COPY_DATA|SP_COPY_MASK);
     if(exp_sigma){
       for(i = 0;i<sp_c3matrix_size(exp_amp->image);i++){
-	sp_real(exp_amp_minus_sigma->image->data[i]) -= sp_real(exp_sigma->image->data[i]);
+	sp_real(exp_amp_minus_sigma->image->data[i]) -= sqrt(sp_real(exp_sigma->image->data[i]));
       }
     }
   }
@@ -134,7 +134,7 @@ Image * basic_raar_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in
     exp_amp_plus_sigma = sp_image_duplicate(exp_amp,SP_COPY_DATA|SP_COPY_MASK);
     if(exp_sigma){
       for(i = 0;i<sp_c3matrix_size(exp_amp->image);i++){
-	sp_real(exp_amp_plus_sigma->image->data[i]) += sp_real(exp_sigma->image->data[i]);
+	sp_real(exp_amp_plus_sigma->image->data[i]) += sqrt(sp_real(exp_sigma->image->data[i]));
       }
     }
   }

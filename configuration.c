@@ -2,6 +2,8 @@
 #include <libconfig.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <limits.h>
+
 #ifdef _USE_DMALLOC
 #include <dmalloc.h>
 #endif
@@ -47,6 +49,10 @@ int get_config_type(Variable_Type vt){
     return CONFIG_TYPE_BOOL;
   }else if(vt == Type_Group){
     return CONFIG_TYPE_GROUP;
+  }else if(vt == Type_Vector_Real){
+    return CONFIG_TYPE_ARRAY;
+  }else if(vt == Type_Vector_Int){
+    return CONFIG_TYPE_ARRAY;
   }
   fprintf(stderr,"Unkown variable type\n");
   abort();
@@ -114,6 +120,8 @@ Options * set_defaults(){
   opt->phases_max_blur_radius = 0;
   opt->iterations_to_min_phases_blur = 0;
   opt->filter_intensities = 0;
+  opt->object_area_checkpoints = NULL;
+  opt->object_area_at_checkpoints = NULL;
   return opt;
 }
 
@@ -141,6 +149,27 @@ void read_options_file(char * filename, Options * res){
 	    *((real *)variable_metadata[i].variable_address) = config_lookup_float(&config,path);
 	  }else{
 	    *((real *)variable_metadata[i].variable_address) = config_lookup_int(&config,path);
+	  }
+	}else if(variable_metadata[i].variable_type == Type_Vector_Real || variable_metadata[i].variable_type == Type_Vector_Int ){
+	  if(config_setting_type(config_lookup(&config,path)) == CONFIG_TYPE_ARRAY){
+	    int length = config_setting_length(config_lookup(&config,path));	    
+	    if(length){
+	      int type = config_setting_type(config_setting_get_elem(config_lookup(&config,path),0));
+	      if(type == CONFIG_TYPE_FLOAT){
+		*((sp_vector **)variable_metadata[i].variable_address) = sp_vector_alloc(length);
+		sp_vector * v = *((sp_vector **)variable_metadata[i].variable_address);
+		for(int j = 0;j<config_setting_length(config_lookup(&config,path));j++){
+		  sp_vector_set(v,j, config_setting_get_float_elem(config_lookup(&config,path),j));
+		}
+	      }else if(type == CONFIG_TYPE_INT){
+		*((sp_vector **)variable_metadata[i].variable_address) = sp_vector_alloc(length);
+		sp_vector * v = *((sp_vector **)variable_metadata[i].variable_address);
+		for(int j = 0;j<config_setting_length(config_lookup(&config,path));j++){
+		  sp_vector_set(v,j, config_setting_get_int_elem(config_lookup(&config,path),j));
+		}
+		
+	      }
+	    }
 	  }
 	}else if(variable_metadata[i].variable_type == Type_Bool){
 	  if(config_setting_type(config_lookup(&config,path)) == CONFIG_TYPE_BOOL){
@@ -451,10 +480,24 @@ void write_options_file(char * filename, Options * res){
 	config_setting_set_string(s,(char *)variable_metadata[i].variable_address);
       }else if(variable_metadata[i].variable_type == Type_Int){
 	config_setting_set_int(s,*((int *)variable_metadata[i].variable_address));
-      }else if(variable_metadata[i].variable_type == Type_Real){
-	config_setting_set_float(s,*((real *)variable_metadata[i].variable_address));
+      }else if(variable_metadata[i].variable_type == Type_Vector_Real){
+	sp_vector * v = *((sp_vector **)variable_metadata[i].variable_address);
+	if(v){
+	  for(int j= 0;j<sp_vector_size(v);j++){
+	    config_setting_set_float_elem(s,-1,sp_vector_get(v,j));
+	  }
+	}
+      }else if(variable_metadata[i].variable_type == Type_Vector_Int){
+	sp_vector * v = *((sp_vector **)variable_metadata[i].variable_address);
+	if(v){
+	  for(int j= 0;j<sp_vector_size(v);j++){
+	    config_setting_set_int_elem(s,-1,(int)sp_vector_get(v,j));
+	  }
+	}
       }else if(variable_metadata[i].variable_type == Type_Bool){
 	config_setting_set_bool(s,*((int *)variable_metadata[i].variable_address));
+      }else if(variable_metadata[i].variable_type == Type_Real){
+	config_setting_set_float(s,*((int *)variable_metadata[i].variable_address));
       }else if(variable_metadata[i].variable_type == Type_MultipleChoice){
 	for(int j = 0;;j++){
 	  if(variable_metadata[i].list_valid_names[j] == NULL){
@@ -510,13 +553,56 @@ real get_phases_blur_radius(Options * opts){
 
 real get_object_area(Options * opts){
   real a;
-  if(opts->support_update_algorithm == CONSTANT_AREA){
+  if(opts->object_area_checkpoints){
+    int left = INT_MIN;
+    int left_i;
+    int right = INT_MAX;
+    int right_i;
+    if(!opts->object_area_at_checkpoints){
+      sp_error_fatal("When you specify object_area_checkpoints you also need to specify the corresponding object_area_at_checkpoints!");
+    }
+    if(sp_vector_size(opts->object_area_checkpoints) != sp_vector_size(opts->object_area_at_checkpoints)){
+      sp_error_fatal("Number of elements of object_area_at_checkpoints does not match object_area_checkpoints!");
+    }
+    for(int i = 0;i<sp_vector_size(opts->object_area_checkpoints);i++){
+      real value = sp_vector_get(opts->object_area_checkpoints,i);
+      if(value <= opts->cur_iteration && value > left){
+	left = value;
+	left_i = i;
+      }
+      if(value >= opts->cur_iteration && value < right){
+	right = value;
+	right_i = i;
+      }
+    }
+    if(left == INT_MIN && right == INT_MAX){
+      sp_error_fatal("Cannot find boundaries on object area!");
+    }else if(left == INT_MIN){
+      /* cur_iteration is before first checkpoint */
+      return sp_vector_get(opts->object_area_at_checkpoints,right_i);
+    }else if(right == INT_MAX){
+      /* cur_iteration is after last checkpoint */
+      return sp_vector_get(opts->object_area_at_checkpoints,left_i);
+    }else if(right == left){
+      /* cur_iteration is at a checkpoint */
+      return sp_vector_get(opts->object_area_at_checkpoints,left_i);
+    }else{
+      /* cur_iteration is between checkpoints */
+      /* Now we're gonna do a gaussian interpolation between left and right */
+      
+      real f = (opts->cur_iteration-left)/(real)(right-left);
+      a = (3.0*f)*(3.0*f)*0.5;
+      real delta = sp_vector_get(opts->object_area_at_checkpoints,left_i)-sp_vector_get(opts->object_area_at_checkpoints,right_i);
+      return (delta)*exp(-a)+sp_vector_get(opts->object_area_at_checkpoints,right_i);
+    }    
+  }else if(opts->support_update_algorithm == CONSTANT_AREA){
     return opts->object_area;
   }else if(opts->support_update_algorithm == DECREASING_AREA){
     if(opts->cur_iteration > opts->iterations_to_min_object_area){
       return opts->min_object_area;
     }
-    a = (3.0*opts->cur_iteration/opts->iterations_to_min_object_area)*(3.0*opts->cur_iteration/opts->iterations_to_min_object_area)*0.5;
+    real f = opts->cur_iteration/opts->iterations_to_min_object_area;
+    a = (3.0*f)*(3.0*f)*0.5;
     return (opts->object_area-opts->min_object_area)*exp(-a)+opts->min_object_area;
   }
   return -1;

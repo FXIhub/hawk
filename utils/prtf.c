@@ -180,6 +180,7 @@ int main(int argc, char ** argv){
   real avg_prtf;
   real max_res;
   Image * prtf;
+  Image * avg_img;
   int bin;
   long long i;
   if(argc < 3){
@@ -189,15 +190,34 @@ int main(int argc, char ** argv){
 
   img = sp_image_read(argv[1],0);
   sp_image_dephase(img);
+  avg_img = sp_image_duplicate(img,SP_COPY_ALL);
   sum = sp_image_fft(img);
+  for(int j = 0;j<sp_image_size(sum);j++){
+    sum->image->data[j] = sp_cscale(sum->image->data[j],1.0/sp_cabs(sum->image->data[j]));
+  }
   amps = sp_image_fft(img);
   sp_image_dephase(amps);
+  for(int j = 0;j<sp_image_size(amps);j++){
+    amps->image->data[j] = sp_cscale(amps->image->data[j],1.0/sp_cabs(amps->image->data[j]));
+  }
+
   sp_image_free(img);
   for(i = 1;i<argc-1;i++){
     img = sp_image_read(argv[i+1],0);
     sp_image_dephase(img);
+    sp_image_superimpose(avg_img,img,SP_ENANTIOMORPH);
+    sp_image_add(avg_img,img);
+    char buff2[1024];
+    sprintf(buff2,"%s-super.png",argv[i+1]);
+    sp_image_write(img,buff2,COLOR_JET);
     tmp = sp_image_fft(img);
-    maximize_overlap(sum,tmp);
+    sprintf(buff2,"%s.png",argv[i+1]);
+    sp_image_write(tmp,buff2,COLOR_PHASE);
+    //    maximize_overlap(sum,tmp);
+    for(int j = 0;j<sp_image_size(tmp);j++){
+      tmp->image->data[j] = sp_cscale(tmp->image->data[j],1.0/sp_cabs(tmp->image->data[j]));
+    }
+
     sp_image_add(sum,tmp);
     sp_image_dephase(tmp);
     sp_image_add(amps,tmp);
@@ -206,7 +226,7 @@ int main(int argc, char ** argv){
   }
   prtf = sp_image_duplicate(sum,SP_COPY_DATA|SP_COPY_MASK);
   avg_prtf = 0;
-  max_res = sp_image_dist(sum,(sp_image_z(sum)/2.0)*sp_image_y(sum)*sp_image_x(sum)+(sp_image_y(sum)/2.0)*sp_image_x(sum)+sp_image_x(sum)/2,SP_TO_CORNER);
+  max_res = sp_image_dist(sum,(sp_image_z(sum)/2)*sp_image_y(sum)*sp_image_x(sum)+(sp_image_y(sum)/2)*sp_image_x(sum)+sp_image_x(sum)/2,SP_TO_CORNER);
   for(i = 0;i<NBINS;i++){
     bins[i] = 0;
     bin_count[i] = 0;
@@ -220,7 +240,8 @@ int main(int argc, char ** argv){
     bin_count[bin]++;
   }
   sp_image_write(sum,"avg_fft.h5",sizeof(real));
-  sp_image_write(sp_image_ifft(sum),"avg_image.h5",sizeof(real));
+  sp_image_write(avg_img,"avg_image.h5",sizeof(real));
+  sp_image_write(avg_img,"avg_image.png",COLOR_JET);
   sp_image_write(amps,"amps.h5",sizeof(real));
   sp_image_write(prtf,"prtf.h5",sizeof(real));
   avg_prtf /= sp_image_size(sum);

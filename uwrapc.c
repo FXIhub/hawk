@@ -121,7 +121,7 @@ void enforce_parsevals_theorem(Image * master, Image * to_scale){
   }
   sp_image_free(tmp);
   f = sqrt(sum_m/sum_s);
-  printf("Scaling to_scale by %f\n",f);
+  /*  printf("Scaling to_scale by %f\n",f); */
   for(i = 0;i<sp_image_size(master);i++){
     sp_real(to_scale->image->data[i]) *= f;
     sp_imag(to_scale->image->data[i]) *= f;
@@ -268,7 +268,7 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
   if(get_algorithm(opts,&log) == HIO){     
     real_out = basic_hio_iteration(amp, real_in, support,opts,&log);
   }else if(get_algorithm(opts,&log) == RAAR){
-    real_out = basic_raar_iteration(amp,NULL, real_in, support,opts,&log);
+    real_out = basic_raar_iteration(amp,opts->intensities_std_dev, real_in, support,opts,&log);
   }else if(get_algorithm(opts,&log) == HPR){
     real_out = basic_hpr_iteration(amp, real_in, support,opts,&log);
   }else if(get_algorithm(opts,&log) == CFLIP){

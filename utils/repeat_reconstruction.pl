@@ -16,7 +16,7 @@ if((scalar @ARGV) == 2){
 print "First reconstruction - ".$i0."\n";
 
 for($i = $i0 ;$i<$ARGV[0]+$i0;$i++){
-    system("mkdir $i");
+    system("mkdir -p $i");
     system("cp uwrapc.conf $i");
     system("cd $i && uwrapc");
 }

@@ -2,10 +2,6 @@
 #define _IMAGE_TO_REFLECTIONS_H_
 
 
-/* TopLeftCorner means that the Origin considered will be the Top Left Back pixel, or the first in the array 
-   ImageCenter means that the Origin considered will be the image center
- */
-typedef enum{TopLeftCorner,ImageCenter}SpOrigin;
 
 /*
   FourierEwald2D means that the image corresponds to a real diffraction pattern of a object,

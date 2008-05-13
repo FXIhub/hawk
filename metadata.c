@@ -606,7 +606,7 @@ VariableMetadata variable_metadata[100] = {
   {
     .variable_name = "autocorrelation_support_file",
     .variable_type = Type_String,
-    .id = Id_Solution_File,
+    .id = Id_Autocorrelation_Support_File,
     .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun,
     .list_valid_values = {0},
@@ -616,15 +616,35 @@ VariableMetadata variable_metadata[100] = {
   {
     .variable_name = "filter_intensities",
     .variable_type = Type_Bool,
-    .id = Id_Solution_File,
+    .id = Id_Filter_Intensities,
     .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.filter_intensities)
+  },
+  {
+    .variable_name = "object_area_checkpoints",
+    .variable_type = Type_Vector_Int,
+    .id = Id_Object_Area_Checkpoints,
+    .parent = &(variable_metadata[0]),
+    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
+    .list_valid_values = {0},
+    .list_valid_names = {0},
+    .variable_address = &(global_options.object_area_checkpoints)
+  },
+  {
+    .variable_name = "object_area_at_checkpoints",
+    .variable_type = Type_Vector_Real,
+    .id = Id_Object_Area_at_Checkpoints,
+    .parent = &(variable_metadata[0]),
+    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
+    .list_valid_values = {0},
+    .list_valid_names = {0},
+    .variable_address = &(global_options.object_area_at_checkpoints)
   }
 };
 
 
 /* Don't forget to update this one!! */
-const int number_of_global_options = 62;
+const int number_of_global_options = 64;

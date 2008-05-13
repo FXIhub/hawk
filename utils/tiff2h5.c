@@ -114,11 +114,11 @@ int main(int argc, char ** argv){
   }
   out->detector->image_center[0] = opts->x_center;
   out->detector->image_center[1] = opts->y_center;
-  out->detector->pixel_size[0] = opts->pixel_size;
-  out->detector->pixel_size[1] = opts->pixel_size;
-  out->detector->pixel_size[2] = opts->pixel_size;
-  out->detector->detector_distance = opts->detector_distance;
-  out->detector->lambda = opts->lambda;
+  out->detector->pixel_size[0] = opts->pixel_size*1e-6;
+  out->detector->pixel_size[1] = opts->pixel_size*1e-6;
+  out->detector->pixel_size[2] = opts->pixel_size*1e-6;
+  out->detector->detector_distance = opts->detector_distance*1e-3;
+  out->detector->lambda = opts->lambda*1e-9;
   out->num_dimensions = SP_2D;
   /* write HDF5 */
   sp_image_write(out,opts->output,sizeof(real));

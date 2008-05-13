@@ -29,7 +29,7 @@ typedef enum{GAUSSIAN_BLUR_REDUCTION=0,GEOMETRICAL_BLUR_REDUCTION} Blur_Reductio
 
 
 typedef enum {Type_Real=0, Type_Int, Type_String, 
-	      Type_MultipleChoice,Type_Bool, Type_Group, Type_Image, Type_Slice}Variable_Type;
+	      Type_MultipleChoice,Type_Bool, Type_Group, Type_Image, Type_Slice, Type_Vector_Real, Type_Vector_Int}Variable_Type;
 
 typedef enum {Id_Diffraction_Filename=0,Id_Real_Image_Filename,Id_Max_Blur_Radius,Id_Init_Level,
 	      Id_Beta,Id_Iterations,Id_Support_Mask_Filename,Id_Init_Support_Filename,Id_Image_Guess_Filename,
@@ -44,7 +44,8 @@ typedef enum {Id_Diffraction_Filename=0,Id_Real_Image_Filename,Id_Max_Blur_Radiu
 	      Id_Break_Centrosym_Period,Id_Reconstruction_Finished,Id_Real_Error_Tolerance,Id_Root,
 	      Id_Remove_Central_Pixel_phase,Id_Max_Iterations,Id_Patterson_Level_Algorithm,Id_Object_Area,
 	      Id_Image_Blur_Period,Id_Image_Blur_Radius,Id_Iterations_To_Min_Object_Area,Id_Min_Object_Area,Id_Current_Real_Space_Image,
-	      Id_Current_Support,Id_Solution_File,Id_Phases_Min_Blur_Radius,Id_Phases_Max_Blur_Radius,Id_Iterations_To_Min_Phases_Blur
+	      Id_Current_Support,Id_Solution_File,Id_Phases_Min_Blur_Radius,Id_Phases_Max_Blur_Radius,Id_Iterations_To_Min_Phases_Blur,
+	      Id_Object_Area_Checkpoints,Id_Object_Area_at_Checkpoints,Id_Autocorrelation_Support_File,Id_Filter_Intensities
 }Variable_Id;
   
   
@@ -139,6 +140,8 @@ typedef struct {
   char autocorrelation_support_filename[OPTION_STRING_SIZE];
   Image * autocorrelation_support;
   int filter_intensities;
+  sp_vector * object_area_at_checkpoints;
+  sp_vector * object_area_checkpoints;
 }Options;
 
 
