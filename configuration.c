@@ -588,12 +588,17 @@ real get_object_area(Options * opts){
       return sp_vector_get(opts->object_area_at_checkpoints,left_i);
     }else{
       /* cur_iteration is between checkpoints */
-      /* Now we're gonna do a gaussian interpolation between left and right */
+      /* Now we're gonna do a trigonometric interpolation using a cos curve */
       
-      real f = (opts->cur_iteration-left)/(real)(right-left);
-      a = (3.0*f)*(3.0*f)*0.5;
+      /* We're gonna use a Fermi-Dirac distribution to make a smooth shift between checkpoints 
+	 We'll use kT = u/5 with u = 1 and restrict to the range e/u [0,2]
+       */
+      
+      real f = 2.0*(opts->cur_iteration-left)/(real)(right-left);
+      real n = 1.0/(exp((f-1.0)*5)+1.0);
       real delta = sp_vector_get(opts->object_area_at_checkpoints,left_i)-sp_vector_get(opts->object_area_at_checkpoints,right_i);
-      return (delta)*exp(-a)+sp_vector_get(opts->object_area_at_checkpoints,right_i);
+      /*      return (delta/2.0)*(1.0+cos(f*M_PI))+sp_vector_get(opts->object_area_at_checkpoints,right_i);*/
+      return (delta)*(n)+sp_vector_get(opts->object_area_at_checkpoints,right_i);
     }    
   }else if(opts->support_update_algorithm == CONSTANT_AREA){
     return opts->object_area;
