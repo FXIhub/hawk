@@ -109,22 +109,6 @@ Image * get_fresnel_propagator(Image * in, real delta_z){
   return res;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 Image * get_fourier_fresnel_propagator(Image * in,sp_3matrix * k_x, sp_3matrix *k_y, real delta_z){
   Image * res = sp_image_duplicate(in,SP_COPY_DATA|SP_COPY_MASK);
   Image * tmp;
@@ -186,10 +170,12 @@ int main(int argc, char ** argv){
     exit(0);
   }
 
-  img = sp_image_read(opts->input,0);
+  Image *tmp = sp_image_read(opts->input,0);
 
-  k_x = sp_3matrix_alloc(sp_image_x(img),sp_image_y(img),0);
-  k_y = sp_3matrix_alloc(sp_image_x(img),sp_image_y(img),0);
+  img = sp_image_fft(tmp);
+
+  k_x = sp_3matrix_alloc(sp_image_x(img),sp_image_y(img),1);
+  k_y = sp_3matrix_alloc(sp_image_x(img),sp_image_y(img),1);
   
   /* Make sure to set the image properties */
   /* convet all to meters */

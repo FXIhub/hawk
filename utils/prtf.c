@@ -205,7 +205,7 @@ int main(int argc, char ** argv){
   for(i = 1;i<argc-1;i++){
     img = sp_image_read(argv[i+1],0);
     sp_image_dephase(img);
-    sp_image_superimpose(avg_img,img,SP_ENANTIOMORPH);
+    //sp_image_superimpose(avg_img,img,SP_ENANTIOMORPH);
     sp_image_add(avg_img,img);
     char buff2[1024];
     sprintf(buff2,"%s-super.png",argv[i+1]);
