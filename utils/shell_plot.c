@@ -41,7 +41,7 @@ Binned_Data * bin_image_by_r(Image * a, int nshells){
    res->bin_pop[bin]++;
  }
  for(int i = 0;i<nshells;i++){
-   if(res->bin_pop <= 0){
+   if(res->bin_pop[i] <= 0){
      fprintf(stderr,"Zero bin - %d!\n",i);
    }
    res->f[i] /= res->bin_pop[i];
