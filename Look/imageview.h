@@ -20,7 +20,7 @@ class ImageView : public QWidget
   void setBeamstop(real x, real y, real r);
   void getBeamstop(real *x, real *y, real *r);
   void showDistance(int on, bool bar, real value);
-  QPoint pickSpot();
+  void pickSpot();
     
  protected:
   void mousePressEvent(QMouseEvent *event);

@@ -90,7 +90,7 @@ real ImageView::screenToGlobalY(int y)
 
 bool ImageView::collumnToMask()
 {
-
+  return false;
 }
 
 void ImageView::setCenter(int on)
@@ -158,7 +158,7 @@ void ImageView::showDistance(int on, bool bar, real value)
   update();
 }
 
-QPoint ImageView::pickSpot()
+void ImageView::pickSpot()
 {
   pickSpotActive = true;
 }
@@ -246,9 +246,9 @@ void ImageView::mouseMoveEvent(QMouseEvent *event)
     if (moveCenterY) centerY = screenToGlobalY(event->pos().y()); //(event->pos().y() / (real) height() - 0.5) * zoomValue + zoomCenterY;
     update();
   } else if (beamstopMove) {
-    beamstopX = screenToGlobalX(event->pos().x() - beamstopOffsetX); 
+    beamstopX = screenToGlobalX(event->pos().x() - (int)beamstopOffsetX); 
     //((event->pos().x() - beamstopOffsetX) / (real) width() - 0.5) * zoomValue + zoomCenterX;
-    beamstopY = screenToGlobalY(event->pos().y() - beamstopOffsetY);
+    beamstopY = screenToGlobalY(event->pos().y() - (int)beamstopOffsetY);
     //((event->pos().y() - beamstopOffsetY) / (real) height() - 0.5) * zoomValue + zoomCenterY;
     update();
   } else if (beamstopMoveR) {
@@ -257,7 +257,7 @@ void ImageView::mouseMoveEvent(QMouseEvent *event)
 					 ((real)event->pos().y() - ((beamstopY - zoomCenterY) / zoomValue + 0.5) * (real) height()) *
 					 ((real)event->pos().y() - ((beamstopY - zoomCenterY) / zoomValue + 0.5) * (real) height()))
       / beamstopStartR;
-    int x = (int) (((beamstopX - zoomCenterX) / zoomValue + 0.5) * (real) width() + 0.5);
+    //int x = (int) (((beamstopX - zoomCenterX) / zoomValue + 0.5) * (real) width() + 0.5);
     update();
   }
 }
@@ -323,11 +323,11 @@ void ImageView::paintEvent(QPaintEvent *)
     painter.setBrush(Qt::red);
     real tmp1 = pow(10.0,((int) (log(0.3 * zoomValue * (real) width() * distanceBarLength)/log(10))));
     real tmp2 = 0.5 * pow(10.0,((int) (log(0.3 * zoomValue * (real) width() * distanceBarLength * 2.0)/log(10))));
-    if (abs(tmp2 - 0.3 * zoomValue * (real) width() * distanceBarLength) <
-	abs(tmp1 - 0.3 * zoomValue * (real) width() * distanceBarLength))
+    if (fabs(tmp2 - 0.3 * zoomValue * (real) width() * distanceBarLength) <
+	fabs(tmp1 - 0.3 * zoomValue * (real) width() * distanceBarLength))
       tmp1 = tmp2;
-    painter.drawRect(width() * 0.9 - (int) (tmp1/distanceBarLength/zoomValue + 0.5),height() * 0.9,
-		     (int) (tmp1/distanceBarLength/zoomValue + 0.5), height() * 0.02);
+    painter.drawRect((int)(width() * 0.9 - tmp1/distanceBarLength/zoomValue + 0.5),(int)(height() * 0.9),
+		     (int) (tmp1/distanceBarLength/zoomValue + 0.5), (int)(height() * 0.02));
     QString label = QString::number(tmp1);
     label.append(" nm");
     painter.setPen(Qt::red);

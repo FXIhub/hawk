@@ -88,7 +88,7 @@ Look::Look(QWidget *parent)// : QWidget(parent)
   layout->setColumnStretch(1,2);
 
   setLayout(layout);
-
+  
 }
 
 void Look::openDirectory()
@@ -502,7 +502,7 @@ void Look::exportToDir()
   QDir exportDir = QDir(dir);
 
   Image *tmp;
-  int i,j;
+  int i;
   int count = 0;
   real sum;
   for (i = 0; i < filesTable->rowCount(); i++)
