@@ -41,7 +41,7 @@ void BackgroundSlider::minChanged(double value)
   real prev = (real) slider->value() / 1000.0 * (max - min) + min;
   if (value < max) min = value;
   if (prev < min) slider->setValue(0);
-  else slider->setValue((prev - min) * 1000.0 / (max - min));
+  else slider->setValue((int)((prev - min) * 1000.0 / (max - min)));
 }
 
 void BackgroundSlider::maxChanged(double value)
@@ -49,7 +49,7 @@ void BackgroundSlider::maxChanged(double value)
   real prev = (real) slider->value() / 1000.0 * (max - min) + min;
   if (value > min) max = value;
   if (prev > max) slider->setValue(1000);
-  else slider->setValue((prev-min) * 1000.0 / (max - min));
+  else slider->setValue((int)((prev-min) * 1000.0 / (max - min)));
 }
 
 void BackgroundSlider::sliderChanged(int value)
@@ -72,7 +72,7 @@ void BackgroundSlider::levelBoxChanged(double value)
   */
 
   slider->blockSignals(true);
-  slider->setValue((value-min) * 1000.0 / (max - min));
+  slider->setValue((int)((value-min) * 1000.0 / (max - min)));
   slider->blockSignals(false);
 
   emit valueChanged(value);
@@ -81,7 +81,7 @@ void BackgroundSlider::levelBoxChanged(double value)
 void BackgroundSlider::setValue(real value)
 {
   minBox->setValue(0.0);
-  maxBox->setValue(2*value);
-  sliderChanged(value);
+  maxBox->setValue((2*value));
+  sliderChanged((int)value);
   levelBox->setValue(value);
 }

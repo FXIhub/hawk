@@ -49,6 +49,10 @@ VariableMetadata variable_metadata[100] = {
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.max_blur_radius),
+    .documentation = "Correponds to 3 times the maximum standard deviation of the gaussian blur applied before doing any further processing to the real space image guess."
+    " The real space image guess is then passed on to the rest of the computing chain that calculates the new support."
+    " This option only affects the support calculation routines."
+    " Typically there is a maximum and a minimum blur radius which the program smoothly interpolates in between during the first iterations_to_min_blur iterations",
     .reserved = NULL
   },
   {
@@ -60,6 +64,8 @@ VariableMetadata variable_metadata[100] = {
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.init_level),
+    .documentation = "Corresponds to a fraction of the maximum value of a pixel in the autocorrelation image."
+    " After normalizing to the maximum value pixels which have a value higher than this fraction will be included in the support.",
     .reserved = NULL
   },
   {
@@ -71,6 +77,7 @@ VariableMetadata variable_metadata[100] = {
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.beta),
+    .documentation = "Relaxation parameter used in several algorithms. Please refer to the specific algorithm documentation for more information.",
     .reserved = NULL
   },
   {
@@ -82,6 +89,7 @@ VariableMetadata variable_metadata[100] = {
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.iterations),
+    .documentation = "Number of iterations of the phasing basic algorithm which are performed in between the support update steps.",
     .reserved = NULL
   },
   {
@@ -93,6 +101,10 @@ VariableMetadata variable_metadata[100] = {
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.support_mask_filename),
+    .documentation = "The name of an .h5 file which defines a mask that will be added to the support after every support update."
+    " The pixels of the image file with a value different than 0 will be added to the support. "
+    " The new support will then be the union of the original support with the pixels of the fixed_support_mask file which are different than 0."
+    " Please note that the mask field of the fixed_support_mask file is totally irrelevant.",
     .reserved = NULL
   },
   {
