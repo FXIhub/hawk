@@ -20,6 +20,32 @@
 #include "process_image.h"
 
 
+void fill_image_blanks(Image * a, char * filler_image){
+  Image * filler = sp_image_read(filler_image,0);
+  if(filler->shifted){
+    Image * tmp = sp_image_shift(filler);
+    sp_image_free(filler);
+    filler = tmp;
+  }
+  real x,y,z;
+  if(!filler){
+    return;
+  }
+  for(int i= 0;i < sp_image_size(a);i++){
+    if(a->mask->data[i] == 0){
+      sp_image_get_coords_from_index(a,i,&x,&y,&z,ImageCenter);
+      if(x+filler->detector->image_center[0] >= 0 && x+filler->detector->image_center[0] < sp_image_x(filler) &&
+	 y+filler->detector->image_center[1] >= 0 && y+filler->detector->image_center[1] < sp_image_y(filler) &&
+	 z+filler->detector->image_center[2] >= 0 && z+filler->detector->image_center[2] < sp_image_z(filler)){
+	int i2 = sp_image_get_index(filler,x+filler->detector->image_center[0],y+filler->detector->image_center[1],
+				    z+filler->detector->image_center[2]);
+	sp_real(a->image->data[i]) = sp_cabs(filler->image->data[i2]);
+	a->mask->data[i] = 1;	  
+      }
+    }
+  }
+}
+
 Image * centrosymetry_average(Image * img){
   int x,y,z;
   int xs,ys,zs;
@@ -294,10 +320,11 @@ Options * parse_options(int argc, char ** argv){
     -t: Smoothness of the transition zone between 0 and 1 in the high\n\
         pass filter mathematically corresponds to the denominator of\n\
         exponential used in the fermi dirac distribution filter.\n\
+    -e: Image file used to add the extra pixels used to fill the gaps in the mask\n\
     -v: Produce lots of output files for diagnostic\n\
     -h: print this text\n\
 ";
-  static char optstring[] = "c:Cx:s:b:r:hi:o:g:a:pd:m:vSn:f:t:";
+  static char optstring[] = "c:Cx:s:b:r:hi:o:g:a:pd:m:vSn:f:t:e:";
   Options * res = calloc(1,sizeof(Options));
   set_defaults(res);
 
@@ -359,6 +386,10 @@ Options * parse_options(int argc, char ** argv){
     case 't':
       res->high_pass_transition_smoothness = atof(optarg);
       break;
+    case 'e':
+      strcpy(res->filler_image,optarg);
+      break;
+
     case 'S':
       res->shift_quadrants = 0;
       break;
@@ -392,6 +423,7 @@ void set_defaults(Options * opt){
   opt->cross_removal = 0;
   opt->pad = 0;
   opt->mask[0] = 0;
+  opt->filler_image[0] = 0;
   opt->verbose = 0;
   opt->high_pass_radius = 0;
   opt->high_pass_transition_smoothness = 1;
@@ -584,6 +616,11 @@ int main(int argc, char ** argv){
   }
   if(opts->verbose){
     sp_image_write(img,"after_beamstop.png",COLOR_JET);
+  }
+
+
+  if(opts->filler_image[0]){
+    fill_image_blanks(img,opts->filler_image);
   }
 
   printf("(%i,%i,%i)\n",sp_image_x(img),sp_image_y(img),sp_image_z(img));

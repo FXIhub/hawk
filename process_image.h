@@ -17,6 +17,7 @@ typedef struct {
   char dark[1024];
   char mask[1024];
   char noise[1024];
+  char filler_image[1024];
   real user_center_x;
   real user_center_y;
   real high_pass_radius;

@@ -61,7 +61,10 @@ typedef enum {Id_Diffraction_Filename=0,Id_Real_Image_Filename,Id_Max_Blur_Radiu
   /* No more than 10 possible values per list */
   const char * list_valid_names[10];
   void * variable_address;
-  /* We should also have a documentation field */
+  /* No more than 10240 characters in the documentation */
+  const char documentation[10240];
+  /* Pointer reserved for future use */
+  void * reserved;
 }VariableMetadata;
 
 

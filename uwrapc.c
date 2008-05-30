@@ -384,7 +384,7 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
 	tmp->mask->data[i] = 1;
       }
       sprintf(buffer,"pattern-%07d.h5",opts->cur_iteration);
-      /*      sp_image_write(tmp,buffer,opts->output_precision);*/
+      sp_image_write(tmp,buffer,opts->output_precision);
       tmp2 = sp_image_shift(tmp);
 
       if(tmp2->num_dimensions == SP_2D){
@@ -393,9 +393,9 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
 	sp_image_free(tmp2);
       }
 
-      sprintf(buffer,"pattern-%07d.vtk",opts->cur_iteration);
+      /*      sprintf(buffer,"pattern-%07d.vtk",opts->cur_iteration);
       sp_image_write(tmp,buffer,SP_3D);
-      sp_image_free(tmp);
+      sp_image_free(tmp);*/
 
     }    
     if(opts->break_centrosym_period && 

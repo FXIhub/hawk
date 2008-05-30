@@ -11,7 +11,9 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.diffraction_filename)
+    .variable_address = &(global_options.diffraction_filename),
+    .documentation = "The base group",
+    .reserved = NULL
   },
   {
     .variable_name = "amplitudes_file",
@@ -21,7 +23,9 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.diffraction_filename)
+    .variable_address = &(global_options.diffraction_filename),
+    .documentation = "The input h5 file that contains the experimental diffraction amplitudes (not the intensities), with the center determined and with the quadrants shifted.",
+    .reserved = NULL
   },
   {
     .variable_name = "real_image_file",
@@ -31,7 +35,10 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.real_image_filename)
+    .variable_address = &(global_options.real_image_filename),
+    .documentation = "The input h5 file that contains a real space image, that is then fourier transformed inside the program to calculate the diffraction amplitudes that are"
+    "going to be used for phasing. Is is simply an alternative way to specify the diffraction amplitudes. Should not be used at the same time as amplitudes_file.",
+    .reserved = NULL
   },
   {
     .variable_name = "max_blur_radius",
@@ -41,7 +48,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.max_blur_radius)
+    .variable_address = &(global_options.max_blur_radius),
+    .reserved = NULL
   },
   {
     .variable_name = "patterson_threshold",
@@ -51,7 +59,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.init_level)
+    .variable_address = &(global_options.init_level),
+    .reserved = NULL
   },
   {
     .variable_name = "beta",
@@ -61,7 +70,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.beta)
+    .variable_address = &(global_options.beta),
+    .reserved = NULL
   },
   {
     .variable_name = "innerloop_iterations",
@@ -71,7 +81,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.iterations)
+    .variable_address = &(global_options.iterations),
+    .reserved = NULL
   },
   {
     .variable_name = "fixed_support_mask",
@@ -81,7 +92,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.support_mask_filename)
+    .variable_address = &(global_options.support_mask_filename),
+    .reserved = NULL
   },
   {
     .variable_name = "initial_support",
@@ -91,7 +103,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.init_support_filename)
+    .variable_address = &(global_options.init_support_filename),
+    .reserved = NULL
   },
   {
     .variable_name = "image_guess",
@@ -101,7 +114,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.image_guess_filename)
+    .variable_address = &(global_options.image_guess_filename),
+    .reserved = NULL
   },
   {
     .variable_name = "added_noise",
@@ -111,7 +125,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.noise)
+    .variable_address = &(global_options.noise),
+    .reserved = NULL
   },
   {
     .variable_name = "beamstop_radius",
@@ -121,7 +136,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.beamstop)
+    .variable_address = &(global_options.beamstop),
+    .reserved = NULL
   },
   {
     .variable_name = "support_intensity_threshold",
@@ -131,7 +147,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.new_level)
+    .variable_address = &(global_options.new_level),
+    .reserved = NULL
   },
   {
     .variable_name = "iterations_to_min_blur",
@@ -141,7 +158,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.iterations_to_min_blur)
+    .variable_address = &(global_options.iterations_to_min_blur),
+    .reserved = NULL
   },
   {
     .variable_name = "blur_radius_reduction_method",
@@ -151,7 +169,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {GAUSSIAN_BLUR_REDUCTION,GEOMETRICAL_BLUR_REDUCTION,0},
     .list_valid_names = {"gaussian","geometrical",0},
-    .variable_address = &(global_options.blur_radius_reduction_method)
+    .variable_address = &(global_options.blur_radius_reduction_method),
+    .reserved = NULL
   },
   {
     .variable_name = "minimum_blur_radius",
@@ -161,7 +180,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.min_blur)
+    .variable_address = &(global_options.min_blur),
+    .reserved = NULL
   },
   {
     .variable_name = "logfile",
@@ -171,7 +191,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.log_file)
+    .variable_address = &(global_options.log_file),
+    .reserved = NULL
   },
   {
     .variable_name = "commandline",
@@ -181,7 +202,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.commandline)
+    .variable_address = &(global_options.commandline),
+    .reserved = NULL
   },
   {
     .variable_name = "output_period",
@@ -191,7 +213,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.output_period)
+    .variable_address = &(global_options.output_period),
+    .reserved = NULL
   },
   {
     .variable_name = "log_output_period",
@@ -201,7 +224,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.log_output_period)
+    .variable_address = &(global_options.log_output_period),
+    .reserved = NULL
   },
   {
     .variable_name = "algorithm",
@@ -211,7 +235,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {HIO,RAAR,HPR,CFLIP,RAAR_CFLIP,HAAR,SO2D,RAAR_PROJ,0},
     .list_valid_names = {"hio","raar","hpr","cflip","raar_cflip","haar","so2d","raar_proj",0},
-    .variable_address = &(global_options.algorithm)
+    .variable_address = &(global_options.algorithm),
+    .reserved = NULL
   },
   {
     .variable_name = "RAAR_sigma",
@@ -221,7 +246,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.exp_sigma)
+    .variable_address = &(global_options.exp_sigma),
+    .reserved = NULL
   },
   {
     .variable_name = "dynamic_beta",
@@ -231,7 +257,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.dyn_beta)
+    .variable_address = &(global_options.dyn_beta),
+    .reserved = NULL
   },
   {
     .variable_name = "random_initial_phases",
@@ -241,7 +268,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.rand_phases)
+    .variable_address = &(global_options.rand_phases),
+    .reserved = NULL
   },
   {
     .variable_name = "random_initial_intensities",
@@ -251,7 +279,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.rand_intensities)
+    .variable_address = &(global_options.rand_intensities),
+    .reserved = NULL
   },
   {
     .variable_name = "cur_iteration",
@@ -261,7 +290,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.cur_iteration)
+    .variable_address = &(global_options.cur_iteration),
+    .reserved = NULL
   },
   {
     .variable_name = "adapt_thres",
@@ -271,7 +301,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.adapt_thres)
+    .variable_address = &(global_options.adapt_thres),
+    .reserved = NULL
   },
   {
     .variable_name = "automatic",
@@ -281,7 +312,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.dyn_beta)
+    .variable_address = &(global_options.dyn_beta),
+    .reserved = NULL
   },
   {
     .variable_name = "work_directory",
@@ -291,7 +323,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.work_dir)
+    .variable_address = &(global_options.work_dir),
+    .reserved = NULL
   },
   {
     .variable_name = "support_real_error_threshold",
@@ -301,7 +334,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.real_error_threshold)
+    .variable_address = &(global_options.real_error_threshold),
+    .reserved = NULL
   },
   {
     .variable_name = "support_update_algorithm",
@@ -311,7 +345,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {FIXED,STEPPED,REAL_ERROR_CAPPED,REAL_ERROR_ADAPTATIVE,CONSTANT_AREA,DECREASING_AREA,0},
     .list_valid_names = {"fixed","stepped","real_error_capped","real_error_adaptative","constant_area","decreasing_area",0},
-    .variable_address = &(global_options.support_update_algorithm)
+    .variable_address = &(global_options.support_update_algorithm),
+    .reserved = NULL
   },
   {
     .variable_name = "output_precision",
@@ -321,7 +356,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.output_precision)
+    .variable_address = &(global_options.output_precision),
+    .reserved = NULL
   },
   {
     .variable_name = "error_reduction_iterations_after_loop",
@@ -331,7 +367,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.error_reduction_iterations_after_loop)
+    .variable_address = &(global_options.error_reduction_iterations_after_loop),
+    .reserved = NULL
   },
   {
     .variable_name = "enforce_positivity",
@@ -341,7 +378,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.enforce_positivity)
+    .variable_address = &(global_options.enforce_positivity),
+    .reserved = NULL
   },
   {
     .variable_name = "enforce_real",
@@ -351,7 +389,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.enforce_real)
+    .variable_address = &(global_options.enforce_real),
+    .reserved = NULL
   },
   {
     .variable_name = "genetic_optimization",
@@ -361,7 +400,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.genetic_optimization)
+    .variable_address = &(global_options.genetic_optimization),
+    .reserved = NULL
   },
   {
     .variable_name = "charge_flip_sigma",
@@ -371,7 +411,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.charge_flip_sigma)
+    .variable_address = &(global_options.charge_flip_sigma),
+    .reserved = NULL
   },
   {
     .variable_name = "rescale_amplitudes",
@@ -381,7 +422,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.rescale_amplitudes)
+    .variable_address = &(global_options.rescale_amplitudes),
+    .reserved = NULL
   },
   {
     .variable_name = "square_mask",
@@ -391,7 +433,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.square_mask)
+    .variable_address = &(global_options.square_mask),
+    .reserved = NULL
   },
   {
     .variable_name = "patterson_blur_radius",
@@ -401,7 +444,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.patterson_blur_radius)
+    .variable_address = &(global_options.patterson_blur_radius),
+    .reserved = NULL
   },
   {
     .variable_name = "remove_central_pixel_phase",
@@ -411,7 +455,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.remove_central_pixel_phase)
+    .variable_address = &(global_options.remove_central_pixel_phase),
+    .reserved = NULL
   },
   {
     .variable_name = "perturb_weak_reflections",
@@ -421,7 +466,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.perturb_weak_reflections)
+    .variable_address = &(global_options.perturb_weak_reflections),
+    .reserved = NULL
   },
   {
     .variable_name = "nthreads",
@@ -431,7 +477,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.nthreads)
+    .variable_address = &(global_options.nthreads),
+    .reserved = NULL
   },
   {
     .variable_name = "break_centrosym_period",
@@ -441,7 +488,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.break_centrosym_period)
+    .variable_address = &(global_options.break_centrosym_period),
+    .reserved = NULL
   },
   {
     .variable_name = "reconstruction_finished",
@@ -451,7 +499,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.reconstruction_finished)
+    .variable_address = &(global_options.reconstruction_finished),
+    .reserved = NULL
   },
   {
     .variable_name = "real_error_tolerance",
@@ -461,7 +510,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.real_error_tolerance)
+    .variable_address = &(global_options.real_error_tolerance),
+    .reserved = NULL
   },
   {
     .variable_name = "max_iterations",
@@ -471,7 +521,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.max_iterations)
+    .variable_address = &(global_options.max_iterations),
+    .reserved = NULL
   },
   {
     .variable_name = "patterson_level_algorithm",
@@ -481,7 +532,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {FIXED,STEPPED,REAL_ERROR_CAPPED,REAL_ERROR_ADAPTATIVE,CONSTANT_AREA,DECREASING_AREA,0},
     .list_valid_names = {"fixed","stepped","real_error_capped","real_error_adaptative","constant_area","decreasing_area",0},
-    .variable_address = &(global_options.patterson_level_algorithm)
+    .variable_address = &(global_options.patterson_level_algorithm),
+    .reserved = NULL
   },
   {
     .variable_name = "object_area",
@@ -491,7 +543,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.object_area)
+    .variable_address = &(global_options.object_area),
+    .reserved = NULL
   },
   {
     .variable_name = "image_blur_period",
@@ -501,7 +554,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.image_blur_period)
+    .variable_address = &(global_options.image_blur_period),
+    .reserved = NULL
   },
   {
     .variable_name = "image_blur_radius",
@@ -511,7 +565,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.image_blur_radius)
+    .variable_address = &(global_options.image_blur_radius),
+    .reserved = NULL
   },
   {
     .variable_name = "iterations_to_min_object_area",
@@ -521,7 +576,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.iterations_to_min_object_area)
+    .variable_address = &(global_options.iterations_to_min_object_area),
+    .reserved = NULL
   },
   {
     .variable_name = "min_object_area",
@@ -531,7 +587,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.min_object_area)
+    .variable_address = &(global_options.min_object_area),
+    .reserved = NULL
   },
   {
     .variable_name = "current_real_space_image",
@@ -541,7 +598,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableDuringRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.current_real_space_image)
+    .variable_address = &(global_options.current_real_space_image),
+    .reserved = NULL
   },
   {
     .variable_name = "current_support",
@@ -551,7 +609,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableDuringRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.current_support)
+    .variable_address = &(global_options.current_support),
+    .reserved = NULL
   },
   {
     .variable_name = "solution_file",
@@ -561,7 +620,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isSettableDuringRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.solution_filename)
+    .variable_address = &(global_options.solution_filename),
+    .reserved = NULL
   },
   {
     .variable_name = "phases_min_blur_radius",
@@ -571,7 +631,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.phases_min_blur_radius)
+    .variable_address = &(global_options.phases_min_blur_radius),
+    .reserved = NULL
   },
   {
     .variable_name = "phases_max_blur_radius",
@@ -581,7 +642,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.phases_max_blur_radius)
+    .variable_address = &(global_options.phases_max_blur_radius),
+    .reserved = NULL
   },
   {
     .variable_name = "iterations_to_min_phases_blur",
@@ -591,7 +653,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.iterations_to_min_phases_blur)
+    .variable_address = &(global_options.iterations_to_min_phases_blur),
+    .reserved = NULL
   },
   {
     .variable_name = "intensities_std_dev_file",
@@ -601,7 +664,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.intensities_std_dev_filename)
+    .variable_address = &(global_options.intensities_std_dev_filename),
+    .reserved = NULL
   },
   {
     .variable_name = "autocorrelation_support_file",
@@ -611,7 +675,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.autocorrelation_support_filename)
+    .variable_address = &(global_options.autocorrelation_support_filename),
+    .reserved = NULL
   },
   {
     .variable_name = "filter_intensities",
@@ -621,7 +686,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.filter_intensities)
+    .variable_address = &(global_options.filter_intensities),
+    .reserved = NULL
   },
   {
     .variable_name = "object_area_checkpoints",
@@ -631,7 +697,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.object_area_checkpoints)
+    .variable_address = &(global_options.object_area_checkpoints),
+    .reserved = NULL
   },
   {
     .variable_name = "object_area_at_checkpoints",
@@ -641,7 +708,8 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.object_area_at_checkpoints)
+    .variable_address = &(global_options.object_area_at_checkpoints),
+    .reserved = NULL
   }
 };
 
