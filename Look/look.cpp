@@ -38,10 +38,11 @@ Look::Look(QWidget *parent)// : QWidget(parent)
   backgroundWindow = NULL;
   colormap_data = NULL;
   img = NULL;
+  draw = NULL;
   background = NULL;
   imgFromList = false;
   drawAuto = 0;
-  drawMask = false;
+  showMaskActive = false;
   logScale = 0;
   subtract = 0;
   range = 1;
@@ -57,12 +58,16 @@ Look::Look(QWidget *parent)// : QWidget(parent)
   beamstopR = NULL;
   beamstopDefined = NULL;
   backgroundSlider = NULL;
+  pencilSize = 3;
   connect(filesTable, SIGNAL(itemSelectionChanged()), this, SLOT(openImageFromTable()));
   connect(imagesTable, SIGNAL(itemSelectionChanged()), this, SLOT(openImageFromList()));
   connect(rangeSlider, SIGNAL(valueChanged(int)), this, SLOT(changeRange(int)));
 
   connect(view, SIGNAL(centerChanged()), this, SLOT(updateCenter()));
   connect(view, SIGNAL(beamstopChanged()), this, SLOT(updateBeamstop()));
+  connect(view, SIGNAL(vertLineSet(real,real)), this, SLOT(vertLineToMaskSlot(real,real)));
+  connect(view, SIGNAL(drawMaskAt(real,real)), this, SLOT(drawMaskSlot(real,real)));
+  connect(view, SIGNAL(undrawMaskAt(real,real)), this, SLOT(undrawMaskSlot(real,real)));
 
   filesTable->setMinimumWidth(400);
   //filesTable->setMaximumWidth(300);
@@ -362,7 +367,6 @@ void Look::drawImage()
       free(colormap_data);
       //printf("freed it\n");
     }
-    Image * draw;
 
     if (subtract) {
       /*
@@ -382,7 +386,7 @@ void Look::drawImage()
       draw = img;
     }
 
-    if (imgFromList && drawMask) {
+    if (imgFromList && showMaskActive) {
       if (draw == img) draw = sp_image_duplicate(img,SP_COPY_DATA|SP_COPY_MASK);
       for (int i = 0; i < sp_image_size(img); i++) {
 	if (draw->mask->data[i] == 0) draw->image->data[i] = sp_cinit(0.0,0.0);
@@ -902,6 +906,7 @@ void Look::importMask()
 {
   if (imgFromList) {
     QString filename = QFileDialog::getOpenFileName(this);
+    if (filename == NULL) return;
     Image *mask = sp_image_read(filename.toAscii(),0);
     if (sp_image_x(mask) != sp_image_x(img) || sp_image_y(mask) != sp_image_y(img)) {
       if (QMessageBox::question(this, tr("Import mask"), tr("The mask does not have the same size as the background. Rescale it?"),
@@ -921,8 +926,18 @@ void Look::importMask()
 
 void Look::showMask(int on)
 {
-  if (on) drawMask = true;
-  else drawMask = false;
+  if (on) showMaskActive = true;
+  else showMaskActive = false;
+  drawImage();
+}
+
+void Look::clearMask()
+{
+  if (imgFromList) {
+    for (int i = 0; i < sp_image_size(img); i++) {
+      img->mask->data[i] = 1;
+    }
+  }
   drawImage();
 }
 
@@ -938,9 +953,69 @@ void Look::saturationToMask()
       if (sp_cabs(img->image->data[i]) >= max) img->mask->data[i] = 0;
     }
   }
+  drawImage();
 }
 
 void Look::vertLineToMask()
 {
-  //view->pickSpot()  or something similair.
+  if (imgFromList) {
+    view->getVertLine();
+  }
+}
+
+void Look::vertLineToMaskSlot(real x, real y)
+{
+  if (imgFromList) {
+    int xi = (int) (x*(real)sp_image_x(img));
+    if (xi >= 0 && xi < sp_image_x(img)) {
+      for (int yi = 0; yi < sp_i3matrix_x(img->mask); yi++) {
+	sp_i3matrix_set(img->mask,xi,yi,0,0);
+      }
+    }
+  }
+  drawImage();
+}
+
+void Look::drawMask(bool on)
+{
+  view->drawMask(on);
+}
+
+void Look::undrawMask(bool on)
+{
+  view->undrawMask(on);
+}
+
+void Look::drawMaskSlot(real x, real y)
+{
+  if (imgFromList) {
+    int xi = (int) (x*(real)sp_image_x(img));
+    int yi = (int) (y*(real)sp_image_y(img));
+    for (int xk = xi-pencilSize/2; xk < xi+(pencilSize+1)/2; xk++) {
+      for (int yk = yi-pencilSize/2; yk < yi+(pencilSize+1)/2; yk++) {
+	if (xk > 0 && xk < sp_image_x(img) && yk > 0 && yk < sp_image_y(img))
+	  sp_i3matrix_set(img->mask,xk,yk,0,0);
+      }
+    }
+  }
+  drawImage();
+}
+
+void Look::undrawMaskSlot(real x, real y)
+{
+  if (imgFromList) {
+    int xi = (int) (x*(real)sp_image_x(img));
+    int yi = (int) (y*(real)sp_image_y(img));
+    for (int xk = xi-pencilSize/2; xk < xi+(pencilSize+1)/2; xk++) {
+      for (int yk = yi-pencilSize/2; yk < yi+(pencilSize+1)/2; yk++) {
+	if (xk > 0 && xk < sp_image_x(img) && yk > 0 && yk < sp_image_y(img))
+	  sp_i3matrix_set(img->mask,xk,yk,0,1);
+      }
+    }
+  }
+  drawImage();
+}
+
+void Look::setPencilSize(int size) {
+  pencilSize = size;
 }

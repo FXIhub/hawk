@@ -21,7 +21,6 @@ public:
   void updateImagesTable();
   void drawImage();
 
-
   void exportImage();
   void exportFalseColorImage();
   void exportBackground();
@@ -53,12 +52,16 @@ public:
   void showBackground();
   void subtractBackground(int on);
   void setBackgroundLevel();
-  
-  void beamstopToMask();
+
+  void showMask(int on);  
   void importMask();
-  void showMask(int on);
+  void clearMask();
+  void beamstopToMask();
   void saturationToMask();
   void vertLineToMask();
+  void drawMask(bool on);
+  void undrawMask(bool on);
+  void setPencilSize(int size);
   
 
   signals:
@@ -77,15 +80,19 @@ public:
   void changeBackgroundLevel(real value);
   void updateCenter();
   void updateBeamstop();
+  void vertLineToMaskSlot(real x, real y);
+  void drawMaskSlot(real x, real y);
+  void undrawMaskSlot(real x, real y);
 
  private:
   Image * img;
+  Image *draw;
   Image * background;
   Image * temporary;
   real backgroundSum;
   bool imgFromList;
   bool drawAuto;
-  bool drawMask;
+  bool showMaskActive;
   bool logScale;
   bool subtract;
   int colorscale;
@@ -138,8 +145,8 @@ public:
   real detectorDistance;
   real detectorX, detectorY;
 
-
   bool showDistanceActive;
+  int pencilSize;
 };
 
 #endif

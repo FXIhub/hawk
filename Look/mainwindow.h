@@ -45,11 +45,26 @@ class MainWindow : public QMainWindow
   void categorizeShowBackground();
   void categorizeSubtractBackground();
   void categorizeSetBackgroundLevel();
+  void maskShowMask();
+  void maskImportMask();
+  void maskClearMask();
   void maskBeamstopToMask();
   void maskSaturationToMask();
   void maskVertLineToMask();
-  void maskImportMask();
-  void maskShowMask();
+  void maskDrawMask();
+  void maskUndrawMask();
+  void maskSetPencilSize1();
+  void maskSetPencilSize2();
+  void maskSetPencilSize3();
+  void maskSetPencilSize4();
+  void maskSetPencilSize5();
+  void maskSetPencilSize7();
+  void maskSetPencilSize10();
+  void maskSetPencilSize15();
+  void maskSetPencilSize20();
+  void maskSetPencilSize30();
+  void maskSetPencilSize50();
+  void maskSetPencilSize(int size);
 
  private:
   Look *look;
@@ -101,11 +116,28 @@ class MainWindow : public QMainWindow
   QAction *setBackgroundLevelAct;
 
   QMenu *maskMenu;
+  QAction *showMaskAct;
+  QAction *importMaskAct;
+  QAction *clearMaskAct;
   QAction *beamstopToMaskAct;
   QAction *saturationToMaskAct;
   QAction *vertLineToMaskAct;
-  QAction *importMaskAct;
-  QAction *showMaskAct;
+  QAction *drawMaskAct;
+  QAction *undrawMaskAct;
+
+  QMenu *pencilSizeMenu;
+  QAction *size1Act;
+  QAction *size2Act;
+  QAction *size3Act;
+  QAction *size4Act;
+  QAction *size5Act;
+  QAction *size7Act;
+  QAction *size10Act;
+  QAction *size15Act;
+  QAction *size20Act;
+  QAction *size30Act;
+  QAction *size50Act;
+  QActionGroup *pencilSizeGroup;
 
 };
 

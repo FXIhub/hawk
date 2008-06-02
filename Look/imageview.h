@@ -20,7 +20,9 @@ class ImageView : public QWidget
   void setBeamstop(real x, real y, real r);
   void getBeamstop(real *x, real *y, real *r);
   void showDistance(int on, bool bar, real value);
-  void pickSpot();
+  void getVertLine();
+  void drawMask(bool on);
+  void undrawMask(bool on);
     
  protected:
   void mousePressEvent(QMouseEvent *event);
@@ -32,7 +34,9 @@ class ImageView : public QWidget
  signals:
   void centerChanged();
   void beamstopChanged();
-  void vertLineSet();
+  void vertLineSet(real x, real y);
+  void drawMaskAt(real x, real y);
+  void undrawMaskAt(real x, real y);
 
  private:
   void drawImage();
@@ -49,6 +53,8 @@ class ImageView : public QWidget
   real startZoomValue;
   real zoomCenterX, zoomCenterY;
   real startZoomCenterX, startZoomCenterY;
+
+  QCursor cursorCross;
 
   bool leftPressed, rightPressed;
 
@@ -70,6 +76,7 @@ class ImageView : public QWidget
   real circleResolution;
 
   bool pickSpotActive;
+  bool drawMaskActive, undrawMaskActive;
 };
 
 #endif

@@ -24,7 +24,8 @@ ImageView::ImageView(QWidget *parent)
   beamstopR = 0.05;
   distanceBarLength = 0.0;
   circleResolution = 0.0;
-  pickSpotActive = false;
+  cursorCross = QCursor(Qt::CrossCursor);
+  //pickSpotActive = false;
   /*
   imageLabel = new QLabel;
   imageLabel->setMinimumWidth(500);
@@ -121,7 +122,6 @@ void ImageView::defineBeamstop(int on)
   if (on) defineBeamstopActive = true;
   else defineBeamstopActive = false;
   update();
-  printf("beamstop (%g,%g) %g\n",beamstopX, beamstopY, beamstopR);
 }
 
 bool ImageView::defineBeamstopActivated()
@@ -158,15 +158,49 @@ void ImageView::showDistance(int on, bool bar, real value)
   update();
 }
 
-void ImageView::pickSpot()
+void ImageView::getVertLine()
 {
   pickSpotActive = true;
+  QApplication::setOverrideCursor(cursorCross);
+}
+
+void ImageView::drawMask(bool on)
+{
+  undrawMaskActive = false;
+  drawMaskActive = on;
+}
+
+void ImageView::undrawMask(bool on)
+{
+  drawMaskActive = false;
+  undrawMaskActive = on;
 }
 
 void ImageView::mousePressEvent(QMouseEvent *event)
 {
+  if (pickSpotActive) {
+    if (event->button() == Qt::LeftButton) {
+      emit vertLineSet(screenToGlobalX(event->pos().x()),screenToGlobalY(event->pos().x()));
+      pickSpotActive = false;
+      QApplication::restoreOverrideCursor();
+      return;
+    } else {
+      pickSpotActive = false;
+      QApplication::restoreOverrideCursor();
+    }
+  }
   if (leftPressed || rightPressed) return;
   if (event->button() == Qt::LeftButton) {
+    if (drawMaskActive) {
+      emit drawMaskAt(screenToGlobalX(event->pos().x()),screenToGlobalY(event->pos().y()));
+      leftPressed = true;
+      return;
+    }
+    if (undrawMaskActive) {
+      emit undrawMaskAt(screenToGlobalX(event->pos().x()),screenToGlobalY(event->pos().y()));
+      leftPressed = true;
+      return;
+    }
     if (setCenterActive) {
       int x = (int) (((centerX - zoomCenterX) / zoomValue + 0.5) * (real) width());  //(Cx - 0.5 - (zCx - 0.5) /zV = 0.5
       int y = (int) (((centerY - zoomCenterY) / zoomValue + 0.5) * (real) height());  //(Cy - 0.5 - (zCy - 0.5) /zV = 0.5
@@ -259,6 +293,10 @@ void ImageView::mouseMoveEvent(QMouseEvent *event)
       / beamstopStartR;
     //int x = (int) (((beamstopX - zoomCenterX) / zoomValue + 0.5) * (real) width() + 0.5);
     update();
+  } else if (drawMaskActive && leftPressed) {
+    emit drawMaskAt(screenToGlobalX(event->pos().x()),screenToGlobalY(event->pos().y()));
+  } else if (undrawMaskActive && leftPressed) {
+    emit undrawMaskAt(screenToGlobalX(event->pos().x()),screenToGlobalY(event->pos().y()));
   }
 }
 

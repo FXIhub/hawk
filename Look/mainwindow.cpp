@@ -166,21 +166,83 @@ void MainWindow::createActions()
   setBackgroundLevelAct->setEnabled(false);
 
   // Mask
-  beamstopToMaskAct = new QAction(tr("&Beamstop to mask"),this);
-  connect(beamstopToMaskAct, SIGNAL(triggered()), this, SLOT(maskBeamstopToMask()));
-  
-  importMaskAct = new QAction(tr("&Import mask"),this);
-  connect(importMaskAct, SIGNAL(triggered()), this, SLOT(maskImportMask()));
-
   showMaskAct = new QAction(tr("&Show mask"),this);
   showMaskAct->setCheckable(true);
   connect(showMaskAct, SIGNAL(triggered()), this, SLOT(maskShowMask()));
+
+  importMaskAct = new QAction(tr("&Import mask"),this);
+  connect(importMaskAct, SIGNAL(triggered()), this, SLOT(maskImportMask()));
+  
+  clearMaskAct = new QAction(tr("&Clear mask"), this);
+  connect(clearMaskAct, SIGNAL(triggered()), this, SLOT(maskClearMask()));
+
+  beamstopToMaskAct = new QAction(tr("&Beamstop to mask"),this);
+  connect(beamstopToMaskAct, SIGNAL(triggered()), this, SLOT(maskBeamstopToMask()));
 
   saturationToMaskAct = new QAction(tr("&Saturation to mask"), this);
   connect(saturationToMaskAct, SIGNAL(triggered()), this, SLOT(maskSaturationToMask()));
 
   vertLineToMaskAct  = new QAction(tr("&Vertical line to mask"), this);
   connect(vertLineToMaskAct, SIGNAL(triggered()), this, SLOT(maskVertLineToMask()));
+
+  drawMaskAct = new QAction(tr("&Draw mask"), this);
+  drawMaskAct->setCheckable(true);
+  connect(drawMaskAct, SIGNAL(triggered()), this, SLOT(maskDrawMask()));
+
+  undrawMaskAct = new QAction(tr("&Undraw mask"), this);
+  undrawMaskAct->setCheckable(true);
+  connect(undrawMaskAct, SIGNAL(triggered()), this, SLOT(maskUndrawMask()));
+
+  size1Act = new QAction(tr("1"),this);
+  size2Act = new QAction(tr("2"),this);
+  size3Act = new QAction(tr("3"),this);
+  size4Act = new QAction(tr("4"),this);
+  size5Act = new QAction(tr("5"),this);
+  size7Act = new QAction(tr("7"),this);
+  size10Act = new QAction(tr("10"),this);
+  size15Act = new QAction(tr("15"),this);
+  size20Act = new QAction(tr("20"),this);
+  size30Act = new QAction(tr("30"),this);
+  size50Act = new QAction(tr("50"),this);
+
+  size1Act->setCheckable(true);
+  size2Act->setCheckable(true);
+  size3Act->setCheckable(true);
+  size4Act->setCheckable(true);
+  size5Act->setCheckable(true);
+  size7Act->setCheckable(true);
+  size10Act->setCheckable(true);
+  size15Act->setCheckable(true);
+  size20Act->setCheckable(true);
+  size30Act->setCheckable(true);
+  size50Act->setCheckable(true);
+
+  pencilSizeGroup = new QActionGroup(this);
+  pencilSizeGroup->addAction(size1Act);
+  pencilSizeGroup->addAction(size2Act);
+  pencilSizeGroup->addAction(size3Act);
+  pencilSizeGroup->addAction(size4Act);
+  pencilSizeGroup->addAction(size5Act);
+  pencilSizeGroup->addAction(size7Act);
+  pencilSizeGroup->addAction(size10Act);
+  pencilSizeGroup->addAction(size15Act);
+  pencilSizeGroup->addAction(size20Act);
+  pencilSizeGroup->addAction(size30Act);
+  pencilSizeGroup->addAction(size50Act);
+  size3Act->setChecked(true);
+
+  connect(size1Act, SIGNAL(triggered()), this, SLOT(maskSetPencilSize1()));
+  connect(size2Act, SIGNAL(triggered()), this, SLOT(maskSetPencilSize2()));
+  connect(size3Act, SIGNAL(triggered()), this, SLOT(maskSetPencilSize3()));
+  connect(size4Act, SIGNAL(triggered()), this, SLOT(maskSetPencilSize4()));
+  connect(size5Act, SIGNAL(triggered()), this, SLOT(maskSetPencilSize5()));
+  connect(size7Act, SIGNAL(triggered()), this, SLOT(maskSetPencilSize7()));
+  connect(size10Act, SIGNAL(triggered()), this, SLOT(maskSetPencilSize10()));
+  connect(size15Act, SIGNAL(triggered()), this, SLOT(maskSetPencilSize15()));
+  connect(size20Act, SIGNAL(triggered()), this, SLOT(maskSetPencilSize20()));
+  connect(size30Act, SIGNAL(triggered()), this, SLOT(maskSetPencilSize30()));
+  connect(size50Act, SIGNAL(triggered()), this, SLOT(maskSetPencilSize50()));
+
 }
 
 void MainWindow::createMenus()
@@ -237,10 +299,27 @@ void MainWindow::createMenus()
   maskMenu = menuBar()->addMenu(tr("&Mask"));
   maskMenu->addAction(showMaskAct);
   maskMenu->addAction(importMaskAct);
+  maskMenu->addAction(clearMaskAct);
   maskMenu->addSeparator();
   maskMenu->addAction(beamstopToMaskAct);
   maskMenu->addAction(saturationToMaskAct);
   maskMenu->addAction(vertLineToMaskAct);
+  maskMenu->addAction(drawMaskAct);
+  maskMenu->addAction(undrawMaskAct);
+
+  pencilSizeMenu = maskMenu->addMenu(tr("&Pencil size"));
+  pencilSizeMenu->addAction(size1Act);
+  pencilSizeMenu->addAction(size2Act);
+  pencilSizeMenu->addAction(size3Act);
+  pencilSizeMenu->addAction(size4Act);
+  pencilSizeMenu->addAction(size5Act);
+  pencilSizeMenu->addAction(size7Act);
+  pencilSizeMenu->addAction(size10Act);
+  pencilSizeMenu->addAction(size15Act);
+  pencilSizeMenu->addAction(size20Act);
+  pencilSizeMenu->addAction(size30Act);
+  pencilSizeMenu->addAction(size50Act);
+
 }
 
 void MainWindow::imgFromListChanged(bool value)
@@ -484,9 +563,12 @@ void MainWindow::categorizeSetBackgroundLevel()
   look->setBackgroundLevel();
 }
 
-void MainWindow::maskBeamstopToMask()
+void MainWindow::maskShowMask()
 {
-  look->beamstopToMask();
+  if (showMaskAct->isChecked())
+    look->showMask(1);
+  else
+    look->showMask(0);
 }
 
 void MainWindow::maskImportMask()
@@ -494,12 +576,14 @@ void MainWindow::maskImportMask()
   look->importMask();
 }
 
-void MainWindow::maskShowMask()
+void MainWindow::maskClearMask()
 {
-  if (showMaskAct->isChecked())
-    look->showMask(1);
-  else
-    look->showMask(0);
+  look->clearMask();
+}
+
+void MainWindow::maskBeamstopToMask()
+{
+  look->beamstopToMask();
 }
 
 void MainWindow::maskSaturationToMask()
@@ -510,4 +594,33 @@ void MainWindow::maskSaturationToMask()
 void MainWindow::maskVertLineToMask()
 {
   look->vertLineToMask();
+}
+
+void MainWindow::maskDrawMask()
+{
+  undrawMaskAct->setChecked(false);
+  look->drawMask(drawMaskAct->isChecked());
+}
+
+void MainWindow::maskUndrawMask()
+{
+  drawMaskAct->setChecked(false);
+  look->undrawMask(undrawMaskAct->isChecked());
+}
+
+void MainWindow::maskSetPencilSize1() {maskSetPencilSize(1);}
+void MainWindow::maskSetPencilSize2() {maskSetPencilSize(2);}
+void MainWindow::maskSetPencilSize3() {maskSetPencilSize(3);}
+void MainWindow::maskSetPencilSize4() {maskSetPencilSize(4);}
+void MainWindow::maskSetPencilSize5() {maskSetPencilSize(5);}
+void MainWindow::maskSetPencilSize7() {maskSetPencilSize(7);}
+void MainWindow::maskSetPencilSize10() {maskSetPencilSize(10);}
+void MainWindow::maskSetPencilSize15() {maskSetPencilSize(15);}
+void MainWindow::maskSetPencilSize20() {maskSetPencilSize(20);}
+void MainWindow::maskSetPencilSize30() {maskSetPencilSize(30);}
+void MainWindow::maskSetPencilSize50() {maskSetPencilSize(50);}
+
+void MainWindow::maskSetPencilSize(int size)
+{
+  look->setPencilSize(size);
 }
