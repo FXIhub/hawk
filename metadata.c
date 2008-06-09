@@ -116,7 +116,9 @@ VariableMetadata variable_metadata[100] = {
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.init_support_filename),
-    .reserved = NULL
+    .documentation = "The file name of the support that is used to start the reconstruction. If no file is given the"
+    " initial support is derived from the autocorrelation.",
+    .reserved = NULL  
   },
   {
     .variable_name = "image_guess",
@@ -127,6 +129,8 @@ VariableMetadata variable_metadata[100] = {
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.image_guess_filename),
+    .documentation = "The file name of the real space starting image for the reconstruction. If no file is given the"
+    " initial image is derived from the autocorrelation.",
     .reserved = NULL
   },
   {
@@ -138,6 +142,7 @@ VariableMetadata variable_metadata[100] = {
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.noise),
+    .documentation = "Obsolete option",
     .reserved = NULL
   },
   {
@@ -149,6 +154,7 @@ VariableMetadata variable_metadata[100] = {
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.beamstop),
+    .documentation = "Obsolete option",
     .reserved = NULL
   },
   {
@@ -160,6 +166,9 @@ VariableMetadata variable_metadata[100] = {
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.new_level),
+    .documentation = "This setting only has any effect when used in conjunction with fixed support update. It's value is a fraction of the intensity of the most intense pixels."
+    " During the calculation of the new support only pixels for which the normalized intensity (normalized to the most intense pixel) is greater than the support_intensity_threshold "
+    " are kept in the support. For example for a support_intensity_threshold = 0.4 and for an image with the highest pixel intensity of 34000, all pixels above 13600 would be retained in the support.",
     .reserved = NULL
   },
   {
@@ -171,6 +180,8 @@ VariableMetadata variable_metadata[100] = {
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.iterations_to_min_blur),
+    .documentation = "During the support update procedure the real space image is blured with a gaussian. This gaussian starts with a radius of max_blur_radius and gradually decreases to"
+    "minimum_blur_radius after iterations_to_min_blur iterations.",
     .reserved = NULL
   },
   {
@@ -182,6 +193,7 @@ VariableMetadata variable_metadata[100] = {
     .list_valid_values = {GAUSSIAN_BLUR_REDUCTION,GEOMETRICAL_BLUR_REDUCTION,0},
     .list_valid_names = {"gaussian","geometrical",0},
     .variable_address = &(global_options.blur_radius_reduction_method),
+    .documentation = "Specifies the function used for interpolation between the max and the minimum of the blur radius.",
     .reserved = NULL
   },
   {
@@ -193,6 +205,8 @@ VariableMetadata variable_metadata[100] = {
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.min_blur),
+    .documentation = "During the support update procedure the real space image is blured with a gaussian. This gaussian starts with a radius of max_blur_radius and gradually decreases to"
+    "minimum_blur_radius after iterations_to_min_blur iterations.",
     .reserved = NULL
   },
   {
@@ -204,6 +218,7 @@ VariableMetadata variable_metadata[100] = {
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.log_file),
+    .documentation = "Name of the file where all output statistics are going to written to. Warning: This file is overwritten if it already exists!",
     .reserved = NULL
   },
   {
@@ -215,6 +230,7 @@ VariableMetadata variable_metadata[100] = {
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.commandline),
+    .documentation = "Command line that was used to invoke the program.",
     .reserved = NULL
   },
   {
@@ -226,6 +242,7 @@ VariableMetadata variable_metadata[100] = {
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.output_period),
+    .documentation = "The number of iterations between writing images to files. For example a value of 100 means that the program will output images at step 0,99,199,etc...",
     .reserved = NULL
   },
   {
@@ -237,6 +254,7 @@ VariableMetadata variable_metadata[100] = {
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.log_output_period),
+    .documentation = "The number of iterations between writing statistics to the log file. For example a value of 20 means that the program will output images at step 0,19,39,etc...",
     .reserved = NULL
   },
   {
@@ -248,6 +266,7 @@ VariableMetadata variable_metadata[100] = {
     .list_valid_values = {HIO,RAAR,HPR,CFLIP,RAAR_CFLIP,HAAR,SO2D,RAAR_PROJ,0},
     .list_valid_names = {"hio","raar","hpr","cflip","raar_cflip","haar","so2d","raar_proj",0},
     .variable_address = &(global_options.algorithm),
+    .documentation = "The type of algorithm used during the phase retrieval. A few other options then depend on the type of algorithm chosen.",
     .reserved = NULL
   },
   {
@@ -259,6 +278,9 @@ VariableMetadata variable_metadata[100] = {
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.exp_sigma),
+    .documentation = "When using the RAAR algorithm the image amplitudes are allowed to deviate from input amplitudes by a fraction of their value. This fraction is given by the RAAR_sigma."
+    " For example if RAAR_sigma is 0.05 then a pixel with an amplitude of 100 would be allowed to range between 95 and 105. The way the value is constrained is by using the so called modulus annulus projection."
+    "For more information about the modulus annulus projection please see Pierre Thibault PhD thesis section 3.4.1.",
     .reserved = NULL
   },
   {
