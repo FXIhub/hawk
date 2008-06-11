@@ -28,6 +28,7 @@ public:
   void setProperties();
 
   void toImages();
+  void backgroundToImages();
   void removeImage();
   void setCenter(int on);
   void defineBeamstop(int on);
@@ -62,7 +63,9 @@ public:
   void drawMask(bool on);
   void undrawMask(bool on);
   void setPencilSize(int size);
-  
+  void imageNameChanged(QString name, int i);
+  void imageBackgroundChanged(int backgroundNumber, int i);
+  void imageRemarkChanged(QString text, int i);
 
   signals:
   void backgroundChecked(bool);
@@ -83,6 +86,7 @@ public:
   void vertLineToMaskSlot(real x, real y);
   void drawMaskSlot(real x, real y);
   void undrawMaskSlot(real x, real y);
+  void imagesTableChanged(int row, int collumn);
 
  private:
   Image * img;
@@ -138,6 +142,9 @@ public:
   QList<bool> imgCenterDefined;
   QList<real> imgBeamstopX, imgBeamstopY, imgBeamstopR;
   QList<bool> imgBeamstopDefined;
+  QList<real> imgBackgroundLevel;
+  QList<int> imgBackground;
+  QList<QString> imgRemark;
 
   //detector propertiees
   bool propertiesSet;

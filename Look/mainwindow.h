@@ -21,6 +21,7 @@ class MainWindow : public QMainWindow
   void fileExportBackground();
   void fileSetProperties();
   void imageToImages();
+  void imageBackgroundToImages();
   void imageRemoveImage();
   void imageSetCenter();
   void imageDefineBeamstop();
@@ -84,6 +85,7 @@ class MainWindow : public QMainWindow
 
   QMenu *imageMenu;
   QAction *toImagesAct;
+  QAction *backgroundToImagesAct;
   QAction *removeImageAct;
   QAction *setCenterAct;
   QAction *defineBeamstopAct;

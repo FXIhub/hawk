@@ -2,6 +2,7 @@
 #include <spimage.h>
 #include "imageview.h"
 #include "propertiesDialog.h"
+#include "cropDialog.h"
 #include "backgroundSlider.h"
 //#include "look.moc"
 #include "look.h"
@@ -18,8 +19,8 @@ Look::Look(QWidget *parent)// : QWidget(parent)
   filesTable->setColumnWidth(2,150);
   filesTable->setSelectionBehavior(QAbstractItemView::SelectRows);
   filesTable->setSelectionMode(QAbstractItemView::SingleSelection);
-  imagesTable = new QTableWidget(0,2);
-  imagesTable->setHorizontalHeaderLabels(QStringList() << "Name" << "Flag");
+  imagesTable = new QTableWidget(0,3);
+  imagesTable->setHorizontalHeaderLabels(QStringList() << "Name" << "Background" << "Remark");
   imagesTable->setColumnWidth(0,150);
   imagesTable->setColumnWidth(0,150);
   imagesTable->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -62,6 +63,7 @@ Look::Look(QWidget *parent)// : QWidget(parent)
   connect(filesTable, SIGNAL(itemSelectionChanged()), this, SLOT(openImageFromTable()));
   connect(imagesTable, SIGNAL(itemSelectionChanged()), this, SLOT(openImageFromList()));
   connect(rangeSlider, SIGNAL(valueChanged(int)), this, SLOT(changeRange(int)));
+  connect(imagesTable, SIGNAL(cellChanged(int,int)), this, SLOT(imagesTableChanged(int,int)));
 
   connect(view, SIGNAL(centerChanged()), this, SLOT(updateCenter()));
   connect(view, SIGNAL(beamstopChanged()), this, SLOT(updateBeamstop()));
@@ -352,9 +354,21 @@ void Look::updateImagesTable()
   imagesTable->setRowCount(images.size());
   QTableWidgetItem *newItem;
   for (int i = 0; i < images.size(); i++) {
+    imagesTable->blockSignals(true);
     newItem = new QTableWidgetItem(imageNames.at(i));
-    newItem->setFlags(newItem->flags() & (~Qt::ItemIsEditable));
+    //newItem->setFlags(newItem->flags() & (~Qt::ItemIsEditable));
     imagesTable->setItem(i,0,newItem);
+    newItem = new QTableWidgetItem(imgRemark.at(i));
+    imagesTable->setItem(i,2,newItem);
+    printf("get item\n");
+    char buffer[4];
+    if (imgBackground[i] > 0) sprintf(buffer,"%i",imgBackground[i]+1);
+    else sprintf(buffer,"");
+    newItem = new QTableWidgetItem(buffer);
+    printf("got item\n");
+    imagesTable->setItem(i,1,newItem);
+    printf("inserted new item\n");
+    imagesTable->blockSignals(false);
   }
 }
 
@@ -409,7 +423,7 @@ void Look::drawImage()
     //qi = qi.scaled(imageLabel->width(),imageLabel->height(),Qt::KeepAspectRatio);
     //imageLabel->setPixmap(QPixmap::fromImage(qi));
     view->setImage(&qi);
-    if (subtract) sp_image_free(draw);
+    if (subtract || (imgFromList && showMaskActive)) sp_image_free(draw);
   }
 }
 
@@ -420,11 +434,16 @@ void Look::exportImage()
     saveDialog.setDefaultSuffix("h5");
     saveDialog.setFileMode(QFileDialog::AnyFile);
     saveDialog.setAcceptMode(QFileDialog::AcceptSave);
-    QString filename = filesTable->item(current-1,3)->text();
-    if (filename.endsWith("tiff",Qt::CaseInsensitive)) filename.chop(4);
-    else if (filename.endsWith("tif",Qt::CaseInsensitive)) filename.chop(3);
-    else return;
-    filename.append("h5");
+    QString filename;
+    if (!imgFromList) {
+      filename = filesTable->item(current-1,3)->text();
+      if (filename.endsWith("tiff",Qt::CaseInsensitive)) filename.chop(4);
+      else if (filename.endsWith("tif",Qt::CaseInsensitive)) filename.chop(3);
+      else return;
+      filename.append("h5");
+    } else {
+      filename = imageNames[currentImg];
+    }
     saveDialog.selectFile(filename);
     saveDialog.setConfirmOverwrite(true);
     saveDialog.setFilters(QStringList() << "HDF5 (*.h5)" << "TIFF image (*.TIFF)" << "png image (*.png)" << "Visit image format (*.vtk)" << "Any files (*)");
@@ -577,13 +596,41 @@ void Look::toImages()
     else if (filename.endsWith("tif",Qt::CaseInsensitive)) filename.chop(4);
     else return;
     imageNames.append(filename);
-    updateImagesTable();
 
     imgCenterDefined.append(centerDefined[current]);
     imgCenterX.append(centerX[current]); imgCenterY.append(centerY[current]);
     imgBeamstopDefined.append(beamstopDefined[current]);
     imgBeamstopX.append(beamstopX[current]); imgBeamstopY.append(beamstopY[current]);
     imgBeamstopR.append(beamstopR[current]);
+    imgRemark.append("");
+    imgBackground.append(NULL);
+    imgBackgroundLevel.append(1.0);
+
+    updateImagesTable();
+  }
+}
+
+void Look::backgroundToImages()
+{
+  if (background != NULL) {
+    if (temporary != NULL) sp_image_free(temporary);
+    QString name = "background";
+    temporary = sp_image_duplicate(img,SP_COPY_DATA);
+    for (int i = 0; i < sp_image_size(temporary); i++) temporary->mask->data[i] = 1;
+    images.append(temporary);
+    temporary = NULL;
+
+    imageNames.append(name);
+    imgCenterDefined.append(false);
+    imgCenterX.append(centerX[current]); imgCenterY.append(centerY[current]);
+    imgBeamstopDefined.append(false);
+    imgBeamstopX.append(beamstopX[current]); imgBeamstopY.append(beamstopY[current]);
+    imgBeamstopR.append(beamstopR[current]);
+    imgRemark.append("Background");
+    imgBackground.append(NULL);
+    imgBackgroundLevel.append(1.0);
+
+    updateImagesTable();
   }
 }
 
@@ -600,6 +647,14 @@ void Look::removeImage()
   imgBeamstopX.removeAt(currentImg);
   imgBeamstopY.removeAt(currentImg);
   imgBeamstopR.removeAt(currentImg);
+  imgBackground.removeAt(currentImg);
+  imgBackgroundLevel.removeAt(currentImg);
+  for (int i = 0; i < imagesTable->rowCount()-1; i++) {
+    if (imgBackground[i] > currentImg) imgBackground[i] -= 1;
+    else if (imgBackground[i] == currentImg) imgBackground[i] = NULL;
+  }
+
+  /*
   imagesTable->removeCellWidget(currentImg,0);
   imagesTable->removeCellWidget(currentImg,1);
   for (int i = currentImg; i < imagesTable->rowCount()-1; i++) {
@@ -608,6 +663,8 @@ void Look::removeImage()
   }
   imagesTable->setRangeSelected(QTableWidgetSelectionRange(0,0,imagesTable->rowCount()-1,1),false);
   imagesTable->setRowCount(imagesTable->rowCount()-1);
+  */
+  updateImagesTable();
 }
 
 void Look::setCenter(int on)
@@ -664,7 +721,21 @@ void Look::beamstopToAll()
 
 void Look::crop()
 {
-
+  if (imgFromList) {
+    int x1(0), x2(sp_image_x(img)-1), y1(0), y2(sp_image_y(img)-1);
+    
+    CropDialog *cropDia = new CropDialog(&x1, &x2, &y1, &y2);
+    if (cropDia->exec() == 1) {
+      printf("crop %i %i %i %i\n",x1,x2,y1,y2);
+      if (temporary != NULL) sp_image_free(temporary);
+      temporary = rectangle_crop(img,x1,y1,x2,y2);
+      sp_image_free(img);
+      img = temporary;
+      images[currentImg] = temporary;
+      temporary = NULL;
+      drawImage();
+    }
+  }
 }
 
 void Look::drawAutocorrelation(int on)
@@ -847,7 +918,10 @@ void Look::setBackgroundLevel()
 
 void Look::changeBackgroundLevel(real level)
 {
-  backgroundLevel[current] = level;
+  if (!imgFromList)
+    backgroundLevel[current] = level;
+  else
+    imgBackgroundLevel[currentImg] = level;
   drawImage();
 }
 
@@ -908,6 +982,10 @@ void Look::importMask()
     QString filename = QFileDialog::getOpenFileName(this);
     if (filename == NULL) return;
     Image *mask = sp_image_read(filename.toAscii(),0);
+    if (mask == NULL){
+      QMessageBox::warning(this, tr("Import mask"), tr("Error opening the specified file"));
+      return;
+    }
     if (sp_image_x(mask) != sp_image_x(img) || sp_image_y(mask) != sp_image_y(img)) {
       if (QMessageBox::question(this, tr("Import mask"), tr("The mask does not have the same size as the background. Rescale it?"),
 			    QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes) == QMessageBox::Yes) {
@@ -988,7 +1066,7 @@ void Look::undrawMask(bool on)
 
 void Look::drawMaskSlot(real x, real y)
 {
-  if (imgFromList) {
+  if (imgFromList && !drawAuto) {
     int xi = (int) (x*(real)sp_image_x(img));
     int yi = (int) (y*(real)sp_image_y(img));
     for (int xk = xi-pencilSize/2; xk < xi+(pencilSize+1)/2; xk++) {
@@ -1003,7 +1081,7 @@ void Look::drawMaskSlot(real x, real y)
 
 void Look::undrawMaskSlot(real x, real y)
 {
-  if (imgFromList) {
+  if (imgFromList && !drawAuto) {
     int xi = (int) (x*(real)sp_image_x(img));
     int yi = (int) (y*(real)sp_image_y(img));
     for (int xk = xi-pencilSize/2; xk < xi+(pencilSize+1)/2; xk++) {
@@ -1016,6 +1094,48 @@ void Look::undrawMaskSlot(real x, real y)
   drawImage();
 }
 
-void Look::setPencilSize(int size) {
+void Look::setPencilSize(int size)
+{
   pencilSize = size;
+}
+
+void Look::imagesTableChanged(int row, int collumn)
+{
+  printf("image table changed %i %i\n",row,collumn);
+  if (collumn == 0) {
+    printf("new name = ");
+    printf(imagesTable->item(row,collumn)->text().toAscii());
+    printf("\n");
+    imageNameChanged(imagesTable->item(row,collumn)->text(), row);
+  } else if (collumn == 1) {
+    imageBackgroundChanged(atoi(imagesTable->item(row,collumn)->text().toAscii())-1, row);
+  } else {
+    imageRemarkChanged(imagesTable->item(row,collumn)->text(), row);
+  }
+}
+
+void Look::imageNameChanged(QString name, int i)
+{
+  printf("image name changed\n");
+  printf(name.toAscii());
+  imageNames[i] = name;
+  printf("changed name\n");
+  //updateImagesTable();
+}
+
+void Look::imageBackgroundChanged(int backgroundNumber, int i)
+{
+  printf("imageBackgroundChanged(%i, %i) called f\n",backgroundNumber, i);
+  if (backgroundNumber < 0 || backgroundNumber >= imagesTable->rowCount() || backgroundNumber == i) {
+    imagesTable->blockSignals(true);
+    imagesTable->item(i,1)->setText("");
+    imagesTable->blockSignals(false);
+    return;
+  }
+  imgBackground[i] = backgroundNumber;
+}
+
+void Look::imageRemarkChanged(QString text, int i)
+{
+  imgRemark[i] = text;
 }

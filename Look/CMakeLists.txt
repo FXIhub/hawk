@@ -8,6 +8,7 @@ set(LOOK_SRCS
 	mainwindow.cpp
 	imageview.cpp
 	propertiesDialog.cpp
+	cropDialog.cpp
 	backgroundSlider.cpp
 )
 
@@ -16,6 +17,7 @@ set(LOOK_MOC_HDRS
 	mainwindow.h
 	imageview.h
 	propertiesDialog.h
+	cropDialog.h
 	backgroundSlider.h
 )
 

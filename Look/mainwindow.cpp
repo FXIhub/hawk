@@ -33,6 +33,7 @@ void MainWindow::createActions()
   connect(getCommentsAct, SIGNAL(triggered()), this, SLOT(fileGetComments()));
   
   exportImageAct = new QAction(tr("&Export image"), this);
+  exportImageAct->setShortcut(tr("Ctrl+E"));
   connect(exportImageAct, SIGNAL(triggered()), this, SLOT(fileExportImage()));
 
   exportFalseColorAct = new QAction(tr("Export &false color image"), this);
@@ -54,6 +55,10 @@ void MainWindow::createActions()
   // Image
   toImagesAct = new QAction(tr("&To Images"), this);
   connect(toImagesAct, SIGNAL(triggered()), this, SLOT(imageToImages()));
+
+  backgroundToImagesAct = new QAction(tr("&Background to Images"), this);
+  backgroundToImagesAct->setEnabled(false);
+  connect(backgroundToImagesAct, SIGNAL(triggered()), this, SLOT(imageBackgroundToImages()));
 
   removeImageAct = new QAction(tr("&Remove image"), this);
   removeImageAct->setEnabled(false);
@@ -168,6 +173,7 @@ void MainWindow::createActions()
   // Mask
   showMaskAct = new QAction(tr("&Show mask"),this);
   showMaskAct->setCheckable(true);
+  showMaskAct->setShortcut(tr("Ctrl+M"));
   connect(showMaskAct, SIGNAL(triggered()), this, SLOT(maskShowMask()));
 
   importMaskAct = new QAction(tr("&Import mask"),this);
@@ -183,6 +189,7 @@ void MainWindow::createActions()
   connect(saturationToMaskAct, SIGNAL(triggered()), this, SLOT(maskSaturationToMask()));
 
   vertLineToMaskAct  = new QAction(tr("&Vertical line to mask"), this);
+  vertLineToMaskAct->setShortcut(tr("Ctrl+V"));
   connect(vertLineToMaskAct, SIGNAL(triggered()), this, SLOT(maskVertLineToMask()));
 
   drawMaskAct = new QAction(tr("&Draw mask"), this);
@@ -261,6 +268,7 @@ void MainWindow::createMenus()
 
   imageMenu = menuBar()->addMenu(tr("&Image"));
   imageMenu->addAction(toImagesAct);
+  imageMenu->addAction(backgroundToImagesAct);
   imageMenu->addAction(removeImageAct);
   imageMenu->addSeparator();
   imageMenu->addAction(setCenterAct);
@@ -368,6 +376,11 @@ void MainWindow::fileSetProperties()
 void MainWindow::imageToImages()
 {
   look->toImages();
+}
+
+void MainWindow::imageBackgroundToImages()
+{
+  look->backgroundToImages();
 }
 
 void MainWindow::imageRemoveImage()
@@ -542,6 +555,7 @@ void MainWindow::categorizeCalculateBackground()
     subtractBackgroundAct->setEnabled(true);
     setBackgroundLevelAct->setEnabled(true);
     exportBackgroundAct->setEnabled(true);
+    backgroundToImagesAct->setEnabled(true);
   }
 }
 
