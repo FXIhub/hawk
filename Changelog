@@ -1,3 +1,22 @@
+2008-08-16	Filipe Maia	<filipe@xray.bmc.uu.se>
+	* Added the capability to work with 3D images.
+	* Added many new options to control the support update mechanism.
+	* Added a metadata options file which includes some options documentation
+	* Added more examples and a few preliminary benchmarks
+	* Added the option of comparing the current solution with an expected solution using
+	the solution_file option.
+	* Added the possibility to filter the intensities at runtime according to the support
+	using the filter_intensities option.
+	* Changed the way images are rescaled so that now the image guess is scaled to the
+	experimental intensities so that they both have the same power (sum of squares)
+	* Added the option to specify a file with the standard deviations of each pixel
+	for the intensity file, using the intensities_std_dev_file option.
+	* Added the option to specify the support of the autocorrelation for denoising
+	purposes using the autocorrelation_support_file option.
+	* Added a two graphical programs to look at images. Look and Preview. They can
+	also be used for some basic manipulation.
+	* Added a program to convert images to reflection lists.
+	* Many other small improvements and code cleaning.
 2007-04-19	Filipe Maia	<filipe@xray.bmc.uu.se>
 
 	* Added the image_blur_radius and image_blur_period options.
@@ -10,12 +29,12 @@
 	* Introduced the "object_area" option, which is a floating point
 	number which quantifies what's the area of the object compared
 	to the size of the image. It can take values between 0.0 and 1.0.
-	* Added a new support update algorithm called "constant_area". 
+	* Added a new support update algorithm called "constant_area".
 	It simply keeps the area of the support fixed. The support area
 	is given by the new "object_area" option.
 
 2007-04-18	Filipe Maia	<filipe@xray.bmc.uu.se>
-	
+
 	* Fixed the fourier space error calculation for the RAAR algorithm.
 
 2007-04-13	Filipe Maia	<filipe@xray.bmc.uu.se>
