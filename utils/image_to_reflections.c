@@ -20,10 +20,11 @@ Options * parse_options(int argc, char ** argv){
     -y: Pixel height (um)\n\
     -z: Pixel depth (um)\n\
     -s: Stride in pixels (box reduction factor)\n\
+    -S: Sigma\n\
     -v: Produce lots of output files for diagnostic\n\
     -h: print this text\n\
 ";
-  static char optstring[] = "i:r:o:w:d:x:y:vhs:z:";
+  static char optstring[] = "i:r:o:w:d:x:y:vhs:z:S:";
   Options * opts = calloc(1,sizeof(Options));
   set_defaults(opts);
 
@@ -57,6 +58,9 @@ Options * parse_options(int argc, char ** argv){
       break;
     case 's':
       opts->stride = atoi(optarg);
+      break;
+    case 'S':
+      opts->sigma = atof(optarg);
       break;
     case 'd':
       /* the e-3 comes from the conversion from mm to m*/
@@ -93,6 +97,7 @@ void set_defaults(Options * opts){
   opts->k_y = NULL;
   opts->k_z = NULL;
   opts->stride = 1;
+  opts->sigma = 0;
 }
 
 
@@ -142,6 +147,12 @@ void image_fourier_coords(Image * in, sp_3matrix ** k_x, sp_3matrix ** k_y, sp_3
   *k_x = sp_3matrix_alloc(sp_image_x(in),sp_image_y(in),sp_image_z(in));
   *k_y = sp_3matrix_alloc(sp_image_x(in),sp_image_y(in),sp_image_z(in));
   *k_z = sp_3matrix_alloc(sp_image_x(in),sp_image_y(in),sp_image_z(in));
+
+  /* Restrict the image_center to be on an integer pixel.
+     This is required to make the Miller indeces come out as integers.*/
+  in->detector->image_center[0] = (int)round(in->detector->image_center[0]);
+  in->detector->image_center[1] = (int)round(in->detector->image_center[1]);
+  in->detector->image_center[2] = (int)round(in->detector->image_center[2]);
 
   for(int z = 0;z<sp_image_z(in);z++){
     for(int y = 0;y<sp_image_y(in);y++){
@@ -235,9 +246,9 @@ void print_output(Options * opts){
   fprintf(fp,"TITLE Hawk to MTZ\n");
   fprintf(fp,"CELL %f %f %f %f %f %f\n",1e10*opts->cell.a,1e10*opts->cell.b,1e10*opts->cell.c,opts->cell.alpha,opts->cell.beta,opts->cell.gamma);
   if(opts->object){
-    fprintf(fp,"LABOUT H K L I FC PHIC\n");
-    fprintf(fp,"CTYPE  H H H J F P\n");
-    fprintf(fp,"FORMAT '(3F5.0,1X,F10.3,1X,F10.3,1X,F10.3)'\n");
+    fprintf(fp,"LABOUT H K L IMEAN SIGIMEAN FC PHIC\n");
+    fprintf(fp,"CTYPE  H H H J Q F P\n");
+    fprintf(fp,"FORMAT '(3F5.0,1X,F10.3,1X,F10.3,1X,F10.3,1X,F10.3)'\n");
     fprintf(fp,"SYMM P1\n");
     fprintf(fp,"+\n");
     fprintf(fp,"exit\n");
@@ -255,7 +266,8 @@ void print_output(Options * opts){
 	    if(K-(int)K < 0.01 ){
 	      if(L-(int)L < 0.01){
 		/* We are on an integer HKL or we used a stride bigger than 100. Hopefully the former */
-		fprintf(fp,"%5d%5d%5d %10.3e %10.3e %10.3e\n",(int)round(H),(int)round(K),(int)round(L),sp_real(sp_image_get(opts->intensity,x,y,z)),sp_cabs(F),sp_carg(F)*180/M_PI);
+		/* Changing H for some strange reason that i don't really understand  */
+		fprintf(fp,"%5d%5d%5d %10.3e %10.3e %10.3e %10.3e\n",(int)-round(H),(int)round(K),(int)round(L),sp_real(sp_image_get(opts->intensity,x,y,z)),opts->sigma,sp_cabs(F),sp_carg(F)*180/M_PI);
 	      }
 	    }
 	  }

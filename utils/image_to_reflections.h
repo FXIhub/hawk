@@ -47,6 +47,7 @@ typedef struct {
   Image * Fc;
   Cell cell;
   int stride;
+  real sigma;
 }Options;
 
 Options * parse_options(int argc, char ** argv);

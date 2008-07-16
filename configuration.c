@@ -497,7 +497,7 @@ void write_options_file(char * filename, Options * res){
       }else if(variable_metadata[i].variable_type == Type_Bool){
 	config_setting_set_bool(s,*((int *)variable_metadata[i].variable_address));
       }else if(variable_metadata[i].variable_type == Type_Real){
-	config_setting_set_float(s,*((int *)variable_metadata[i].variable_address));
+	config_setting_set_float(s,*((real *)variable_metadata[i].variable_address));
       }else if(variable_metadata[i].variable_type == Type_MultipleChoice){
 	for(int j = 0;;j++){
 	  if(variable_metadata[i].list_valid_names[j] == NULL){
