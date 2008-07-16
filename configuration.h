@@ -8,7 +8,7 @@ extern "C"
 #endif /* __cplusplus */
 
 
-#define VERSION "1.13"
+#define VERSION "1.2"
 
 #include "libconfig.h"
 #include "spimage.h"
