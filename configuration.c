@@ -213,6 +213,10 @@ void read_options_file(char * filename, Options * res){
   }else if(global_options.real_image_filename){
     global_options.real_image = sp_image_read(global_options.real_image_filename,0);
   }
+  
+  if(global_options.support_mask_filename){
+    global_options.support_mask = sp_image_read(global_options.support_mask_filename,0);
+  }
 #if 0
 
 
