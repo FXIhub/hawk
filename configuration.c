@@ -210,11 +210,13 @@ void read_options_file(char * filename, Options * res){
   /* Make sure option is set and is not empty */
   if(global_options.diffraction_filename && strcmp(global_options.diffraction_filename,"")){    
     global_options.diffraction = sp_image_read(global_options.diffraction_filename,0);
-  }else if(global_options.real_image_filename){
+  }else if(global_options.real_image_filename  && strcmp(global_options.real_image_filename,"")){
     global_options.real_image = sp_image_read(global_options.real_image_filename,0);
+  }else{
+    sp_error_fatal("Neither diffraction nor real image specified!");
   }
   
-  if(global_options.support_mask_filename){
+  if(global_options.support_mask_filename  && strcmp(global_options.support_mask_filename,"")){
     global_options.support_mask = sp_image_read(global_options.support_mask_filename,0);
   }
 #if 0
