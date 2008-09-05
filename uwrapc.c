@@ -257,10 +257,10 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
   chdir(dir);
 #endif
   if(real_in->num_dimensions == SP_2D){
-    sp_image_write(support,"support.png",COLOR_JET);
+    sp_image_write(support,"support.png",COLOR_GRAYSCALE);
     sp_image_write(real_in,"initial_guess.png",COLOR_JET);
     sp_image_write(real_in,"initial_guess.h5",sizeof(real));
-    sp_image_write(initial_support,"initial_support.png",COLOR_JET);
+    sp_image_write(initial_support,"initial_support.png",COLOR_GRAYSCALE);
   }else if(real_in->num_dimensions == SP_3D){
     sp_image_write(support,"support.vtk",0);
   }
@@ -343,7 +343,7 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
 	sprintf(buffer,"real_out_phase-%07d.png",opts->cur_iteration);
 	sp_image_write(real_out,buffer,COLOR_JET|COLOR_PHASE);
 	sprintf(buffer,"support-%07d.png",opts->cur_iteration);
-	sp_image_write(support,buffer,COLOR_JET);
+	sp_image_write(support,buffer,COLOR_GRAYSCALE);
 	sprintf(buffer,"amplitudes-%07d.png",opts->cur_iteration);
 	sp_image_write(amp,buffer,COLOR_JET);
 	
