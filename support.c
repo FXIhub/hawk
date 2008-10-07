@@ -115,7 +115,7 @@ Image * get_support_from_patterson(Image * input, Options * opts){
     }
   }
   if(patterson->num_dimensions == SP_2D){
-    sp_image_write(patterson,"patterson_support.png",COLOR_JET);
+    sp_image_write(patterson,"patterson_support.png",COLOR_GRAYSCALE);
   }else if(patterson->num_dimensions == SP_3D){
     sp_image_write(patterson,"patterson_support.vtk",0);
   }

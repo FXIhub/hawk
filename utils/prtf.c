@@ -183,12 +183,25 @@ int main(int argc, char ** argv){
   Image * avg_img;
   int bin;
   long long i;
+  char buffer[1024] = "";
+  char buffer2[1024] = "";
+  char * output;
+  FILE * f;
   if(argc < 3){
-    printf("Usage: %s <image1> [image2] ...\n",argv[0]);
+    printf("Usage: %s <output file>  <image1> [image2] ...\n",argv[0]);
     exit(0);
   }
+  output = argv[1];
+  sprintf(buffer2,"%s.log",output);
+  f = fopen(buffer2,"w");
+  for(i = 0;i<argc;i++){
+    strcat(buffer,argv[i]);
+    strcat(buffer," ");
+  }
+  fprintf(f,"%s\n",buffer);
+  fclose(f);
 
-  img = sp_image_read(argv[1],0);
+  img = sp_image_read(argv[2],0);
   sp_image_dephase(img);
   avg_img = sp_image_duplicate(img,SP_COPY_ALL);
   sum = sp_image_fft(img);
@@ -202,22 +215,26 @@ int main(int argc, char ** argv){
   }
 
   sp_image_free(img);
-  for(i = 1;i<argc-1;i++){
-    img = sp_image_read(argv[i+1],0);
+  for(i = 3;i<argc;i++){
+    img = sp_image_read(argv[i],0);
+    if(!img){
+      fprintf(stderr,"Could not open %s. Skipping.\n.",argv[i]);
+      continue;
+    }
     sp_image_dephase(img);
-    //sp_image_superimpose(avg_img,img,SP_ENANTIOMORPH);
+    //    sp_image_superimpose(avg_img,img,SP_ENANTIOMORPH);
     sp_image_add(avg_img,img);
-    char buff2[1024];
-    sprintf(buff2,"%s-super.png",argv[i+1]);
-    sp_image_write(img,buff2,COLOR_JET);
+    //    char buff2[1024];
+    //    sprintf(buff2,"%s-super.png",argv[i+1]);
+    //    sp_image_write(img,buff2,COLOR_JET);
     tmp = sp_image_fft(img);
-    sprintf(buff2,"%s.png",argv[i+1]);
-    sp_image_write(tmp,buff2,COLOR_PHASE);
+    //    sprintf(buff2,"%s.png",argv[i+1]);
+    //    sp_image_write(tmp,buff2,COLOR_PHASE);
     //    maximize_overlap(sum,tmp);
     for(int j = 0;j<sp_image_size(tmp);j++){
       tmp->image->data[j] = sp_cscale(tmp->image->data[j],1.0/sp_cabs(tmp->image->data[j]));
     }
-
+    
     sp_image_add(sum,tmp);
     sp_image_dephase(tmp);
     sp_image_add(amps,tmp);
@@ -247,11 +264,12 @@ int main(int argc, char ** argv){
   avg_prtf /= sp_image_size(sum);
 /*  printf("Average PRTF - %f\n",avg_prtf);
   printf("Resolution bined PRTF\n");*/
+  f = fopen(output,"w");  
   for(i = 0;i<NBINS;i++){
     if(bin_count[i]){
       bins[i] /= bin_count[i];
     }
-    printf("%f %f\n",i*max_res/NBINS,bins[i]);    
+    fprintf(f,"%f %f\n",i*max_res/NBINS,bins[i]);    
   }
   return 0;
 }
