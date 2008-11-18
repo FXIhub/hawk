@@ -122,10 +122,10 @@ int main(int argc, char ** argv){
   out->num_dimensions = SP_2D;
   /* write HDF5 */
   sp_image_write(out,opts->output,sizeof(real));
-  sp_image_fft(sp_image_shift(out));
+  //  sp_image_fft(sp_image_shift(out));
   autocorrelation = bilinear_rescale(sp_image_shift(sp_image_fft(sp_image_shift(out))),256,256,1);
   
-  sp_image_write(autocorrelation,"autocorrelation.png",COLOR_JET|LOG_SCALE|SP_2D);
+  sp_image_write(autocorrelation,"autocorrelation.png",COLOR_GRAYSCALE|LOG_SCALE|SP_2D);
   sp_image_write(autocorrelation,"autocorrelation.vtk",SP_2D);
   sprintf(buffer,"%s.png",opts->output);
   sp_image_write(out,buffer,COLOR_JET|LOG_SCALE);

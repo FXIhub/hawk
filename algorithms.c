@@ -84,6 +84,8 @@ void phase_smoothening_iteration(Image * real_in, Options * opts, Log * log){
   int i;
   real * amps = sp_malloc(sp_image_size(out)*sizeof(real));
   real radius = get_phases_blur_radius(opts);
+  /* dummy assignment */
+  log = NULL;
   for(i = 0;i<sp_image_size(out);i++){
     amps[i] = sp_cabs(out->image->data[i]);
     sp_real(out->image->data[i]) /= amps[i];
@@ -632,6 +634,8 @@ Image * basic_so2d_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in
   static Image * DGns0 = NULL;
   static Image * Gs = NULL;
   static Image * Gns = NULL;
+  /* dummy assignment */
+  exp_sigma = NULL;
   if(!Hab){
     Hab = sp_3matrix_alloc(2,2,2);
   }

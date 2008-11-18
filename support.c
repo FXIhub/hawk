@@ -17,7 +17,9 @@ Image * get_updated_support(Image * input, real level , real radius, Options * o
 
   sp_image_write(input,"support_input.vtk",0);
   Image * t = sp_image_duplicate(input,SP_COPY_DATA);
-  sp_image_dephase(t);
+  if(opts->support_update_algorithm != COMPLEX_DECREASING_AREA){
+    sp_image_dephase(t);
+  }
   res = gaussian_blur(t, radius);
   sp_image_write(res,"support_blur2.vtk",0);
   sp_image_free(t);
@@ -281,10 +283,12 @@ real get_support_level(Image * input, real * previous_size , real radius, Log * 
     new_level = sp_cabs(res->image->data[(int)(sp_image_size(res)*opts->object_area)])/sp_cabs(res->image->data[0]);
     sp_image_free(res);
     return new_level;
-  }else if(opts->support_update_algorithm == DECREASING_AREA){
+  }else if(opts->support_update_algorithm == DECREASING_AREA || opts->support_update_algorithm == COMPLEX_DECREASING_AREA){
     /* Keeps a constant area for the support */    
     Image * t = sp_image_duplicate(input,SP_COPY_DATA);
-    sp_image_dephase(t);
+    if(opts->support_update_algorithm == DECREASING_AREA){
+      sp_image_dephase(t);
+    }
     res = gaussian_blur(t, radius);
     sp_image_free(t);
     qsort(res->image->data,sp_c3matrix_size(res->image),sizeof(Complex),descend_complex_compare);

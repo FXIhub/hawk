@@ -150,6 +150,8 @@ real image_correlation(Image * a, Image * b, Image * corr){
   real correlation;
   int k;
   int i;
+  /* Dummy statement*/
+  corr = NULL;
   for( i=2,k=2;i<=sp_image_size(a);i++){
     if(a->mask->data[i] && b->mask->data[i]){
       sweep = (k - 1.0) / k;

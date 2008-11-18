@@ -341,7 +341,7 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
 	sprintf(buffer,"real_out-%07d.png",opts->cur_iteration);
 	sp_image_write(real_out,buffer,COLOR_JET);
 	sprintf(buffer,"real_out_phase-%07d.png",opts->cur_iteration);
-	sp_image_write(real_out,buffer,COLOR_JET|COLOR_PHASE);
+	sp_image_write(real_out,buffer,COLOR_WHEEL|COLOR_PHASE);
 	sprintf(buffer,"support-%07d.png",opts->cur_iteration);
 	sp_image_write(support,buffer,COLOR_GRAYSCALE);
 	sprintf(buffer,"amplitudes-%07d.png",opts->cur_iteration);

@@ -32,6 +32,10 @@ int main(int argc, char ** argv){
   Image * back_tmp;
   Image * res = NULL;
   Image * den = NULL;
+  if(argc != 2){
+    fprintf(stderr,"At least 2 arguments required!\n");
+    return 1;
+  }
   fd = fopen(argv[1],"r");
   while(fgets(line,1024,fd)){
     n = sscanf(line,"%lf %lf %s %s",&time,&saturation,img,back);

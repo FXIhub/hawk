@@ -5,7 +5,6 @@
 
 int main(int argc, char ** argv){
   Image * a, * out;
-  int i;
   if(argc < 3){
     printf("Usage: image_fft <input image> <output image>\n");
     return 0;

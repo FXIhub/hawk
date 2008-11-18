@@ -195,14 +195,13 @@ int main(int argc, char ** argv){
   sprintf(buffer2,"%s.log",output);
   f = fopen(buffer2,"w");
   for(i = 0;i<argc;i++){
-    strcat(buffer,argv[i]);
-    strcat(buffer," ");
+    fprintf(f,"%s ",argv[i]);
   }
-  fprintf(f,"%s\n",buffer);
+  fprintf(f,"\n");
   fclose(f);
 
   img = sp_image_read(argv[2],0);
-  sp_image_dephase(img);
+  /*  sp_image_dephase(img);*/
   avg_img = sp_image_duplicate(img,SP_COPY_ALL);
   sum = sp_image_fft(img);
   for(int j = 0;j<sp_image_size(sum);j++){
@@ -221,16 +220,18 @@ int main(int argc, char ** argv){
       fprintf(stderr,"Could not open %s. Skipping.\n.",argv[i]);
       continue;
     }
-    sp_image_dephase(img);
-    //    sp_image_superimpose(avg_img,img,SP_ENANTIOMORPH);
+    sp_image_superimpose(avg_img,img,SP_ENANTIOMORPH);
+    sp_image_phase_match(avg_img,img,2);
     sp_image_add(avg_img,img);
-    //    char buff2[1024];
-    //    sprintf(buff2,"%s-super.png",argv[i+1]);
-    //    sp_image_write(img,buff2,COLOR_JET);
+    char buff2[1024];
+    sprintf(buff2,"%s-super.png",argv[i+1]);
+    sp_image_write(img,buff2,COLOR_WHEEL|COLOR_PHASE);
     tmp = sp_image_fft(img);
     //    sprintf(buff2,"%s.png",argv[i+1]);
     //    sp_image_write(tmp,buff2,COLOR_PHASE);
     //    maximize_overlap(sum,tmp);
+
+    /* Do Normalize */
     for(int j = 0;j<sp_image_size(tmp);j++){
       tmp->image->data[j] = sp_cscale(tmp->image->data[j],1.0/sp_cabs(tmp->image->data[j]));
     }
@@ -249,6 +250,7 @@ int main(int argc, char ** argv){
     bin_count[i] = 0;
   }
   sp_image_dephase(prtf);
+  /* Old mean code 
   for(i = 0;i<sp_image_size(sum);i++){
     sp_real(prtf->image->data[i]) /= (sp_real(amps->image->data[i])+FLT_EPSILON);
     avg_prtf += sp_real(prtf->image->data[i]);
@@ -256,20 +258,39 @@ int main(int argc, char ** argv){
     bins[bin] += sp_real(prtf->image->data[i]);
     bin_count[bin]++;
   }
-  sp_image_write(sum,"avg_fft.h5",sizeof(real));
-  sp_image_write(avg_img,"avg_image.h5",sizeof(real));
-  sp_image_write(avg_img,"avg_image.png",COLOR_JET);
-  sp_image_write(amps,"amps.h5",sizeof(real));
-  sp_image_write(prtf,"prtf.h5",sizeof(real));
+  */
+  /* New mean code */
+  real bin_num[NBINS];
+  real bin_den[NBINS];
+  for(i = 0;i<NBINS;i++){
+    bin_num[i] = 0;
+    bin_den[i] = FLT_EPSILON;
+  }
+  for(i = 0;i<sp_image_size(sum);i++){
+    //    sp_real(prtf->image->data[i]) /= (sp_real(amps->image->data[i])+FLT_EPSILON);
+    bin = (NBINS-1)*sp_image_dist(sum,i,SP_TO_CORNER)/max_res;
+    bin_num[bin] += sp_real(prtf->image->data[i]);
+    bin_den[bin] += sp_real(amps->image->data[i]);
+    avg_prtf += sp_real(prtf->image->data[i]);
+  }
+
+  sprintf(buffer2,"%s-avg_fft.h5",output);
+  sp_image_write(sum,buffer2,sizeof(real));
+  sprintf(buffer2,"%s-avg_image.h5",output);
+  sp_image_write(avg_img,buffer2,sizeof(real));
+  sprintf(buffer2,"%s-avg_image-phase.png",output);
+  sp_image_write(avg_img,buffer2,COLOR_WHEEL|COLOR_PHASE);
+  sprintf(buffer2,"%s-avg_image.png",output);
+  sp_image_write(avg_img,buffer2,COLOR_JET);
+  sprintf(buffer2,"%s-amps.h5",output);
+  sp_image_write(amps,buffer2,sizeof(real));
+  sprintf(buffer2,"%s-prtf.h5",output);
+  sp_image_write(prtf,buffer2,sizeof(real));
   avg_prtf /= sp_image_size(sum);
-/*  printf("Average PRTF - %f\n",avg_prtf);
-  printf("Resolution bined PRTF\n");*/
   f = fopen(output,"w");  
   for(i = 0;i<NBINS;i++){
-    if(bin_count[i]){
-      bins[i] /= bin_count[i];
-    }
-    fprintf(f,"%f %f\n",i*max_res/NBINS,bins[i]);    
+    real v = bin_num[i]/bin_den[i];
+    fprintf(f,"%f %f\n",i*max_res/NBINS,v);
   }
   return 0;
 }
