@@ -59,12 +59,12 @@ void create_fft_bench_table(int iter, FILE * file, int nthreads){
   struct timeval tv_e;
   int min_time = 1000000000;
   sp_init_fft(nthreads);
-  for(i = 200;i>190;i--){
-    if(max_prime_factor(i) >= 8){
-      fprintf(file,"%d\t%d\t%d\n",i,-1,opt_size);
-      continue;
-    }
-    sp_image_realloc(test,i,i,i);
+  for(i = 2000;i>190;i--){
+    //    if(max_prime_factor(i) >= 8){
+    //      fprintf(file,"%d\t%d\t%d\n",i,-1,opt_size);
+    //      continue;
+    //    }
+    sp_image_realloc(test,i,i,1);
     test->scaled = 1; 
     test->phased = 1;
     test->shifted = 1;
@@ -82,13 +82,13 @@ void create_fft_bench_table(int iter, FILE * file, int nthreads){
     }    
     gettimeofday(&tv_e,NULL);
     time_e = tv_e.tv_sec*1000000+tv_e.tv_usec;
-    if(time_e-time_i < min_time){
+    //    if(time_e-time_i < min_time){
       min_time = time_e-time_i;
       opt_size = i;
       fprintf(file,"%d\t%d\t%d\n",i,time_e-time_i,opt_size);    
-    }else{
-      fprintf(file,"%d\t%d\t%d\n",i,-1,opt_size);    
-    }
+      //    }else{
+      //      fprintf(file,"%d\t%d\t%d\n",i,-1,opt_size);    
+      //    }
 
     fflush(file);
   }
@@ -99,6 +99,7 @@ int main(int argc, char ** argv){
   char buffer2[1024];
   char * home_dir;
   int nthreads = 1;
+  char hostname[1024];
   if(argc > 1){
     nthreads = atoi(argv[1]);
   }
@@ -111,7 +112,9 @@ int main(int argc, char ** argv){
   sprintf(buffer2,"%s/.uwrapc",home_dir);
   mkdir(buffer2,0755);
 #endif
-  sprintf(buffer2,"%s/.uwrapc/fft_speed",home_dir);
+  gethostname(hostname,1024);
+  sprintf(buffer2,"%s/.uwrapc/fft_speed-%s-%d_cores",home_dir,hostname,nthreads);
+  printf("Outputing results to %s\n",buffer2);
   f = fopen(buffer2,"w");
   create_fft_bench_table(1,f,nthreads);
   fclose(f);

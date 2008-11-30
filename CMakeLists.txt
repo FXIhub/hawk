@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 2.6)
+
 PROJECT (uwrapc)
 
 ADD_DEFINITIONS(-D H5_USE_16_API)

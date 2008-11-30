@@ -1,3 +1,4 @@
+
 PROJECT (uwrapc)
 
 SET(CMAKE_VERBOSE_MAKEFILE ON)
@@ -43,6 +44,7 @@ ADD_EXECUTABLE(image_to_reflections image_to_reflections.c)
 ADD_EXECUTABLE(multi_shot_exposure multi_shot_exposure.c)
 ADD_EXECUTABLE(scale_to_photons_per_pixel scale_to_photons_per_pixel.c)
 ADD_EXECUTABLE(VMIraw2tiff VMIraw2tiff.c)
+ADD_EXECUTABLE(recover_shanon recover_shanon.c)
 
 IF(MATHEVAL_LIBRARY AND MATHEVAL_INCLUDE)
   ADD_EXECUTABLE(image_math image_math.c)
@@ -84,6 +86,7 @@ TARGET_LINK_LIBRARIES(image_to_reflections ${LIBRARY_LIST})
 TARGET_LINK_LIBRARIES(multi_shot_exposure ${LIBRARY_LIST})
 TARGET_LINK_LIBRARIES(scale_to_photons_per_pixel ${LIBRARY_LIST})
 TARGET_LINK_LIBRARIES(VMIraw2tiff ${LIBRARY_LIST})
+TARGET_LINK_LIBRARIES(recover_shanon ${LIBRARY_LIST} gsl gslcblas)
 #TARGET_LINK_LIBRARIES(stretch ${LIBRARY_LIST})
 
 LIST(APPEND BINS tiff2h5 image_to_vtk gif2h5image image_to_png png_to_image tiff2png autocorrelate prtf denoise background_subtract propagate matrix2image rs_r_factor average_h5 r_factor shell_plot separate_channel fft_bench manual_merge image_fft spot_integrate image_to_reflections multi_shot_exposure)

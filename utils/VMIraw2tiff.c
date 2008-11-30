@@ -106,7 +106,7 @@ int main(int argc, char ** argv){
       }
       sp_image_write(image,buffer,COLOR_JET);
       sp_image_free(image);
-      exit(0);
+      //      exit(0);
     }
   }else{
     /* We have the single image case */ 

@@ -6,7 +6,6 @@ if((scalar @ARGV) < 1){
     print "Usage: repeat_reconstruction <n reconstructions per thread> [starting n] [nthreads]\n";
     exit(0);
 }
-print "Total reconstructions - ".$ARGV[0]."\n";
 my $nrec = $ARGV[0];
 my $i0 = 0;
 my $nthreads = 1;
@@ -18,6 +17,7 @@ if((scalar @ARGV) >= 2){
 if((scalar @ARGV) >= 3){
 	$nthreads = $ARGV[2];
 }
+print "Total reconstructions - ".$ARGV[0]*$nthreads."\n";
 
 print "First reconstruction - ".$i0."\n";
 
@@ -33,7 +33,7 @@ if($nthreads > 1){
 	} else {
 	    # I'm the child
 	    for($i = $i0 ;$i<$nrec+$i0;$i++){
-		my $dir = printf("%06d",$i);
+		my $dir = sprintf("%06d",$i);
 		system("mkdir -p $dir");
 		system("cp uwrapc.conf $dir");
 		system("cd $dir && uwrapc");
