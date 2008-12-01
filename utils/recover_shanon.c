@@ -4,8 +4,38 @@
 #include <gsl/gsl_rng.h>
 #include <time.h>
 
+ int factorial(int n)
+{
+  int res = 1;
+  int i;
+  for (i = 2; i <= n; i++)
+    res *= i;
+  return res;
+}
 
-double sp_image_correlation(Image * a, Image * b){
+real calculate_prob(Image *ref, Image *img)
+{
+  real sum = 0.0;
+  int count = 0;
+  int i;
+
+  for (i = 0; i < sp_image_size(img); i++) {
+    count += (int) sp_real(img->image->data[i]);
+  }
+  for (i = 0; i < sp_image_size(img); i++) {
+    if (sp_real(ref->image->data[i]) == 0.0) {
+      return 0.0;
+    } else if (sp_real(img->image->data[i]) != 0.0) {
+      sum += ( -(real) count * sp_real(ref->image->data[i]) +
+               sp_real(img->image->data[i]) *
+               log((real) count * sp_real(ref->image->data[i])) -
+               log(factorial((int) sp_real(img->image->data[i]))));
+    }
+  }
+  return sum;
+}
+
+real sp_image_correlation(Image * a, Image * b){
   Complex * x = a->image->data;
   Complex * y = b->image->data;
   int N = sp_image_size(a);
@@ -123,28 +153,68 @@ int main(int argc, char ** argv){
 
   /* Initialize with uniform distribution in [0,1) */
   Image * restore = sp_image_alloc(sp_image_x(a),sp_image_y(a),sp_image_z(a));
+  Image * after = sp_image_alloc(sp_image_x(a),sp_image_y(a),sp_image_z(a));
+  real sum = 0;
   for(int i = 0;i<sp_image_size(a);i++){
     restore->image->data[i] = sp_cinit(gsl_rng_uniform(r),0);
+    sum += sp_real(restore->image->data[i]);
   }
+  sp_image_scale(restore,1/sum);
+
+  /* Initialize with one of the samples */
+  /*  Image * restore = sp_image_duplicate(random_orient_samples[n_samples-1],SP_COPY_DATA);*/
   sp_image_write(a,"orig.png",COLOR_GRAYSCALE);
   sp_image_write(orient_samples[1],"sample.png",COLOR_GRAYSCALE);
   sp_image_write(avg_samples,"avg_sample.png",COLOR_GRAYSCALE);
   sp_image_write(avg_random_samples,"avg_random_sample.png",COLOR_GRAYSCALE);
   for(int iter = 0;;iter++){
+    /*  Clear after */ 
+          for(int i = 0;i<sp_image_size(a);i++){
+      sp_real(after->image->data[i]) = 0;
+      }
     for(int i = 0;i<n_samples;i++){
+      double max_corr = -10000000000000000;
+      int max_j = -1;
       for(int j = 0;j<4;j++){
-	double corr = sp_image_correlation(restore,rotated_random_orient_samples[i][j]);
-	if(corr< 0){
-	  continue;
+	/*	real corr = sp_image_correlation(restore,rotated_random_orient_samples[i][j]);*/
+	real corr = calculate_prob(restore,rotated_random_orient_samples[i][j]);
+	if(corr > max_corr){
+	  max_corr = corr;
+	  max_j = j;
 	}
+	/*	if(corr< 0){
+	  continue;
+	  }*/
 	//	corr *= corr;
 	//	corr *= corr;
 	//	corr = sqrt(fabs(corr));
-	for(int k = 0;k<sp_image_size(a);k++){
+	/*	for(int k = 0;k<sp_image_size(a);k++){
 	  sp_real(restore->image->data[k]) += corr*sp_real(rotated_random_orient_samples[i][j]->image->data[k]);
-	}
+	  }*/
       }
+      if(max_j == -1){
+	abort();
+      }
+      /*      for(int k = 0;k<sp_image_size(a);k++){
+	sp_real(restore->image->data[k]) += sp_real(rotated_random_orient_samples[i][max_j]->image->data[k]);
+	}*/
+
+      for(int k = 0;k<sp_image_size(a);k++){
+	sp_real(after->image->data[k]) += sp_real(rotated_random_orient_samples[i][max_j]->image->data[k]);
+      }
+
     }
+    Image * tmp = restore;
+    restore = after;
+    after = tmp;
+    /* normalize */
+    for(int i = 0;i<sp_image_size(a);i++){
+      sp_real(after->image->data[i]) = 0;
+      sum += sp_real(restore->image->data[i]);
+    }
+    sp_image_scale(restore,1/sum);
+    
+    
     double corr_restore = 0;
     corr_restore = sp_image_correlation(a,restore);
     Image * orient_restore = sp_image_duplicate(restore,SP_COPY_DATA);
