@@ -3,9 +3,8 @@
 
 #define RUN_AVG_LEN 500
 
-#include "configuration.h"
 
-typedef struct{
+typedef struct _Log{
   real Ereal;
   real Efourier;
   real FcFo;
@@ -18,11 +17,14 @@ typedef struct{
   real SupSize_run_avg;
   real dEreal;
   real dSupSize;
+  real dRho;
   real threshold;
   Image * cumulative_fluctuation;
   real int_cum_fluctuation;
   real sol_correlation;
 }Log;
+
+#include "configuration.h"
 
 
 void init_log(Log * log);

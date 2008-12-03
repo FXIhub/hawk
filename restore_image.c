@@ -155,16 +155,17 @@ Image * restore_raar_iteration(Image * exp_amp, Image * real_in, Image * support
 }
 
 
-Image * estimate_error(Image * intensities, Image * support, Options * opts){  
+/*Image * estimate_error(Image * intensities, Image * support, Options * opts){  
   return NULL;
 }
+*/
 
 /* continue a reconstruction on this directory */
 /* these will simply set image_guess and initial_support
    to the last real_out and support_ respectively */
-void continue_reconstruction(Options * opts){
+/*void continue_reconstruction(Options * opts){
   
-} 
+  } */
 
 
 void rescale_image(Image * a){
@@ -414,9 +415,8 @@ void complete_restoration(Image * amp, Image * initial_support, Options * opts, 
 
 
 
-int main(int argc, char ** argv){
+int main(){
   Image * img = NULL;
-  Image * exp_sigma = NULL;
   char dir[1024];
   long long i;
   FILE * f;
@@ -436,7 +436,6 @@ int main(int argc, char ** argv){
   }else{
     perror("Could not open restore_image.conf");
   }
-  parse_options(argc,argv,opts);
   write_options_file("restore_image.confout",opts);
   sp_init_fft(opts->nthreads);
   if(opts->diffraction){
@@ -467,7 +466,7 @@ int main(int argc, char ** argv){
     }
   }
 
-  exp_sigma = estimate_error(img,opts->init_support,opts);
+  //  exp_sigma = estimate_error(img,opts->init_support,opts);
 
   sprintf(dir,"%s/",opts->work_dir);
   complete_restoration(img, opts->init_support, opts,dir);

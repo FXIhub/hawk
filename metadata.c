@@ -263,8 +263,8 @@ VariableMetadata variable_metadata[100] = {
     .id = Id_Algorithm,
     .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
-    .list_valid_values = {HIO,RAAR,HPR,CFLIP,RAAR_CFLIP,HAAR,SO2D,RAAR_PROJ,0},
-    .list_valid_names = {"hio","raar","hpr","cflip","raar_cflip","haar","so2d","raar_proj",0},
+    .list_valid_values = {HIO,RAAR,HPR,CFLIP,RAAR_CFLIP,HAAR,SO2D,RAAR_PROJ,DIFF_MAP,0},
+    .list_valid_names = {"hio","raar","hpr","cflip","raar_cflip","haar","so2d","raar_proj","diff_map",0},
     .variable_address = &(global_options.algorithm),
     .documentation = "The type of algorithm used during the phase retrieval. A few other options then depend on the type of algorithm chosen.",
     .reserved = NULL
@@ -744,9 +744,57 @@ VariableMetadata variable_metadata[100] = {
     .list_valid_names = {0},
     .variable_address = &(global_options.object_area_at_checkpoints),
     .reserved = NULL
+  },
+  {
+    .variable_name = "beta_checkpoints",
+    .variable_type = Type_Vector_Int,
+    .id = Id_Beta_Checkpoints,
+    .parent = &(variable_metadata[0]),
+    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
+    .list_valid_values = {0},
+    .list_valid_names = {0},
+    .variable_address = &(global_options.beta_checkpoints),
+    .documentation = "Check points given as the iteration number for which beta should take a certain value.",
+    .reserved = NULL
+  },
+  {
+    .variable_name = "beta_at_checkpoints",
+    .variable_type = Type_Vector_Real,
+    .id = Id_Beta_at_Checkpoints,
+    .parent = &(variable_metadata[0]),
+    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
+    .list_valid_values = {0},
+    .list_valid_names = {0},
+    .variable_address = &(global_options.beta_at_checkpoints),
+    .documentation = "The value of beta for each checkpoint. The checkpoints are set in beta_checkpoints.",
+    .reserved = NULL
+  },
+  {
+    .variable_name = "gamma1",
+    .variable_type = Type_Real,
+    .id = Id_Gamma1,
+    .parent = &(variable_metadata[0]),
+    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
+    .list_valid_values = {0},
+    .list_valid_names = {0},
+    .variable_address = &(global_options.gamma2),
+    .documentation = "Gamma1 or Gamma_S parameter of the difference map algorithm.",
+    .reserved = NULL
+  },
+  {
+    .variable_name = "gamma2",
+    .variable_type = Type_Real,
+    .id = Id_Gamma2,
+    .parent = &(variable_metadata[0]),
+    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
+    .list_valid_values = {0},
+    .list_valid_names = {0},
+    .variable_address = &(global_options.gamma2),
+    .documentation = "Gamma2 or Gamma_F parameter of the difference map algorithm.",
+    .reserved = NULL
   }
 };
 
 
 /* Don't forget to update this one!! */
-const int number_of_global_options = 64;
+const int number_of_global_options = 68;

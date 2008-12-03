@@ -675,3 +675,77 @@ Image * basic_so2d_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in
   sp_image_free(fft_in);
   return real_out;
 }
+
+
+/* This corresponds to the f1 map as explained in
+   Veit Elser's , "Random projections and the optimization of an algorithm for phase retrieval"
+   J Phys. A: Math. Gen. 36(2003) 2995-3007
+
+   This is the Real space constraint map.
+*/
+Image * serial_difference_map_f1(Image * real_in,Image * support,real gamma1){
+  Image * out = sp_image_duplicate(real_in,SP_COPY_DATA|SP_COPY_MASK);
+  for(int i = 0;i<sp_image_size(out);i++){
+    if(sp_real(support->image->data[i])){
+      /* inside support */
+      /* 1+gamma1-gamma1 is 1 so  do nothing */
+    }else{
+      /* outside support */
+      sp_real(out->image->data[i]) = -gamma1*sp_real(out->image->data[i]);
+      sp_imag(out->image->data[i]) = -gamma1*sp_imag(out->image->data[i]);
+
+    }
+  }
+  return out;
+}
+
+
+/* This corresponds to the f2 map as explained in
+   Veit Elser's , "Random projections and the optimization of an algorithm for phase retrieval"
+   J Phys. A: Math. Gen. 36(2003) 2995-3007
+
+   This is the Fourier constraint map.
+*/
+Image * serial_difference_map_f2(Image * exp_amp, Image * exp_sigma, Image * real_in,real gamma2){
+  Image * tmp = sp_image_fft(real_in);
+  Image * tmp2 = sp_proj_module(tmp,exp_amp);
+  sp_image_free(tmp);
+  Image * real_out = sp_image_ifft(tmp2);
+  sp_image_free(tmp2);
+  for(int i = 0;i<sp_image_size(real_out);i++){
+    sp_real(real_out->image->data[i]) = (1-gamma2)*sp_real(real_out->image->data[i])-gamma2*sp_real(real_in->image->data[i]);
+    sp_imag(real_out->image->data[i]) = (1-gamma2)*sp_imag(real_out->image->data[i])-gamma2*sp_imag(real_in->image->data[i]);
+  }
+  return real_out;
+}
+
+
+
+Image * serial_difference_map_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in, Image * support, 
+					Options * opts, Log * log){
+  real beta = get_beta(opts);
+  real gamma1 = get_gamma1(opts,log);
+  real gamma2 = get_gamma2(opts,log);
+  Image * real_out = sp_image_duplicate(real_in,SP_COPY_DATA|SP_COPY_MASK);  
+  Image * fft_in = sp_image_fft(real_in);
+  Image * f2 = serial_difference_map_f2(exp_amp,exp_sigma,real_in,gamma2);
+  Image * f1 = serial_difference_map_f1(real_in,support,gamma1);
+  Image * Pi1f2 = sp_proj_support(f2,support);
+  sp_image_free(f2);
+  Image * tmp = sp_image_fft(f1);
+  sp_image_free(f1);
+  Image * tmp2 = sp_proj_module(tmp,exp_amp);
+  sp_image_free(tmp);
+  Image * Pi2f1 = sp_image_ifft(tmp2);
+  sp_image_free(tmp2);
+  sp_image_sub(Pi1f2,Pi2f1);
+  sp_image_free(Pi2f1);
+  sp_image_scale(Pi1f2,beta);
+  sp_image_add(real_out,Pi1f2);
+  sp_image_free(Pi1f2);
+  if(opts->cur_iteration%opts->log_output_period == opts->log_output_period-1){
+    output_to_log(exp_amp,real_in, real_out, fft_in,support, opts,log);
+  }
+  sp_image_free(fft_in);
+  return real_out;
+}

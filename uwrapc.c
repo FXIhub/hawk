@@ -64,9 +64,10 @@ void get_intensities_noise(Options * opts){
 /* continue a reconstruction on this directory */
 /* these will simply set image_guess and initial_support
    to the last real_out and support_ respectively */
-void continue_reconstruction(Options * opts){
+
+/*void continue_reconstruction(Options * opts){
   
-} 
+  } */
 
 
 void synchronize_image_data(Image **  real_out, Image ** support){
@@ -86,7 +87,7 @@ void synchronize_image_data(Image **  real_out, Image ** support){
 
 
 /* Make sure that */
-void rescale_images(Image * a,Image * b){
+/*void rescale_images(Image * a,Image * b){
   double sum = 0;
   int i;
   for(i = 0;i<sp_c3matrix_size(a->image);i++){
@@ -95,7 +96,7 @@ void rescale_images(Image * a,Image * b){
   for(i = 0;i<sp_c3matrix_size(a->image);i++){
     sp_real(a->image->data[i]) /= sum;
   } 
-}
+  }*/
 
 void enforce_parsevals_theorem(Image * master, Image * to_scale){
   int i;
@@ -279,6 +280,8 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
     real_out = basic_so2d_iteration(amp, NULL, real_in, support,opts,&log);
   }else if(get_algorithm(opts,&log) == RAAR_PROJ){
     real_out = basic_raar_proj_iteration(amp, opts->intensities_std_dev, real_in, support,opts,&log);
+  }else if(get_algorithm(opts,&log) == DIFF_MAP){
+    real_out = serial_difference_map_iteration(amp, opts->intensities_std_dev, real_in, support,opts,&log);
   }else{
     fprintf(stderr,"Error: Undefined algorithm!\n");
     exit(-1);
@@ -655,7 +658,7 @@ int main(int argc, char ** argv){
   if(f){
     fclose(f);
     read_options_file("uwrapc.conf",opts);
-    parse_options(argc,argv,opts);
+    //    parse_options(argc,argv,opts);
     write_options_file("uwrapc.confout",opts);
   }else if(!socket){
     perror("Could not open uwrapc.conf");

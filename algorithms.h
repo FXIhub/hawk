@@ -33,4 +33,8 @@ Image * basic_so2d_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in
 			     Options * opts, Log * log);
 
 void phase_smoothening_iteration(Image * real_in, Options * opts, Log * log);
+Image * serial_difference_map_f1(Image * real_in,Image * support, real gamma);
+Image * serial_difference_map_f2(Image * exp_amp, Image * exp_sigma, Image * real_in, real gamma);
+Image * serial_difference_map_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in, Image * support, 
+					Options * opts, Log * log);
 #endif

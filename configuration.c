@@ -122,6 +122,10 @@ Options * set_defaults(){
   opt->filter_intensities = 0;
   opt->object_area_checkpoints = NULL;
   opt->object_area_at_checkpoints = NULL;
+  opt->beta_checkpoints = NULL;
+  opt->beta_at_checkpoints = NULL;
+  opt->gamma1 = -10000;
+  opt->gamma2 = -10000;
   return opt;
 }
 
@@ -182,7 +186,7 @@ void read_options_file(char * filename, Options * res){
 	  /* Change string to lowercase for comparison */
 	  char buffer[OPTION_STRING_SIZE];
 	  strcpy(buffer,config_lookup_string(&config,path));
-	  for(int j = 0;j<strlen(buffer);j++){
+	  for(unsigned int j = 0;j<strlen(buffer);j++){
 	    buffer[j] = tolower(buffer[j]);
 	  }
 	  /* Compare with list of known good strings */
@@ -429,9 +433,6 @@ void read_options_file(char * filename, Options * res){
 }
 
 
-void parse_options(int argc, char ** argv, Options * res){
-}
-
 
 void write_options_file(char * filename, Options * res){
   config_t config;
@@ -489,14 +490,14 @@ void write_options_file(char * filename, Options * res){
       }else if(variable_metadata[i].variable_type == Type_Vector_Real){
 	sp_vector * v = *((sp_vector **)variable_metadata[i].variable_address);
 	if(v){
-	  for(int j= 0;j<sp_vector_size(v);j++){
+	  for(unsigned int j= 0;j<sp_vector_size(v);j++){
 	    config_setting_set_float_elem(s,-1,sp_vector_get(v,j));
 	  }
 	}
       }else if(variable_metadata[i].variable_type == Type_Vector_Int){
 	sp_vector * v = *((sp_vector **)variable_metadata[i].variable_address);
 	if(v){
-	  for(int j= 0;j<sp_vector_size(v);j++){
+	  for(unsigned int j= 0;j<sp_vector_size(v);j++){
 	    config_setting_set_int_elem(s,-1,(int)sp_vector_get(v,j));
 	  }
 	}
@@ -526,8 +527,61 @@ void write_options_file(char * filename, Options * res){
 }
 
 
+static real interpolate_on_checkpoints(sp_vector * values,sp_vector * checkpoints, Options * opts,  int interpolation){
+  int left = INT_MIN;
+  int left_i;
+  int right = INT_MAX;
+  int right_i;    
+  if(sp_vector_size(values) != sp_vector_size(checkpoints)){
+    sp_error_fatal("Number of checkpoint elements doesn't match number of values!");
+  }
+  for(unsigned int i = 0;i<sp_vector_size(checkpoints);i++){
+    real iter = sp_vector_get(checkpoints,i);
+    if(iter <= opts->cur_iteration && iter > left){
+      left = iter;
+      left_i = i;
+    }
+    if(iter >= opts->cur_iteration && iter < right){
+      right = iter;
+      right_i = i;
+    }
+  }
+  if(left == INT_MIN && right == INT_MAX){
+    sp_error_fatal("Cannot find boundaries on object area!");
+  }else if(left == INT_MIN){
+    /* cur_iteration is before first checkpoint */
+    return sp_vector_get(values,right_i);
+  }else if(right == INT_MAX){
+    /* cur_iteration is after last checkpoint */
+    return sp_vector_get(values,left_i);
+  }else if(right == left){
+    /* cur_iteration is at a checkpoint */
+    return sp_vector_get(values,left_i);
+  }else{
+      /* cur_iteration is between checkpoints */
+    if(interpolation == 1){
+      /* We're gonna use a Fermi-Dirac distribution to make a smooth shift between checkpoints 
+	 We'll use kT = u/5 with u = 1 and restrict to the range e/u [0,2]
+       */
+      real f = 2.0*(opts->cur_iteration-left)/(real)(right-left);
+      real n = 1.0/(exp((f-1.0)*5)+1.0);
+      real delta = sp_vector_get(values,left_i)-sp_vector_get(values,right_i);
+      /*      return (delta/2.0)*(1.0+cos(f*M_PI))+sp_vector_get(opts->object_area_at_checkpoints,right_i);*/
+      return (delta)*(n)+sp_vector_get(values,right_i);
+    }    
+  }
+  sp_error_fatal("Cannot reach here!");
+  return -1;
+}
+
 real get_beta(Options * opts){
-  static const int beta0 = 0.75;
+  static const float beta0 = 0.75;
+  if(opts->beta_checkpoints){
+    if(!opts->beta_at_checkpoints){
+      sp_error_fatal("When you specify beta_checkpoints you also need to specify the corresponding beta_at_checkpoints!");
+    }
+    return interpolate_on_checkpoints(opts->beta_at_checkpoints,opts->beta_checkpoints,opts,1);
+  }
   int n = opts->cur_iteration;
   if(opts->dyn_beta){
     return beta0+(opts->beta-beta0)*(1-exp(-pow(n/opts->dyn_beta,3)));
@@ -561,16 +615,16 @@ real get_object_area(Options * opts){
   real a;
   if(opts->object_area_checkpoints){
     int left = INT_MIN;
-    int left_i;
+    int left_i = -1;
     int right = INT_MAX;
-    int right_i;
+    int right_i = -1;
     if(!opts->object_area_at_checkpoints){
       sp_error_fatal("When you specify object_area_checkpoints you also need to specify the corresponding object_area_at_checkpoints!");
     }
     if(sp_vector_size(opts->object_area_checkpoints) != sp_vector_size(opts->object_area_at_checkpoints)){
       sp_error_fatal("Number of elements of object_area_at_checkpoints does not match object_area_checkpoints!");
     }
-    for(int i = 0;i<sp_vector_size(opts->object_area_checkpoints);i++){
+    for(unsigned int i = 0;i<sp_vector_size(opts->object_area_checkpoints);i++){
       real value = sp_vector_get(opts->object_area_checkpoints,i);
       if(value <= opts->cur_iteration && value > left){
 	left = value;
@@ -617,4 +671,31 @@ real get_object_area(Options * opts){
     return (opts->object_area-opts->min_object_area)*exp(-a)+opts->min_object_area;
   }
   return -1;
+}
+
+
+real get_gamma1(Options * opts,Log * log){
+  if(opts->gamma1 == -10000){
+    /* Optimal value according to 
+       Veit Elser 2003 "Random projections and the optimization of an algorithm for phase retrieval 
+    */
+    real beta = get_beta(opts);
+    real sigma = log->SupSize/100.0;
+    if(sigma > 0.5){
+      sigma = 0.5;
+    }
+    return -(4+(2+beta)*sigma + beta*sigma*sigma)/(beta*(4-sigma+sigma*sigma));
+  }
+  return opts->gamma1;
+}
+
+real get_gamma2(Options * opts,Log * log){
+  if(opts->gamma2 == -10000){
+    /* Optimal value according to 
+       Veit Elser 2003 "Random projections and the optimization of an algorithm for phase retrieval 
+    */
+    real beta = get_beta(opts);
+    return (3-beta)/(2*beta);
+  }
+  return opts->gamma2;
 }
