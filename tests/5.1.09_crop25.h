@@ -1,7 +1,7 @@
 /*
   5.1.09_crop25.h (PGM).
 */
-static unsigned char
+static float
   standard_5_1_09_crop25[] =
   {
     25,25,

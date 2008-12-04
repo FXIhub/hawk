@@ -16,5 +16,6 @@ int RunAllTests(void)
 
 int main(void)
 {
-	return RunAllTests();
+  sp_srand(time(NULL));
+  return RunAllTests();
 }

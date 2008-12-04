@@ -10,6 +10,8 @@ Image * basic_hio_iteration(Image * exp_amp, Image * real_in, Image * support,
 
 Image * basic_raar_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in, Image * support, 
 			     Options * opts, Log * log);
+Image * serial_raar_iteration(Image * exp_amp, Image * real_in, Image * support, 
+			     Options * opts, Log * log);
 
 Image * basic_raar_proj_iteration(Image * exp_amp, Image * int_std_dev, Image * real_in, Image * support, 
 			     Options * opts, Log * log);
