@@ -16,6 +16,8 @@ MainWindow::MainWindow(QWidget *parent)
 
   connect(look, SIGNAL(imgFromListChanged(bool)), this, SLOT(imgFromListChanged(bool)));
 
+  connect(look, SIGNAL(directoryOpened(QString)), this, SLOT(onDirectoryOpened(QString)));
+
   setCentralWidget(look);
   //look.show();
 
@@ -84,10 +86,34 @@ void MainWindow::createActions()
   connect(cropAct, SIGNAL(triggered()), this, SLOT(imageCrop()));
 
   // View
+  viewImageAct = new QAction(tr("&Image"), this);
+  viewImageAct->setCheckable(true);
+  viewImageAct->setShortcut(tr("Ctrl+I"));
+  connect(viewImageAct, SIGNAL(triggered()), this, SLOT(viewImage()));
+
   autocorrelationAct = new QAction(tr("&Autocorrelation"), this);
   autocorrelationAct->setCheckable(true);
   autocorrelationAct->setShortcut(tr("Ctrl+A"));
   connect(autocorrelationAct, SIGNAL(triggered()), this, SLOT(viewAutocorrelation()));
+
+  viewBackgroundAct = new QAction(tr("&Background"), this);
+  viewBackgroundAct->setCheckable(true);
+  viewBackgroundAct->setShortcut(tr("Ctrl+B"));
+  connect(viewBackgroundAct, SIGNAL(triggered()), this, SLOT(viewBackground()));
+
+  viewSupportAct = new QAction(tr("Support"), this);
+  connect(viewSupportAct, SIGNAL(triggered()), this, SLOT(viewSupport()));
+  viewSupportAct->setCheckable(true);
+
+
+  viewTypeGroup = new QActionGroup(this);
+  viewTypeGroup->addAction(viewImageAct);
+  viewTypeGroup->addAction(autocorrelationAct);
+  viewTypeGroup->addAction(viewBackgroundAct);
+  viewTypeGroup->addAction(viewSupportAct);
+  viewTypeGroup->setExclusive(true);
+
+
 
   logScaleAct = new QAction(tr("&Log Scale"), this);
   logScaleAct->setShortcut(tr("Ctrl+L"));
@@ -170,6 +196,14 @@ void MainWindow::createActions()
   connect(setBackgroundLevelAct, SIGNAL(triggered()), this, SLOT(categorizeSetBackgroundLevel()));
   setBackgroundLevelAct->setEnabled(false);
 
+  setConstantBackgroundAct = new QAction(tr("Set constant background"), this);
+  connect(setConstantBackgroundAct, SIGNAL(triggered()), this, SLOT(backgroundSetConstantBackground()));
+  setConstantBackgroundAct->setEnabled(false);
+
+  setAdaptativeBackgroundAct = new QAction(tr("Set adaptative background"), this);
+  connect(setAdaptativeBackgroundAct, SIGNAL(triggered()), this, SLOT(backgroundSetAdaptativeBackground()));
+  setAdaptativeBackgroundAct->setEnabled(false);
+
   // Mask
   showMaskAct = new QAction(tr("&Show mask"),this);
   showMaskAct->setCheckable(true);
@@ -199,6 +233,7 @@ void MainWindow::createActions()
   undrawMaskAct = new QAction(tr("&Undraw mask"), this);
   undrawMaskAct->setCheckable(true);
   connect(undrawMaskAct, SIGNAL(triggered()), this, SLOT(maskUndrawMask()));
+
 
   size1Act = new QAction(tr("1"),this);
   size2Act = new QAction(tr("2"),this);
@@ -279,7 +314,11 @@ void MainWindow::createMenus()
   imageMenu->addAction(cropAct);
 
   viewMenu = menuBar()->addMenu(tr("&View"));
+  viewMenu->addAction(viewImageAct);
   viewMenu->addAction(autocorrelationAct);
+  viewMenu->addAction(viewBackgroundAct);
+  viewMenu->addAction(viewSupportAct);
+  viewMenu->addSeparator();
   viewMenu->addAction(logScaleAct);
   viewMenu->addSeparator();
   viewMenu->addAction(predefineSizeAct);
@@ -298,11 +337,6 @@ void MainWindow::createMenus()
   categorizeMenu->addAction(clearBackgroundAct);
   categorizeMenu->addAction(hitAct);
   categorizeMenu->addAction(clearHitAct);
-  categorizeMenu->addSeparator();
-  categorizeMenu->addAction(calculateBackgroundAct);
-  categorizeMenu->addAction(showBackgroundAct);
-  categorizeMenu->addAction(subtractBackgroundAct);
-  categorizeMenu->addAction(setBackgroundLevelAct);
 
   maskMenu = menuBar()->addMenu(tr("&Mask"));
   maskMenu->addAction(showMaskAct);
@@ -315,6 +349,14 @@ void MainWindow::createMenus()
   maskMenu->addAction(drawMaskAct);
   maskMenu->addAction(undrawMaskAct);
 
+  backgroundMenu = menuBar()->addMenu(tr("&Background"));
+  backgroundMenu->addAction(calculateBackgroundAct);
+  backgroundMenu->addAction(showBackgroundAct);
+  backgroundMenu->addAction(subtractBackgroundAct);
+  backgroundMenu->addAction(setBackgroundLevelAct);
+  backgroundMenu->addAction(setConstantBackgroundAct);
+  backgroundMenu->addAction(setAdaptativeBackgroundAct);
+  
   pencilSizeMenu = maskMenu->addMenu(tr("&Pencil size"));
   pencilSizeMenu->addAction(size1Act);
   pencilSizeMenu->addAction(size2Act);
@@ -424,9 +466,18 @@ void MainWindow::imageCrop()
 void MainWindow::viewAutocorrelation()
 {
   if (autocorrelationAct->isChecked()) {
-    look->drawAutocorrelation(1);
-  } else {
-    look->drawAutocorrelation(0);
+    look->drawView(ViewAutocorrelation);
+  }
+}
+
+void MainWindow::viewBackground(){
+  if (viewBackgroundAct->isChecked()){
+    look->drawView(ViewBackground);
+  }
+}
+void MainWindow::viewImage(){
+  if (viewImageAct->isChecked()){
+    look->drawView(ViewImage);
   }
 }
 
@@ -577,6 +628,17 @@ void MainWindow::categorizeSetBackgroundLevel()
   look->setBackgroundLevel();
 }
 
+
+void MainWindow::backgroundSetConstantBackground()
+{
+  look->setConstantBackground();
+}
+
+void MainWindow::backgroundSetAdaptativeBackground()
+{
+  look->setAdaptativeBackground();
+}
+
 void MainWindow::maskShowMask()
 {
   if (showMaskAct->isChecked())
@@ -637,4 +699,16 @@ void MainWindow::maskSetPencilSize50() {maskSetPencilSize(50);}
 void MainWindow::maskSetPencilSize(int size)
 {
   look->setPencilSize(size);
+}
+
+
+void MainWindow::onDirectoryOpened(QString dir){
+  setConstantBackgroundAct->setEnabled(true);
+  setAdaptativeBackgroundAct->setEnabled(true);
+}
+
+void MainWindow::viewSupport(){
+  if (viewSupportAct->isChecked()) {
+    look->drawView(ViewAutocorrelationSupport);
+  }
 }

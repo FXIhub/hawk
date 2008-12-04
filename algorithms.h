@@ -1,6 +1,8 @@
 #ifndef _ALGORITHMS_H_
 #define _ALGORITHMS_H_
 
+#include "log.h"
+
 int get_algorithm(Options * opts,Log * log);
 
 Image * basic_hio_iteration(Image * exp_amp, Image * real_in, Image * support, 

@@ -7,12 +7,17 @@
 #include "backgroundSlider.h"
 #include <spimage.h>
 
+class Ui_SupportLevel;
+
+typedef enum{OriginalImage=1,AveragedBackground=2,ConstantBackground=4,AdaptativeBackground=8,
+	     Autocorrelation=16,SortedAutocorrelation=32,AutocorrelationSupport=64,ResultImage=128}CachedParts;
+typedef enum{ViewImage=0,ViewAutocorrelation,ViewBackground,ViewAutocorrelationSupport} ViewType;
 
 class Look : public QWidget
 {
   Q_OBJECT
 public:
-  Look(QWidget *parent = 0);
+  Look(QMainWindow *parent = 0);
   
   public:
     void openDirectory();
@@ -37,6 +42,7 @@ public:
   void crop();
 
   void drawAutocorrelation(int on);
+  void drawView(ViewType viewType);
   void setLogScale(int on);
   bool setSize();
   void setUseSize(int on);
@@ -54,6 +60,9 @@ public:
   void subtractBackground(int on);
   void setBackgroundLevel();
 
+  void setConstantBackground();
+  void setAdaptativeBackground();
+
   void showMask(int on);  
   void importMask();
   void clearMask();
@@ -67,32 +76,58 @@ public:
   void imageBackgroundChanged(int backgroundNumber, int i);
   void imageRemarkChanged(QString text, int i);
 
+  void setSupportLevel();
   signals:
   void backgroundChecked(bool);
   void hitChecked(bool);
   void imgFromListChanged(bool);
+  void directoryOpened(QString);
+  void imageChanged(int i);
 
   public slots:
   void loadAllComments();
+  void showImageValueAt(real x, real y);
+  void clearImageValue();
 
   private slots:
   void openImageFromTable();
   void openImageFromList();
-  void changeRange(int value);
+  void changeRange();
   void changeBackgroundRange(int value);
   void changeBackgroundLevel(real value);
+
+  void changeConstantBackground(real value);
   void updateCenter();
   void updateBeamstop();
   void vertLineToMaskSlot(real x, real y);
   void drawMaskSlot(real x, real y);
   void undrawMaskSlot(real x, real y);
   void imagesTableChanged(int row, int collumn);
+  void recalculateImage(int i);
+
+  void floorSliderChanged();
+  void ceilingSliderChanged();
+  void blurSliderChanged();
+
+  void floorSpinChanged(double v);
+  void ceilingSpinChanged(double v);
+  void blurSpinChanged(double v);
+
+  void recalculateButtonPressed();
 
  private:
   Image * img;
   Image *draw;
   Image * background;
   Image * temporary;
+  Image * image_cache;
+  Image * original_image_cache;
+  Image * autocorrelation_cache;
+  Image * background_cache;
+  Image * sorted_autocorrelation_cache;
+  Image * autocorrelation_support_cache;
+  Image * averaged_background_cache;
+  Image * total_background_cache;
   real backgroundSum;
   bool imgFromList;
   bool drawAuto;
@@ -114,15 +149,21 @@ public:
   //QLabel *imageLabel;
   QTextBrowser *comment;
 
+  QMainWindow *mainWindow;
+
   QList<Image *> images;
+  QList<Image *> adaptative_background;
   QList<QString> imageNames;
 
   int current;
   int currentImg;
   int noOfImages;
   real *backgroundLevel;
+  real *constantBackgroundLevel;
   //QMainWindow *backgroundSliderWindow;
   BackgroundSlider *backgroundSlider;
+
+  BackgroundSlider * constantBackgroundSlider;
 
   QSlider *rangeSlider;
   real range;
@@ -137,12 +178,17 @@ public:
   bool *centerDefined;
   real *beamstopX, *beamstopY, *beamstopR;
   bool *beamstopDefined;
+  QList<real> supportCeiling;
+  QList<real> supportFloor;
+  QList<real> supportBlur;
+
 
   QList<real> imgCenterX, imgCenterY;
   QList<bool> imgCenterDefined;
   QList<real> imgBeamstopX, imgBeamstopY, imgBeamstopR;
   QList<bool> imgBeamstopDefined;
   QList<real> imgBackgroundLevel;
+  QList<real> imgConstantBackgroundLevel;
   QList<int> imgBackground;
   QList<QString> imgRemark;
 
@@ -154,6 +200,12 @@ public:
 
   bool showDistanceActive;
   int pencilSize;
+
+  ViewType viewType;
+
+  Ui_SupportLevel * supportLevel;
+  QStackedLayout * viewTypeWidgetLayout;
+  int cachedImageDirty;
 };
 
 #endif

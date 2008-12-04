@@ -36,6 +36,7 @@ ImageView::ImageView(QWidget *parent)
   QGridLayout *layout = new QGridLayout;
   //layout->addWidget(imageLabel, 0, 0);
   setLayout(layout);
+  setMouseTracking(true);
 }
 
 void ImageView::setImage(QImage *image)
@@ -252,8 +253,10 @@ void ImageView::mousePressEvent(QMouseEvent *event)
 
 void ImageView::mouseMoveEvent(QMouseEvent *event)
 {
-  if (!leftPressed && !rightPressed)
+  if (!leftPressed && !rightPressed){
+    emit mouseOverImage(screenToGlobalX(event->pos().x()),screenToGlobalY(event->pos().y()));
     return;
+  }
   if (paneActive) {
     //zoomCenterX = startZoomCenterX - (real)(event->pos().x() - startPos.x()) / (real) imageLabel->width() * zoomValue;
     //zoomCenterY = startZoomCenterY - (real)(event->pos().y() - startPos.y()) / (real) imageLabel->height() * zoomValue;
@@ -316,6 +319,12 @@ void ImageView::mouseReleaseEvent(QMouseEvent *event)
     zoomActive = false;
     rightPressed = false;
   }
+}
+
+void ImageView::leaveEvent(QEvent *event){
+  zoomActive = false;
+  rightPressed = false;
+  emit mouseLeftImage();
 }
 
 void ImageView::paintEvent(QPaintEvent *)

@@ -1,4 +1,5 @@
 #include <QtGui>
+
 #include <spimage.h>
 #include "imageview.h"
 #include "propertiesDialog.h"
@@ -7,10 +8,29 @@
 //#include "look.moc"
 #include "look.h"
 
-Look::Look(QWidget *parent)// : QWidget(parent)
+#include "ui_supportLevel.h"
+
+static int descend_complex_compare(const void * pa,const void * pb){
+  Complex a,b;
+  a = *((Complex *)pa);
+  b = *((Complex *)pb);
+  if(sp_cabs(a) < sp_cabs(b)){
+    return 1;
+  }else if(sp_cabs(a) == sp_cabs(b)){
+    return 0;
+  }else{
+    return -1;
+  }
+}
+
+Look::Look(QMainWindow *parent)// : QWidget(parent)
 {
   //imageLabel = new QLabel;
+  mainWindow = parent;
+
   view = new ImageView;
+  //  supportLevel = new Ui_SupportLevel();
+
   
   filesTable = new QTableWidget(0,3);
   filesTable->setHorizontalHeaderLabels(QStringList() << "File" << "Flag" << "Comment");
@@ -40,6 +60,13 @@ Look::Look(QWidget *parent)// : QWidget(parent)
   colormap_data = NULL;
   img = NULL;
   draw = NULL;
+  image_cache = NULL;
+  original_image_cache = NULL;
+  autocorrelation_cache = NULL;
+  background_cache = NULL;
+  sorted_autocorrelation_cache = NULL;
+  autocorrelation_cache = NULL;
+  autocorrelation_support_cache = NULL;
   background = NULL;
   imgFromList = false;
   drawAuto = 0;
@@ -51,6 +78,7 @@ Look::Look(QWidget *parent)// : QWidget(parent)
   propertiesSet = false;
   showDistanceActive = false;
   backgroundLevel = NULL;
+  constantBackgroundLevel = NULL;
   centerX = NULL;
   centerY = NULL;
   centerDefined = NULL;
@@ -62,7 +90,7 @@ Look::Look(QWidget *parent)// : QWidget(parent)
   pencilSize = 3;
   connect(filesTable, SIGNAL(itemSelectionChanged()), this, SLOT(openImageFromTable()));
   connect(imagesTable, SIGNAL(itemSelectionChanged()), this, SLOT(openImageFromList()));
-  connect(rangeSlider, SIGNAL(valueChanged(int)), this, SLOT(changeRange(int)));
+  connect(rangeSlider, SIGNAL(sliderReleased()), this, SLOT(changeRange()));
   connect(imagesTable, SIGNAL(cellChanged(int,int)), this, SLOT(imagesTableChanged(int,int)));
 
   connect(view, SIGNAL(centerChanged()), this, SLOT(updateCenter()));
@@ -70,6 +98,9 @@ Look::Look(QWidget *parent)// : QWidget(parent)
   connect(view, SIGNAL(vertLineSet(real,real)), this, SLOT(vertLineToMaskSlot(real,real)));
   connect(view, SIGNAL(drawMaskAt(real,real)), this, SLOT(drawMaskSlot(real,real)));
   connect(view, SIGNAL(undrawMaskAt(real,real)), this, SLOT(undrawMaskSlot(real,real)));
+  connect(view, SIGNAL(mouseOverImage(real,real)), this, SLOT(showImageValueAt(real,real)));
+  connect(view, SIGNAL(mouseLeftImage()), this, SLOT(clearImageValue()));
+  connect(this, SIGNAL(imageChanged(int)), this, SLOT(recalculateImage(int)));
 
   filesTable->setMinimumWidth(400);
   //filesTable->setMaximumWidth(300);
@@ -92,10 +123,39 @@ Look::Look(QWidget *parent)// : QWidget(parent)
   layout->addWidget(leftTab,0,0);
   layout->addWidget(rangeSlider,0,2);
 
+  viewTypeWidgetLayout = new QStackedLayout;
+
+  viewTypeWidgetLayout->insertWidget(ViewImage,new QWidget);
+  viewTypeWidgetLayout->insertWidget(ViewAutocorrelation,new QWidget);
+  viewTypeWidgetLayout->insertWidget(ViewBackground,new QWidget);
+  QWidget  * supportLevelWidget = new QWidget;
+  supportLevel =  new Ui_SupportLevel;
+  supportLevel->setupUi(supportLevelWidget);
+  connect(supportLevel->floorSlider,SIGNAL(sliderReleased()),this,SLOT(floorSliderChanged()));
+  connect(supportLevel->ceilingSlider,SIGNAL(sliderReleased()),this,SLOT(ceilingSliderChanged()));
+  connect(supportLevel->blurSlider,SIGNAL(sliderReleased()),this,SLOT(blurSliderChanged()));
+
+  connect(supportLevel->floorSpin,SIGNAL(valueChanged(double)),this,SLOT(floorSpinChanged(double)));
+  connect(supportLevel->ceilingSpin,SIGNAL(valueChanged(double)),this,SLOT(ceilingSpinChanged(double)));
+  connect(supportLevel->blurSpin,SIGNAL(valueChanged(double)),this,SLOT(blurSpinChanged(double)));
+
+  connect(supportLevel->recalculateButton,SIGNAL(pressed()),this,SLOT(recalculateButtonPressed()));
+
+  viewTypeWidgetLayout->insertWidget(ViewAutocorrelationSupport, supportLevelWidget);
+
+
+
+  layout->addLayout(viewTypeWidgetLayout,1,1);
+
+  mainWindow->statusBar()->showMessage("Program started");  
+
   layout->setColumnStretch(1,2);
 
   setLayout(layout);
-  
+
+  viewType = ViewImage;
+  viewTypeWidgetLayout->setCurrentIndex(ViewImage);
+  cachedImageDirty = 0;
 }
 
 void Look::openDirectory()
@@ -141,6 +201,7 @@ void Look::openDirectory()
   }
   filesTable->resizeRowsToContents();
   if (backgroundLevel != NULL) free(backgroundLevel);
+  if (constantBackgroundLevel != NULL) free(constantBackgroundLevel);
   if (centerX != NULL) free(centerX);
   if (centerY != NULL) free(centerY);
   if (centerDefined != NULL) free(centerDefined);
@@ -148,7 +209,25 @@ void Look::openDirectory()
   if (beamstopY != NULL) free(beamstopY);
   if (beamstopR != NULL) free(beamstopR);
   if (beamstopDefined != NULL) free(beamstopDefined);
+  while(adaptative_background.size()){
+    Image * tmp  = adaptative_background.takeFirst();
+    if(tmp){
+      sp_image_free(tmp);
+    }
+  }
+  supportCeiling.clear();
+  supportFloor.clear();
+  supportBlur.clear();
+  for(int i = 0;i<noOfImages;i++){
+    adaptative_background.append(NULL);
+    supportCeiling.append(100);
+    supportFloor.append(90);
+    supportBlur.append(3);
+  }
+
   backgroundLevel = (real *) malloc(noOfImages*sizeof(real));
+  constantBackgroundLevel = (real *) malloc(noOfImages*sizeof(real));
+  
   centerX = (real *) malloc(noOfImages*sizeof(real));
   centerY = (real *) malloc(noOfImages*sizeof(real));
   centerDefined = (bool *) malloc(noOfImages*sizeof(bool));
@@ -160,6 +239,7 @@ void Look::openDirectory()
     centerDefined[i] = false;
     beamstopDefined[i] = false;
   }
+  emit directoryOpened(dir);
 }
 
 void Look::openImageFromTable()
@@ -171,6 +251,10 @@ void Look::openImageFromTable()
     current = i;
     QString file = filesTable->item(i-1,3)->text();
     openImage(file);
+    cachedImageDirty |= OriginalImage;
+    emit imageChanged(i);
+    recalculateImage(i);
+
 
     if (backgroundLevel[current] <= 0.001) {
       backgroundLevel[current] = 1.0;
@@ -200,7 +284,6 @@ void Look::openImageFromTable()
       beamstopDefined[current] = true;
       updateBeamstop();
     }
-    drawImage();
   }
 }
 
@@ -213,6 +296,10 @@ void Look::openImageFromList()
     currentImg = i;
     if (img != NULL && !imgFromList) sp_image_free(img);
     img = images.at(i);
+    cachedImageDirty |= OriginalImage;
+    emit imageChanged(i);
+    recalculateImage(i);
+
     if (!imgFromList) {imgFromList = true; emit imgFromListChanged(true);}
 
     if (imgCenterDefined[currentImg]) view->setCenter(imgCenterX[currentImg],imgCenterY[currentImg]);
@@ -225,20 +312,20 @@ void Look::openImageFromList()
       imgBeamstopDefined[currentImg] = true;
       updateBeamstop();
     }
-    drawImage();
   }
 }
 
-void Look::changeRange(int value)
+void Look::changeRange()
 {
+  int value = rangeSlider->value();
   range = (real) value / 100.0;
-  drawImage();
+  emit imageChanged(current);
 }
 
 void Look::changeBackgroundRange(int value)
 {
   backgroundRange = (real) value / 100.0;
-  drawImage();
+  emit imageChanged(current);
 }
 
 void Look::updateCenter()
@@ -272,7 +359,6 @@ void Look::openImage(QString filename)
   if(!img){
     return;
   }
-  drawImage();
   loadImageComment(file);
   /*
   loadImageComment(QString(file));
@@ -362,8 +448,11 @@ void Look::updateImagesTable()
     imagesTable->setItem(i,2,newItem);
     printf("get item\n");
     char buffer[4];
-    if (imgBackground[i] > 0) sprintf(buffer,"%i",imgBackground[i]+1);
-    else sprintf(buffer,"");
+    if (imgBackground[i] > 0){
+      sprintf(buffer,"%i",imgBackground[i]+1);
+    }else{
+      buffer[0] = 0;
+    }
     newItem = new QTableWidgetItem(buffer);
     printf("got item\n");
     imagesTable->setItem(i,1,newItem);
@@ -381,40 +470,12 @@ void Look::drawImage()
       free(colormap_data);
       //printf("freed it\n");
     }
-
-    if (subtract) {
-      /*
-      if (temporary == NULL) temporary = sp_image_alloc(sp_image_x(background), sp_image_y(background), 1);
-      else if (sp_image_x(temporary) != sp_image_x(background) || sp_image_y(temporary) != sp_image_y(background))
-	sp_image_realloc(temporary,sp_image_x(background),sp_image_y(background),1);
-      */
-      if (temporary != NULL) sp_image_free(temporary);
-      //real sum = 0;
-      //for (int i = 0; i < sp_image_size(img); i++) sum += sp_real(img->image->data[i]);
-      draw = bilinear_rescale(img,sp_image_x(background),sp_image_y(background),1);
-      temporary = sp_image_duplicate(background,SP_COPY_DATA);
-      //sp_image_scale(temporary,sum/backgroundSum*backgroundLevel[current]);
-      sp_image_scale(temporary,backgroundLevel[current]);
-      sp_image_sub(draw,temporary);
-    } else { 
-      draw = img;
-    }
-
-    if (imgFromList && showMaskActive) {
-      if (draw == img) draw = sp_image_duplicate(img,SP_COPY_DATA|SP_COPY_MASK);
-      for (int i = 0; i < sp_image_size(img); i++) {
-	if (draw->mask->data[i] == 0) draw->image->data[i] = sp_cinit(0.0,0.0);
-      }
-    }
-    
     int flags;
     if (logScale) flags = colorscale | LOG_SCALE;
     else flags = colorscale;
 
-    if (drawAuto) {
-      if (temporary != NULL) sp_image_free(temporary);
-      temporary = sp_image_patterson(draw);
-      colormap_data = sp_image_get_false_color(temporary, flags, -1, (int)(65535.0*range*500.0));
+    if (viewType == ViewAutocorrelation) {
+      colormap_data = sp_image_get_false_color(draw, flags, -1, (int)(65535.0*range*500.0));
     } else {
       colormap_data = sp_image_get_false_color(draw, flags, -1, (int)(65535.0*range));
     }
@@ -423,7 +484,7 @@ void Look::drawImage()
     //qi = qi.scaled(imageLabel->width(),imageLabel->height(),Qt::KeepAspectRatio);
     //imageLabel->setPixmap(QPixmap::fromImage(qi));
     view->setImage(&qi);
-    if (subtract || (imgFromList && showMaskActive)) sp_image_free(draw);
+    
   }
 }
 
@@ -733,27 +794,19 @@ void Look::crop()
       img = temporary;
       images[currentImg] = temporary;
       temporary = NULL;
-      drawImage();
+      cachedImageDirty |= OriginalImage;
+      emit imageChanged(current);
+      //      drawImage();
     }
   }
-}
-
-void Look::drawAutocorrelation(int on)
-{
-  if (on) drawAuto = 1;
-  else drawAuto = 0;
-
-  if (showDistanceActive) showDistance(1);
-  else showDistance(0);
-  drawImage();
 }
 
 void Look::setLogScale(int on)
 {
   if (on) logScale = 1;
   else logScale = 0;
-
-  drawImage();
+  emit imageChanged(current);
+  //  drawImage();
 }
 
 void Look::setColorscale(int kind)
@@ -901,7 +954,9 @@ void Look::subtractBackground(int on)
 {
   if (on) subtract = 1;
   else subtract = 0;
-  drawImage();
+  cachedImageDirty |= AveragedBackground;
+  emit imageChanged(current);
+  //  drawImage();
 }
 
 void Look::setBackgroundLevel()
@@ -916,13 +971,76 @@ void Look::setBackgroundLevel()
   backgroundSlider->activateWindow();
 }
 
+
+void Look::setConstantBackground()
+{
+  bool ok;
+  double d = QInputDialog::getDouble(this, tr("Constant Background"),
+				     tr("Amount:"), constantBackgroundLevel[current], - 2147483647, 2147483647, 2, &ok);
+  if (ok){
+    changeConstantBackground(d);
+  }
+}
+
+void Look::setAdaptativeBackground(){
+  QDialog * dialog = new QDialog(this);
+  QGridLayout *layout = new QGridLayout;
+  layout->addWidget(new QLabel("Cell Size: "),0,0);
+  QSpinBox * cells = new QSpinBox(this);
+  cells->setValue(50);
+  cells->setMinimum(5);
+  cells->setMaximum(10000);
+  layout->addWidget(cells,0,1);
+  layout->addWidget(new QLabel("Scale: "),1,0);
+  QDoubleSpinBox * scale = new QDoubleSpinBox(this);
+  scale->setValue(1);
+  layout->addWidget(scale,1,1);
+  QDialogButtonBox * buttons = new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel,Qt::Horizontal,this);
+  connect(buttons,SIGNAL(accepted()),dialog,SLOT(accept()));
+  connect(buttons,SIGNAL(rejected()),dialog,SLOT(reject()));
+  layout->addWidget(buttons,2,0);
+  
+  dialog->setLayout(layout); 
+  dialog->setWindowTitle(tr("Adaptative Mesh Background Estimation"));
+  if(dialog->exec() && img){
+    QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
+    if(adaptative_background[current]){
+      sp_image_free(adaptative_background[current]);
+    }
+    adaptative_background[current] = sp_background_adaptative_mesh(img,
+								   sp_image_x(img)/cells->value(),
+								   sp_image_y(img)/cells->value(),
+								   sp_image_z(img)/cells->value());
+    sp_image_scale(adaptative_background[current],scale->value());
+    cachedImageDirty |= AdaptativeBackground;
+    emit imageChanged(current);
+    QApplication::restoreOverrideCursor();
+  }
+}
+
 void Look::changeBackgroundLevel(real level)
 {
-  if (!imgFromList)
+  cachedImageDirty |= ConstantBackground;
+  if (!imgFromList){
     backgroundLevel[current] = level;
-  else
+    emit imageChanged(current);
+  }else{
     imgBackgroundLevel[currentImg] = level;
-  drawImage();
+    emit imageChanged(currentImg);
+  }
+}
+
+
+void Look::changeConstantBackground(real level)
+{
+  cachedImageDirty |= ConstantBackground;
+  if (!imgFromList){
+    constantBackgroundLevel[current] = level;
+    emit imageChanged(current);
+  }else{
+    imgConstantBackgroundLevel[currentImg] = level;
+    emit imageChanged(currentImg);
+  }
 }
 
 bool Look::setSize()
@@ -972,7 +1090,8 @@ void Look::beamstopToMask()
 	}
       }
     }
-    drawImage();
+    cachedImageDirty |= ConstantBackground;
+    emit imageChanged(current);
   }
 }
 
@@ -1006,7 +1125,7 @@ void Look::showMask(int on)
 {
   if (on) showMaskActive = true;
   else showMaskActive = false;
-  drawImage();
+  emit imageChanged(current);
 }
 
 void Look::clearMask()
@@ -1016,7 +1135,8 @@ void Look::clearMask()
       img->mask->data[i] = 1;
     }
   }
-  drawImage();
+  cachedImageDirty |= ConstantBackground;
+  emit imageChanged(current);
 }
 
 void Look::saturationToMask()
@@ -1031,7 +1151,8 @@ void Look::saturationToMask()
       if (sp_cabs(img->image->data[i]) >= max) img->mask->data[i] = 0;
     }
   }
-  drawImage();
+  cachedImageDirty |= ConstantBackground;
+  emit imageChanged(current);
 }
 
 void Look::vertLineToMask()
@@ -1051,7 +1172,8 @@ void Look::vertLineToMaskSlot(real x, real y)
       }
     }
   }
-  drawImage();
+  cachedImageDirty |= ConstantBackground;
+  emit imageChanged(current);
 }
 
 void Look::drawMask(bool on)
@@ -1076,7 +1198,8 @@ void Look::drawMaskSlot(real x, real y)
       }
     }
   }
-  drawImage();
+  cachedImageDirty |= ConstantBackground;
+  emit imageChanged(current);
 }
 
 void Look::undrawMaskSlot(real x, real y)
@@ -1091,7 +1214,8 @@ void Look::undrawMaskSlot(real x, real y)
       }
     }
   }
-  drawImage();
+  cachedImageDirty |= ConstantBackground;
+  emit imageChanged(current);
 }
 
 void Look::setPencilSize(int size)
@@ -1138,4 +1262,211 @@ void Look::imageBackgroundChanged(int backgroundNumber, int i)
 void Look::imageRemarkChanged(QString text, int i)
 {
   imgRemark[i] = text;
+}
+
+void Look::recalculateImage(int i){
+  QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
+  if(cachedImageDirty & OriginalImage){
+    original_image_cache = sp_image_duplicate(img,SP_COPY_DATA);
+    cachedImageDirty |= AdaptativeBackground  | AveragedBackground |ResultImage;
+    cachedImageDirty ^= OriginalImage;
+  }
+  if(cachedImageDirty & AveragedBackground){    
+    if(background){
+      if(averaged_background_cache){
+	sp_image_free(averaged_background_cache);
+      }
+      averaged_background_cache = bilinear_rescale(background,sp_image_x(img),sp_image_y(img),1);
+      sp_image_scale(averaged_background_cache,backgroundLevel[current]);
+    }
+    cachedImageDirty ^=  AveragedBackground;
+    cachedImageDirty |= ResultImage;
+  }
+  if(cachedImageDirty & ConstantBackground){
+    cachedImageDirty |= ResultImage;
+    cachedImageDirty ^=  ConstantBackground;
+  }
+  if(cachedImageDirty & AdaptativeBackground){
+    cachedImageDirty |= ResultImage;
+    cachedImageDirty ^= AdaptativeBackground;
+  }
+  if(cachedImageDirty & ResultImage){
+    if(image_cache){
+      sp_image_free(image_cache);
+    }
+    image_cache = sp_image_duplicate(original_image_cache,SP_COPY_DATA);
+    // subtract averaged background
+    if(subtract && averaged_background_cache){
+      sp_image_sub(image_cache,averaged_background_cache);
+    }
+    // subtract adaptative background
+    if(adaptative_background[current]){
+      sp_image_sub(image_cache,adaptative_background[current]);
+    }
+    //subtract flat background 
+    if(constantBackgroundLevel[current]){
+      for(int i = 0;i<sp_image_size(image_cache);i++){
+	sp_real(image_cache->image->data[i]) -= constantBackgroundLevel[current];
+	if(sp_real(image_cache->image->data[i]) < 0){
+	  sp_real(image_cache->image->data[i]) = 0;
+	}		
+      }
+    }
+    if (imgFromList && showMaskActive) {
+      for (int i = 0; i < sp_image_size(img); i++) {
+	if (draw->mask->data[i] == 0) image_cache->image->data[i] = sp_cinit(0.0,0.0);
+      }
+    }
+    cachedImageDirty ^=  ResultImage;
+    cachedImageDirty |= Autocorrelation;
+  }
+
+  if(viewType == ViewAutocorrelation | viewType == ViewAutocorrelationSupport){
+    if(cachedImageDirty & Autocorrelation){
+      //recalculate autocorrelation 
+      if(autocorrelation_cache){
+	sp_image_free(autocorrelation_cache);
+      }
+      autocorrelation_cache = sp_image_patterson(image_cache);
+      cachedImageDirty |= SortedAutocorrelation;
+      cachedImageDirty ^= Autocorrelation;
+    }
+  }
+  if(viewType == ViewAutocorrelationSupport){
+    if(cachedImageDirty & SortedAutocorrelation){
+      // Recalculate blurring and sorting
+      if(sorted_autocorrelation_cache){
+	sp_image_free(sorted_autocorrelation_cache);
+      }
+      sorted_autocorrelation_cache = sp_image_duplicate(autocorrelation_cache,SP_COPY_DATA);
+      sp_image_dephase(sorted_autocorrelation_cache);
+      if(temporary){
+	sp_image_free(temporary);
+      }
+      temporary = gaussian_blur(sorted_autocorrelation_cache,supportBlur[current]);
+      sp_image_free(sorted_autocorrelation_cache);
+      sorted_autocorrelation_cache = temporary;
+      temporary = NULL;
+      qsort(sorted_autocorrelation_cache->image->data,sp_image_size(sorted_autocorrelation_cache),sizeof(Complex),descend_complex_compare);
+      cachedImageDirty |= AutocorrelationSupport;
+      cachedImageDirty ^= SortedAutocorrelation;
+    }
+    if(cachedImageDirty & AutocorrelationSupport){
+      // We only have to recalculate the support based on changed levels
+      real max_level =  sp_cabs(sorted_autocorrelation_cache->image->data[(int)(sp_image_size(sorted_autocorrelation_cache)*(1.0-supportCeiling[current]/100.0))]);
+      real min_level =  sp_cabs(sorted_autocorrelation_cache->image->data[(int)(sp_image_size(sorted_autocorrelation_cache)*(1.0-supportFloor[current]/100.0))]);
+      /* Now we have to cap the image values */
+      if(autocorrelation_support_cache){
+	sp_image_free(autocorrelation_support_cache);
+      }
+      autocorrelation_support_cache = sp_image_duplicate(autocorrelation_cache,SP_COPY_DATA);
+      for(int i = 0;i<sp_image_size(autocorrelation_support_cache);i++){
+	if(sp_cabs(autocorrelation_support_cache->image->data[i]) < max_level && 
+	   sp_cabs(autocorrelation_support_cache->image->data[i]) > min_level){
+	  autocorrelation_support_cache->image->data[i] = sp_cinit(256*256,0);
+	}else{
+	  autocorrelation_support_cache->image->data[i] = sp_cinit(0,0);
+	}
+      }
+      cachedImageDirty ^= AutocorrelationSupport;
+    }
+  }
+
+
+  if(viewType == ViewBackground){
+    if(total_background_cache){
+      sp_image_free(total_background_cache);
+    }
+    total_background_cache = sp_image_duplicate(image_cache,SP_COPY_DATA);
+    sp_image_sub(total_background_cache,original_image_cache); 
+    draw = total_background_cache;
+  }
+  if(viewType == ViewImage){
+    draw = image_cache;
+  }
+  if(viewType == ViewAutocorrelation){
+    draw = autocorrelation_cache;
+  }
+  if(viewType == ViewAutocorrelationSupport){
+    draw = autocorrelation_support_cache;
+  }
+  supportLevel->floorSpin->setValue(supportFloor[current]);
+  supportLevel->ceilingSpin->setValue(supportCeiling[current]);
+  supportLevel->blurSpin->setValue(supportBlur[current]);
+
+  drawImage();
+
+  QApplication::restoreOverrideCursor();
+}
+
+void Look::showImageValueAt(real frac_x, real frac_y){
+  if(draw){
+    int x = frac_x*sp_image_x(img);
+    int y = frac_y*sp_image_y(img);
+    if(frac_x >= 0 && frac_y>= 0 && frac_x <1 && frac_y < 1){
+      real value = sp_real(sp_image_get(draw,x,y,0));
+      QString str = QString("Image Position x = %1 y = %2\tImage Value = %3").arg(x).arg(y).arg(value);
+      mainWindow->statusBar()->showMessage(str);
+    }else{
+      mainWindow->statusBar()->clearMessage();
+    }
+  }
+}
+
+void Look::clearImageValue(){
+  mainWindow->statusBar()->clearMessage();
+}
+
+void Look::drawView(ViewType v){
+  viewType = v;
+  viewTypeWidgetLayout->setCurrentIndex(v);
+  if(img){
+    emit imageChanged(current);
+  }
+}
+
+void Look::setSupportLevel(){
+  drawView(ViewAutocorrelationSupport);  
+}
+
+void Look::floorSliderChanged(){
+  supportLevel->floorSpin->setValue(supportLevel->floorSlider->value()/100.0);
+}
+
+void Look::ceilingSliderChanged(){
+  supportLevel->ceilingSpin->setValue(supportLevel->ceilingSlider->value()/100.0);
+}
+
+void Look::blurSliderChanged(){
+  supportLevel->blurSpin->setValue(supportLevel->blurSlider->value()/100.0);
+}
+
+void Look::floorSpinChanged(double value){
+  supportLevel->floorSlider->setValue(value*100.0);
+  if(img){
+    supportFloor[current] = value;
+  }
+  cachedImageDirty |= AutocorrelationSupport;
+}
+
+void Look::ceilingSpinChanged(double value){
+  supportLevel->ceilingSlider->setValue(value*100.0);
+  if(img){
+    supportCeiling[current] = value;
+  }
+  cachedImageDirty |= AutocorrelationSupport;
+}
+
+void Look::blurSpinChanged(double value){
+  supportLevel->blurSlider->setValue(value*100.0);
+  if(img){
+    supportBlur[current] = value;
+  }
+  cachedImageDirty |= SortedAutocorrelation;
+}
+
+void Look::recalculateButtonPressed(){
+  if(img){
+    emit imageChanged(current);
+  }
 }

@@ -30,6 +30,7 @@ class ImageView : public QWidget
   void mouseReleaseEvent(QMouseEvent *event);
   void paintEvent(QPaintEvent *event);
   void resizeEvent(QResizeEvent *event);
+  void leaveEvent(QEvent * event);
 
  signals:
   void centerChanged();
@@ -37,6 +38,8 @@ class ImageView : public QWidget
   void vertLineSet(real x, real y);
   void drawMaskAt(real x, real y);
   void undrawMaskAt(real x, real y);
+  void mouseOverImage(real frac_x, real frac_y);
+  void mouseLeftImage();
 
  private:
   void drawImage();

@@ -29,6 +29,8 @@ class MainWindow : public QMainWindow
   void imageBeamstopToAll();
   void imageCrop();
   void viewAutocorrelation();
+  void viewBackground();
+  void viewImage();
   void viewLogScale();
   void viewPredefineSize();
   void viewUsePredefinedSize();
@@ -46,6 +48,8 @@ class MainWindow : public QMainWindow
   void categorizeShowBackground();
   void categorizeSubtractBackground();
   void categorizeSetBackgroundLevel();
+  void backgroundSetConstantBackground();
+  void backgroundSetAdaptativeBackground();
   void maskShowMask();
   void maskImportMask();
   void maskClearMask();
@@ -66,7 +70,8 @@ class MainWindow : public QMainWindow
   void maskSetPencilSize30();
   void maskSetPencilSize50();
   void maskSetPencilSize(int size);
-
+  void onDirectoryOpened(QString);
+  void viewSupport();
  private:
   Look *look;
 
@@ -94,7 +99,12 @@ class MainWindow : public QMainWindow
   QAction *cropAct;
 
   QMenu *viewMenu;
+  QActionGroup * viewTypeGroup;
+  QAction *viewImageAct;
   QAction *autocorrelationAct;
+  QAction *viewBackgroundAct;
+  QAction *viewSupportAct;
+
   QAction *logScaleAct;
   QAction *predefineSizeAct;
   QAction *usePredefinedSizeAct;
@@ -112,10 +122,15 @@ class MainWindow : public QMainWindow
   QAction *clearBackgroundAct;
   QAction *hitAct;
   QAction *clearHitAct;
+
+  QMenu * backgroundMenu;
   QAction *calculateBackgroundAct;
   QAction *showBackgroundAct;
   QAction *subtractBackgroundAct;
   QAction *setBackgroundLevelAct;
+  QAction *setConstantBackgroundAct;
+  QAction *setAdaptativeBackgroundAct;
+
 
   QMenu *maskMenu;
   QAction *showMaskAct;
