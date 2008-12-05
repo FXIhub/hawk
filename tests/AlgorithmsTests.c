@@ -109,6 +109,67 @@ float test_raar_success(float criteria, float * pgm,int runs, int iter_per_run,f
   return (float)success/runs;
 }
 
+float test_difference_map_run(Image * real, Image * support, Image * amp, Options * opts, int iter_per_run){
+  sp_image_dephase(amp);
+  sp_image_rephase(amp,SP_RANDOM_PHASE);
+  Image * real_in = sp_image_ifft(amp);
+  sp_image_scale(real_in,1.0/sp_image_size(real_in));
+  sp_image_dephase(amp);
+  sp_image_rephase(amp,SP_ZERO_PHASE);
+  Image * real_out;
+  for(int j = 0;j<iter_per_run;j++){
+    real_out = serial_difference_map_iteration(amp,NULL,real_in,support,opts,NULL);
+    sp_image_free(real_in);
+    real_in = real_out;
+  }
+  float score = sp_image_entiomorph_correlation(real,real_out);
+  //  printf("Final correlation = %f\n",score);
+  //  sp_image_write(real_out,"real_out.png",COLOR_GRAYSCALE);
+  sp_image_free(real_in);
+  return score;
+}
+
+float test_difference_map_success(float criteria, float * pgm,int runs, int iter_per_run,float oversampling){
+  int success = 0;
+  Image * a = sp_image_alloc(pgm[0],pgm[1],1);
+  Image * s = sp_image_alloc(pgm[0],pgm[1],1);
+  for(int i = 0;i<sp_image_size(a);i++){
+    sp_real(a->image->data[i]) = pgm[i+3];
+    sp_real(s->image->data[i]) = 1;
+  }
+  Image * real =  sp_image_edge_extend(a,oversampling*sp_image_x(a),SP_ZERO_PAD_EDGE,SP_2D);
+  sp_image_write(real,"real.png",COLOR_GRAYSCALE);
+  Image * support = sp_image_edge_extend(s,oversampling*sp_image_x(a),SP_ZERO_PAD_EDGE,SP_2D);
+  Image * amp = sp_image_fft(real);
+  for(int i = 0;i<sp_image_size(amp);i++){
+    amp->mask->data[i] = 1;
+  }
+  Options * opts = set_defaults();
+  float sigma = 1.0/9;
+  opts->beta = 0.9;
+  float beta = opts->beta;
+    opts->gamma1 =  -(4+(2+beta)*sigma + beta*sigma*sigma)/(beta*(4-sigma+sigma*sigma));
+    opts->gamma2 = (3-beta)/(2*beta);
+    opts->gamma1 = -1/beta;
+    //    opts->gamma2 = 1/beta;
+  //try to reproduce HIO Success!
+  //  opts->gamma1 = -1;
+  //  opts->gamma2 = 1/beta;
+  opts->log_output_period = 1e6;
+  for(int i = 0;i<runs;i++){
+    float score = test_difference_map_run(real,support,amp,opts,iter_per_run);
+    if(score > criteria){
+      success++;
+    }
+  }
+  sp_image_free(a);
+  sp_image_free(s);
+  sp_image_free(real);
+  sp_image_free(support);
+  sp_image_free(amp);
+  return (float)success/runs;
+}
+
 float test_hio_success(float criteria, float * pgm,int runs, int iter_per_run,float oversampling){
   int success = 0;
   Image * a = sp_image_alloc(pgm[0],pgm[1],1);
@@ -141,8 +202,8 @@ float test_hio_success(float criteria, float * pgm,int runs, int iter_per_run,fl
       real_in = real_out;
     }
     float score = sp_image_entiomorph_correlation(real,real_out);
-    //    printf("Final correlation = %f\n",score);
-    //    sp_image_write(real_out,"real_out.png",COLOR_GRAYSCALE);
+    //       printf("Final correlation = %f\n",score);
+    //        sp_image_write(real_out,"real_out.png",COLOR_GRAYSCALE);
     if(score > criteria){
       success++;
     }
@@ -181,11 +242,25 @@ void test_raar(CuTest* tc){
 
 }
 
+void test_difference_map(CuTest* tc){
+  int iter = 200;
+  float criteria = 0.99;
+  float rate;
+  int runs = 100;
+  rate = test_difference_map_success(criteria, standard_4_2_04_scale25,runs,iter,1);
+  printf("4_2_04_scale25 DIFF MAP success rate with %d iterations and %3.2f criteria = %3.2f\n",iter,criteria,rate);
+  CuAssertTrue(tc,rate > 0.1);
+  rate = test_difference_map_success(criteria, standard_5_1_09_crop25,runs,iter,1);
+  printf("5_1_09_crop25 DIFF MAP success rate with %d iterations and %3.2f criteria = %3.2f\n",iter,criteria,rate);
+  CuAssertTrue(tc,rate > 0.1);
+}
+
 CuSuite* algorithms_get_suite(void)
 {
   CuSuite* suite = CuSuiteNew();
   SUITE_ADD_TEST(suite, test_raar);
   SUITE_ADD_TEST(suite, test_hio);
+  SUITE_ADD_TEST(suite, test_difference_map);
   return suite;
 }
 

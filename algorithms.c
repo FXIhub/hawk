@@ -785,10 +785,11 @@ Image * serial_difference_map_f2(Image * exp_amp, Image * exp_sigma, Image * rea
   Image * tmp2 = sp_proj_module(tmp,exp_amp);
   sp_image_free(tmp);
   Image * real_out = sp_image_ifft(tmp2);
+  sp_image_scale(real_out,1.0/sp_image_size(real_out));
   sp_image_free(tmp2);
   for(int i = 0;i<sp_image_size(real_out);i++){
-    sp_real(real_out->image->data[i]) = (1-gamma2)*sp_real(real_out->image->data[i])-gamma2*sp_real(real_in->image->data[i]);
-    sp_imag(real_out->image->data[i]) = (1-gamma2)*sp_imag(real_out->image->data[i])-gamma2*sp_imag(real_in->image->data[i]);
+    sp_real(real_out->image->data[i]) = (1+gamma2)*sp_real(real_out->image->data[i])-gamma2*sp_real(real_in->image->data[i]);
+    sp_imag(real_out->image->data[i]) = (1+gamma2)*sp_imag(real_out->image->data[i])-gamma2*sp_imag(real_in->image->data[i]);
   }
   return real_out;
 }
@@ -812,6 +813,8 @@ Image * serial_difference_map_iteration(Image * exp_amp, Image * exp_sigma, Imag
   sp_image_free(tmp);
   Image * Pi2f1 = sp_image_ifft(tmp2);
   sp_image_free(tmp2);
+  /*normalize */
+  sp_image_scale(Pi2f1,1.0/sp_image_size(Pi2f1));
   sp_image_sub(Pi1f2,Pi2f1);
   sp_image_free(Pi2f1);
   sp_image_scale(Pi1f2,beta);
