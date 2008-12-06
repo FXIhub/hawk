@@ -1,4 +1,3 @@
-#include <time.h>
 #include "AllTests.h"
 
 
@@ -17,6 +16,5 @@ int RunAllTests(void)
 
 int main(void)
 {
-  sp_srand(time(NULL));
   return RunAllTests();
 }
