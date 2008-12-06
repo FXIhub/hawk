@@ -24,16 +24,20 @@ Image * generate_from_poisson(Image * in,gsl_rng * r){
   return out;
 }
 
-real sp_image_complex_correlation(Image * a, Image * b){
+real sp_image_complex_correlation(Image * a, Image * b,Image * support){
   Complex * x = a->image->data;
   Complex * y = b->image->data;
-  int N = sp_image_size(a);
+  int N = 0;
   double sum_sq_x = 0;
   double sum_sq_y = 0;
   double  sum_coproduct = 0;
   double mean_x = sp_real(x[1]);
   double mean_y = sp_real(y[1]);
   for(int i= 1;i<sp_image_size(a);i++){
+    if(!sp_real(support->image->data[i])){
+      continue;
+    }
+    N++;
     double sweep = (i - 1.0) / i;
     double delta_x = sp_cabs(x[i]) - mean_x;
     double delta_y = sp_cabs(y[i]) - mean_y;
@@ -50,14 +54,14 @@ real sp_image_complex_correlation(Image * a, Image * b){
   return correlation;
 }
 
-real sp_image_entiomorph_correlation(Image * a, Image * b){
-  double corr1 = sp_image_complex_correlation(a,b);
+real sp_image_enantiomorph_correlation(Image * a, Image * b, Image * support){
+  double corr1 = sp_image_complex_correlation(a,b,support);
   Image * tmp = sp_image_duplicate(a,SP_COPY_DATA);
   int size = sp_image_size(tmp);
   for(int i = 0;i<sp_image_size(tmp);i++){
     tmp->image->data[i] = b->image->data[size-i-1];
   }
-  double corr2 = sp_image_complex_correlation(a,tmp);
+  double corr2 = sp_image_complex_correlation(a,tmp,support);
   if(corr1 < corr2){
     return corr2;
   }
@@ -109,10 +113,11 @@ float test_raar_success(float criteria, float * pgm,int runs, int iter_per_run,f
       sp_image_free(real_in);
       real_in = real_out;
     }
-    float score = sp_image_entiomorph_correlation(real,real_out);
+    float score = sp_image_enantiomorph_correlation(real,real_out,support);
     //    printf("Final correlation = %f\n",score);
-    //    sp_image_write(real_out,"real_out.png",COLOR_GRAYSCALE);
+    //        sp_image_write(real_out,"real_out.png",COLOR_GRAYSCALE);
     if(score > criteria){
+      sp_image_write(real_out,"raar_real_out.png",COLOR_GRAYSCALE);
       success++;
     }
     sp_image_free(real_in);
@@ -138,9 +143,14 @@ float test_difference_map_run(Image * real, Image * support, Image * amp, Option
     sp_image_free(real_in);
     real_in = real_out;
   }
-  float score = sp_image_entiomorph_correlation(real,real_out);
+  float score = sp_image_enantiomorph_correlation(real,real_out,support);
   //  printf("Final correlation = %f\n",score);
   //  sp_image_write(real_out,"real_out.png",COLOR_GRAYSCALE);
+  if(score > 0.99){
+    sp_image_write(real_in,"diff_map_real_out.png",COLOR_GRAYSCALE);
+  }
+
+
   sp_image_free(real_in);
   return score;
 }
@@ -166,7 +176,7 @@ float test_difference_map_success(float criteria, float * pgm,int runs, int iter
   float beta = opts->beta;
     opts->gamma1 =  -(4+(2+beta)*sigma + beta*sigma*sigma)/(beta*(4-sigma+sigma*sigma));
     opts->gamma2 = (3-beta)/(2*beta);
-    opts->gamma1 = -1/beta;
+    //    opts->gamma1 = -1/beta;
     //    opts->gamma2 = 1/beta;
   //try to reproduce HIO Success!
   //  opts->gamma1 = -1;
@@ -227,10 +237,11 @@ float test_hio_success(float criteria, float * pgm,int runs, int iter_per_run,fl
       sp_image_free(real_in);
       real_in = real_out;
     }
-    float score = sp_image_entiomorph_correlation(real,real_out);
+    float score = sp_image_enantiomorph_correlation(real,real_out,support);
            printf("Final correlation = %f\n",score);
-    //        sp_image_write(real_out,"real_out.png",COLOR_GRAYSCALE);
+    //            sp_image_write(real_out,"real_out.png",COLOR_GRAYSCALE);
     if(score > criteria){
+      sp_image_write(real_out,"hio_real_out.png",COLOR_GRAYSCALE);
       success++;
     }
     sp_image_free(real_in);
@@ -260,10 +271,11 @@ void test_raar(CuTest* tc){
   int iter = 200;
   float criteria = 0.99;
   float rate = 0;
-  rate = test_raar_success(criteria, standard_4_2_04_scale25,100,iter,1);
+  int runs = 1000;
+  rate = test_raar_success(criteria, standard_4_2_04_scale25,runs,iter,1);
   printf("4_2_04_scale25 RAAR success rate with %d iterations and %3.2f criteria = %3.2f\n",iter,criteria,rate);
   CuAssertTrue(tc,rate > 0.1);
-  rate = test_raar_success(criteria, standard_5_1_09_crop25,100,iter,1);
+  rate = test_raar_success(criteria, standard_5_1_09_crop25,runs,iter,1);
   printf("5_1_09_crop25 RAAR success rate with %d iterations and %3.2f criteria = %3.2f\n",iter,criteria,rate);
   CuAssertTrue(tc,rate > 0.1);
 
@@ -273,7 +285,7 @@ void test_difference_map(CuTest* tc){
   int iter = 200;
   float criteria = 0.99;
   float rate;
-  int runs = 100;
+  int runs = 1000;
   rate = test_difference_map_success(criteria, standard_4_2_04_scale25,runs,iter,1);
   printf("4_2_04_scale25 DIFF MAP success rate with %d iterations and %3.2f criteria = %3.2f\n",iter,criteria,rate);
   CuAssertTrue(tc,rate > 0.1);
