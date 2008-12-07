@@ -5,12 +5,7 @@
 #include <sys/stat.h>
 
 #include <unistd.h>
-#if defined(_MSC_VER) || defined(__MINGW32__)
-#include <direct.h>
-#include <process.h>
-#else
-#include <sys/types.h>
-#endif
+
 #ifdef MPI
 #include <mpi.h>
 #endif
@@ -206,6 +201,8 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
   Image * real_out = NULL;
   Image * tmp = NULL;
   Image * tmp2;
+  Image * real_out_sum = sp_image_alloc(sp_image_x(initial_support),sp_image_y(initial_support),sp_image_z(initial_support));
+  int real_out_sum_n = 0;
   global_options.current_support = &support;
   global_options.current_real_space_image = &real_out;
   char buffer[1024];
@@ -229,6 +226,14 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
     opts->algorithm = HIO;
   }
   
+  /* clear real_out_sum */
+  real_out_sum_n = 0;
+  for(int i = 0;i<sp_image_size(real_out_sum);i++){
+    sp_real(real_out_sum->image->data[i]) = 0;
+    sp_imag(real_out_sum->image->data[i]) = 0;
+  }
+
+
   support = sp_image_duplicate(initial_support,SP_COPY_DATA|SP_COPY_MASK);
   sp_image_write(initial_support,"support.vtk",SP_3D);
   prev_support = sp_image_duplicate(initial_support,SP_COPY_DATA|SP_COPY_MASK);
@@ -297,6 +302,12 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
     /* I'm only going to allow changes to images in the beggining of each iteration */
     synchronize_image_data(&real_out,&support);
 
+    /* Add current real_out to the average real_out*/
+    if(opts->iterations-opts->cur_iteration%opts->iterations <= opts->support_image_averaging){
+      sp_image_add(real_out_sum,real_out);
+      real_out_sum_n++;
+    }
+
     if(opts->image_blur_period && opts->cur_iteration%opts->image_blur_period == opts->image_blur_period-1){
       sp_image_free(real_in);
       real_in = gaussian_blur(real_out,opts->image_blur_radius);
@@ -304,6 +315,7 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
     }
 
     if(opts->iterations && opts->cur_iteration%opts->iterations == opts->iterations-1){
+      sp_image_scale(real_out_sum,1.0/real_out_sum_n);
       for(i = 0;i<opts->error_reduction_iterations_after_loop;i++){
 	sp_image_free(real_in);
 	real_in = real_out;
@@ -315,10 +327,10 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
       sp_image_free(prev_support);
       prev_support = sp_image_duplicate(support,SP_COPY_DATA|SP_COPY_MASK);
       sp_image_free(support);
-      support_threshold = get_support_level(real_out,&support_size,radius,&log,opts);
+      support_threshold = get_support_level(real_out_sum,&support_size,radius,&log,opts);
       log.threshold = support_threshold;
       if(support_threshold > 0){
-	support =  get_updated_support(real_out,support_threshold, radius,opts);
+	support =  get_updated_support(real_out_sum,support_threshold, radius,opts);
       }else{
 	if(opts->support_update_algorithm == REAL_ERROR_CAPPED){
 	  exit(0);
@@ -327,11 +339,18 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
 	}
       }
       if(opts->filter_intensities){
-	filter_intensities_with_support(amp,real_out,support,opts);
+	filter_intensities_with_support(amp,real_out_sum,support,opts);
       }
       if(opts->cur_iteration <= opts->iterations_to_min_blur){
 	radius = get_blur_radius(opts);
       }
+      /* clear real_out_sum */
+      real_out_sum_n = 0;
+      for(int i = 0;i<sp_image_size(real_out_sum);i++){
+	sp_real(real_out_sum->image->data[i]) = 0;
+ 	sp_imag(real_out_sum->image->data[i]) = 0;
+      }
+
       if(/*opts->cur_iteration > 50 ||*/ (opts->automatic && opts->algorithm == RAAR && log.Ereal < 0.2)){
 	stop++;
       }
@@ -422,6 +441,7 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
    }else if(get_algorithm(opts,&log) == RAAR_PROJ){     
       real_out = basic_raar_proj_iteration(amp, opts->intensities_std_dev,real_in, support,opts,&log);
     }
+
   }  
 
   //sp_image_write(real_out,"real_out_final.h5",opts->output_precision|SP_2D);
@@ -651,7 +671,6 @@ int main(int argc, char ** argv){
     perror("uwrapc not compileed with network support!\n");
   }
 #endif  
-  srand(getpid());
 
   
   f = fopen("uwrapc.conf","rb");
@@ -663,6 +682,8 @@ int main(int argc, char ** argv){
   }else if(!socket){
     perror("Could not open uwrapc.conf");
   }
+  srand(get_random_seed(opts));
+
 #ifdef NETWORK_SUPPORT
   if(socket){
     wait_for_server_instructions(socket);

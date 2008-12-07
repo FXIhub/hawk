@@ -4,6 +4,14 @@
 #include <ctype.h>
 #include <limits.h>
 
+#include <unistd.h>
+#if defined(_MSC_VER) || defined(__MINGW32__)
+#include <direct.h>
+#include <process.h>
+#else
+#include <sys/types.h>
+#endif
+
 #ifdef _USE_DMALLOC
 #include <dmalloc.h>
 #endif
@@ -126,6 +134,8 @@ Options * set_defaults(){
   opt->beta_at_checkpoints = NULL;
   opt->gamma1 = -10000;
   opt->gamma2 = -10000;
+  opt->support_image_averaging = 1;
+  opt->random_seed = -1;
   return opt;
 }
 
@@ -698,4 +708,11 @@ real get_gamma2(Options * opts,Log * log){
     return (3-beta)/(2*beta);
   }
   return opts->gamma2;
+}
+
+int get_random_seed(Options * opts){
+  if(opts->random_seed == -1){
+    opts->random_seed = getpid();
+  }
+  return opts->random_seed;
 }

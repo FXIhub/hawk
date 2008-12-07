@@ -792,9 +792,33 @@ VariableMetadata variable_metadata[100] = {
     .variable_address = &(global_options.gamma2),
     .documentation = "Gamma2 or Gamma_F parameter of the difference map algorithm.",
     .reserved = NULL
+  },
+  {
+    .variable_name = "support_image_averaging",
+    .variable_type = Type_Int,
+    .id = Id_Support_Image_Averaging,
+    .parent = &(variable_metadata[0]),
+    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
+    .list_valid_values = {0},
+    .list_valid_names = {0},
+    .variable_address = &(global_options.support_image_averaging),
+    .documentation = "The number of real_out images used the calculation of the support. Each image comes from a different iteration and their are averaged together",
+    .reserved = NULL
+  },
+  {
+    .variable_name = "random_seed",
+    .variable_type = Type_Int,
+    .id = Id_Random_Seed,
+    .parent = &(variable_metadata[0]),
+    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
+    .list_valid_values = {0},
+    .list_valid_names = {0},
+    .variable_address = &(global_options.random_seed),
+    .documentation = "Seed used for the random number generators. If not set the process PID is used.",
+    .reserved = NULL
   }
 };
 
 
 /* Don't forget to update this one!! */
-const int number_of_global_options = 68;
+const int number_of_global_options = 70;

@@ -14,12 +14,7 @@ static gsl_rng * r = NULL;
 Image * generate_from_poisson(Image * in,gsl_rng * r){
   Image * out = sp_image_alloc(sp_image_x(in),sp_image_y(in),sp_image_z(in));
   for(int i = 0;i<sp_image_size(in);i++){
-    if(sp_real(in->image->data[i]) != 0){
-      sp_real(out->image->data[i]) = gsl_ran_poisson(r,sp_real(in->image->data[i]));
-    }else{
-      sp_real(out->image->data[i]) = 0;
-    }
-    printf("%d\n",i);
+    sp_real(out->image->data[i]) = gsl_ran_poisson(r,sp_real(in->image->data[i]));
   }
   return out;
 }
@@ -81,7 +76,7 @@ real image_rel_error(Image * a, Image * b){
   return error/den;
 }
 
-float test_raar_success(float criteria, float * pgm,int runs, int iter_per_run,float oversampling){
+float test_raar_success(float criteria, float * pgm,int runs, int iter_per_run,float oversampling,float photons_per_pixel){
   int success = 0;
   Image * a = sp_image_alloc(pgm[0],pgm[1],1);
   Image * s = sp_image_alloc(pgm[0],pgm[1],1);
@@ -92,7 +87,22 @@ float test_raar_success(float criteria, float * pgm,int runs, int iter_per_run,f
   Image * real =  sp_image_edge_extend(a,oversampling*sp_image_x(a),SP_ZERO_PAD_EDGE,SP_2D);
   sp_image_write(real,"real.png",COLOR_GRAYSCALE);
   Image * support = sp_image_edge_extend(s,oversampling*sp_image_x(a),SP_ZERO_PAD_EDGE,SP_2D);
-  Image * amp = sp_image_fft(real);
+  Image * perf_amp = sp_image_fft(real);
+  perf_amp->scaled = 1;
+  sp_image_to_intensities(perf_amp);
+
+  /* Scale image to the required number of photons per pixel */
+  float ppp = sp_real(sp_image_integrate(perf_amp))/sp_image_size(perf_amp);
+  sp_image_scale(perf_amp,photons_per_pixel/ppp);
+
+
+  Image * amp = generate_from_poisson(perf_amp,r);
+  amp->shifted = 1;
+  for(int i = 0;i<sp_image_size(amp);i++){
+    sp_real(amp->image->data[i]) = sqrt(sp_real(amp->image->data[i]));
+  }
+  sp_image_free(perf_amp);
+
   sp_image_write(amp,"amp.png",LOG_SCALE|COLOR_GRAYSCALE);
   for(int i = 0;i<sp_image_size(amp);i++){
     amp->mask->data[i] = 1;
@@ -155,7 +165,7 @@ float test_difference_map_run(Image * real, Image * support, Image * amp, Option
   return score;
 }
 
-float test_difference_map_success(float criteria, float * pgm,int runs, int iter_per_run,float oversampling){
+float test_difference_map_success(float criteria, float * pgm,int runs, int iter_per_run,float oversampling,float photons_per_pixel){
   int success = 0;
   Image * a = sp_image_alloc(pgm[0],pgm[1],1);
   Image * s = sp_image_alloc(pgm[0],pgm[1],1);
@@ -166,13 +176,27 @@ float test_difference_map_success(float criteria, float * pgm,int runs, int iter
   Image * real =  sp_image_edge_extend(a,oversampling*sp_image_x(a),SP_ZERO_PAD_EDGE,SP_2D);
   sp_image_write(real,"real.png",COLOR_GRAYSCALE);
   Image * support = sp_image_edge_extend(s,oversampling*sp_image_x(a),SP_ZERO_PAD_EDGE,SP_2D);
-  Image * amp = sp_image_fft(real);
+  Image * perf_amp = sp_image_fft(real);
+  perf_amp->scaled = 1;
+  sp_image_to_intensities(perf_amp);
+
+  /* Scale image to the required number of photons per pixel */
+  float ppp = sp_real(sp_image_integrate(perf_amp))/sp_image_size(perf_amp);
+  sp_image_scale(perf_amp,photons_per_pixel/ppp);
+
+
+  Image * amp = generate_from_poisson(perf_amp,r);
+  amp->shifted = 1;
+  for(int i = 0;i<sp_image_size(amp);i++){
+    sp_real(amp->image->data[i]) = sqrt(sp_real(amp->image->data[i]));
+  }
+  sp_image_free(perf_amp);
   for(int i = 0;i<sp_image_size(amp);i++){
     amp->mask->data[i] = 1;
   }
   Options * opts = set_defaults();
   float sigma = 1.0/9;
-  opts->beta = 0.9;
+  opts->beta = 0.99;
   float beta = opts->beta;
     opts->gamma1 =  -(4+(2+beta)*sigma + beta*sigma*sigma)/(beta*(4-sigma+sigma*sigma));
     opts->gamma2 = (3-beta)/(2*beta);
@@ -204,19 +228,25 @@ float test_hio_success(float criteria, float * pgm,int runs, int iter_per_run,fl
     sp_real(a->image->data[i]) = pgm[i+3];
     sp_real(s->image->data[i]) = 1;
   }
-  /* Scale image to the required number of photons per pixel */
-  real ppp = sp_real(sp_image_integrate(a))/sp_image_size(a);
-  sp_image_scale(a,photons_per_pixel/ppp);
 
   Image * real =  sp_image_edge_extend(a,oversampling*sp_image_x(a),SP_ZERO_PAD_EDGE,SP_2D);
   sp_image_write(real,"real.png",COLOR_GRAYSCALE);
   Image * support = sp_image_edge_extend(s,oversampling*sp_image_x(a),SP_ZERO_PAD_EDGE,SP_2D);
+  Image * perf_amp = sp_image_fft(real);
+  perf_amp->scaled = 1;
+  sp_image_to_intensities(perf_amp);
 
-  fprintf(stderr,"Generating sample...");
-  Image * sample = generate_from_poisson(real,r);
-  fprintf(stderr,"done");
-  Image * amp = sp_image_fft(sample);
-  sp_image_free(sample);
+  /* Scale image to the required number of photons per pixel */
+  float ppp = sp_real(sp_image_integrate(perf_amp))/sp_image_size(perf_amp);
+  sp_image_scale(perf_amp,photons_per_pixel/ppp);
+
+
+  Image * amp = generate_from_poisson(perf_amp,r);
+  amp->shifted = 1;
+  for(int i = 0;i<sp_image_size(amp);i++){
+    sp_real(amp->image->data[i]) = sqrt(sp_real(amp->image->data[i]));
+  }
+  sp_image_free(perf_amp);
 
   for(int i = 0;i<sp_image_size(amp);i++){
     amp->mask->data[i] = 1;
@@ -238,8 +268,8 @@ float test_hio_success(float criteria, float * pgm,int runs, int iter_per_run,fl
       real_in = real_out;
     }
     float score = sp_image_enantiomorph_correlation(real,real_out,support);
-           printf("Final correlation = %f\n",score);
-    //            sp_image_write(real_out,"real_out.png",COLOR_GRAYSCALE);
+    //         printf("Final correlation = %f\n",score);
+    //          sp_image_write(real_out,"real_out.png",COLOR_GRAYSCALE);
     if(score > criteria){
       sp_image_write(real_out,"hio_real_out.png",COLOR_GRAYSCALE);
       success++;
@@ -255,14 +285,15 @@ float test_hio_success(float criteria, float * pgm,int runs, int iter_per_run,fl
 }
 
 void test_hio(CuTest* tc){
-  int iter = 200;
+  int iter = 50;
   float criteria = 0.99;
   float rate;
   real photons_per_pixel = 1000;
-  rate = test_hio_success(criteria, standard_4_2_04_scale25,100,iter,1,photons_per_pixel);
+  int runs = 30;
+  rate = test_hio_success(criteria, standard_4_2_04_scale25,runs,iter,1,photons_per_pixel);
   printf("4_2_04_scale25 HIO success rate with %d iterations and %3.2f criteria = %3.2f\n",iter,criteria,rate);
   CuAssertTrue(tc,rate > 0.1);
-  rate = test_hio_success(criteria, standard_5_1_09_crop25,100,iter,1,photons_per_pixel);
+  rate = test_hio_success(criteria, standard_5_1_09_crop25,runs,iter,1,photons_per_pixel);
   printf("5_1_09_crop25 HIO success rate with %d iterations and %3.2f criteria = %3.2f\n",iter,criteria,rate);
   CuAssertTrue(tc,rate > 0.1);
 }
@@ -271,11 +302,12 @@ void test_raar(CuTest* tc){
   int iter = 200;
   float criteria = 0.99;
   float rate = 0;
-  int runs = 1000;
-  rate = test_raar_success(criteria, standard_4_2_04_scale25,runs,iter,1);
+  int runs = 30;
+  real photons_per_pixel = 1000;
+  rate = test_raar_success(criteria, standard_4_2_04_scale25,runs,iter,1,photons_per_pixel);
   printf("4_2_04_scale25 RAAR success rate with %d iterations and %3.2f criteria = %3.2f\n",iter,criteria,rate);
   CuAssertTrue(tc,rate > 0.1);
-  rate = test_raar_success(criteria, standard_5_1_09_crop25,runs,iter,1);
+  rate = test_raar_success(criteria, standard_5_1_09_crop25,runs,iter,1,photons_per_pixel);
   printf("5_1_09_crop25 RAAR success rate with %d iterations and %3.2f criteria = %3.2f\n",iter,criteria,rate);
   CuAssertTrue(tc,rate > 0.1);
 
@@ -285,24 +317,25 @@ void test_difference_map(CuTest* tc){
   int iter = 200;
   float criteria = 0.99;
   float rate;
-  int runs = 1000;
-  rate = test_difference_map_success(criteria, standard_4_2_04_scale25,runs,iter,1);
+  int runs = 30;
+  real photons_per_pixel = 1000;
+  rate = test_difference_map_success(criteria, standard_4_2_04_scale25,runs,iter,1,photons_per_pixel);
   printf("4_2_04_scale25 DIFF MAP success rate with %d iterations and %3.2f criteria = %3.2f\n",iter,criteria,rate);
   CuAssertTrue(tc,rate > 0.1);
-  rate = test_difference_map_success(criteria, standard_5_1_09_crop25,runs,iter,1);
+  rate = test_difference_map_success(criteria, standard_5_1_09_crop25,runs,iter,1,photons_per_pixel);
   printf("5_1_09_crop25 DIFF MAP success rate with %d iterations and %3.2f criteria = %3.2f\n",iter,criteria,rate);
   CuAssertTrue(tc,rate > 0.1);
 }
 
 CuSuite* algorithms_get_suite(void)
 {
-  r = gsl_rng_alloc (gsl_rng_default);
-  gsl_rng_set(r,time(NULL));
-  sp_srand(time(NULL));
+    r = gsl_rng_alloc (gsl_rng_default);
+  //  gsl_rng_set(r,time(NULL));
+  //sp_srand(time(NULL));
   CuSuite* suite = CuSuiteNew();
-  //  SUITE_ADD_TEST(suite, test_raar);
-  SUITE_ADD_TEST(suite, test_hio);
-  //  SUITE_ADD_TEST(suite, test_difference_map);
+  //      SUITE_ADD_TEST(suite, test_raar);
+      //  SUITE_ADD_TEST(suite, test_hio);
+      SUITE_ADD_TEST(suite, test_difference_map);
   return suite;
 }
 

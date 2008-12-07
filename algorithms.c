@@ -780,22 +780,21 @@ Image * serial_difference_map_f1(Image * real_in,Image * support,real gamma1){
 
    This is the Fourier constraint map.
 */
-Image * serial_difference_map_f2(Image * exp_amp, Image * exp_sigma, Image * real_in,real gamma2){
-  Image * tmp = sp_image_fft(real_in);
-  Image * tmp2 = sp_proj_module(tmp,exp_amp);
-  sp_image_free(tmp);
+Image * serial_difference_map_f2(Image * exp_amp, Image * exp_sigma, Image * fft_in,real gamma2){
+  Image * tmp2 = sp_proj_module(fft_in,exp_amp);
+  for(int i = 0;i<sp_image_size(tmp2);i++){
+    sp_real(tmp2->image->data[i]) = (1+gamma2)*sp_real(tmp2->image->data[i])-gamma2*sp_real(fft_in->image->data[i]);
+    sp_imag(tmp2->image->data[i]) = (1+gamma2)*sp_imag(tmp2->image->data[i])-gamma2*sp_imag(fft_in->image->data[i]);
+  }
   Image * real_out = sp_image_ifft(tmp2);
   sp_image_scale(real_out,1.0/sp_image_size(real_out));
   sp_image_free(tmp2);
-  for(int i = 0;i<sp_image_size(real_out);i++){
-    sp_real(real_out->image->data[i]) = (1+gamma2)*sp_real(real_out->image->data[i])-gamma2*sp_real(real_in->image->data[i]);
-    sp_imag(real_out->image->data[i]) = (1+gamma2)*sp_imag(real_out->image->data[i])-gamma2*sp_imag(real_in->image->data[i]);
-  }
   return real_out;
 }
 
 
 
+#if 0 
 Image * serial_difference_map_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in, Image * support, 
 					Options * opts, Log * log){
   real beta = get_beta(opts);
@@ -803,7 +802,7 @@ Image * serial_difference_map_iteration(Image * exp_amp, Image * exp_sigma, Imag
   real gamma2 = get_gamma2(opts,log);
   Image * real_out = sp_image_duplicate(real_in,SP_COPY_DATA|SP_COPY_MASK);  
   Image * fft_in = sp_image_fft(real_in);
-  Image * f2 = serial_difference_map_f2(exp_amp,exp_sigma,real_in,gamma2);
+  Image * f2 = serial_difference_map_f2(exp_amp,exp_sigma,fft_in,gamma2);
   Image * f1 = serial_difference_map_f1(real_in,support,gamma1);
   Image * Pi1f2 = sp_proj_support(f2,support);
   sp_image_free(f2);
@@ -820,6 +819,45 @@ Image * serial_difference_map_iteration(Image * exp_amp, Image * exp_sigma, Imag
   sp_image_scale(Pi1f2,beta);
   sp_image_add(real_out,Pi1f2);
   sp_image_free(Pi1f2);
+  if(opts->cur_iteration%opts->log_output_period == opts->log_output_period-1){
+    output_to_log(exp_amp,real_in, real_out, fft_in,support, opts,log);
+  }
+  sp_image_free(fft_in);
+  return real_out;
+}
+#endif
+
+
+Image * serial_difference_map_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in, Image * support, 
+					Options * opts, Log * log){
+  real beta = get_beta(opts);
+  real gamma1 = get_gamma1(opts,log);
+  real gamma2 = get_gamma2(opts,log);
+  Image * real_out = sp_image_duplicate(real_in,SP_COPY_DATA|SP_COPY_MASK);  
+  Image * fft_in = sp_image_fft(real_in);
+  Image * f1 = serial_difference_map_f1(real_in,support,gamma1);
+  Image * tmp = sp_image_fft(f1);
+  sp_image_free(f1);
+  Image * tmp2 = sp_proj_module(tmp,exp_amp);
+  sp_image_free(tmp);
+  Image * Pi2f1 = sp_image_ifft(tmp2);
+  sp_image_free(tmp2);
+
+  tmp2 = sp_proj_module(fft_in,exp_amp);
+  Image * Pi2rho = sp_image_ifft(tmp2);
+  sp_image_free(tmp2);
+
+  int size = sp_image_size(real_in);
+  for(int i = 0;i<size;i++){
+    if(sp_real(support->image->data[i])){
+      sp_real(real_out->image->data[i]) += (beta)*((1+gamma2)*sp_real(Pi2rho->image->data[i])/size-gamma2*sp_real(real_in->image->data[i]));
+      sp_imag(real_out->image->data[i]) += (beta)*((1+gamma2)*sp_imag(Pi2rho->image->data[i])/size-gamma2*sp_imag(real_in->image->data[i]));
+    }
+    sp_real(real_out->image->data[i]) -= beta*sp_real(Pi2f1->image->data[i])/size;
+    sp_imag(real_out->image->data[i]) -= beta*sp_imag(Pi2f1->image->data[i])/size;
+  }
+  sp_image_free(Pi2f1);
+  sp_image_free(Pi2rho);
   if(opts->cur_iteration%opts->log_output_period == opts->log_output_period-1){
     output_to_log(exp_amp,real_in, real_out, fft_in,support, opts,log);
   }
