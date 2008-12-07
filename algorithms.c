@@ -793,8 +793,8 @@ Image * serial_difference_map_f2(Image * exp_amp, Image * exp_sigma, Image * fft
 }
 
 
-
 #if 0 
+
 Image * serial_difference_map_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in, Image * support, 
 					Options * opts, Log * log){
   real beta = get_beta(opts);
@@ -825,9 +825,10 @@ Image * serial_difference_map_iteration(Image * exp_amp, Image * exp_sigma, Imag
   sp_image_free(fft_in);
   return real_out;
 }
+
 #endif
 
-
+/* Optimized difference map code */
 Image * serial_difference_map_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in, Image * support, 
 					Options * opts, Log * log){
   real beta = get_beta(opts);

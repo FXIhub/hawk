@@ -616,8 +616,11 @@ real get_blur_radius(Options * opts){
 
 real get_phases_blur_radius(Options * opts){
   real a;
-  a = (3.0*opts->cur_iteration/opts->iterations_to_min_phases_blur)*(3.0*opts->cur_iteration/opts->iterations_to_min_phases_blur)*0.5;
-  return (opts->phases_max_blur_radius-opts->phases_min_blur_radius)*exp(-a)+opts->phases_min_blur_radius;
+  if(opts->iterations_to_min_phases_blur){
+    a = (3.0*opts->cur_iteration/opts->iterations_to_min_phases_blur)*(3.0*opts->cur_iteration/opts->iterations_to_min_phases_blur)*0.5;
+    return (opts->phases_max_blur_radius-opts->phases_min_blur_radius)*exp(-a)+opts->phases_min_blur_radius;
+  }
+  return 0;    
 }
 
 

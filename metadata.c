@@ -777,7 +777,7 @@ VariableMetadata variable_metadata[100] = {
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.gamma2),
+    .variable_address = &(global_options.gamma1),
     .documentation = "Gamma1 or Gamma_S parameter of the difference map algorithm.",
     .reserved = NULL
   },

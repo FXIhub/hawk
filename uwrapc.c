@@ -235,6 +235,16 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
 
 
   support = sp_image_duplicate(initial_support,SP_COPY_DATA|SP_COPY_MASK);
+  /* Initialize support size. Necessary for difference map to work reliably */
+  log.SupSize = 0;
+  for(int i = 0;i<sp_image_size(support);i++){
+    if(sp_real(support->image->data[i])){
+      log.SupSize +=1;
+    }
+  }
+  log.SupSize /=sp_image_size(support);
+  log.SupSize *=100;
+  
   sp_image_write(initial_support,"support.vtk",SP_3D);
   prev_support = sp_image_duplicate(initial_support,SP_COPY_DATA|SP_COPY_MASK);
 
@@ -440,6 +450,8 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
       real_out = basic_so2d_iteration(amp, exp_sigma,real_in, support,opts,&log);
    }else if(get_algorithm(opts,&log) == RAAR_PROJ){     
       real_out = basic_raar_proj_iteration(amp, opts->intensities_std_dev,real_in, support,opts,&log);
+   }else if(get_algorithm(opts,&log) == DIFF_MAP){     
+      real_out = serial_difference_map_iteration(amp, opts->intensities_std_dev,real_in, support,opts,&log);
     }
 
   }  
