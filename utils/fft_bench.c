@@ -1,3 +1,7 @@
+#ifndef _WIN32
+#define _XOPEN_SOURCE 500
+#endif
+
 #include <stdlib.h>
 #ifndef _WIN32
 #include <unistd.h>

@@ -149,7 +149,7 @@ float test_difference_map_run(Image * real, Image * support, Image * amp, Option
   sp_image_rephase(amp,SP_ZERO_PHASE);
   Image * real_out;
   for(int j = 0;j<iter_per_run;j++){
-    real_out = serial_difference_map_iteration(amp,NULL,real_in,support,opts,NULL);
+    real_out = serial_difference_map_iteration(amp,real_in,support,opts,NULL);
     sp_image_free(real_in);
     real_in = real_out;
   }

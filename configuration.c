@@ -139,7 +139,7 @@ Options * set_defaults(){
   return opt;
 }
 
-void read_options_file(char * filename, Options * res){
+void read_options_file(char * filename){
   config_t config;
   config_init(&config);
   if(!config_read_file(&config,filename)){
@@ -444,7 +444,7 @@ void read_options_file(char * filename, Options * res){
 
 
 
-void write_options_file(char * filename, Options * res){
+void write_options_file(char * filename){
   config_t config;
   config_setting_t * root;
   config_setting_t * s;
@@ -702,7 +702,7 @@ real get_gamma1(Options * opts,Log * log){
   return opts->gamma1;
 }
 
-real get_gamma2(Options * opts,Log * log){
+real get_gamma2(Options * opts){
   if(opts->gamma2 == -10000){
     /* Optimal value according to 
        Veit Elser 2003 "Random projections and the optimization of an algorithm for phase retrieval 

@@ -166,16 +166,16 @@ extern const int number_of_global_options;
 extern VariableMetadata variable_metadata[100];
 
   void init_options_metadata(Options * opt);
-  void read_options_file(char * filename, Options * opt);
+  void read_options_file(char * filename);
   void parse_options(int argc, char ** argv, Options * opt);
   Options * set_defaults(void);
-void write_options_file(char * filename, Options * res);
+void write_options_file(char * filename);
 real get_beta(Options * opts);
 real get_blur_radius(Options * opts);
   real get_object_area(Options * opts);
   real get_phases_blur_radius(Options * opts);
   real get_gamma1(Options * opts,struct _Log * log);
-  real get_gamma2(Options * opts,struct _Log * log);
+  real get_gamma2(Options * opts);
   int get_random_seed(Options * opts);
 #ifdef __cplusplus
 }  /* extern "C" */

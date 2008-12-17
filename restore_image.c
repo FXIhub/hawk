@@ -415,7 +415,11 @@ void complete_restoration(Image * amp, Image * initial_support, Options * opts, 
 
 
 
+#ifdef MPI
+int main(int argc, char ** argv){
+#else
 int main(){
+#endif
   Image * img = NULL;
   char dir[1024];
   long long i;
@@ -432,11 +436,11 @@ int main(){
   f = fopen("restore_image.conf","rb");
   if(f){
     fclose(f);
-    read_options_file("restore_image.conf",opts);
+    read_options_file("restore_image.conf");
   }else{
     perror("Could not open restore_image.conf");
   }
-  write_options_file("restore_image.confout",opts);
+  write_options_file("restore_image.confout");
   sp_init_fft(opts->nthreads);
   if(opts->diffraction){
     img = sp_image_duplicate(opts->diffraction,SP_COPY_DATA|SP_COPY_MASK);

@@ -780,7 +780,7 @@ Image * serial_difference_map_f1(Image * real_in,Image * support,real gamma1){
 
    This is the Fourier constraint map.
 */
-Image * serial_difference_map_f2(Image * exp_amp, Image * exp_sigma, Image * fft_in,real gamma2){
+Image * serial_difference_map_f2(Image * exp_amp, Image * fft_in,real gamma2){
   Image * tmp2 = sp_proj_module(fft_in,exp_amp);
   for(int i = 0;i<sp_image_size(tmp2);i++){
     sp_real(tmp2->image->data[i]) = (1+gamma2)*sp_real(tmp2->image->data[i])-gamma2*sp_real(fft_in->image->data[i]);
@@ -829,11 +829,11 @@ Image * serial_difference_map_iteration(Image * exp_amp, Image * exp_sigma, Imag
 #endif
 
 /* Optimized difference map code */
-Image * serial_difference_map_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in, Image * support, 
+Image * serial_difference_map_iteration(Image * exp_amp, Image * real_in, Image * support, 
 					Options * opts, Log * log){
   real beta = get_beta(opts);
   real gamma1 = get_gamma1(opts,log);
-  real gamma2 = get_gamma2(opts,log);
+  real gamma2 = get_gamma2(opts);
   Image * real_out = sp_image_duplicate(real_in,SP_COPY_DATA|SP_COPY_MASK);  
   Image * fft_in = sp_image_fft(real_in);
   Image * f1 = serial_difference_map_f1(real_in,support,gamma1);

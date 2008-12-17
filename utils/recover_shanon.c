@@ -125,6 +125,24 @@ sp_matrix ** get_random_orient_samples(Image ** orient_samples, int n_samples,gs
   }
   return random_orient_samples;
 }
+
+sp_matrix ** get_rotated_samples(Image * a, int n_samples,gsl_rng * r,Image * sum){
+ sp_matrix ** rotated_samples = malloc(sizeof(sp_matrix *)*n_samples);
+  for(int i = 0;i<n_samples;i++){
+    Image * tmp = generate_from_poisson(a,r);
+    sp_image_add(sum,tmp);
+    int rot = gsl_rng_get(r)%4;
+    Image * tmp2 = sp_image_rotate(tmp,sp_ZAxis,rot,0);    
+    rotated_samples[i] = sp_matrix_alloc(sp_image_x(tmp),sp_image_y(tmp));
+    for(int k = 0;k<sp_image_size(tmp);k++){
+      rotated_samples[i]->data[k] = sp_real(tmp2->image->data[k]);
+    }
+    sp_image_free(tmp);    
+    sp_image_free(tmp2);    
+  }
+  return rotated_samples;
+}
+
 Image ** get_orient_samples(Image * a, int n_samples,gsl_rng * r){
  Image ** orient_samples = malloc(sizeof(Image *)*n_samples);
   for(int i = 0;i<n_samples;i++){
@@ -321,24 +339,32 @@ int main(int argc, char ** argv){
   printf("Total photons %f\n",image_photons);
   printf("Average photon count %f\n",image_photons/sp_image_size(a));
 
-  Image ** orient_samples = get_orient_samples(a,n_samples,r);
+  printf("Creating rotated samples...");
+  fflush(stdout);
+  Image * avg_samples = sp_image_alloc(sp_image_x(a),sp_image_y(a),sp_image_z(a));
+  sp_matrix ** random_orient_samples = get_rotated_samples(a,n_samples,r,avg_samples);
+
+  //  Image ** orient_samples = get_orient_samples(a,n_samples,r);
+  printf("done\n");
 
   image_photons = 0;
   for(int i = 0;i<sp_image_size(a);i++){
-    image_photons += sp_real(orient_samples[0]->image->data[i]);
+    image_photons += random_orient_samples[0]->data[i];
   }
   printf("Total photons in sample 1 - %f\n",image_photons);
 
-  Image * avg_samples = get_image_avg(orient_samples,n_samples);
-  printf("Creating samples...");
+
+  //  Image * avg_samples = get_image_avg(orient_samples,n_samples);
+  /*  printf("Rotating samples...");
   fflush(stdout);
   sp_matrix ** random_orient_samples = get_random_orient_samples(orient_samples,n_samples,r);
-  printf("done\n");
+  printf("done\n");*/
 
-  sp_image_write(orient_samples[1],"sample.png",COLOR_GRAYSCALE);
-  for(int i = 0;i<n_samples;i++){
+  //  sp_image_write(random_orient_samples[1],"sample.png",COLOR_GRAYSCALE);
+  /*  for(int i = 0;i<n_samples;i++){
     sp_image_free(orient_samples[i]);
   }
+  free(orient_samples);*/
 
   Image * avg_random_samples = sp_image_alloc(sp_image_x(a),sp_image_y(a),sp_image_z(a));
   for(int i = 0;i<n_samples;i++){
@@ -362,15 +388,11 @@ int main(int argc, char ** argv){
   }
   image_normalize(restore);
 
-  /* Initialize with one of the samples */
-  /*  Image * restore = sp_image_duplicate(random_orient_samples[n_samples-1],SP_COPY_DATA);*/
   sp_image_write(a,"orig.png",COLOR_GRAYSCALE);
   sp_image_write(avg_samples,"avg_sample.png",COLOR_GRAYSCALE);
   sp_image_write(avg_random_samples,"avg_random_sample.png",COLOR_GRAYSCALE);
   for(int iter = 0;;iter++){
-    //    tomas_iteration3(restore,after,rotated_random_orient_samples,n_samples);
     tomas_iteration(restore,after,random_orient_samples,n_samples);
-
     Image * tmp = restore;
     restore = after;
     after = tmp;

@@ -16,11 +16,19 @@
 
 /* First, we deal with  platform-specific or compiler-specific issues. */
 
+#ifdef _WIN32
+#define strdup _strup
+#else
+#define _XOPEN_SOURCE 500
+#endif
+
 /* begin standard C headers. */
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <string.h>
+
 
 /* end standard C headers. */
 
@@ -314,9 +322,9 @@ YY_BUFFER_STATE libconfig_yy_scan_buffer (char *base,yy_size_t size ,yyscan_t yy
 YY_BUFFER_STATE libconfig_yy_scan_string (yyconst char *yy_str ,yyscan_t yyscanner );
 YY_BUFFER_STATE libconfig_yy_scan_bytes (yyconst char *bytes,int len ,yyscan_t yyscanner );
 
-void *libconfig_yyalloc (yy_size_t ,yyscan_t yyscanner );
-void *libconfig_yyrealloc (void *,yy_size_t ,yyscan_t yyscanner );
-void libconfig_yyfree (void * ,yyscan_t yyscanner );
+void *libconfig_yyalloc (yy_size_t );
+void *libconfig_yyrealloc (void *,yy_size_t );
+void libconfig_yyfree (void *);
 
 #define yy_new_buffer libconfig_yy_create_buffer
 
@@ -354,7 +362,7 @@ typedef int yy_state_type;
 static yy_state_type yy_get_previous_state (yyscan_t yyscanner );
 static yy_state_type yy_try_NUL_trans (yy_state_type current_state  ,yyscan_t yyscanner);
 static int yy_get_next_buffer (yyscan_t yyscanner );
-static void yy_fatal_error (yyconst char msg[] ,yyscan_t yyscanner );
+static void yy_fatal_error (yyconst char msg[] );
 
 /* Done after the current pattern has been matched and before the
  * corresponding action - sets up yytext.
@@ -828,7 +836,7 @@ static void yy_flex_strncpy (char *,yyconst char *,int ,yyscan_t yyscanner);
 static int yy_flex_strlen (yyconst char * ,yyscan_t yyscanner);
 #endif
 
-#ifndef YY_NO_INPUT
+#if  !defined YY_NO_INPUT && 0
 
 #ifdef __cplusplus
 static int yyinput (yyscan_t yyscanner );
@@ -860,7 +868,7 @@ static int input (yyscan_t yyscanner );
 		{ \
 		int c = '*'; \
 		size_t n; \
-		for ( n = 0; n < max_size && \
+		for ( n = 0; n < (size_t)max_size &&			\
 			     (c = getc( yyin )) != EOF && c != '\n'; ++n ) \
 			buf[n] = (char) c; \
 		if ( c == '\n' ) \
@@ -902,7 +910,7 @@ static int input (yyscan_t yyscanner );
 
 /* Report a fatal error. */
 #ifndef YY_FATAL_ERROR
-#define YY_FATAL_ERROR(msg) yy_fatal_error( msg , yyscanner)
+#define YY_FATAL_ERROR(msg) yy_fatal_error( msg)
 #endif
 
 /* end tables serialization structures and prototypes */
@@ -1379,7 +1387,7 @@ static int yy_get_next_buffer (yyscan_t yyscanner)
 
 				b->yy_ch_buf = (char *)
 					/* Include room in for 2 EOB chars. */
-					libconfig_yyrealloc((void *) b->yy_ch_buf,b->yy_buf_size + 2 ,yyscanner );
+					libconfig_yyrealloc((void *) b->yy_ch_buf,b->yy_buf_size + 2 );
 				}
 			else
 				/* Can't grow it, we don't own it. */
@@ -1392,23 +1400,23 @@ static int yy_get_next_buffer (yyscan_t yyscanner)
 			yyg->yy_c_buf_p = &b->yy_ch_buf[yy_c_buf_p_offset];
 
 			num_to_read = YY_CURRENT_BUFFER_LVALUE->yy_buf_size -
-						number_to_move - 1;
-
+			  number_to_move - 1;
+			
 			}
 
-		if ( num_to_read > YY_READ_BUF_SIZE )
+		if (  num_to_read > YY_READ_BUF_SIZE )
 			num_to_read = YY_READ_BUF_SIZE;
 
 		/* Read in more data. */
 		YY_INPUT( (&YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[number_to_move]),
-			yyg->yy_n_chars, num_to_read );
+			  yyg->yy_n_chars, num_to_read );
 
 		YY_CURRENT_BUFFER_LVALUE->yy_n_chars = yyg->yy_n_chars;
 		}
 
 	if ( yyg->yy_n_chars == 0 )
 		{
-		if ( number_to_move == YY_MORE_ADJ )
+		  if ( number_to_move == YY_MORE_ADJ )
 			{
 			ret_val = EOB_ACT_END_OF_FILE;
 			libconfig_yyrestart(yyin  ,yyscanner);
@@ -1493,11 +1501,11 @@ static int yy_get_next_buffer (yyscan_t yyscanner)
 	return yy_is_jam ? 0 : yy_current_state;
 }
 
-#ifndef YY_NO_INPUT
+#if !defined YY_NO_INPUT && 0
 #ifdef __cplusplus
     static int yyinput (yyscan_t yyscanner)
 #else
-    static int input  (yyscan_t yyscanner)
+      static int input  (yyscan_t yyscanner)
 #endif
 
 {
@@ -1649,7 +1657,7 @@ static void libconfig_yy_load_buffer_state  (yyscan_t yyscanner)
 {
 	YY_BUFFER_STATE b;
     
-	b = (YY_BUFFER_STATE) libconfig_yyalloc(sizeof( struct yy_buffer_state ) ,yyscanner );
+	b = (YY_BUFFER_STATE) libconfig_yyalloc(sizeof( struct yy_buffer_state ));
 	if ( ! b )
 		YY_FATAL_ERROR( "out of dynamic memory in libconfig_yy_create_buffer()" );
 
@@ -1658,7 +1666,7 @@ static void libconfig_yy_load_buffer_state  (yyscan_t yyscanner)
 	/* yy_ch_buf has to be 2 characters longer than the size given because
 	 * we need to put in 2 end-of-buffer characters.
 	 */
-	b->yy_ch_buf = (char *) libconfig_yyalloc(b->yy_buf_size + 2 ,yyscanner );
+	b->yy_ch_buf = (char *) libconfig_yyalloc(b->yy_buf_size + 2 );
 	if ( ! b->yy_ch_buf )
 		YY_FATAL_ERROR( "out of dynamic memory in libconfig_yy_create_buffer()" );
 
@@ -1684,9 +1692,9 @@ static void libconfig_yy_load_buffer_state  (yyscan_t yyscanner)
 		YY_CURRENT_BUFFER_LVALUE = (YY_BUFFER_STATE) 0;
 
 	if ( b->yy_is_our_buffer )
-		libconfig_yyfree((void *) b->yy_ch_buf ,yyscanner );
+		libconfig_yyfree((void *) b->yy_ch_buf );
 
-	libconfig_yyfree((void *) b ,yyscanner );
+	libconfig_yyfree((void *) b );
 }
 
 #ifndef __cplusplus
@@ -1821,7 +1829,7 @@ static void libconfig_yyensure_buffer_stack (yyscan_t yyscanner)
 		num_to_alloc = 1;
 		yyg->yy_buffer_stack = (struct yy_buffer_state**)libconfig_yyalloc
 								(num_to_alloc * sizeof(struct yy_buffer_state*)
-								, yyscanner);
+								 );
 		
 		memset(yyg->yy_buffer_stack, 0, num_to_alloc * sizeof(struct yy_buffer_state*));
 				
@@ -1839,7 +1847,7 @@ static void libconfig_yyensure_buffer_stack (yyscan_t yyscanner)
 		yyg->yy_buffer_stack = (struct yy_buffer_state**)libconfig_yyrealloc
 								(yyg->yy_buffer_stack,
 								num_to_alloc * sizeof(struct yy_buffer_state*)
-								, yyscanner);
+								);
 
 		/* zero only the new slots.*/
 		memset(yyg->yy_buffer_stack + yyg->yy_buffer_stack_max, 0, grow_size * sizeof(struct yy_buffer_state*));
@@ -1863,7 +1871,7 @@ YY_BUFFER_STATE libconfig_yy_scan_buffer  (char * base, yy_size_t  size , yyscan
 		/* They forgot to leave room for the EOB's. */
 		return 0;
 
-	b = (YY_BUFFER_STATE) libconfig_yyalloc(sizeof( struct yy_buffer_state ) ,yyscanner );
+	b = (YY_BUFFER_STATE) libconfig_yyalloc(sizeof( struct yy_buffer_state ));
 	if ( ! b )
 		YY_FATAL_ERROR( "out of dynamic memory in libconfig_yy_scan_buffer()" );
 
@@ -1909,10 +1917,9 @@ YY_BUFFER_STATE libconfig_yy_scan_bytes  (yyconst char * yybytes, int  _yybytes_
 	char *buf;
 	yy_size_t n;
 	int i;
-    
 	/* Get memory for full buffer, including space for trailing EOB's. */
 	n = _yybytes_len + 2;
-	buf = (char *) libconfig_yyalloc(n ,yyscanner );
+	buf = (char *) libconfig_yyalloc(n);
 	if ( ! buf )
 		YY_FATAL_ERROR( "out of dynamic memory in libconfig_yy_scan_bytes()" );
 
@@ -1937,7 +1944,7 @@ YY_BUFFER_STATE libconfig_yy_scan_bytes  (yyconst char * yybytes, int  _yybytes_
 #define YY_EXIT_FAILURE 2
 #endif
 
-static void yy_fatal_error (yyconst char* msg , yyscan_t yyscanner)
+static void yy_fatal_error (yyconst char* msg)
 {
     	(void) fprintf( stderr, "%s\n", msg );
 	exit( YY_EXIT_FAILURE );
@@ -2054,7 +2061,7 @@ void libconfig_yyset_lineno (int  line_number , yyscan_t yyscanner)
 
         /* lineno is only valid if an input buffer exists. */
         if (! YY_CURRENT_BUFFER )
-           yy_fatal_error( "libconfig_yyset_lineno called with no buffer" , yyscanner); 
+           yy_fatal_error( "libconfig_yyset_lineno called with no buffer"); 
     
     yylineno = line_number;
 }
@@ -2069,7 +2076,7 @@ void libconfig_yyset_column (int  column_no , yyscan_t yyscanner)
 
         /* column is only valid if an input buffer exists. */
         if (! YY_CURRENT_BUFFER )
-           yy_fatal_error( "libconfig_yyset_column called with no buffer" , yyscanner); 
+           yy_fatal_error( "libconfig_yyset_column called with no buffer" ); 
     
     yycolumn = column_no;
 }
@@ -2133,7 +2140,7 @@ int libconfig_yylex_init(yyscan_t* ptr_yy_globals)
         return 1;
     }
 
-    *ptr_yy_globals = (yyscan_t) libconfig_yyalloc ( sizeof( struct yyguts_t ), NULL );
+    *ptr_yy_globals = (yyscan_t) libconfig_yyalloc ( sizeof( struct yyguts_t ));
 
     if (*ptr_yy_globals == NULL){
         errno = ENOMEM;
@@ -2192,11 +2199,11 @@ int libconfig_yylex_destroy  (yyscan_t yyscanner)
 	}
 
 	/* Destroy the stack itself. */
-	libconfig_yyfree(yyg->yy_buffer_stack ,yyscanner);
+	libconfig_yyfree(yyg->yy_buffer_stack );
 	yyg->yy_buffer_stack = NULL;
 
     /* Destroy the start condition stack. */
-        libconfig_yyfree(yyg->yy_start_stack ,yyscanner );
+        libconfig_yyfree(yyg->yy_start_stack );
         yyg->yy_start_stack = NULL;
 
     /* Reset the globals. This is important in a non-reentrant scanner so the next time
@@ -2204,7 +2211,7 @@ int libconfig_yylex_destroy  (yyscan_t yyscanner)
     yy_init_globals( yyscanner);
 
     /* Destroy the main struct (reentrant only). */
-    libconfig_yyfree ( yyscanner , yyscanner );
+    libconfig_yyfree ( yyscanner );
     yyscanner = NULL;
     return 0;
 }
@@ -2223,7 +2230,7 @@ static void yy_flex_strncpy (char* s1, yyconst char * s2, int n , yyscan_t yysca
 #endif
 
 #ifdef YY_NEED_STRLEN
-static int yy_flex_strlen (yyconst char * s , yyscan_t yyscanner)
+static int yy_flex_strlen (yyconst char * s, yyscan_t yyscanner)
 {
 	register int n;
 	for ( n = 0; s[n]; ++n )
@@ -2233,12 +2240,12 @@ static int yy_flex_strlen (yyconst char * s , yyscan_t yyscanner)
 }
 #endif
 
-void *libconfig_yyalloc (yy_size_t  size , yyscan_t yyscanner)
+void *libconfig_yyalloc (yy_size_t  size )
 {
 	return (void *) malloc( size );
 }
 
-void *libconfig_yyrealloc  (void * ptr, yy_size_t  size , yyscan_t yyscanner)
+void *libconfig_yyrealloc  (void * ptr, yy_size_t  size )
 {
 	/* The cast to (char *) in the following accommodates both
 	 * implementations that use char* generic pointers, and those
@@ -2250,7 +2257,7 @@ void *libconfig_yyrealloc  (void * ptr, yy_size_t  size , yyscan_t yyscanner)
 	return (void *) realloc( (char *) ptr, size );
 }
 
-void libconfig_yyfree (void * ptr , yyscan_t yyscanner)
+void libconfig_yyfree (void * ptr )
 {
 	free( (char *) ptr );	/* see libconfig_yyrealloc() for (char *) cast */
 }

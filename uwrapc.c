@@ -296,7 +296,7 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
   }else if(get_algorithm(opts,&log) == RAAR_PROJ){
     real_out = basic_raar_proj_iteration(amp, opts->intensities_std_dev, real_in, support,opts,&log);
   }else if(get_algorithm(opts,&log) == DIFF_MAP){
-    real_out = serial_difference_map_iteration(amp, opts->intensities_std_dev, real_in, support,opts,&log);
+    real_out = serial_difference_map_iteration(amp,real_in, support,opts,&log);
   }else{
     fprintf(stderr,"Error: Undefined algorithm!\n");
     exit(-1);
@@ -373,6 +373,7 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
 	sprintf(buffer,"real_out-%07d.png",opts->cur_iteration);
 	sp_image_write(real_out,buffer,COLOR_JET);
 	sprintf(buffer,"real_out_phase-%07d.png",opts->cur_iteration);
+	//	sp_image_write(real_out,buffer,COLOR_WHEEL|COLOR_WEIGHTED_PHASE);
 	sp_image_write(real_out,buffer,COLOR_WHEEL|COLOR_PHASE);
 	sprintf(buffer,"support-%07d.png",opts->cur_iteration);
 	sp_image_write(support,buffer,COLOR_GRAYSCALE);
@@ -451,7 +452,7 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
    }else if(get_algorithm(opts,&log) == RAAR_PROJ){     
       real_out = basic_raar_proj_iteration(amp, opts->intensities_std_dev,real_in, support,opts,&log);
    }else if(get_algorithm(opts,&log) == DIFF_MAP){     
-      real_out = serial_difference_map_iteration(amp, opts->intensities_std_dev,real_in, support,opts,&log);
+      real_out = serial_difference_map_iteration(amp,real_in, support,opts,&log);
     }
 
   }  
@@ -688,9 +689,9 @@ int main(int argc, char ** argv){
   f = fopen("uwrapc.conf","rb");
   if(f){
     fclose(f);
-    read_options_file("uwrapc.conf",opts);
+    read_options_file("uwrapc.conf");
     //    parse_options(argc,argv,opts);
-    write_options_file("uwrapc.confout",opts);
+    write_options_file("uwrapc.confout");
   }else if(!socket){
     perror("Could not open uwrapc.conf");
   }

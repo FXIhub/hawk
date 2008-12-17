@@ -94,7 +94,7 @@ class Communicator: public QObject
   Q_OBJECT
     
     public:
-  Communicator(QTcpSocket * s, Decoder * factory, Sender * s);
+  Communicator(QTcpSocket * socket, Decoder * factory, Sender * s);
   QQueue<QByteArray> commandQueue;
   /*! Associates a new ID with the given address and return the new ID
    */  

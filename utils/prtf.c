@@ -183,7 +183,6 @@ int main(int argc, char ** argv){
   Image * avg_img;
   int bin;
   long long i;
-  char buffer[1024] = "";
   char buffer2[1024] = "";
   char * output;
   FILE * f;

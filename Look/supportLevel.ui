@@ -1,0 +1,228 @@
+<ui version="4.0" >
+ <class>SupportLevel</class>
+ <widget class="QWidget" name="SupportLevel" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>336</width>
+    <height>173</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" >
+   <item>
+    <layout class="QGridLayout" >
+     <item row="0" column="0" >
+      <widget class="QLabel" name="label_2" >
+       <property name="font" >
+        <font>
+         <pointsize>13</pointsize>
+        </font>
+       </property>
+       <property name="text" >
+        <string>Floor</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1" >
+      <widget class="QDoubleSpinBox" name="floorSpin" >
+       <property name="font" >
+        <font>
+         <pointsize>13</pointsize>
+        </font>
+       </property>
+       <property name="suffix" >
+        <string>%</string>
+       </property>
+       <property name="minimum" >
+        <double>75.000000000000000</double>
+       </property>
+       <property name="maximum" >
+        <double>100.000000000000000</double>
+       </property>
+       <property name="value" >
+        <double>90.000000000000000</double>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2" >
+      <widget class="QSlider" name="floorSlider" >
+       <property name="minimum" >
+        <number>7500</number>
+       </property>
+       <property name="maximum" >
+        <number>10000</number>
+       </property>
+       <property name="pageStep" >
+        <number>100</number>
+       </property>
+       <property name="value" >
+        <number>9000</number>
+       </property>
+       <property name="orientation" >
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="tickInterval" >
+        <number>1</number>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0" >
+      <widget class="QLabel" name="label_3" >
+       <property name="font" >
+        <font>
+         <pointsize>13</pointsize>
+        </font>
+       </property>
+       <property name="text" >
+        <string>Ceiling</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1" >
+      <widget class="QDoubleSpinBox" name="ceilingSpin" >
+       <property name="font" >
+        <font>
+         <pointsize>13</pointsize>
+        </font>
+       </property>
+       <property name="suffix" >
+        <string>%</string>
+       </property>
+       <property name="minimum" >
+        <double>75.000000000000000</double>
+       </property>
+       <property name="maximum" >
+        <double>100.000000000000000</double>
+       </property>
+       <property name="value" >
+        <double>100.000000000000000</double>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="2" >
+      <widget class="QSlider" name="ceilingSlider" >
+       <property name="minimum" >
+        <number>7500</number>
+       </property>
+       <property name="maximum" >
+        <number>10000</number>
+       </property>
+       <property name="pageStep" >
+        <number>100</number>
+       </property>
+       <property name="value" >
+        <number>10000</number>
+       </property>
+       <property name="orientation" >
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0" >
+      <widget class="QLabel" name="label_5" >
+       <property name="font" >
+        <font>
+         <pointsize>13</pointsize>
+        </font>
+       </property>
+       <property name="text" >
+        <string>Blur</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1" >
+      <widget class="QDoubleSpinBox" name="blurSpin" >
+       <property name="font" >
+        <font>
+         <pointsize>13</pointsize>
+        </font>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="2" >
+      <widget class="QSlider" name="blurSlider" >
+       <property name="maximum" >
+        <number>1000</number>
+       </property>
+       <property name="pageStep" >
+        <number>100</number>
+       </property>
+       <property name="value" >
+        <number>300</number>
+       </property>
+       <property name="orientation" >
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" >
+     <item>
+      <spacer>
+       <property name="orientation" >
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" >
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="recalculateButton" >
+       <property name="sizePolicy" >
+        <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text" >
+        <string>Recalculate</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer>
+       <property name="orientation" >
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" >
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>floorSlider</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>floorSpin</receiver>
+   <slot>update()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>326</x>
+     <y>101</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>185</x>
+     <y>88</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>
