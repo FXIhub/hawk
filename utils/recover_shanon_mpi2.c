@@ -19,19 +19,6 @@ void test_sp_sparse_matrix_rotate(){
   printf("i = %f\n",sp_list_get(m->indexes,0));
 }
 
-sp_list * sp_list_alloc(int init_size){
-  sp_list * ret = sp_malloc(sizeof(sp_list));
-  ret->data = sp_malloc(sizeof(real)*init_size);
-  ret->used = 0;
-  ret->size = init_size;
-  return ret;
-}
-
-void sp_list_free(sp_list * l){
-  sp_free(l->data);
-  sp_free(l);
-}
-
 sp_sparse_matrix * sp_sparse_matrix_alloc(int rows, int cols){
   sp_sparse_matrix * ret = sp_malloc(sizeof(sp_sparse_matrix));
   ret->rows = rows;
@@ -190,38 +177,6 @@ int sp_sparse_matrix_non_zero_entries(sp_sparse_matrix * m){
   return sp_list_size(m->data);
 }
 
-real sp_list_get(sp_list * l, int n){
-  return l->data[n];
-}
-
-void sp_list_set(sp_list * l, int n,real value){
-  l->data[n] = value;
-}
-
-void sp_list_grow(sp_list * l){
-  l->size *= 2;
-  l->data = sp_realloc(l->data,sizeof(real)*l->size);
-}
-
-void sp_list_append(sp_list * l, real value){
-  if(l->used == l->size){
-    sp_list_grow(l);
-  }
-  l->data[l->used] = value;
-  l->used++; 
-}
-
-int sp_list_size(sp_list * l){
-  return l->used;
-}
-
-
-sp_list * sp_list_duplicate(sp_list * l){
-  sp_list * out = sp_list_alloc(sp_list_size(l));
-  memcpy(out->data,l->data,sizeof(real)*l->used);
-  out->used = l->used;
-  return out;
-}
 
 sp_sparse_matrix * image_to_sparse_matrix(Image * a){
   sp_sparse_matrix * ret = sp_sparse_matrix_alloc(sp_image_x(a),sp_image_y(a));
@@ -436,7 +391,7 @@ int init_classes(Image * a,sp_sparse_matrix ** ms, int class_level){
 
 
 
-sp_sparse_matrix ** get_rotated_samples4(Image * a, int n_samples,gsl_rng * r,Image * sum, int ** _weights, int * _used){
+sp_sparse_matrix ** get_rotated_samples4(Image * a, long long int n_samples,gsl_rng * r,Image * sum, int ** _weights, int * _used){
   int increment = 1;
   int id = 0;
 #ifdef MPI
@@ -444,16 +399,16 @@ sp_sparse_matrix ** get_rotated_samples4(Image * a, int n_samples,gsl_rng * r,Im
   MPI_Comm_rank(MPI_COMM_WORLD,&id);
 #endif
   int nclasses = get_number_of_classes(a, 2);
-  int my_size = (n_samples/increment+1)+nclasses;
+  long long int my_size = (n_samples/increment+1)+nclasses;
   sp_sparse_matrix ** rotated_samples = malloc(sizeof(sp_sparse_matrix *)*my_size);
   int * weights = malloc(sizeof(int)*my_size);
-  int perc = n_samples/100;
+  long long int perc = n_samples/100;
   int used = 0;
   for(int i = 0;i<my_size;i++){
     weights[i] = 0;
   }
   used += init_classes(a,rotated_samples,2);
-  for(int j = id;j<n_samples;j+=increment){
+  for(long long int j = id;j<n_samples;j+=increment){
     if(j%perc == 0){
       printf(".");
       fflush(stdout);
@@ -603,7 +558,7 @@ void output_result(Image * a, Image * restore,FILE * log,int iter,int timer){
 
 
 
-void tomas_iteration(Image * restore,Image * after,sp_sparse_matrix ** random_orient_samples,int n_samples, int * weights, int used){
+void tomas_iteration(Image * restore,Image * after,sp_sparse_matrix ** random_orient_samples,long long int n_samples, int * weights, int used){
   /* calculate the integral of restore */
   real restore_integral = 0;
   real fact_log_t[7] = {0,0,0.301029996,0.77815125,1.38021124,2.07918125,2.8573325};
@@ -702,14 +657,14 @@ void tomas_iteration(Image * restore,Image * after,sp_sparse_matrix ** random_or
   gsl_rng_set(r,id);
 #endif
 
-  int n_samples = 500;
+  long long int n_samples = 500;
   if(argc != 2 && argc != 3 && argc != 4 ){
     printf("recover_shanon <input_image> [total n photons scattered] [n samples]\n");
     printf("The defaults are n photons = n pixels and n samples = 500\n");
     exit(0);
   }
   if(argc >= 4){
-    n_samples = atoi(argv[3]);
+    n_samples = atoll(argv[3]);
   }
   Image * a = sp_image_read(argv[1],0);
   double image_photons = 0;

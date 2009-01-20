@@ -1,12 +1,6 @@
 #ifndef _RECOVER_SHANON2_H_
 #define _RECOVER_SHANON2_H_
 
-typedef struct{
-  real * data;
-  int used;
-  int size;
-}sp_list;
-
 
 typedef struct{
   unsigned int rows;
@@ -16,14 +10,6 @@ typedef struct{
 }sp_sparse_matrix;
 
 
-sp_list * sp_list_alloc(int init_size);
-real sp_list_get(sp_list * l, int n);
-void sp_list_set(sp_list * l, int n,real value);
-void sp_list_grow(sp_list * l);
-void sp_list_append(sp_list * l, real value);
-int sp_list_size(sp_list * l);
-void sp_list_free(sp_list * l);
-sp_list * sp_list_duplicate(sp_list * l);
 sp_sparse_matrix * matrix_to_sparse_matrix(sp_matrix * m);
 sp_sparse_matrix * image_to_sparse_matrix(Image * a);
 sp_sparse_matrix * sp_sparse_matrix_alloc(int rows, int cols);

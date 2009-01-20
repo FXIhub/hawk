@@ -8,17 +8,6 @@
 #endif
 #include "recover_shanon2.h"
 
-
-
-
-sp_list * sp_list_alloc(int init_size){
-  sp_list * ret = sp_malloc(sizeof(sp_list));
-  ret->data = sp_malloc(sizeof(real)*init_size);
-  ret->used = 0;
-  ret->size = init_size;
-  return ret;
-}
-
 sp_sparse_matrix * sp_sparse_matrix_alloc(int rows, int cols){
   sp_sparse_matrix * ret = sp_malloc(sizeof(sp_sparse_matrix));
   ret->rows = rows;
@@ -57,30 +46,7 @@ void sp_sparse_matrix_set(sp_sparse_matrix * m, int row, int col, real v){
 int sp_sparse_matrix_n_non_zero_entries(sp_sparse_matrix * m){
   return sp_list_size(m->data);
 }
-real sp_list_get(sp_list * l, int n){
-  return l->data[n];
-}
 
-void sp_list_set(sp_list * l, int n,real value){
-  l->data[n] = value;
-}
-
-void sp_list_grow(sp_list * l){
-  l->size *= 2;
-  l->data = sp_realloc(l->data,sizeof(real)*l->size);
-}
-
-void sp_list_append(sp_list * l, real value){
-  if(l->used == l->size){
-    sp_list_grow(l);
-  }
-  l->data[l->used] = value;
-  l->used++; 
-}
-
-int sp_list_size(sp_list * l){
-  return l->used;
-}
 
 sp_sparse_matrix * image_to_sparse_matrix(Image * a){
   sp_sparse_matrix * ret = sp_sparse_matrix_alloc(sp_image_x(a),sp_image_y(a));

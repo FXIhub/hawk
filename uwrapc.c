@@ -215,6 +215,14 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
   const int stop_threshold = 10;
   int i;
 
+#if defined(_MSC_VER) || defined(__MINGW32__)
+  _getcwd(prev_dir,1024);
+  _chdir(dir);
+#else
+  getcwd(prev_dir,1024);
+  chdir(dir);
+#endif
+
 
   init_log(&log);
 
@@ -244,7 +252,7 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
   }
   log.SupSize /=sp_image_size(support);
   log.SupSize *=100;
-  
+
   sp_image_write(initial_support,"support.vtk",SP_3D);
   prev_support = sp_image_duplicate(initial_support,SP_COPY_DATA|SP_COPY_MASK);
 
@@ -253,9 +261,8 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
   sp_image_write(real_in,"initial_guess.vtk",SP_3D);
 
   if(amp->num_dimensions == SP_2D){
-    sprintf(buffer,"pattern-experimental.png");
     tmp2 = sp_image_shift(amp);
-    sp_image_write(tmp2,buffer,COLOR_JET);
+    sp_image_write(tmp2,"initial_support.png",COLOR_JET);
     sp_image_free(tmp2);
   }
 
@@ -263,15 +270,6 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
   sp_image_rephase(real_in,SP_ZERO_PHASE);
   
 
-#if defined(_MSC_VER) || defined(__MINGW32__)
-  _getcwd(prev_dir,1024);
-  _mkdir(dir);
-  _chdir(dir);
-#else
-  getcwd(prev_dir,1024);
-  mkdir(dir,0755);
-  chdir(dir);
-#endif
   if(real_in->num_dimensions == SP_2D){
     sp_image_write(support,"support.png",COLOR_GRAYSCALE);
     sp_image_write(real_in,"initial_guess.png",COLOR_JET);
@@ -549,7 +547,11 @@ void init_reconstruction(Options * opts){
       opts->diffraction->mask->data[i] = 1;
     }
     if(opts->real_image->num_dimensions == SP_2D){
-      sp_image_write(opts->real_image,"real_image.png",COLOR_JET);
+      char buffer[OPTION_STRING_SIZE*2+1];
+      strcpy(buffer,opts->work_dir);
+      strcat(buffer,"/");
+      strcat(buffer,"real_image.png");
+      sp_image_write(opts->real_image,buffer,COLOR_JET);
     }
     sp_image_dephase(opts->diffraction);
   }
@@ -570,7 +572,12 @@ void init_reconstruction(Options * opts){
 /*  if(opts->rescale_amplitudes){
     rescale_image(opts->amplitudes);
   }*/
-  sp_image_write(opts->amplitudes,"diffraction.vtk",0);
+  char buffer[OPTION_STRING_SIZE*2+1];
+  strcpy(buffer,opts->work_dir);
+  strcat(buffer,"/");
+  strcat(buffer,"diffraction.vtk");
+  
+  sp_image_write(opts->amplitudes,buffer,0);
 
   if(!opts->init_support_filename[0]){
     opts->init_support = get_support_from_patterson(opts->amplitudes,opts);
@@ -690,8 +697,16 @@ int main(int argc, char ** argv){
   if(f){
     fclose(f);
     read_options_file("uwrapc.conf");
-    //    parse_options(argc,argv,opts);
-    write_options_file("uwrapc.confout");
+    char buffer[OPTION_STRING_SIZE*2+1];
+#if defined(_MSC_VER) || defined(__MINGW32__)
+    _mkdir(opts->work_dir,0755);
+#else
+    mkdir(opts->work_dir,0755);
+#endif
+    strcpy(buffer,opts->work_dir);
+    strcat(buffer,"/");
+    strcat(buffer,"uwrapc.confout");
+    write_options_file(buffer);
   }else if(!socket){
     perror("Could not open uwrapc.conf");
   }
