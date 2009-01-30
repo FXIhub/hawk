@@ -35,27 +35,27 @@ class ImageView : public QWidget
  signals:
   void centerChanged();
   void beamstopChanged();
-  void vertLineSet(real x, real y);
-  void drawMaskAt(real x, real y);
-  void undrawMaskAt(real x, real y);
-  void mouseOverImage(real frac_x, real frac_y);
+  void vertLineSet(double x, double y);
+  void drawMaskAt(double x, double y);
+  void undrawMaskAt(double x, double y);
+  void mouseOverImage(double frac_x, double frac_y);
   void mouseLeftImage();
 
  private:
   void drawImage();
-  int globalToScreenX(real x);
-  int globalToScreenY(real y);
-  real screenToGlobalX(int x);
-  real screenToGlobalY(int y);
+  int globalToScreenX(double x);
+  int globalToScreenY(double y);
+  double screenToGlobalX(int x);
+  double screenToGlobalY(int y);
 
   QLabel *imageLabel;
   QImage *originalQi;
   QImage imageQi;
 
-  real zoomValue;
-  real startZoomValue;
-  real zoomCenterX, zoomCenterY;
-  real startZoomCenterX, startZoomCenterY;
+  double zoomValue;
+  double startZoomValue;
+  double zoomCenterX, zoomCenterY;
+  double startZoomCenterX, startZoomCenterY;
 
   QCursor cursorCross;
 
@@ -66,17 +66,17 @@ class ImageView : public QWidget
   QPoint startPos;
 
   bool setCenterActive;
-  real centerX, centerY;
+  double centerX, centerY;
   bool moveCenterX, moveCenterY;
   
   bool defineBeamstopActive;
-  real beamstopX, beamstopY, beamstopR;
-  real beamstopOffsetX, beamstopOffsetY, beamstopStartR, beamstopOriginalR;
+  double beamstopX, beamstopY, beamstopR;
+  double beamstopOffsetX, beamstopOffsetY, beamstopStartR, beamstopOriginalR;
   bool beamstopMove, beamstopMoveR;
 
-  real distanceBarLength;
+  double distanceBarLength;
   QString distanceBarUnit;
-  real circleResolution;
+  double circleResolution;
 
   bool pickSpotActive;
   bool drawMaskActive, undrawMaskActive;
