@@ -71,9 +71,18 @@ Image * get_support_from_patterson(Image * input, Options * opts){
   level =  get_patterson_level(patterson, opts->patterson_blur_radius,opts);
 
   if(patterson->num_dimensions == SP_2D){
-    sp_image_write(patterson,"autocorrelation.png",COLOR_JET|LOG_SCALE);
+    char buffer[OPTION_STRING_SIZE*2+1];
+    strcpy(buffer,opts->work_dir);
+    strcat(buffer,"/");
+    strcat(buffer,"autocorrelation.png");
+
+    sp_image_write(patterson,buffer,COLOR_JET|LOG_SCALE);
   }
-  sp_image_write(patterson,"autocorrelation.vtk",0);
+  char buffer[OPTION_STRING_SIZE*2+1];
+  strcpy(buffer,opts->work_dir);
+  strcat(buffer,"/");
+  strcat(buffer,"autocorrelation.vtk");
+  sp_image_write(patterson,buffer,0);
 
   if(opts->patterson_blur_radius){
     tmp_img = gaussian_blur(patterson,opts->patterson_blur_radius);
@@ -117,9 +126,17 @@ Image * get_support_from_patterson(Image * input, Options * opts){
     }
   }
   if(patterson->num_dimensions == SP_2D){
-    sp_image_write(patterson,"patterson_support.png",COLOR_GRAYSCALE);
+    char buffer[OPTION_STRING_SIZE*2+1];
+    strcpy(buffer,opts->work_dir);
+    strcat(buffer,"/");
+    strcat(buffer,"patterson_support.png");
+    sp_image_write(patterson,buffer,COLOR_GRAYSCALE);
   }else if(patterson->num_dimensions == SP_3D){
-    sp_image_write(patterson,"patterson_support.vtk",0);
+    char buffer[OPTION_STRING_SIZE*2+1];
+    strcpy(buffer,opts->work_dir);
+    strcat(buffer,"/");
+    strcat(buffer,"patterson_support.vtk");
+    sp_image_write(patterson,buffer,0);
   }
   return patterson;  
 }

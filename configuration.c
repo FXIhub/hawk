@@ -18,8 +18,6 @@
 
 #include "spimage.h"
 
-#include "log.h"
-#include "uwrapc.h"
 #include "configuration.h"
 
 
@@ -49,6 +47,10 @@ int get_config_type(Variable_Type vt){
     return CONFIG_TYPE_FLOAT;
   }else if(vt == Type_Int){
     return CONFIG_TYPE_INT;
+  }else if(vt == Type_Filename){
+    return CONFIG_TYPE_STRING;
+  }else if(vt == Type_Directory_Name){
+    return CONFIG_TYPE_STRING;
   }else if(vt == Type_String){
     return CONFIG_TYPE_STRING;
   }else if(vt == Type_MultipleChoice){
@@ -61,6 +63,8 @@ int get_config_type(Variable_Type vt){
     return CONFIG_TYPE_ARRAY;
   }else if(vt == Type_Vector_Int){
     return CONFIG_TYPE_ARRAY;
+  }else if(vt == Type_Map_Real){
+    return CONFIG_TYPE_LIST;
   }
   fprintf(stderr,"Unkown variable type\n");
   abort();
@@ -69,17 +73,21 @@ int get_config_type(Variable_Type vt){
 
   
   
-Options * set_defaults(){
-  Options * opt = &global_options;
+void set_defaults(Options * opt){
   opt->diffraction = NULL;
+  opt->diffraction_filename[0] = 0;
   opt->real_image = NULL;
+  opt->real_image_filename[0] = 0;
   opt->max_blur_radius = (real)3;
   opt->init_level = (real)0.04;
   opt->beta = (real)0.9;
   opt->iterations = 20;
   opt->support_mask = NULL;
+  opt->support_mask_filename[0] = 0;
   opt->init_support = NULL;
+  opt->init_support_filename[0] = 0;
   opt->image_guess = NULL;
+  opt->image_guess_filename[0] = 0;
   opt->noise = (real)0;
   opt->beamstop = (real)0;
   opt->new_level = (real)0.20;
@@ -87,7 +95,7 @@ Options * set_defaults(){
   opt->output_period = 100;
   opt->log_output_period = 20;
   opt->algorithm = HIO;
-  opt->exp_sigma = (real)0.05;
+  opt->exp_sigma = (real)0.0;
   opt->intensities_std_dev_filename[0] = 0;
   opt->autocorrelation_support_filename[0] = 0;
   opt->rand_phases = 0;
@@ -96,7 +104,7 @@ Options * set_defaults(){
   opt->cur_iteration = 0;
   opt->adapt_thres = 0;
   opt->automatic = 0;
-  opt->support_update_algorithm = REAL_ERROR_ADAPTATIVE;
+  opt->support_update_algorithm = DECREASING_AREA;
   opt->real_error_threshold = -1;
   opt->iterations_to_min_blur = 7000;
   opt->blur_radius_reduction_method = GAUSSIAN_BLUR_REDUCTION;
@@ -136,7 +144,19 @@ Options * set_defaults(){
   opt->gamma2 = -10000;
   opt->support_image_averaging = 1;
   opt->random_seed = -1;
-  return opt;
+  opt->autocorrelation_area = 0.1;
+  opt->beta_evolution = sp_smap_alloc(2);
+  sp_smap_insert(opt->beta_evolution,0,0.9);
+  sp_smap_insert(opt->beta_evolution,2000,0.9);
+  opt->object_area_evolution = sp_smap_alloc(2);
+  sp_smap_insert(opt->object_area_evolution,0,0.001);
+  sp_smap_insert(opt->object_area_evolution,2000,0.001);
+  opt->support_blur_evolution = sp_smap_alloc(2);
+  sp_smap_insert(opt->support_blur_evolution,0,3.0);
+  sp_smap_insert(opt->support_blur_evolution,5000,0.7);
+  opt->phases_blur_evolution = sp_smap_alloc(2);
+  sp_smap_insert(opt->phases_blur_evolution,0,0);
+  sp_smap_insert(opt->phases_blur_evolution,5000,0);
 }
 
 void read_options_file(char * filename){
@@ -443,8 +463,11 @@ void read_options_file(char * filename){
 }
 
 
-
-void write_options_file(char * filename){
+/*
+  This function writes a config file where groups are always children of ROOT.
+   It does *not* support nested groups!
+ */
+void write_options_file(const char * filename){
   config_t config;
   config_setting_t * root;
   config_setting_t * s;
@@ -460,18 +483,19 @@ void write_options_file(char * filename){
   /* Now create all groups */
   while(n_groups){
     for(int i = 0; i< number_of_global_options; i++){      
-      if(variable_metadata[i].variable_type == Type_Group && variable_metadata[i].id != Id_Root){
+      if(variable_metadata[i].variable_type == Type_Group && 
+	 variable_metadata[i].id != Id_Root){
 	/* it's a group */
 	if(config_lookup(&config,variable_metadata[i].variable_name) == NULL){
 	  /* it still doesn't exist */
 	  if((s = config_lookup(&config,variable_metadata[i].parent->variable_name)) != NULL){
 	    /* parent exists */
-	    config_setting_add(s,variable_metadata[i].variable_name,variable_metadata[i].variable_type);
+	    config_setting_add(s,variable_metadata[i].variable_name,get_config_type(variable_metadata[i].variable_type));
 	    n_groups--;
 	  }
 	  if(variable_metadata[i].parent->id == Id_Root){
 	    /* parent is Root */
-	    config_setting_add(root,variable_metadata[i].variable_name,variable_metadata[i].variable_type);
+	    config_setting_add(root,variable_metadata[i].variable_name,get_config_type(variable_metadata[i].variable_type));
 	    n_groups--;
 	  }
 	}
@@ -482,7 +506,9 @@ void write_options_file(char * filename){
   /* Loop around all the options and put them inside their groups */
   for(int i = 0; i< number_of_global_options; i++){
     config_setting_t * parent;
-    if(variable_metadata[i].variable_type != Type_Group && (variable_metadata[i].variable_properties & isSettableBeforeRun)){
+    if(variable_metadata[i].variable_type != Type_Group && 
+       (variable_metadata[i].variable_properties & isSettableBeforeRun) && 
+       ((variable_metadata[i].variable_properties & deprecated) == 0)){
       if(variable_metadata[i].parent->id == Id_Root){
 	parent = root;
       }else{
@@ -493,7 +519,12 @@ void write_options_file(char * filename){
 	abort();
       }
       s = config_setting_add(parent,variable_metadata[i].variable_name,get_config_type(variable_metadata[i].variable_type));
-      if(variable_metadata[i].variable_type == Type_String){
+      if(!s){
+	sp_error_fatal("Could not add config setting");
+      }
+      if(variable_metadata[i].variable_type == Type_String || 
+	 variable_metadata[i].variable_type == Type_Filename ||
+	 variable_metadata[i].variable_type == Type_Directory_Name){
 	config_setting_set_string(s,(char *)variable_metadata[i].variable_address);
       }else if(variable_metadata[i].variable_type == Type_Int){
 	config_setting_set_int(s,*((int *)variable_metadata[i].variable_address));
@@ -525,6 +556,19 @@ void write_options_file(char * filename){
 	    config_setting_set_string(s,variable_metadata[i].list_valid_names[j]);
 	    break;
 	  }
+	}
+      }else if(variable_metadata[i].variable_type == Type_Map_Real){
+	parent = s;
+	s = config_setting_add(parent,"keys",CONFIG_TYPE_ARRAY);
+	sp_smap * map = *((sp_smap **)variable_metadata[i].variable_address);
+	sp_list * keys = sp_smap_get_keys(map);
+	sp_list * values = sp_smap_get_values(map);
+	for(unsigned int i = 0;i<sp_list_size(keys);i++){
+	  config_setting_set_float_elem(s,-1,sp_list_get(keys,i));
+	}
+	s = config_setting_add(parent,"values",CONFIG_TYPE_ARRAY);
+	for(unsigned int i = 0;i<sp_list_size(values);i++){
+	  config_setting_set_float_elem(s,-1,sp_list_get(values,i));
 	}
       }else{
 	fprintf(stderr,"Variable type not yet supported!\n");	
@@ -586,6 +630,9 @@ static real interpolate_on_checkpoints(sp_vector * values,sp_vector * checkpoint
 
 real get_beta(Options * opts){
   static const float beta0 = 0.75;
+  if(opts->beta_evolution){
+    return bezier_map_interpolation(opts->beta_evolution,opts->cur_iteration);
+  }
   if(opts->beta_checkpoints){
     if(!opts->beta_at_checkpoints){
       sp_error_fatal("When you specify beta_checkpoints you also need to specify the corresponding beta_at_checkpoints!");
@@ -601,6 +648,9 @@ real get_beta(Options * opts){
 
 real get_blur_radius(Options * opts){
   real a;
+  if(opts->support_blur_evolution){
+    return bezier_map_interpolation(opts->support_blur_evolution,opts->cur_iteration);
+  }
   if(opts->blur_radius_reduction_method == GAUSSIAN_BLUR_REDUCTION){
     a = (3.0*opts->cur_iteration/opts->iterations_to_min_blur)*(3.0*opts->cur_iteration/opts->iterations_to_min_blur)*0.5;
     return (opts->max_blur_radius-opts->min_blur)*exp(-a)+opts->min_blur;
@@ -616,6 +666,10 @@ real get_blur_radius(Options * opts){
 
 real get_phases_blur_radius(Options * opts){
   real a;
+  if(opts->phases_blur_evolution){
+    return bezier_map_interpolation(opts->phases_blur_evolution,opts->cur_iteration);
+  }
+
   if(opts->iterations_to_min_phases_blur){
     a = (3.0*opts->cur_iteration/opts->iterations_to_min_phases_blur)*(3.0*opts->cur_iteration/opts->iterations_to_min_phases_blur)*0.5;
     return (opts->phases_max_blur_radius-opts->phases_min_blur_radius)*exp(-a)+opts->phases_min_blur_radius;
@@ -626,6 +680,9 @@ real get_phases_blur_radius(Options * opts){
 
 real get_object_area(Options * opts){
   real a;
+  if(opts->object_area_evolution){
+    return bezier_map_interpolation(opts->object_area_evolution,opts->cur_iteration);
+  }
   if(opts->object_area_checkpoints){
     int left = INT_MIN;
     int left_i = -1;
@@ -687,13 +744,13 @@ real get_object_area(Options * opts){
 }
 
 
-real get_gamma1(Options * opts,Log * log){
+real get_gamma1(Options * opts){
   if(opts->gamma1 == -10000){
     /* Optimal value according to 
        Veit Elser 2003 "Random projections and the optimization of an algorithm for phase retrieval 
     */
     real beta = get_beta(opts);
-    real sigma = log->SupSize/100.0;
+    real sigma = 0.1;
     if(sigma > 0.5){
       sigma = 0.5;
     }
@@ -718,4 +775,46 @@ int get_random_seed(Options * opts){
     opts->random_seed = getpid();
   }
   return opts->random_seed;
+}
+
+
+
+real bezier_map_interpolation(sp_smap * map, real x){
+  sp_list * keys = sp_smap_get_keys(map);
+  sp_list * values = sp_smap_get_values(map);
+  unsigned int idx = 0;
+  for(idx = 0;idx<sp_list_size(keys);idx++){
+    if(x < sp_list_get(keys,idx)){
+      break;
+    }
+  }
+  if(idx == 0){
+    return sp_list_get(values,0);
+  }
+  if(idx == sp_list_size(keys)){
+    return sp_list_get(values,sp_list_size(keys)-1);
+  }
+  /* Cubic Bezier curve taken from http://en.wikipedia.org/wiki/Bézier_curve */
+  real p0y = sp_list_get(values,idx-1);
+  real p0x = sp_list_get(keys,idx-1);
+  real p3y = sp_list_get(values,idx);
+  real p3x = sp_list_get(keys,idx);
+  real t = (2 - 2*(p0x - p3x)*
+	    pow(8*p0x*p3x*x - 2*p3x*pow(p0x,2) - 4*x*pow(p0x,2) + 
+		2*pow(p0x,3) - 2*p0x*pow(p3x,2) - 4*x*pow(p3x,2) + 
+		2*pow(p3x,3) + pow(pow(p0x - p3x,4)*
+				   (6*p0x*p3x - 16*p0x*x - 16*p3x*x + 5*pow(p0x,2) +
+				    5*pow(p3x,2) + 16*pow(x,2)),0.5),
+		-0.3333333333333333) +
+	    2*pow(p0x - p3x,-1)*
+	    pow(8*p0x*p3x*x - 2*p3x*pow(p0x,2) - 4*x*pow(p0x,2) +
+		2*pow(p0x,3) - 2*p0x*pow(p3x,2) - 4*x*pow(p3x,2) +
+		2*pow(p3x,3) + pow(pow(p0x - p3x,4)*
+				   (6*p0x*p3x - 16*p0x*x -
+				    16*p3x*x + 5*pow(p0x,2) + 
+				     5*pow(p3x,2) + 16*pow(x,2)),0.5)
+		,0.3333333333333333)
+	    )/4.;  
+  return 3*p0y*t*pow(1 - t,2) + p0y*pow(1 - t,3) +
+    3*p3y*(1 - t)*pow(t,2) + p3y*pow(t,3);
 }
