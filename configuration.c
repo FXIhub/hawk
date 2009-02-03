@@ -37,6 +37,7 @@ char * get_path(const VariableMetadata * vm){
     strcpy(buffer2,buffer1);
     sprintf(buffer1,"%s.",parent->variable_name);
     strcat(buffer1,buffer2);
+    parent = parent->parent;
   }
   sp_free(buffer2);
   return buffer1;
@@ -174,7 +175,9 @@ void read_options_file(char * filename){
     if(variable_metadata[i].variable_type != Type_Group && (variable_metadata[i].variable_properties & isSettableBeforeRun)){
       char * path = get_path(&(variable_metadata[i]));   
       if(config_lookup(&config,path)){	
-	if(variable_metadata[i].variable_type == Type_String){
+	if(variable_metadata[i].variable_type == Type_String||
+	   variable_metadata[i].variable_type == Type_Filename ||
+	   variable_metadata[i].variable_type == Type_Directory_Name){
 	  strcpy((char *)variable_metadata[i].variable_address,config_lookup_string(&config,path));
 	}else if(variable_metadata[i].variable_type == Type_Int){
 	  *((int *)variable_metadata[i].variable_address) = config_lookup_int(&config,path);
@@ -232,6 +235,28 @@ void read_options_file(char * filename){
 	      break;
 	    }
 	  }
+	}else if(variable_metadata[i].variable_type == Type_Map_Real){
+	  /* FM: this is all wrong as the children are nameless*/
+	  char * path = get_path(&(variable_metadata[i]));   
+	  if(config_lookup(&config,path)){	
+	    config_setting_t * keys = config_setting_get_elem(config_lookup(&config,path),0);
+	    config_setting_t * values = config_setting_get_elem(config_lookup(&config,path),1);	   
+	    int length = config_setting_length(keys);
+	    if(length){
+	      int type = config_setting_type(config_setting_get_elem(keys,0));
+	      if(type == CONFIG_TYPE_FLOAT){
+		*((sp_smap **)variable_metadata[i].variable_address) = sp_smap_alloc(length);
+		sp_smap * m = *((sp_smap **)variable_metadata[i].variable_address);
+		for(int j = 0;j<config_setting_length(keys);j++){
+		  sp_smap_insert(m, config_setting_get_float_elem(keys,j),config_setting_get_float_elem(values,j));
+		}
+	      }else{
+		sp_error_fatal("Map datatype not supported!");
+	      }
+	    }
+	  }else{
+	    sp_error_fatal("Keys field missing in Map Type!");	    
+	  }
 	}else{
 	  fprintf(stderr,"Variable type not yet supported!\n");	
 	  abort();
@@ -253,213 +278,6 @@ void read_options_file(char * filename){
   if(global_options.support_mask_filename  && strcmp(global_options.support_mask_filename,"")){
     global_options.support_mask = sp_image_read(global_options.support_mask_filename,0);
   }
-#if 0
-
-
-  
-  if(config_lookup(&config,"initial_blur_radius")){
-    res->max_blur_radius = config_lookup_float(&config,"initial_blur_radius");
-  }
-  if(config_lookup(&config,"patterson_threshold")){
-    res->init_level = config_lookup_float(&config,"patterson_threshold");
-  }
-  if(config_lookup(&config,"beta")){
-    res->beta = config_lookup_float(&config,"beta");
-  }
-  if(config_lookup(&config,"innerloop_iterations")){
-    res->iterations = config_lookup_int(&config,"innerloop_iterations");
-  }
-  if((tmp = config_lookup_string(&config,"fixed_support_mask"))){
-    res->support_mask = sp_image_read(tmp,0);
-    strcpy(res->support_mask_filename,tmp);
-  }
-  if((tmp = config_lookup_string(&config,"initial_support"))){
-    res->init_support = sp_image_read(tmp,0);
-    strcpy(res->init_support_filename,tmp);
-  }
-  if((tmp = config_lookup_string(&config,"image_guess"))){
-    res->image_guess = sp_image_read(tmp,0);
-    strcpy(res->image_guess_filename,tmp);
-  }
-  if(config_lookup(&config,"added_noise")){
-    res->noise = config_lookup_float(&config,"added_noise");
-  }
-  if(config_lookup(&config,"beamstop_radius")){
-    res->beamstop = config_lookup_float(&config,"beamstop_radius");
-  }
-
-  if((tmp = config_lookup_string(&config,"patterson_level_algorithm"))){
-    if(strcmp(tmp,"fixed") == 0){
-      res->patterson_level_algorithm = FIXED;      
-    }else if(strcmp(tmp,"constant_area") == 0){
-      res->patterson_level_algorithm = CONSTANT_AREA;
-      if(config_lookup(&config,"object_area")){
-	res->object_area = config_lookup_float(&config,"object_area");
-      }
-    }
-  }
-  
-  if((tmp = config_lookup_string(&config,"support_update_algorithm"))){
-    if(strcmp(tmp,"fixed") == 0){
-      res->support_update_algorithm = FIXED;      
-      if(config_lookup(&config,"support_intensity_threshold")){
-	res->new_level = config_lookup_float(&config,"support_intensity_threshold");
-      }
-    }else if(strcmp(tmp,"stepped") == 0){
-      res->support_update_algorithm = STEPPED;
-      if(config_lookup(&config,"support_intensity_threshold")){
-	res->new_level = config_lookup_float(&config,"support_intensity_threshold");
-      }
-    }else if(strcmp(tmp,"real_error_capped") == 0){
-      res->support_update_algorithm = REAL_ERROR_CAPPED;
-      if(config_lookup(&config,"support_intensity_threshold")){
-	res->new_level = config_lookup_float(&config,"support_intensity_threshold");
-      }
-      if(config_lookup(&config,"support_real_error_threshold")){
-	res->real_error_threshold = config_lookup_float(&config,"support_real_error_threshold");
-      }
-    }else if(strcmp(tmp,"real_error_adaptative") == 0){
-      res->support_update_algorithm = REAL_ERROR_ADAPTATIVE;
-      if(config_lookup(&config,"support_real_error_threshold")){
-	res->real_error_threshold = config_lookup_float(&config,"support_real_error_threshold");
-      }
-    }else if(strcmp(tmp,"constant_area") == 0){
-      res->support_update_algorithm = CONSTANT_AREA;
-      if(config_lookup(&config,"object_area")){
-	res->object_area = config_lookup_float(&config,"object_area");
-      }
-    }else if(strcmp(tmp,"decreasing_area") == 0){
-      res->support_update_algorithm = DECREASING_AREA;
-      if(config_lookup(&config,"object_area")){
-	res->object_area = config_lookup_float(&config,"object_area");
-      }
-      if(config_lookup(&config,"min_object_area")){
-	res->min_object_area = config_lookup_float(&config,"min_object_area");
-      }
-      if(config_lookup(&config,"iterations_to_min_object_area")){
-	res->iterations_to_min_object_area = config_lookup_int(&config,"iterations_to_min_object_area");
-      }
-    }else{
-      fprintf(stderr,"Warning: Unrecongnized support update algorithm \"%s\". Using default.\n",tmp);
-    }    
-
-  }
-
-  if((tmp = config_lookup_string(&config,"output_precision"))){
-    if(strcmp(tmp,"float") == 0 || strcmp(tmp,"single") == 0){
-      res->output_precision = sizeof(float);      
-    }else if(strcmp(tmp,"double") == 0){
-      res->output_precision = sizeof(double);
-    }
-  }
-  if(config_lookup(&config,"iterations_to_min_blur")){
-    res->iterations_to_min_blur = config_lookup_int(&config,"iterations_to_min_blur");
-  }
-  if((tmp = config_lookup_string(&config,"blur_radius_reduction_method"))){
-    if(strcmp(tmp,"gaussian") == 0){
-      res->blur_radius_reduction_method = GAUSSIAN_BLUR_REDUCTION;      
-    }else if(strcmp(tmp,"geometrical") == 0){
-      res->blur_radius_reduction_method = GEOMETRICAL_BLUR_REDUCTION;
-    }
-  }
-  if(config_lookup(&config,"minimum_blur_radius")){
-    res->min_blur = config_lookup_float(&config,"minimum_blur_radius");
-  }
-  if(config_lookup(&config,"enforce_reality")){
-    res->enforce_real = config_lookup_int(&config,"enforce_reality");
-  }
-  if(config_lookup_string(&config,"logfile")){
-    strcpy(res->log_file,config_lookup_string(&config,"logfile"));
-  }
-  if(config_lookup(&config,"output_period")){
-    res->output_period = config_lookup_int(&config,"output_period");  
-  }
-  if(config_lookup(&config,"log_output_period")){
-    res->log_output_period = config_lookup_int(&config,"log_output_period");  
-  }
-  if(config_lookup_string(&config,"algorithm")){
-    tmp = config_lookup_string(&config,"algorithm");    
-    if(strcmp(tmp,"RAAR") == 0|| strcmp(tmp,"raar") == 0){
-      res->algorithm = RAAR;
-    }else if(strcmp(tmp,"HIO") == 0|| strcmp(tmp,"hio") == 0){
-      res->algorithm = HIO;
-    }else if(strcmp(tmp,"HPR") == 0|| strcmp(tmp,"hpr") == 0){
-      res->algorithm = HPR;
-    }else if(strcmp(tmp,"CFLIP") == 0|| strcmp(tmp,"cflip") == 0){
-      res->algorithm = CFLIP;
-    }else if(strcmp(tmp,"RAAR_CFLIP") == 0|| strcmp(tmp,"raar_cflip") == 0){
-      res->algorithm = RAAR_CFLIP;
-    }else if(strcmp(tmp,"HAAR") == 0|| strcmp(tmp,"haar") == 0){
-      res->algorithm = HAAR;
-    }else if(strcmp(tmp,"SO2D") == 0|| strcmp(tmp,"so2d") == 0){
-      res->algorithm = SO2D;
-    }else{
-      fprintf(stderr,"Warning: Unrecongnized algorithm \"%s\". Using default.\n",tmp);
-    }    
-  }
-  if(config_lookup(&config,"RAAR_sigma")){
-    res->exp_sigma = config_lookup_float(&config,"RAAR_sigma");  
-  }
-  if(config_lookup(&config,"dynamic_beta")){
-    res->dyn_beta = config_lookup_int(&config,"dynamic_beta");  
-  }
-  if(config_lookup(&config,"error_reduction_iterations_after_loop")){
-    res->error_reduction_iterations_after_loop = 
-      config_lookup_int(&config,"error_reduction_iterations_after_loop");  
-  }
-  if(config_lookup(&config,"random_initial_intensities")){
-    res->rand_intensities = config_lookup_int(&config,"random_initial_intensities");  
-  }
-  if(config_lookup(&config,"random_initial_phases")){
-    res->rand_phases = config_lookup_int(&config,"random_initial_phases");  
-  }
-  if(config_lookup(&config,"enforce_positivity")){
-    res->enforce_positivity = config_lookup_int(&config,"enforce_positivity");  
-  }
-  if(config_lookup(&config,"genetic_optimization")){
-    res->genetic_optimization = config_lookup_int(&config,"genetic_optimization");  
-  }
-  if(config_lookup(&config,"work")){
-    strcpy(res->work_dir,config_lookup_string(&config,"work_directory"));  
-  }  
-  if(config_lookup(&config,"charge_flip_sigma")){
-    res->charge_flip_sigma = config_lookup_float(&config,"charge_flip_sigma");  
-  }
-  if(config_lookup(&config,"rescale_amplitudes")){
-    res->rescale_amplitudes = config_lookup_int(&config,"rescale_amplitudes");  
-  }
-  if(config_lookup(&config,"square_mask")){
-    res->square_mask = config_lookup_float(&config,"square_mask");  
-  }
-  if(config_lookup(&config,"patterson_blur_radius")){
-    res->patterson_blur_radius = config_lookup_float(&config,"patterson_blur_radius");  
-  }
-  if(config_lookup(&config,"remove_central_pixel_phase")){
-    res->remove_central_pixel_phase = config_lookup_int(&config,"remove_central_pixel_phase");  
-  }
-  if(config_lookup(&config,"perturb_weak_reflections")){
-    res->perturb_weak_reflections = config_lookup_float(&config,"perturb_weak_reflections");  
-  }
-  if(config_lookup(&config,"nthreads")){
-    res->nthreads = config_lookup_int(&config,"nthreads");
-  }
-  if(config_lookup(&config,"break_centrosym_period")){
-    res->break_centrosym_period = config_lookup_int(&config,"break_centrosym_period");
-  }
-  if(config_lookup(&config,"real_error_tolerance")){
-    res->real_error_tolerance = config_lookup_float(&config,"real_error_tolerance");  
-  }
-  if(config_lookup(&config,"max_iterations")){
-    res->max_iterations = config_lookup_int(&config,"max_iterations");  
-  }
-  if(config_lookup(&config,"image_blur_period")){
-    res->image_blur_period = config_lookup_int(&config,"image_blur_period");  
-  }
-  if(config_lookup(&config,"image_blur_radius")){
-    res->image_blur_radius = config_lookup_float(&config,"image_blur_radius");  
-  }
-
-#endif
 }
 
 

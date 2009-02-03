@@ -86,7 +86,7 @@ public:
 
   public slots:
   void loadAllComments();
-  void showImageValueAt(real x, real y);
+  void showImageValueAt(double x, double y);
   void clearImageValue();
 
   private slots:
@@ -94,14 +94,14 @@ public:
   void openImageFromList();
   void changeRange();
   void changeBackgroundRange(int value);
-  void changeBackgroundLevel(real value);
+  void changeBackgroundLevel(double value);
 
-  void changeConstantBackground(real value);
+  void changeConstantBackground(double value);
   void updateCenter();
   void updateBeamstop();
-  void vertLineToMaskSlot(real x, real y);
-  void drawMaskSlot(real x, real y);
-  void undrawMaskSlot(real x, real y);
+  void vertLineToMaskSlot(double x, double y);
+  void drawMaskSlot(double x, double y);
+  void undrawMaskSlot(double x, double y);
   void imagesTableChanged(int row, int collumn);
   void recalculateImage(int i);
 
@@ -128,7 +128,7 @@ public:
   Image * autocorrelation_support_cache;
   Image * averaged_background_cache;
   Image * total_background_cache;
-  real backgroundSum;
+  double backgroundSum;
   bool imgFromList;
   bool drawAuto;
   bool showMaskActive;
@@ -158,45 +158,45 @@ public:
   int current;
   int currentImg;
   int noOfImages;
-  real *backgroundLevel;
-  real *constantBackgroundLevel;
+  double *backgroundLevel;
+  double *constantBackgroundLevel;
   //QMainWindow *backgroundSliderWindow;
   BackgroundSlider *backgroundSlider;
 
   BackgroundSlider * constantBackgroundSlider;
 
   QSlider *rangeSlider;
-  real range;
+  double range;
   QSlider *backgroundRangeSlider;
-  real backgroundRange;
+  double backgroundRange;
 
   //QInputDialog *sizeDialog;
   bool useSize;
   int sizeX, sizeY;
 
-  real *centerX, *centerY;
+  double *centerX, *centerY;
   bool *centerDefined;
-  real *beamstopX, *beamstopY, *beamstopR;
+  double *beamstopX, *beamstopY, *beamstopR;
   bool *beamstopDefined;
-  QList<real> supportCeiling;
-  QList<real> supportFloor;
-  QList<real> supportBlur;
+  QList<double> supportCeiling;
+  QList<double> supportFloor;
+  QList<double> supportBlur;
 
 
-  QList<real> imgCenterX, imgCenterY;
+  QList<double> imgCenterX, imgCenterY;
   QList<bool> imgCenterDefined;
-  QList<real> imgBeamstopX, imgBeamstopY, imgBeamstopR;
+  QList<double> imgBeamstopX, imgBeamstopY, imgBeamstopR;
   QList<bool> imgBeamstopDefined;
-  QList<real> imgBackgroundLevel;
-  QList<real> imgConstantBackgroundLevel;
+  QList<double> imgBackgroundLevel;
+  QList<double> imgConstantBackgroundLevel;
   QList<int> imgBackground;
   QList<QString> imgRemark;
 
   //detector propertiees
   bool propertiesSet;
-  real wavelength;
-  real detectorDistance;
-  real detectorX, detectorY;
+  double wavelength;
+  double detectorDistance;
+  double detectorX, detectorY;
 
   bool showDistanceActive;
   int pencilSize;

@@ -658,12 +658,12 @@ void init_reconstruction(Options * opts){
 
 int main(int argc, char ** argv){
   FILE * f;
-  Options * opts;
+  Options * opts = &global_options;
   void * socket = 0;
 #ifdef MPI
   MPI_Init(&argc, &argv);
 #endif  
-  opts = set_defaults();
+  set_defaults(opts);
 
 #ifdef NETWORK_SUPPORT
   /* Decide if should connect to hawk GUI or not */

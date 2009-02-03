@@ -3,7 +3,7 @@
 //#include "imageview.moc"
 #include "propertiesDialog.h"
 
-PropertiesDialog::PropertiesDialog(real *lambda, real *distance, real *x, real *y, bool notFirst, QWidget *parent)
+PropertiesDialog::PropertiesDialog(double *lambda, double *distance, double *x, double *y, bool notFirst, QWidget *parent)
 {
   localLambda = lambda;
   localDistance = distance;

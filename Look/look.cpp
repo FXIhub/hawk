@@ -95,10 +95,10 @@ Look::Look(QMainWindow *parent)// : QWidget(parent)
 
   connect(view, SIGNAL(centerChanged()), this, SLOT(updateCenter()));
   connect(view, SIGNAL(beamstopChanged()), this, SLOT(updateBeamstop()));
-  connect(view, SIGNAL(vertLineSet(real,real)), this, SLOT(vertLineToMaskSlot(real,real)));
-  connect(view, SIGNAL(drawMaskAt(real,real)), this, SLOT(drawMaskSlot(real,real)));
-  connect(view, SIGNAL(undrawMaskAt(real,real)), this, SLOT(undrawMaskSlot(real,real)));
-  connect(view, SIGNAL(mouseOverImage(real,real)), this, SLOT(showImageValueAt(real,real)));
+  connect(view, SIGNAL(vertLineSet(double,double)), this, SLOT(vertLineToMaskSlot(double,double)));
+  connect(view, SIGNAL(drawMaskAt(double,double)), this, SLOT(drawMaskSlot(double,double)));
+  connect(view, SIGNAL(undrawMaskAt(double,double)), this, SLOT(undrawMaskSlot(double,double)));
+  connect(view, SIGNAL(mouseOverImage(double,double)), this, SLOT(showImageValueAt(double,double)));
   connect(view, SIGNAL(mouseLeftImage()), this, SLOT(clearImageValue()));
   connect(this, SIGNAL(imageChanged(int)), this, SLOT(recalculateImage(int)));
 
@@ -225,15 +225,15 @@ void Look::openDirectory()
     supportBlur.append(3);
   }
 
-  backgroundLevel = (real *) malloc(noOfImages*sizeof(real));
-  constantBackgroundLevel = (real *) malloc(noOfImages*sizeof(real));
+  backgroundLevel = (double *) malloc(noOfImages*sizeof(double));
+  constantBackgroundLevel = (double *) malloc(noOfImages*sizeof(double));
   
-  centerX = (real *) malloc(noOfImages*sizeof(real));
-  centerY = (real *) malloc(noOfImages*sizeof(real));
+  centerX = (double *) malloc(noOfImages*sizeof(double));
+  centerY = (double *) malloc(noOfImages*sizeof(double));
   centerDefined = (bool *) malloc(noOfImages*sizeof(bool));
-  beamstopX = (real *) malloc(noOfImages*sizeof(real));
-  beamstopY = (real *) malloc(noOfImages*sizeof(real));
-  beamstopR = (real *) malloc(noOfImages*sizeof(real));
+  beamstopX = (double *) malloc(noOfImages*sizeof(double));
+  beamstopY = (double *) malloc(noOfImages*sizeof(double));
+  beamstopR = (double *) malloc(noOfImages*sizeof(double));
   beamstopDefined = (bool *) malloc(noOfImages*sizeof(bool));
   for (int i = 0; i < noOfImages; i++) {
     centerDefined[i] = false;
@@ -318,13 +318,13 @@ void Look::openImageFromList()
 void Look::changeRange()
 {
   int value = rangeSlider->value();
-  range = (real) value / 100.0;
+  range = (double) value / 100.0;
   emit imageChanged(current);
 }
 
 void Look::changeBackgroundRange(int value)
 {
-  backgroundRange = (real) value / 100.0;
+  backgroundRange = (double) value / 100.0;
   emit imageChanged(current);
 }
 
@@ -519,7 +519,7 @@ void Look::exportImage()
       /*
       if (temporary == NULL) temporary = sp_image_alloc(sp_image_x(background), sp_image_y(background), 1);
       else if (sp_image_x(temporary) != sp_image_x(background) || sp_image_y(temporary) != sp_image_y(background))
-	sp_image_realloc(temporary,sp_image_x(background),sp_image_y(background),1);
+	sp_image_doubleloc(temporary,sp_image_x(background),sp_image_y(background),1);
       */
       if (temporary != NULL) sp_image_free(temporary);
       temporary = bilinear_rescale(background,sp_image_x(background),sp_image_y(background),1);
@@ -533,20 +533,20 @@ void Look::exportImage()
     if (propertiesSet) {
       out->detector->lambda = wavelength;
       out->detector->detector_distance = detectorDistance;
-      out->detector->pixel_size[0] = detectorX / (real) sp_image_x(out);
-      out->detector->pixel_size[1] = detectorY / (real) sp_image_y(out);
+      out->detector->pixel_size[0] = detectorX / (double) sp_image_x(out);
+      out->detector->pixel_size[1] = detectorY / (double) sp_image_y(out);
       out->detector->pixel_size[2] = 0;
     }
     if (imgFromList) {
       if (imgCenterDefined[currentImg]) {
-	out->detector->image_center[0] = centerX[current] * (real) sp_image_x(out);
-	out->detector->image_center[1] = centerY[current] * (real) sp_image_y(out);
+	out->detector->image_center[0] = centerX[current] * (double) sp_image_x(out);
+	out->detector->image_center[1] = centerY[current] * (double) sp_image_y(out);
 	out->detector->image_center[2] = 0.0;
       }
     } else {
       if (centerDefined[current]) {
-	out->detector->image_center[0] = centerX[current] * (real) sp_image_x(out);
-	out->detector->image_center[1] = centerY[current] * (real) sp_image_y(out);
+	out->detector->image_center[0] = centerX[current] * (double) sp_image_x(out);
+	out->detector->image_center[1] = centerY[current] * (double) sp_image_y(out);
 	out->detector->image_center[2] = 0.0;
       }
     }
@@ -569,8 +569,8 @@ void Look::exportBackground()
     if (propertiesSet) {
       background->detector->lambda = wavelength;
       background->detector->detector_distance = detectorDistance;
-      background->detector->pixel_size[0] = detectorX / (real) sp_image_x(background);
-      background->detector->pixel_size[1] = detectorY / (real) sp_image_y(background);
+      background->detector->pixel_size[0] = detectorX / (double) sp_image_x(background);
+      background->detector->pixel_size[1] = detectorY / (double) sp_image_y(background);
       background->detector->pixel_size[2] = 0;
     }
     sp_image_write(background,outFile.toAscii(),0);
@@ -588,7 +588,7 @@ void Look::exportToDir()
   Image *tmp;
   int i;
   int count = 0;
-  real sum;
+  double sum;
   for (i = 0; i < filesTable->rowCount(); i++)
     if (filesTable->item(i,2)->text() == "Background")
       count++;
@@ -606,13 +606,13 @@ void Look::exportToDir()
       if (propertiesSet) {
 	tmp->detector->lambda = wavelength;
 	tmp->detector->detector_distance = detectorDistance;
-	tmp->detector->pixel_size[0] = detectorX / (real) sp_image_x(tmp);
-	tmp->detector->pixel_size[1] = detectorY / (real) sp_image_y(tmp);
+	tmp->detector->pixel_size[0] = detectorX / (double) sp_image_x(tmp);
+	tmp->detector->pixel_size[1] = detectorY / (double) sp_image_y(tmp);
 	tmp->detector->pixel_size[2] = 0;
       }
       if (centerDefined[i]) {
-	tmp->detector->image_center[0] = centerX[i] * (real) sp_image_x(tmp);
-	tmp->detector->image_center[1] = centerY[i] * (real) sp_image_y(tmp);
+	tmp->detector->image_center[0] = centerX[i] * (double) sp_image_x(tmp);
+	tmp->detector->image_center[1] = centerY[i] * (double) sp_image_y(tmp);
 	tmp->detector->image_center[2] = 0.0;
       }
 
@@ -875,7 +875,7 @@ bool Look::calculateBackground()
   Image *tmp2;
   int i,j;
   int count = 0;
-  real sum;
+  double sum;
   for (i = 0; i < filesTable->rowCount(); i++)
     if (filesTable->item(i,2)->text() == "Background")
       count++;
@@ -902,7 +902,7 @@ bool Look::calculateBackground()
       //tmp = bilinear_rescale(sp_image_read(currentDir.absoluteFilePath(filesTable->item(i-1,3)->text()).toAscii(),0), sp_image_x(background), sp_image_y(background),1);
       if (progress.wasCanceled()) {sp_image_free(tmp1); sp_image_free(tmp2); return false;}
       //for (j = 0; j < sp_image_size(background); j++) sum += sp_cabs(tmp2->image->data[i]);
-      //sp_image_scale(tmp2,sum / (real) sp_image_size(tmp2));
+      //sp_image_scale(tmp2,sum / (double) sp_image_size(tmp2));
       //sp_image_add(background,tmp2);
       sp_image_add(background,tmp2);
       if (progress.wasCanceled()) {sp_image_free(tmp1); sp_image_free(tmp2); return false;}
@@ -912,7 +912,7 @@ bool Look::calculateBackground()
       sp_image_free(tmp2);
     }
   }
-  sp_image_scale(background,1.0 / (real) count);
+  sp_image_scale(background,1.0 / (double) count);
   backgroundSum = 0;
   for (j = 0; j < sp_image_size(background); j++) backgroundSum += sp_cabs(background->image->data[i]);
   return true;
@@ -963,7 +963,7 @@ void Look::setBackgroundLevel()
 {
   if (!backgroundSlider) {
     backgroundSlider = new BackgroundSlider(1.0, this);
-    connect(backgroundSlider, SIGNAL(valueChanged(real)), this, SLOT(changeBackgroundLevel(real)));
+    connect(backgroundSlider, SIGNAL(valueChanged(double)), this, SLOT(changeBackgroundLevel(double)));
   }
 
   //backgroundSliderWindow->setCentralWidget(backgroundSlider);
@@ -1018,7 +1018,7 @@ void Look::setAdaptativeBackground(){
   }
 }
 
-void Look::changeBackgroundLevel(real level)
+void Look::changeBackgroundLevel(double level)
 {
   cachedImageDirty |= ConstantBackground;
   if (!imgFromList){
@@ -1031,7 +1031,7 @@ void Look::changeBackgroundLevel(real level)
 }
 
 
-void Look::changeConstantBackground(real level)
+void Look::changeConstantBackground(double level)
 {
   cachedImageDirty |= ConstantBackground;
   if (!imgFromList){
@@ -1080,13 +1080,13 @@ void Look::showDistance(int on)
 void Look::beamstopToMask()
 {
   if (imgFromList) {
-    for (real x = 0.5 / (real) sp_image_x(images[currentImg]); x < 1.0; x += 1.0 / (real) sp_image_x(images[currentImg])) {
-      for (real y = 0.5 / (real) sp_image_y(images[currentImg]); y < 1.0; y += 1.0 / (real) sp_image_y(images[currentImg])) {
+    for (double x = 0.5 / (double) sp_image_x(images[currentImg]); x < 1.0; x += 1.0 / (double) sp_image_x(images[currentImg])) {
+      for (double y = 0.5 / (double) sp_image_y(images[currentImg]); y < 1.0; y += 1.0 / (double) sp_image_y(images[currentImg])) {
 	if ((x-imgBeamstopX[currentImg])*(x-imgBeamstopX[currentImg]) +
 	    (y-imgBeamstopY[currentImg])*(y-imgBeamstopY[currentImg]) <
 	    imgBeamstopR[currentImg]*imgBeamstopR[currentImg]) {
-	  sp_i3matrix_set(images[currentImg]->mask,(int) ((x * (real) sp_image_x(images[currentImg])) - 0.0),
-			  (int) ((y * (real) sp_image_y(images[currentImg])) - 0.0), 0, 0);
+	  sp_i3matrix_set(images[currentImg]->mask,(int) ((x * (double) sp_image_x(images[currentImg])) - 0.0),
+			  (int) ((y * (double) sp_image_y(images[currentImg])) - 0.0), 0, 0);
 	}
       }
     }
@@ -1142,7 +1142,7 @@ void Look::clearMask()
 void Look::saturationToMask()
 {
   if (imgFromList) {
-    real max = 0;
+    double max = 0;
     int i;
     for (i = 0; i < sp_image_size(img); i++) {
       if (sp_cabs(img->image->data[i]) > max) max = sp_cabs(img->image->data[i]);
@@ -1162,10 +1162,10 @@ void Look::vertLineToMask()
   }
 }
 
-void Look::vertLineToMaskSlot(real x, real y)
+void Look::vertLineToMaskSlot(double x, double y)
 {
   if (imgFromList) {
-    int xi = (int) (x*(real)sp_image_x(img));
+    int xi = (int) (x*(double)sp_image_x(img));
     if (xi >= 0 && xi < sp_image_x(img)) {
       for (int yi = 0; yi < sp_i3matrix_x(img->mask); yi++) {
 	sp_i3matrix_set(img->mask,xi,yi,0,0);
@@ -1186,11 +1186,11 @@ void Look::undrawMask(bool on)
   view->undrawMask(on);
 }
 
-void Look::drawMaskSlot(real x, real y)
+void Look::drawMaskSlot(double x, double y)
 {
   if (imgFromList && !drawAuto) {
-    int xi = (int) (x*(real)sp_image_x(img));
-    int yi = (int) (y*(real)sp_image_y(img));
+    int xi = (int) (x*(double)sp_image_x(img));
+    int yi = (int) (y*(double)sp_image_y(img));
     for (int xk = xi-pencilSize/2; xk < xi+(pencilSize+1)/2; xk++) {
       for (int yk = yi-pencilSize/2; yk < yi+(pencilSize+1)/2; yk++) {
 	if (xk > 0 && xk < sp_image_x(img) && yk > 0 && yk < sp_image_y(img))
@@ -1202,11 +1202,11 @@ void Look::drawMaskSlot(real x, real y)
   emit imageChanged(current);
 }
 
-void Look::undrawMaskSlot(real x, real y)
+void Look::undrawMaskSlot(double x, double y)
 {
   if (imgFromList && !drawAuto) {
-    int xi = (int) (x*(real)sp_image_x(img));
-    int yi = (int) (y*(real)sp_image_y(img));
+    int xi = (int) (x*(double)sp_image_x(img));
+    int yi = (int) (y*(double)sp_image_y(img));
     for (int xk = xi-pencilSize/2; xk < xi+(pencilSize+1)/2; xk++) {
       for (int yk = yi-pencilSize/2; yk < yi+(pencilSize+1)/2; yk++) {
 	if (xk > 0 && xk < sp_image_x(img) && yk > 0 && yk < sp_image_y(img))
@@ -1353,8 +1353,8 @@ void Look::recalculateImage(int i){
     }
     if(cachedImageDirty & AutocorrelationSupport){
       // We only have to recalculate the support based on changed levels
-      real max_level =  sp_cabs(sorted_autocorrelation_cache->image->data[(int)(sp_image_size(sorted_autocorrelation_cache)*(1.0-supportCeiling[current]/100.0))]);
-      real min_level =  sp_cabs(sorted_autocorrelation_cache->image->data[(int)(sp_image_size(sorted_autocorrelation_cache)*(1.0-supportFloor[current]/100.0))]);
+      double max_level =  sp_cabs(sorted_autocorrelation_cache->image->data[(int)(sp_image_size(sorted_autocorrelation_cache)*(1.0-supportCeiling[current]/100.0))]);
+      double min_level =  sp_cabs(sorted_autocorrelation_cache->image->data[(int)(sp_image_size(sorted_autocorrelation_cache)*(1.0-supportFloor[current]/100.0))]);
       /* Now we have to cap the image values */
       if(autocorrelation_support_cache){
 	sp_image_free(autocorrelation_support_cache);
@@ -1399,12 +1399,12 @@ void Look::recalculateImage(int i){
   QApplication::restoreOverrideCursor();
 }
 
-void Look::showImageValueAt(real frac_x, real frac_y){
+void Look::showImageValueAt(double frac_x, double frac_y){
   if(draw){
     int x = frac_x*sp_image_x(img);
     int y = frac_y*sp_image_y(img);
     if(frac_x >= 0 && frac_y>= 0 && frac_x <1 && frac_y < 1){
-      real value = sp_real(sp_image_get(draw,x,y,0));
+      double value = sp_real(sp_image_get(draw,x,y,0));
       QString str = QString("Image Position x = %1 y = %2\tImage Value = %3").arg(x).arg(y).arg(value);
       mainWindow->statusBar()->showMessage(str);
     }else{

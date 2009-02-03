@@ -13,25 +13,24 @@ extern "C"
 #include "libconfig.h"
 #include "spimage.h"
 
-  struct _Log;
 
 
 
-#define OPTION_STRING_SIZE 1024
+#define OPTION_STRING_SIZE 10024
 
 
-  typedef enum{HIO=0,RAAR,HPR,CFLIP,RAAR_CFLIP,HAAR,SO2D,RAAR_PROJ,DIFF_MAP} Phasing_Algorithms;
+typedef enum{HIO=0,RAAR,HPR,CFLIP,RAAR_CFLIP,HAAR,SO2D,RAAR_PROJ,DIFF_MAP} Phasing_Algorithms;
 
 
 
-  typedef enum{FIXED=0,STEPPED,REAL_ERROR_CAPPED,REAL_ERROR_ADAPTATIVE,CONSTANT_AREA,DECREASING_AREA,COMPLEX_DECREASING_AREA} Support_Update_Algorithms;
+typedef enum{FIXED=0,STEPPED,REAL_ERROR_CAPPED,REAL_ERROR_ADAPTATIVE,CONSTANT_AREA,DECREASING_AREA,COMPLEX_DECREASING_AREA} Support_Update_Algorithms;
 
 
 typedef enum{GAUSSIAN_BLUR_REDUCTION=0,GEOMETRICAL_BLUR_REDUCTION} Blur_Reduction_Method;
 
 
 typedef enum {Type_Real=0, Type_Int, Type_String, 
-	      Type_MultipleChoice,Type_Bool, Type_Group, Type_Image, Type_Slice, Type_Vector_Real, Type_Vector_Int}Variable_Type;
+	      Type_MultipleChoice,Type_Bool, Type_Group, Type_Image, Type_Slice, Type_Vector_Real, Type_Vector_Int,Type_Filename,Type_Directory_Name,Type_Map_Real}Variable_Type;
 
 typedef enum {Id_Diffraction_Filename=0,Id_Real_Image_Filename,Id_Max_Blur_Radius,Id_Init_Level,
 	      Id_Beta,Id_Iterations,Id_Support_Mask_Filename,Id_Init_Support_Filename,Id_Image_Guess_Filename,
@@ -51,27 +50,14 @@ typedef enum {Id_Diffraction_Filename=0,Id_Real_Image_Filename,Id_Max_Blur_Radiu
 	      Id_Iterations_To_Min_Phases_Blur,
 	      Id_Object_Area_Checkpoints,Id_Object_Area_at_Checkpoints,Id_Autocorrelation_Support_File,
 	      Id_Filter_Intensities,Id_Beta_Checkpoints,Id_Beta_at_Checkpoints,Id_Gamma1,Id_Gamma2,Id_Support_Image_Averaging,
-	      Id_Random_Seed
+	      Id_Random_Seed,Id_Input_Files,Id_Input_Files_Amplitudes,Id_Initialization,Id_Input,Id_Logging,Id_Phasing,Id_Support,
+	      Id_Autocorrelation_Area
 }Variable_Id;
   
   
-  typedef enum {isSettableBeforeRun = 1, isSettableDuringRun = 2, isGettableBeforeRun = 4,
-		isGettableDuringRun = 8, isMandatory = 16} Variable_Properties;
-  typedef struct VariableMetadata{
-  const char * variable_name;
-  const Variable_Type variable_type;
-  const Variable_Id id;
-  const struct VariableMetadata * parent;
-  const Variable_Properties variable_properties;
-  const int list_valid_values[10];
-  /* No more than 10 possible values per list */
-  const char * list_valid_names[10];
-  void * variable_address;
-  /* No more than 10240 characters in the documentation */
-  const char documentation[10240];
-  /* Pointer reserved for future use */
-  void * reserved;
-}VariableMetadata;
+typedef enum {isSettableBeforeRun = 1, isSettableDuringRun = 2, isGettableBeforeRun = 4,
+	      isGettableDuringRun = 8, isMandatory = 16, deprecated = 32,advanced = 64,withSpecialValue = 128} Variable_Properties;
+
 
 
 typedef struct {
@@ -100,7 +86,7 @@ typedef struct {
   /* given sufficiently long parameters this will seg fault
      but i don't really care as the program in not secure in any way*/
   char log_file[OPTION_STRING_SIZE];  
-  char commandline[10024];
+  char commandline[OPTION_STRING_SIZE];
   int output_period;
   int log_output_period;
   int algorithm;
@@ -157,26 +143,53 @@ typedef struct {
   real gamma2;
   int support_image_averaging;
   int random_seed;
+  real autocorrelation_area;
+  sp_smap * object_area_evolution;
+  sp_smap * support_blur_evolution;
+  sp_smap * beta_evolution;
+  sp_smap * phases_blur_evolution;
 }Options;
 
+typedef struct _VariableMetadata{
+  const char * variable_name;
+  const char * display_name;
+  const Variable_Type variable_type;
+  const Variable_Id id;
+  const struct _VariableMetadata * parent;
+  const Variable_Properties variable_properties;
+  const int list_valid_values[10];
+  /* No more than 10 possible values per list */
+  const char * list_valid_names[10];
+  void * variable_address;
+  /* No more than 10240 characters in the documentation */
+  const char documentation[10240];
+  /* Pointer to a function that determines if the option
+     makes sense in the current configuration */
+  int (* dependencies)(const Options *);
+  /* Pointer reserved for future use */
+  void * reserved;  
+}VariableMetadata;
 
 
 extern Options global_options;
 extern const int number_of_global_options;
-extern VariableMetadata variable_metadata[100];
+extern VariableMetadata variable_metadata[200];
 
   void init_options_metadata(Options * opt);
   void read_options_file(char * filename);
   void parse_options(int argc, char ** argv, Options * opt);
-  Options * set_defaults(void);
-void write_options_file(char * filename);
-real get_beta(Options * opts);
-real get_blur_radius(Options * opts);
+  void set_defaults(Options * opt);
+  void write_options_file(const char * filename);
+  real get_beta(Options * opts);
+  real get_blur_radius(Options * opts);
   real get_object_area(Options * opts);
   real get_phases_blur_radius(Options * opts);
-  real get_gamma1(Options * opts,struct _Log * log);
+  real get_gamma1(Options * opts);
   real get_gamma2(Options * opts);
   int get_random_seed(Options * opts);
+
+  int get_list_value_from_list_name(VariableMetadata * md,char * name);
+  real bezier_map_interpolation(sp_smap * map, real x);
 #ifdef __cplusplus
 }  /* extern "C" */
 #endif /* __cplusplus */

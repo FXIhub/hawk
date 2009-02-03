@@ -13,13 +13,13 @@ class ImageView : public QWidget
   bool collumnToMask();
   void setCenter(int on);
   bool setCenterActivated();
-  void setCenter(real x, real y);
-  void getCenter(real *x, real *y);
+  void setCenter(double x, double y);
+  void getCenter(double *x, double *y);
   void defineBeamstop(int on);
   bool defineBeamstopActivated();
-  void setBeamstop(real x, real y, real r);
-  void getBeamstop(real *x, real *y, real *r);
-  void showDistance(int on, bool bar, real value);
+  void setBeamstop(double x, double y, double r);
+  void getBeamstop(double *x, double *y, double *r);
+  void showDistance(int on, bool bar, double value);
   void getVertLine();
   void drawMask(bool on);
   void undrawMask(bool on);

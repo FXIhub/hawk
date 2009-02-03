@@ -107,7 +107,8 @@ float test_raar_success(float criteria, float * pgm,int runs, int iter_per_run,f
   for(int i = 0;i<sp_image_size(amp);i++){
     amp->mask->data[i] = 1;
   }
-  Options * opts = set_defaults();
+  Options * opts = &global_options;
+  set_defaults(opts);
   opts->beta = 0.9;
   opts->log_output_period = 1e6;
   for(int i = 0;i<runs;i++){
@@ -194,7 +195,9 @@ float test_difference_map_success(float criteria, float * pgm,int runs, int iter
   for(int i = 0;i<sp_image_size(amp);i++){
     amp->mask->data[i] = 1;
   }
-  Options * opts = set_defaults();
+  Options * opts = &global_options;
+  set_defaults(opts);
+
   float sigma = 1.0/9;
   opts->beta = 0.99;
   float beta = opts->beta;
@@ -251,7 +254,9 @@ float test_hio_success(float criteria, float * pgm,int runs, int iter_per_run,fl
   for(int i = 0;i<sp_image_size(amp);i++){
     amp->mask->data[i] = 1;
   }
-  Options * opts = set_defaults();
+  Options * opts = &global_options;
+  set_defaults(opts);
+
   opts->beta = 0.9;
   opts->log_output_period = 1e6;
   for(int i = 0;i<runs;i++){

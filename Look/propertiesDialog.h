@@ -8,16 +8,16 @@ class PropertiesDialog : public QDialog
 {
   Q_OBJECT
     public:
-  PropertiesDialog(real *lambda, real *distance, real *x, real *y, bool notFirst, QWidget *parent = 0);
+  PropertiesDialog(double *lambda, double *distance, double *x, double *y, bool notFirst, QWidget *parent = 0);
   
   public slots:
     void close();
 
  private:
-  real *localLambda;
-  real *localDistance;
-  real *localX;
-  real *localY;
+  double *localLambda;
+  double *localDistance;
+  double *localX;
+  double *localY;
 
   QDoubleSpinBox *wavelength;
   QDoubleSpinBox *detectorDistance;

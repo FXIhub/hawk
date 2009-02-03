@@ -832,7 +832,7 @@ Image * serial_difference_map_iteration(Image * exp_amp, Image * exp_sigma, Imag
 Image * serial_difference_map_iteration(Image * exp_amp, Image * real_in, Image * support, 
 					Options * opts, Log * log){
   real beta = get_beta(opts);
-  real gamma1 = get_gamma1(opts,log);
+  real gamma1 = get_gamma1(opts);
   real gamma2 = get_gamma2(opts);
   Image * real_out = sp_image_duplicate(real_in,SP_COPY_DATA|SP_COPY_MASK);  
   Image * fft_in = sp_image_fft(real_in);

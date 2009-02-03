@@ -424,11 +424,11 @@ int main(){
   char dir[1024];
   long long i;
   FILE * f;
-  Options * opts;
+  Options * opts = &global_options;
 #ifdef MPI
   MPI_Init(&argc, &argv);
 #endif  
-  opts = set_defaults();
+  set_defaults(opts);
 
   
   srand(getpid());

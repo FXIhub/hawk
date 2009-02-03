@@ -1,6 +1,4 @@
 #include <QtGui>
-#include <spimage.h>
-//#include "imageview.moc"
 #include "imageview.h"
 
 ImageView::ImageView(QWidget *parent)
@@ -54,40 +52,40 @@ void ImageView::drawImage()
 				   (int)(zoomValue*originalQi->width()),(int)(zoomValue*originalQi->height()))).scaled(width(),height(),Qt::KeepAspectRatio);
   */
 
-  imageQi = originalQi->copy(QRect((int)((zoomCenterX-0.5*zoomValue*(real)width()/(real)(width()<height()?width():height()))*originalQi->width()+0.5),
-				   (int)((zoomCenterY-0.5*zoomValue*(real)height()/(real)(width()<height()?width():height()))*originalQi->height()+0.5),
-				   (int)(zoomValue*originalQi->width()*(real)width()/(real)(width()<height()?width():height())+0.5),
-				   (int)(zoomValue*originalQi->height()*(real)height()/(real)(width()<height()?width():height())+0.5))).
+  imageQi = originalQi->copy(QRect((int)((zoomCenterX-0.5*zoomValue*(double)width()/(double)(width()<height()?width():height()))*originalQi->width()+0.5),
+				   (int)((zoomCenterY-0.5*zoomValue*(double)height()/(double)(width()<height()?width():height()))*originalQi->height()+0.5),
+				   (int)(zoomValue*originalQi->width()*(double)width()/(double)(width()<height()?width():height())+0.5),
+				   (int)(zoomValue*originalQi->height()*(double)height()/(double)(width()<height()?width():height())+0.5))).
     scaled(width(),height(),Qt::KeepAspectRatio);
 
   //imageLabel->setPixmap(QPixmap::fromImage(imageQi));
   update();
 }
 
-int ImageView::globalToScreenX(real x)
+int ImageView::globalToScreenX(double x)
 {
-  return (int) (((x - zoomCenterX) / zoomValue + 0.5) * (real) (width()<height() ? width():height()) + 0.5 +
-		(real) (width() - (width()<height() ? width():height()))/2.0 );
+  return (int) (((x - zoomCenterX) / zoomValue + 0.5) * (double) (width()<height() ? width():height()) + 0.5 +
+		(double) (width() - (width()<height() ? width():height()))/2.0 );
 }
 
-int ImageView::globalToScreenY(real y)
+int ImageView::globalToScreenY(double y)
 {
-  return (int) (((y - zoomCenterY) / zoomValue + 0.5) * (real) (width()<height() ? width():height()) + 0.5 +
-		(real) (height() - (width()<height() ? width():height()))/2.0 );
-}
-
-// not tested yet
-real ImageView::screenToGlobalX(int x)
-{
-  return zoomCenterX + (real) (2*x - width()) / 2.0 / (real) (width()<height() ? width():height()) * zoomValue;
-  //return ((real) x / (real) width() - 0.5) * zoomValue * (real) (width()<height() ? width():height()) / (real) width() + zoomCenterX;
+  return (int) (((y - zoomCenterY) / zoomValue + 0.5) * (double) (width()<height() ? width():height()) + 0.5 +
+		(double) (height() - (width()<height() ? width():height()))/2.0 );
 }
 
 // not tested yet
-real ImageView::screenToGlobalY(int y)
+double ImageView::screenToGlobalX(int x)
 {
-  return zoomCenterY + (real) (2*y - height()) / 2.0 / (real) (width()<height() ? width():height()) * zoomValue;
-  //return ((real) y / (real) height() - 0.5) * zoomValue * (real) (width()<height() ? width():height()) / (real) height() + zoomCenterY;
+  return zoomCenterX + (double) (2*x - width()) / 2.0 / (double) (width()<height() ? width():height()) * zoomValue;
+  //return ((double) x / (double) width() - 0.5) * zoomValue * (double) (width()<height() ? width():height()) / (double) width() + zoomCenterX;
+}
+
+// not tested yet
+double ImageView::screenToGlobalY(int y)
+{
+  return zoomCenterY + (double) (2*y - height()) / 2.0 / (double) (width()<height() ? width():height()) * zoomValue;
+  //return ((double) y / (double) height() - 0.5) * zoomValue * (double) (width()<height() ? width():height()) / (double) height() + zoomCenterY;
 }
 
 bool ImageView::collumnToMask()
@@ -107,13 +105,13 @@ bool ImageView::setCenterActivated()
   return setCenterActive;
 }
 
-void ImageView::setCenter(real x, real y)
+void ImageView::setCenter(double x, double y)
 {
   centerX = x; centerY = y;
   if (setCenterActive) update();
 }
 
-void ImageView::getCenter(real *x, real *y)
+void ImageView::getCenter(double *x, double *y)
 {
   *x = centerX; *y = centerY;
 }
@@ -130,18 +128,18 @@ bool ImageView::defineBeamstopActivated()
   return defineBeamstopActive;
 }
 
-void ImageView::setBeamstop(real x, real y, real r)
+void ImageView::setBeamstop(double x, double y, double r)
 {
   beamstopX = x; beamstopY = y; beamstopR = r;
   if (defineBeamstopActive) update();
 }
 
-void ImageView::getBeamstop(real *x, real *y, real *r)
+void ImageView::getBeamstop(double *x, double *y, double *r)
 {
   *x = beamstopX; *y = beamstopY; *r = beamstopR;
 }
 
-void ImageView::showDistance(int on, bool bar, real value)
+void ImageView::showDistance(int on, bool bar, double value)
 {
   if (on) {
     if (bar) {
@@ -203,23 +201,23 @@ void ImageView::mousePressEvent(QMouseEvent *event)
       return;
     }
     if (setCenterActive) {
-      int x = (int) (((centerX - zoomCenterX) / zoomValue + 0.5) * (real) width());  //(Cx - 0.5 - (zCx - 0.5) /zV = 0.5
-      int y = (int) (((centerY - zoomCenterY) / zoomValue + 0.5) * (real) height());  //(Cy - 0.5 - (zCy - 0.5) /zV = 0.5
-      if (event->pos().x() < x + (int)(0.05*(real)width()) &&
-	  event->pos().x() > x - (int)(0.05*(real)width())) {
+      int x = (int) (((centerX - zoomCenterX) / zoomValue + 0.5) * (double) width());  //(Cx - 0.5 - (zCx - 0.5) /zV = 0.5
+      int y = (int) (((centerY - zoomCenterY) / zoomValue + 0.5) * (double) height());  //(Cy - 0.5 - (zCy - 0.5) /zV = 0.5
+      if (event->pos().x() < x + (int)(0.05*(double)width()) &&
+	  event->pos().x() > x - (int)(0.05*(double)width())) {
 	moveCenterX = true;
 	leftPressed = true;
       }
-      if (event->pos().y() < y + (int)(0.05*(real)height()) &&
-	  event->pos().y() > y - (int)(0.05*(real)height())){
+      if (event->pos().y() < y + (int)(0.05*(double)height()) &&
+	  event->pos().y() > y - (int)(0.05*(double)height())){
 	moveCenterY = true;
 	leftPressed = true;
       }
     }
     if (defineBeamstopActive && !leftPressed) {
-      int x = (int) (((beamstopX - zoomCenterX) / zoomValue + 0.5) * (real) width() + 0.5);
-      int y = (int) (((beamstopY - zoomCenterY) / zoomValue + 0.5) * (real) height() + 0.5);
-      int r = (int) (beamstopR / zoomValue * 0.8 * (real) (width()<height() ? width():height()) + 0.5);
+      int x = (int) (((beamstopX - zoomCenterX) / zoomValue + 0.5) * (double) width() + 0.5);
+      int y = (int) (((beamstopY - zoomCenterY) / zoomValue + 0.5) * (double) height() + 0.5);
+      int r = (int) (beamstopR / zoomValue * 0.8 * (double) (width()<height() ? width():height()) + 0.5);
       if ((event->pos().x()-x) * (event->pos().x()-x) + (event->pos().y()-y) * (event->pos().y()-y) < r*r) {
 	beamstopMove = true;
 	beamstopOffsetX = event->pos().x() - x;
@@ -258,19 +256,19 @@ void ImageView::mouseMoveEvent(QMouseEvent *event)
     return;
   }
   if (paneActive) {
-    //zoomCenterX = startZoomCenterX - (real)(event->pos().x() - startPos.x()) / (real) imageLabel->width() * zoomValue;
-    //zoomCenterY = startZoomCenterY - (real)(event->pos().y() - startPos.y()) / (real) imageLabel->height() * zoomValue;
-    zoomCenterX = startZoomCenterX - (real)(event->pos().x() - startPos.x()) / (real) width() * zoomValue;
-    zoomCenterY = startZoomCenterY - (real)(event->pos().y() - startPos.y()) / (real) height() * zoomValue;
+    //zoomCenterX = startZoomCenterX - (double)(event->pos().x() - startPos.x()) / (double) imageLabel->width() * zoomValue;
+    //zoomCenterY = startZoomCenterY - (double)(event->pos().y() - startPos.y()) / (double) imageLabel->height() * zoomValue;
+    zoomCenterX = startZoomCenterX - (double)(event->pos().x() - startPos.x()) / (double) width() * zoomValue;
+    zoomCenterY = startZoomCenterY - (double)(event->pos().y() - startPos.y()) / (double) height() * zoomValue;
     if (zoomCenterX <  0.5*zoomValue) zoomCenterX = 0.5*zoomValue;
     if (zoomCenterX > 1.0 - 0.5*zoomValue) zoomCenterX = 1.0 - 0.5*zoomValue;
     if (zoomCenterY < 0.5*zoomValue) zoomCenterY = 0.5*zoomValue;
     if (zoomCenterY > 1.0 - 0.5*zoomValue) zoomCenterY = 1.0 - 0.5*zoomValue;
     drawImage();
   } else if (zoomActive) {
-    zoomValue = startZoomValue + (real)(event->pos().y() - startPos.y()) / (real) height();
-    //zoomCenterX = ((real) startPos.x()/ (real) imageLabel->width() - 0.5)*startZoomValue + startZoomCenterX + 0.5;
-    //zoomCenterY = ((real) startPos.y()/ (real) imageLabel->height() - 0.5)*startZoomValue + startZoomCenterY + 0.5;
+    zoomValue = startZoomValue + (double)(event->pos().y() - startPos.y()) / (double) height();
+    //zoomCenterX = ((double) startPos.x()/ (double) imageLabel->width() - 0.5)*startZoomValue + startZoomCenterX + 0.5;
+    //zoomCenterY = ((double) startPos.y()/ (double) imageLabel->height() - 0.5)*startZoomValue + startZoomCenterY + 0.5;
     if (zoomValue > 1) zoomValue = 1;
     if (zoomValue < 0.01) zoomValue = 0.01;
     if (zoomCenterX <  0.5*zoomValue) zoomCenterX = 0.5*zoomValue;
@@ -279,22 +277,22 @@ void ImageView::mouseMoveEvent(QMouseEvent *event)
     if (zoomCenterY > 1.0 - 0.5*zoomValue) zoomCenterY = 1.0 - 0.5*zoomValue;
     drawImage();
   } else if (moveCenterX || moveCenterY) {
-    if (moveCenterX) centerX = screenToGlobalX(event->pos().x()); //(event->pos().x() / (real) width() - 0.5) * zoomValue + zoomCenterX;
-    if (moveCenterY) centerY = screenToGlobalY(event->pos().y()); //(event->pos().y() / (real) height() - 0.5) * zoomValue + zoomCenterY;
+    if (moveCenterX) centerX = screenToGlobalX(event->pos().x()); //(event->pos().x() / (double) width() - 0.5) * zoomValue + zoomCenterX;
+    if (moveCenterY) centerY = screenToGlobalY(event->pos().y()); //(event->pos().y() / (double) height() - 0.5) * zoomValue + zoomCenterY;
     update();
   } else if (beamstopMove) {
     beamstopX = screenToGlobalX(event->pos().x() - (int)beamstopOffsetX); 
-    //((event->pos().x() - beamstopOffsetX) / (real) width() - 0.5) * zoomValue + zoomCenterX;
+    //((event->pos().x() - beamstopOffsetX) / (double) width() - 0.5) * zoomValue + zoomCenterX;
     beamstopY = screenToGlobalY(event->pos().y() - (int)beamstopOffsetY);
-    //((event->pos().y() - beamstopOffsetY) / (real) height() - 0.5) * zoomValue + zoomCenterY;
+    //((event->pos().y() - beamstopOffsetY) / (double) height() - 0.5) * zoomValue + zoomCenterY;
     update();
   } else if (beamstopMoveR) {
-    beamstopR = beamstopOriginalR * sqrt(((real)event->pos().x() - ((beamstopX - zoomCenterX) / zoomValue + 0.5) * (real) width()) *
-					 ((real)event->pos().x() - ((beamstopX - zoomCenterX) / zoomValue + 0.5) * (real) width()) + 
-					 ((real)event->pos().y() - ((beamstopY - zoomCenterY) / zoomValue + 0.5) * (real) height()) *
-					 ((real)event->pos().y() - ((beamstopY - zoomCenterY) / zoomValue + 0.5) * (real) height()))
+    beamstopR = beamstopOriginalR * sqrt(((double)event->pos().x() - ((beamstopX - zoomCenterX) / zoomValue + 0.5) * (double) width()) *
+					 ((double)event->pos().x() - ((beamstopX - zoomCenterX) / zoomValue + 0.5) * (double) width()) + 
+					 ((double)event->pos().y() - ((beamstopY - zoomCenterY) / zoomValue + 0.5) * (double) height()) *
+					 ((double)event->pos().y() - ((beamstopY - zoomCenterY) / zoomValue + 0.5) * (double) height()))
       / beamstopStartR;
-    //int x = (int) (((beamstopX - zoomCenterX) / zoomValue + 0.5) * (real) width() + 0.5);
+    //int x = (int) (((beamstopX - zoomCenterX) / zoomValue + 0.5) * (double) width() + 0.5);
     update();
   } else if (drawMaskActive && leftPressed) {
     emit drawMaskAt(screenToGlobalX(event->pos().x()),screenToGlobalY(event->pos().y()));
@@ -334,10 +332,10 @@ void ImageView::paintEvent(QPaintEvent *)
   if (setCenterActive) {
     painter.setPen(Qt::yellow);
     /*
-    real x = (centerX - zoomCenterX) / zoomValue + 0.5;  //(Cx - 0.5 - (zCx - 0.5) /zV = 0.5
-    real y = (centerY - zoomCenterY) / zoomValue + 0.5;  //(Cy - 0.5 - (zCy - 0.5) /zV = 0.5
-    painter.drawLine(0,(int)((real)height()*y),width(),(int)((real)height()*y));
-    painter.drawLine((int)((real)width()*x),0,(int)((real)width()*x),height());
+    double x = (centerX - zoomCenterX) / zoomValue + 0.5;  //(Cx - 0.5 - (zCx - 0.5) /zV = 0.5
+    double y = (centerY - zoomCenterY) / zoomValue + 0.5;  //(Cy - 0.5 - (zCy - 0.5) /zV = 0.5
+    painter.drawLine(0,(int)((double)height()*y),width(),(int)((double)height()*y));
+    painter.drawLine((int)((double)width()*x),0,(int)((double)width()*x),height());
     */
     painter.drawLine(0, globalToScreenY(centerY), width(), globalToScreenY(centerY));
     painter.drawLine(globalToScreenX(centerX), 0, globalToScreenX(centerX), height());
@@ -346,17 +344,17 @@ void ImageView::paintEvent(QPaintEvent *)
     painter.setPen(QPen(Qt::darkRed,3));
     //painter.pen().setWidth(3);
     //painter.setBrush(Qt::darkRed);
-    int x = globalToScreenX(beamstopX); //(int)((real) width() * ((beamstopX - zoomCenterX) / zoomValue + 0.5));
-    int y = globalToScreenY(beamstopY); //(int)((real) height() * ((beamstopY - zoomCenterY) / zoomValue + 0.5));
-    int R = (int)(beamstopR / zoomValue * (real) (width()<height() ? width():height()) + 0.5);
+    int x = globalToScreenX(beamstopX); //(int)((double) width() * ((beamstopX - zoomCenterX) / zoomValue + 0.5));
+    int y = globalToScreenY(beamstopY); //(int)((double) height() * ((beamstopY - zoomCenterY) / zoomValue + 0.5));
+    int R = (int)(beamstopR / zoomValue * (double) (width()<height() ? width():height()) + 0.5);
     painter.drawEllipse(x - R, y - R, 2*R, 2*R);
   }
   if (circleResolution > 0.0) {
     painter.setPen(QPen(Qt::red,1));
-    for (real n = 1.0; n <= 8.0; n *= 2.0) {
+    for (double n = 1.0; n <= 8.0; n *= 2.0) {
       painter.drawEllipse(globalToScreenX(centerX-0.5/n),globalToScreenY(centerY-0.5/n),
-			  (int)((real) (width()<height()?width():height()) / n / zoomValue + 0.5),
-			  (int)((real) (width()<height()?width():height()) / n / zoomValue + 0.5));
+			  (int)((double) (width()<height()?width():height()) / n / zoomValue + 0.5),
+			  (int)((double) (width()<height()?width():height()) / n / zoomValue + 0.5));
       QString label = QString::number(circleResolution * n);
       label.append(" nm");
       if (globalToScreenX(centerX + 0.3 / n) < width() && globalToScreenY(centerY - 0.3 / n) > 0)
@@ -368,17 +366,17 @@ void ImageView::paintEvent(QPaintEvent *)
   if (distanceBarLength > 0.0) {
     painter.setPen(Qt::NoPen);
     painter.setBrush(Qt::red);
-    real tmp1 = pow(10.0,((int) (log(0.3 * zoomValue * (real) width() * distanceBarLength)/log(10))));
-    real tmp2 = 0.5 * pow(10.0,((int) (log(0.3 * zoomValue * (real) width() * distanceBarLength * 2.0)/log(10))));
-    if (fabs(tmp2 - 0.3 * zoomValue * (real) width() * distanceBarLength) <
-	fabs(tmp1 - 0.3 * zoomValue * (real) width() * distanceBarLength))
+    double tmp1 = pow(10.0,((int) (log(0.3 * zoomValue * (double) width() * distanceBarLength)/log(10))));
+    double tmp2 = 0.5 * pow(10.0,((int) (log(0.3 * zoomValue * (double) width() * distanceBarLength * 2.0)/log(10))));
+    if (fabs(tmp2 - 0.3 * zoomValue * (double) width() * distanceBarLength) <
+	fabs(tmp1 - 0.3 * zoomValue * (double) width() * distanceBarLength))
       tmp1 = tmp2;
     painter.drawRect((int)(width() * 0.9 - tmp1/distanceBarLength/zoomValue + 0.5),(int)(height() * 0.9),
 		     (int) (tmp1/distanceBarLength/zoomValue + 0.5), (int)(height() * 0.02));
     QString label = QString::number(tmp1);
     label.append(" nm");
     painter.setPen(Qt::red);
-    painter.drawText(QPoint((int)((real) width() * 0.8), (int)((real)height() * 0.89)), label);
+    painter.drawText(QPoint((int)((double) width() * 0.8), (int)((double)height() * 0.89)), label);
   }
 }
     
