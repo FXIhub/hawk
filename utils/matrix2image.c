@@ -62,8 +62,8 @@ Image * read_3matrix(char * filename, int x, int y, int z){
 
 int main(int argc, char ** argv){
   Image * res;
-  if(argc != 5){
-    printf("Usage: %s <matrix_file> <nx> <ny> <image.h5>\n",argv[0]);
+  if(argc != 6){
+    printf("Usage: %s <matrix_file> <nx> <ny> <nz> <image.h5>\n",argv[0]);
     exit(0);
   }
   res = read_3matrix(argv[1],atoi(argv[2]),atoi(argv[3]),atoi(argv[4]));
