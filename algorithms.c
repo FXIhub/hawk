@@ -86,7 +86,6 @@ Image * basic_hio_proj_iteration(Image * exp_amp, Image * int_std_dev, Image * r
   long long i;
   long long size = sp_c3matrix_size(real_in->image);
   real beta = get_beta(opts);
-  real one_minus_2_beta = 1.0-2*beta;
   real tmp;
   fft_in = sp_image_fft(real_in);
 
@@ -104,22 +103,6 @@ Image * basic_hio_proj_iteration(Image * exp_amp, Image * int_std_dev, Image * r
   }
 
   for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
-    /* A bit of documentation about the equation:
-
-     Rs = 2*Ps-I; Rm = 2*Pm-I
-
-     RAAR = 1/2 * beta * (RsRm + I) + (1 - beta) * Pm;    
-     RAAR = 2*beta*Ps*Pm+(1-2*beta)*Pm - beta * (Ps-I)
-
-     Which reduces to:
-
-     Inside the support: Pm
-     Outside the support: (1 - 2*beta)*Pm + beta*I
-     
-    */    
-    if(!sp_cabs(support->image->data[i])){
-      real_out->image->data[i] = sp_cadd(sp_cscale(real_out->image->data[i],one_minus_2_beta),sp_cscale(real_in->image->data[i],beta));      
-    }
     if(!sp_real(support->image->data[i])){
       if(opts->enforce_real){
 	real_out->image->data[i] = sp_cinit(sp_real(sp_csub(real_in->image->data[i],sp_cscale(real_out->image->data[i],beta))),0);
