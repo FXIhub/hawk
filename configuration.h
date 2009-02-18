@@ -19,7 +19,7 @@ extern "C"
 #define OPTION_STRING_SIZE 10024
 
 
-typedef enum{HIO=0,RAAR,HPR,CFLIP,RAAR_CFLIP,HAAR,SO2D,RAAR_PROJ,DIFF_MAP} Phasing_Algorithms;
+typedef enum{HIO=0,RAAR,HPR,CFLIP,RAAR_CFLIP,HAAR,SO2D,RAAR_PROJ,HIO_PROJ,DIFF_MAP} Phasing_Algorithms;
 
 
 

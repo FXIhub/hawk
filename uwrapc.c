@@ -293,6 +293,8 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
     real_out = basic_so2d_iteration(amp, NULL, real_in, support,opts,&log);
   }else if(get_algorithm(opts,&log) == RAAR_PROJ){
     real_out = basic_raar_proj_iteration(amp, opts->intensities_std_dev, real_in, support,opts,&log);
+  }else if(get_algorithm(opts,&log) == HIO_PROJ){
+    real_out = basic_hio_proj_iteration(amp, opts->intensities_std_dev, real_in, support, opts, &log);
   }else if(get_algorithm(opts,&log) == DIFF_MAP){
     real_out = serial_difference_map_iteration(amp,real_in, support,opts,&log);
   }else{
@@ -447,9 +449,11 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
       real_out = basic_haar_iteration(amp, exp_sigma,real_in, support,opts,&log);
     }else if(get_algorithm(opts,&log) == SO2D){     
       real_out = basic_so2d_iteration(amp, exp_sigma,real_in, support,opts,&log);
-   }else if(get_algorithm(opts,&log) == RAAR_PROJ){     
+    }else if(get_algorithm(opts,&log) == RAAR_PROJ){ 
       real_out = basic_raar_proj_iteration(amp, opts->intensities_std_dev,real_in, support,opts,&log);
-   }else if(get_algorithm(opts,&log) == DIFF_MAP){     
+    }else if(get_algorithm(opts,&log) == HIO_PROJ){
+      real_out = basic_hio_proj_iteration(amp, opts->intensities_std_dev, real_in, support, opts, &log);
+    }else if(get_algorithm(opts,&log) == DIFF_MAP){     
       real_out = serial_difference_map_iteration(amp,real_in, support,opts,&log);
     }
 
