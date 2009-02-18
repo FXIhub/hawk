@@ -265,21 +265,23 @@ void read_options_file(char * filename){
       sp_free(path);
     }
   }
+}
 
-  /* Make sure option is set and is not empty */
-  if(global_options.diffraction_filename && strcmp(global_options.diffraction_filename,"")){    
-    global_options.diffraction = sp_image_read(global_options.diffraction_filename,0);
-  }else if(global_options.real_image_filename  && strcmp(global_options.real_image_filename,"")){
-    global_options.real_image = sp_image_read(global_options.real_image_filename,0);
+
+void check_options_and_load_images(Options * opts){
+ /* Make sure option is set and is not empty */
+  if(opts->diffraction_filename && strcmp(opts->diffraction_filename,"")){    
+    opts->diffraction = sp_image_read(opts->diffraction_filename,0);
+  }else if(opts->real_image_filename  && strcmp(opts->real_image_filename,"")){
+    opts->real_image = sp_image_read(opts->real_image_filename,0);
   }else{
     sp_error_fatal("Neither diffraction nor real image specified!");
   }
   
-  if(global_options.support_mask_filename  && strcmp(global_options.support_mask_filename,"")){
-    global_options.support_mask = sp_image_read(global_options.support_mask_filename,0);
+  if(opts->support_mask_filename  && strcmp(opts->support_mask_filename,"")){
+    opts->support_mask = sp_image_read(opts->support_mask_filename,0);
   }
 }
-
 
 /*
   This function writes a config file where groups are always children of ROOT.

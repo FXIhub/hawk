@@ -148,7 +148,7 @@ ENDIF(USE_MPI)
 
 INCLUDE_DIRECTORIES(${INCLUDE_LIST})
 
-SET(UWRAPC_OBJ uwrapc.c configuration.c support.c algorithms.c log.c saddle/minmaxtau.c saddle/minmaxL.c ${project_moc_files})
+SET(UWRAPC_OBJ main.c uwrapc.c configuration.c support.c algorithms.c log.c saddle/minmaxtau.c saddle/minmaxL.c ${project_moc_files})
 LIST(APPEND UWRAPC_OBJ communicator.cpp network_communication.cpp libconfig/libconfig.c libconfig/scanner.c libconfig/grammar.c)
 LIST(APPEND UWRAPC_OBJ client_decoder.cpp decoder.cpp metadata.c sender.cpp)
 
