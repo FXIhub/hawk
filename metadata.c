@@ -1855,13 +1855,27 @@ VariableMetadata variable_metadata[200] = {
     .dependencies =  depends_on_phasing_algorithm_with_beta,
     .reserved = NULL
   },
+    {
+    .variable_name = "innerloop_iterations",
+    .display_name = "Innerloop Iterations",
+    .variable_type = Type_Int,
+    .id = Id_Iterations,
+    .parent = &(variable_metadata[30]),
+    .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
+    .list_valid_values = {0},
+    .list_valid_names = {0},
+    .variable_address = &(global_options.iterations),
+    .documentation = "Number of iterations of the phasing basic algorithm which are performed in between the support update steps.",
+    .dependencies = NULL,
+    .reserved = NULL
+  }
 
 
 };
 
 
 /* Don't forget to update this one!! */
-const int number_of_global_options = 130;
+const int number_of_global_options = 131;
 
 
 int get_list_value_from_list_name(VariableMetadata * md,char * name){
