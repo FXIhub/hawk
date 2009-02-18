@@ -157,9 +157,9 @@ typedef struct _VariableMetadata{
   const Variable_Id id;
   const struct _VariableMetadata * parent;
   const Variable_Properties variable_properties;
-  const int list_valid_values[10];
-  /* No more than 10 possible values per list */
-  const char * list_valid_names[10];
+  const int list_valid_values[20];
+  /* No more than 20 possible values per list */
+  const char * list_valid_names[20];
   void * variable_address;
   /* No more than 10240 characters in the documentation */
   const char documentation[10240];
