@@ -84,6 +84,11 @@ Image * get_support_from_patterson(Image * input, Options * opts){
   strcat(buffer,"autocorrelation.vtk");
   sp_image_write(patterson,buffer,0);
 
+  strcpy(buffer,opts->work_dir);
+  strcat(buffer,"/");
+  strcat(buffer,"autocorrelation.h5");
+  sp_image_write(patterson,buffer,0);
+
   if(opts->patterson_blur_radius){
     tmp_img = gaussian_blur(patterson,opts->patterson_blur_radius);
     sp_image_free(patterson);
