@@ -160,7 +160,7 @@ void set_defaults(Options * opt){
   sp_smap_insert(opt->phases_blur_evolution,5000,0);
 }
 
-void read_options_file(char * filename){
+void read_options_file(const char * filename){
   config_t config;
   config_init(&config);
   if(!config_read_file(&config,filename)){

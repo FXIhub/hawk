@@ -176,7 +176,7 @@ extern const int number_of_global_options;
 extern VariableMetadata variable_metadata[200];
 
   void init_options_metadata(Options * opt);
-  void read_options_file(char * filename);
+  void read_options_file(const char * filename);
   void parse_options(int argc, char ** argv, Options * opt);
   void set_defaults(Options * opt);
   void write_options_file(const char * filename);
