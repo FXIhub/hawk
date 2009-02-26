@@ -1,13 +1,14 @@
 
 PROJECT (uwrapc)
 
+LIST(APPEND INCLUDE_LIST ${LOCAL_INCLUDE} ${LOCAL_INCLUDE}/saddle ${LOCAL_INCLUDE}/libconfig)
 
+ 
 IF(QT4_FOUND)
-QT_WRAP_CPP(uwrapc project_moc_files  communicator.h client_decoder.h decoder.h sender.h)
+QT_WRAP_CPP(uwrapc project_moc_files  ${LOCAL_INCLUDE}/communicator.h ${LOCAL_INCLUDE}/client_decoder.h ${LOCAL_INCLUDE}/decoder.h ${LOCAL_INCLUDE}/sender.h)
 ENDIF(QT4_FOUND)
 
 
-LIST(APPEND INCLUDE_LIST ${LOCAL_INCLUDE} ${LOCAL_INCLUDE}/saddle ${LOCAL_INCLUDE}/libconfig)
 
 INCLUDE_DIRECTORIES(${INCLUDE_LIST})
 

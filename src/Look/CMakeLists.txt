@@ -1,5 +1,7 @@
 project(uwrapc)
 
+
+INCLUDE_DIRECTORIES(${LOCAL_INCLUDE}/Look)
 INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_BINARY_DIR} )
 
 set(LOOK_SRCS
@@ -13,18 +15,18 @@ set(LOOK_SRCS
 )
 
 set(LOOK_MOC_HDRS
-	look.h
-	mainwindow.h
-	imageview.h
-	propertiesDialog.h
-	cropDialog.h
-	backgroundSlider.h
+	${LOCAL_INCLUDE}/Look/look.h
+	${LOCAL_INCLUDE}/Look/mainwindow.h
+	${LOCAL_INCLUDE}/Look/imageview.h
+	${LOCAL_INCLUDE}/Look/propertiesDialog.h
+	${LOCAL_INCLUDE}/Look/cropDialog.h
+	${LOCAL_INCLUDE}/Look/backgroundSlider.h
 )
 
 
 QT4_WRAP_UI(LOOK_UI_FILES supportLevel.ui)
 
-QT_WRAP_CPP(Look LOOK_MOC_FILES ${LOOK_MOC_HDRS} ${LOOK_UI_FILES})
+QT_WRAP_CPP(Look LOOK_MOC_FILES ${LOOK_MOC_HDRS})
 
 LIST(APPEND LOOK_OBJ ${LOOK_SRCS} ${LOOK_MOC_FILES})
 

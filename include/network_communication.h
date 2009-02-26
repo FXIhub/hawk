@@ -9,7 +9,7 @@ extern "C"{
   void * attempt_connection(char * server, int server_port);
   void wait_for_server_instructions(void * _socket);
   void init_qt(int argc, char ** argv);
-  void cleanup_qt();
+  void cleanup_and_free_qt();
 #ifdef __cplusplus
 }
 #endif

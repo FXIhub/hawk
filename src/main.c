@@ -99,7 +99,7 @@ int main(int argc, char ** argv){
     sp_image_free(opts->intensities_std_dev);
   }
 #ifdef NETWORK_SUPPORT
-  cleanup_qt();
+  cleanup_and_free_qt();
 #endif
 #ifdef _USE_DMALLOC
   dmalloc_shutdown();

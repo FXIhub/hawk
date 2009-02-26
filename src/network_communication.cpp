@@ -33,7 +33,7 @@ void wait_for_server_instructions(void * _socket){
   
 }
 
-void cleanup_qt(){
+void cleanup_and_free_qt(){
   delete qapp;
 }
 
