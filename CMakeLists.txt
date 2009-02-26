@@ -16,15 +16,16 @@ ENDIF(WIN32)
 
 find_package(TIFF REQUIRED)
 find_package(HDF5 REQUIRED)
-find_package(GSL)
 find_package(FFTW3 REQUIRED)
 find_package(SpImage REQUIRED)
 find_package(PNG REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(JPEG REQUIRED)
-find_package(MATHEVAL)
 find_package(SZIP REQUIRED)
 find_package(MATH REQUIRED)
+find_package(GSL)
+find_package(MATHEVAL)
+find_package(QWT)
 
 
 SET(DMALLOC_USE OFF CACHE BOOL "If ON link to dmalloc library if possible.")
