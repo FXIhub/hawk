@@ -1,0 +1,18 @@
+ <!DOCTYPE RCC><RCC version="1.0">
+ <qresource>
+     <file>images/config_open.png</file>
+     <file>images/config_save.png</file>
+     <file>images/image_delete.png</file>
+     <file>images/log_open.png</file>
+     <file>images/image_open.png</file>
+     <file>images/image_shift.png</file>
+     <file>images/lock_browse.png</file>
+     <file>images/image_autoupdate.png</file>
+     <file>images/lock_zoom.png</file>
+     <file>images/HawkIcon.png</file>
+     <file>images/exec.png</file>
+     <file>images/stop.png</file>
+     <file>images/bricontrast.png</file>
+     <file>images/log_scale.png</file>
+ </qresource>
+ </RCC>
