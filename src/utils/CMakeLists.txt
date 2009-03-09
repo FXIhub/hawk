@@ -64,7 +64,6 @@ IF(MATHEVAL_FOUND)
 ENDIF(MATHEVAL_FOUND)
 
 
-
 #I'm gonna reduce the number of programs actually used
 
 TARGET_LINK_LIBRARIES(tiff2h5 ${LIBRARY_LIST})
@@ -107,9 +106,11 @@ if(GSL_FOUND)
   TARGET_LINK_LIBRARIES(recover_shanon_mpi2 ${LIBRARY_LIST} ${GSL_LIBRARIES})
 endif(GSL_FOUND)
 
-LIST(APPEND BINS tiff2h5 image_to_vtk gif2h5image image_to_png png_to_image tiff2png autocorrelate prtf denoise background_subtract propagate matrix2image rs_r_factor average_h5 r_factor shell_plot separate_channel fft_bench manual_merge image_fft spot_integrate image_to_reflections multi_shot_exposure EOS300D_CRW2H5.pl)
+LIST(APPEND BINS tiff2h5 image_to_vtk gif2h5image image_to_png png_to_image tiff2png autocorrelate prtf denoise background_subtract propagate matrix2image rs_r_factor average_h5 r_factor shell_plot separate_channel fft_bench manual_merge image_fft spot_integrate image_to_reflections multi_shot_exposure)
 
 INSTALL(TARGETS ${BINS}
             RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
             LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
             ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+
+INSTALL(PROGRAMS EOS300D_CRW2H5.pl DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
