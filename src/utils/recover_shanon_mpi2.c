@@ -551,7 +551,9 @@ void output_result(Image * a, Image * restore,FILE * log,int iter,int timer){
   fflush(log);
     
 
-  sp_image_write(orient_restore,"orient_restore.png",COLOR_GRAYSCALE);
+  char buffer[1024];
+  sprintf(buffer,"orient_restore-%06d.png",iter);
+  sp_image_write(orient_restore,buffer,COLOR_GRAYSCALE);
   sp_image_free(orient_restore);
   //    sp_image_write(restore,"restore.png",COLOR_GRAYSCALE);
 }

@@ -26,7 +26,7 @@ print("done\n");
 #system("convert $ppm $tif");
 #print("done\n");
 print("tiff2h5 -i $tif -o $raw_h5...");
-system("tiff2h5 -i $tif -o $raw_h5");
+system("tiff2h5 -l 1 -p 1 -w 1 -i $tif -o $raw_h5");
 print("done\n");
 #print("separate_channel $raw_h5 R $red_h5...");
 #system("separate_channel $raw_h5 R $red_h5");
