@@ -57,7 +57,7 @@ int int_hash(int * v, int n);
 void write_gsl_matrix(gsl_matrix *m, char *filename);
 void save_gsl_matrix(gsl_matrix *m, char *filename);
 gsl_matrix *read_gsl_matrix(char *filename);
-void init_data(char *dirname,char *file, Params * p,int image_size);
+void init_data(Params * p,int image_size);
 gsl_matrix * init_phi(double sigma, int K, int M);
 gsl_matrix * init_W_matlab(const gsl_matrix * T,const gsl_matrix * phi,const int K,const int M,const int N,const int D,double * beta);
 void calculate_Y(const gsl_matrix * phi,const gsl_matrix * W, gsl_matrix * Y);

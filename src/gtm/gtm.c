@@ -23,7 +23,7 @@ Params * init_params(){
   p->L = 1;
   p->beta = 0.001;
   p->alpha = 0.01;
-  init_data("./images","image",p,1600);
+  init_data(p,1600);
 
   p->Y = gsl_matrix_alloc(p->K,p->D);
   p->R = gsl_matrix_alloc(p->K,p->N);
@@ -143,7 +143,7 @@ double gsl_gtm_resp(gsl_matrix * DIST,gsl_vector * minDist, gsl_vector * maxDist
     // with infinity (Inf). Hence, the shifting of distances must not be
     // so large that the exponentiation yields infinity as result.
     distCorr = gsl_vector_alloc(DIST->size2);
-    for(int j = 0;j<DIST->size2;j++){
+    for(unsigned int j = 0;j<DIST->size2;j++){
       gsl_vector_set(distCorr,j,(gsl_vector_get(maxDist,j) + gsl_vector_get(minDist,j))/2);
       // exp(709) < realmax < exp(710), plus a few digits margin to avoid
       // overflow when calculating rSum below.
@@ -158,16 +158,16 @@ double gsl_gtm_resp(gsl_matrix * DIST,gsl_vector * minDist, gsl_vector * maxDist
   }else{
     R = gsl_matrix_alloc(DIST->size1,DIST->size2);
   }
-  for(int i = 0;i<R->size1;i++){
-    for(int j = 0;j<R->size2;j++){
+  for(unsigned int i = 0;i<R->size1;i++){
+    for(unsigned int j = 0;j<R->size2;j++){
       gsl_matrix_set(R,i,j,exp((-beta/2)*gsl_matrix_get(DIST,i,j)));
     }
   }
   /* normalize columns of R */
   gsl_vector * R_col_sum = gsl_vector_alloc(R->size2);
-  for(int j = 0;j<R->size2;j++){
+  for(unsigned int j = 0;j<R->size2;j++){
     long double sum = 0;
-    for(int i = 0;i<R->size1;i++){
+    for(unsigned int i = 0;i<R->size1;i++){
       sum += gsl_matrix_get(R,i,j);
     }
     gsl_vector_set(R_col_sum,j,sum);
@@ -176,12 +176,12 @@ double gsl_gtm_resp(gsl_matrix * DIST,gsl_vector * minDist, gsl_vector * maxDist
   }
   double llh = 0;
   if(_R){
-    for(int i = 0;i<R_col_sum->size;i++){
+    for(unsigned int i = 0;i<R_col_sum->size;i++){
       llh += log(gsl_vector_get(R_col_sum,i)) + gsl_vector_get(distCorr,i)*(-beta/2);
     }
     llh += N*((D/2.0)*log(beta/(2.0*M_PI)) - log(K));
   }else{
-    for(int i = 0;i<R_col_sum->size;i++){
+    for(unsigned int i = 0;i<R_col_sum->size;i++){
       llh += log(gsl_vector_get(R_col_sum,i));
     }
     llh += N*((D/2.0)*log(beta/(2*M_PI)) - log(K));
@@ -201,10 +201,10 @@ gsl_matrix * gsl_gtm_dist(gsl_matrix * A, gsl_matrix * B,gsl_vector * minDist, g
     printf("number of cols must match!\n");
     return NULL;
   }
-  for(int i = 0;i<A->size1;i++){
-    for(int j = 0;j<B->size1;j++){
+  for(unsigned int i = 0;i<A->size1;i++){
+    for(unsigned int j = 0;j<B->size1;j++){
       double dist = 0;
-      for(int k = 0;k<B->size2;k++){
+      for(unsigned int k = 0;k<B->size2;k++){
 	double tmp = gsl_matrix_get(A,i,k)-gsl_matrix_get(B,j,k);
 	dist += tmp*tmp;	
       }
@@ -212,7 +212,7 @@ gsl_matrix * gsl_gtm_dist(gsl_matrix * A, gsl_matrix * B,gsl_vector * minDist, g
     }
   }
   if(minDist || maxDist){
-    for(int j = 0;j<ret->size2;j++){
+    for(unsigned int j = 0;j<ret->size2;j++){
       gsl_vector_view view = gsl_matrix_column(ret,j);
       if(minDist){
 	gsl_vector_set(minDist,j,gsl_vector_min(&view.vector));
@@ -247,7 +247,7 @@ double matrix_hash(const gsl_matrix * A){
 
 double vector_hash(const gsl_vector * V){
   double ret = 0;
-  for(int i = 0;i<V->size;i++){
+  for(unsigned int i = 0;i<V->size;i++){
     ret += gsl_vector_get(V,i);
   }
   return ret;
@@ -288,7 +288,7 @@ gsl_matrix * gsl_pseudo_inverse(const gsl_matrix * A){
   double tolerance = DBL_EPSILON*GSL_MAX(A->size1,A->size2)*gsl_vector_max(S);
 
   /* invert S */
-  for (int i = 0; i < A->size2; i++) {
+  for (unsigned int i = 0; i < A->size2; i++) {
     if (fabs(gsl_vector_get(S,i)) > tolerance) {
       gsl_vector_set(S, i, 1.0/gsl_vector_get(S, i));
     }else{
@@ -296,7 +296,7 @@ gsl_matrix * gsl_pseudo_inverse(const gsl_matrix * A){
     }
   }
   /* Do V*S */
-  for(int i = 0;i<V->size2;i++){
+  for(unsigned int i = 0;i<V->size2;i++){
     gsl_vector_view view = gsl_matrix_column(V,i);
     gsl_vector_scale(&view.vector,gsl_vector_get(S,i));
   }
@@ -423,10 +423,9 @@ int int_hash(int * v, int n){
 
 void write_gsl_matrix(gsl_matrix *m, char *filename)
 {
-  int i1,i2;
   FILE *f = fopen(filename,"wp");
-  for (i1 = 0; i1 < m->size1; i1++) {
-    for (i2 = 0; i2 < m->size2; i2++) {
+  for (unsigned int i1 = 0; i1 < m->size1; i1++) {
+    for (unsigned int i2 = 0; i2 < m->size2; i2++) {
       fprintf(f,"%g ",gsl_matrix_get(m,i1,i2));
     }
     fprintf(f,"\n");
@@ -436,10 +435,9 @@ void write_gsl_matrix(gsl_matrix *m, char *filename)
 
 void save_gsl_matrix(gsl_matrix *m, char *filename)
 {
-  int i1,i2;
   Image *f = sp_image_alloc(m->size1,m->size2,1);
-  for (i1 = 0; i1 < m->size1; i1++) {
-    for (i2 = 0; i2 < m->size2; i2++) {
+  for (unsigned int i1 = 0; i1 < m->size1; i1++) {
+    for (unsigned int i2 = 0; i2 < m->size2; i2++) {
       sp_image_set(f,i1,i2,0,sp_cinit(gsl_matrix_get(m,i1,i2),0.0));
     }
   }
@@ -449,11 +447,10 @@ void save_gsl_matrix(gsl_matrix *m, char *filename)
 
 gsl_matrix *read_gsl_matrix(char *filename)
 {
-  int i1,i2;
   Image *f = sp_image_read(filename,0);
   gsl_matrix *m = gsl_matrix_alloc(sp_image_x(f),sp_image_y(f));
-  for (i1 = 0; i1 < m->size1; i1++) {
-    for (i2 = 0; i2 < m->size2; i2++) {
+  for (unsigned int i1 = 0; i1 < m->size1; i1++) {
+    for (unsigned int i2 = 0; i2 < m->size2; i2++) {
       gsl_matrix_set(m,i1,i2,sp_real(sp_image_get(f,i1,i2,0)));
     }
   }
@@ -463,7 +460,7 @@ gsl_matrix *read_gsl_matrix(char *filename)
 
 
 /* Read directly from the double precision data written out from matlab */
-void init_data(char *dirname,char *file, Params * p,int image_size) //_T
+void init_data(Params * p,int image_size)
 {
   int n;
   double * variance = malloc(sizeof(double)*image_size);
@@ -772,8 +769,8 @@ gsl_matrix * init_W_matlab(const gsl_matrix * T,const gsl_matrix * phi, const in
   gsl_matrix * sqDist = gsl_gtm_dist(projection,projection,NULL,NULL);
   /* Initialize PCA_Trace with the first row of projection */
   gsl_matrix * PCA_Trace = gsl_matrix_alloc(K,L_pca);
-  for(int i = 0;i<PCA_Trace->size1;i++){
-    for(int j = 0;j<PCA_Trace->size2;j++){
+  for(unsigned int i = 0;i<PCA_Trace->size1;i++){
+    for(unsigned int j = 0;j<PCA_Trace->size2;j++){
       if(i == 0){
 	gsl_matrix_set(PCA_Trace,i,j,gsl_matrix_get(projection,0,j));
       }else{
@@ -782,7 +779,7 @@ gsl_matrix * init_W_matlab(const gsl_matrix * T,const gsl_matrix * phi, const in
     }
   }
   char * off_limit_list = malloc(sizeof(char)*sqDist->size1);
-  for(int i = 0;i<sqDist->size1;i++){
+  for(unsigned int i = 0;i<sqDist->size1;i++){
     off_limit_list[i] = 0;
   }
   int ptr0 = 0;
@@ -807,7 +804,7 @@ gsl_matrix * init_W_matlab(const gsl_matrix * T,const gsl_matrix * phi, const in
     }
     /* Find the first id that is not on the off_limit_list */
     int candidate = -1;
-    for(int i = points_to_skip;i<sqDist->size1;i++){
+    for(unsigned int i = points_to_skip;i<sqDist->size1;i++){
       if(off_limit_list[gsl_permutation_get(id,i)] == 0){
 	candidate = gsl_permutation_get(id,i);
 	break;
@@ -1138,7 +1135,7 @@ double calculate_beta(int D,int N,int K,gsl_matrix * R,gsl_matrix * delta)
 
 /* Run with argument "1" to use a saved starting W.
  */
-int main(int argc, char **argv)
+int main(int argc, char ** argv)
 {
   Params * p = init_params();
   gtm_Screening(p);
