@@ -11,6 +11,7 @@
 #include <gsl/gsl_sort.h>
 #include <gsl/gsl_sort_vector.h>
 #include <gsl/gsl_statistics_double.h>
+#include <gsl/gsl_eigen.h>
 #include "gtm.h"
 
 
@@ -156,6 +157,8 @@ void gtm_Screening(Params * p){
   gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,1.0,gtmFI,gtmW,0.0,gtmY);      
   gsl_matrix * gtmDIST = gsl_gtm_dist(gtmT,gtmY,gtmminDist,gtmmaxDist);
   for(int update = 0;update<numUpdates;update++){
+    gsl_vector * lambdaT = gsl_vector_alloc(gtmMplus1);
+    gsl_eigen_symm_workspace * eig_work = gsl_eigen_symm_alloc (gtmMplus1);
     for(int cycle = 0;cycle<numEMcycles;cycle++){
       //      gtm_resp(gtmDIST,gtmminDist,gtmmaxDist,gtmBeta,gtmD,2,gtmR);
       double gtmllhLog = gsl_gtm_resp(gtmDIST,gtmminDist,gtmmaxDist,gtmBeta,gtmD,gtmR);
@@ -178,21 +181,87 @@ void gtm_Screening(Params * p){
       if (cycle==1){
 	gsl_vector_set(newCycle,loopID,1);
       }
-      /*
-      FGF = FI_T*spdiags(sum(gtmR,2),0,gtmK,gtmK)*gtmFI;
->>>>>>> .r457
-        A = full(FGF+ALPHA/gtmBeta);
-        if any(isnan(A)|isinf(A))
-			flag = 1006;
-            iterInfo = {loopID,numEmptyBins,newCycle,emptyBin,flag};
-            return
-        end
-        gtmW = pinv(A)*(FI_T*(gtmR*gtmT));
-        [gtmDIST,gtmminDist,gtmmaxDist] = gtm_dist(gtmT,gtmFI*gtmW,2);
-    end
-      */ 
+      gsl_vector_free(emptyBin);
+
+      gsl_matrix * FGF = gsl_matrix_alloc(gtmMplus1,gtmMplus1);
+      gsl_matrix * FI_T_sumR = gsl_matrix_alloc(gtmMplus1,gtmK);
+      gsl_matrix_transpose_memcpy(FI_T_sumR,gtmFI);
+      
+      for(unsigned int i = 0;i<gtmR->size1;i++){
+	long double sum = 0;
+	for(unsigned int j = 0;j<gtmR->size2;j++){
+	  sum += gsl_matrix_get(gtmR,i,j);
+	}	      
+	gsl_vector_view view = gsl_matrix_column(FI_T_sumR,i);
+	gsl_vector_scale(&view.vector,sum);
+      }
+      gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,1.0,FI_T_sumR,gtmFI,0.0,FGF);          
+      
+      gsl_eigen_symm(FGF,lambdaT,eig_work);
+      
+      gsl_matrix_free(FI_T_sumR);
+      /* Add gtmAlpha/gtmBeta to the diagonal except the last cell */
+      for(unsigned int i = 0;i<FGF->size1-1;i++){
+	gsl_matrix_set(FGF,i,i,gsl_matrix_get(FGF,i,i)+gtmAlpha/gtmBeta);
+      }
+      gsl_matrix * A = FGF;
+      for(unsigned int i = 0;i<A->size1;i++){
+	for(unsigned int j = 0;j<A->size2;j++){
+	  double v = gsl_matrix_get(A,i,j);
+	  if(isnan(v) || isinf(v)){
+	    flag = 1006;
+	    return;
+	  }
+	}
+      }
+      gsl_matrix * RT = gsl_matrix_alloc(gtmK,gtmD);
+      gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,1.0,gtmR,gtmT,0.0,RT);          
+      gsl_matrix * FI_T_RT = gsl_matrix_alloc(gtmMplus1,gtmD);
+      gsl_blas_dgemm(CblasTrans,CblasNoTrans,1.0,gtmFI,RT,0.0,FI_T_RT);
+      gsl_matrix_free(RT);
+      gsl_matrix * pinv_A = gsl_pseudo_inverse(A);
+      gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,1.0,pinv_A,FI_T_RT,0.0,gtmW);
+      gsl_matrix_free(FI_T_RT);
+      gsl_matrix_free(pinv_A);
+      gsl_matrix_free(A);
+
+      gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,1.0,gtmFI,gtmW,0.0,gtmY);      
+      gtmDIST = gsl_gtm_dist(gtmT,gtmY,gtmminDist,gtmmaxDist);
     }
-  }  
+    gsl_vector_scale(lambdaT,gtmBeta);
+    double gamma = 0;
+
+    for(unsigned int i = 0 ;i<lambdaT->size;i++){
+      gamma += gsl_vector_get(lambdaT,i)/(gsl_vector_get(lambdaT,i) + gtmAlpha);
+    }
+    gamma *= gtmD;
+    long double W_sum = 0;
+    for(unsigned int i = 0;i<gtmW->size1;i++){
+      for(unsigned int j = 0;j<gtmW->size2;j++){
+	W_sum += gsl_matrix_get(gtmW,i,j)*gsl_matrix_get(gtmW,i,j);
+      }
+    }
+    gtmAlpha = gamma / W_sum;
+    long double DIST_R_sum = 0;
+    for(unsigned int i = 0;i<gtmR->size1;i++){
+      for(unsigned int j = 0;j<gtmR->size2;j++){
+	DIST_R_sum += gsl_matrix_get(gtmDIST,i,j)*gsl_matrix_get(gtmR,i,j);
+      }
+    }
+    gtmBeta = (ND-gamma)/DIST_R_sum;
+    if (gtmAlpha<0){
+      flag = 1003;
+      break;
+    }
+
+    if (gtmBeta<0){
+      flag = 1004;
+      break;
+    }
+    gsl_vector_free(lambdaT);
+    gsl_eigen_symm_free(eig_work);
+  }
+  
 }
 
 gsl_matrix * gsl_matrix_from_bin(char * filename, int row, int col){

@@ -73,4 +73,5 @@ void calculate_W(const int K,const int M,const gsl_vector * G,gsl_vector * W_b,g
 void init_beta(int K,int D,gsl_matrix * Y,double beta);
 double calculate_beta(int D,int N,int K,gsl_matrix * R,gsl_matrix * delta);
 void gtm_Screening(Params * p);
+gsl_matrix * gsl_pseudo_inverse(const gsl_matrix * A);
 #endif
