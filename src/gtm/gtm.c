@@ -180,6 +180,7 @@ void gtm_Screening(Params * p){
       }
       /*
       FGF = FI_T*spdiags(sum(gtmR,2),0,gtmK,gtmK)*gtmFI;
+>>>>>>> .r457
         A = full(FGF+ALPHA/gtmBeta);
         if any(isnan(A)|isinf(A))
 			flag = 1006;
@@ -811,7 +812,10 @@ gsl_matrix * init_W_matlab(const gsl_matrix * T,const gsl_matrix * phi, const in
   gsl_vector * image_mean = gsl_vector_alloc(D);
   int L_pca = 4;
   gsl_matrix * eVts = gsl_matrix_alloc(D,L_pca+1);
+  gsl_matrix * eVls_matrix = gsl_matrix_alloc(L_pca+1,1);
+  eVls_matrix = gsl_matrix_from_bin("eVls.bin",L_pca+1,L_pca+1);  
   gsl_vector * eVls = gsl_vector_alloc(L_pca+1);
+  
   gsl_matrix * T_transpose = gsl_matrix_alloc(T->size2,T->size1);
   /* subtract the mean value for each pixel*/
   for(int i = 0;i<D;i++){
@@ -828,7 +832,12 @@ gsl_matrix * init_W_matlab(const gsl_matrix * T,const gsl_matrix * phi, const in
     }
   }  
   gsl_matrix * A = gsl_matrix_alloc(D,L_pca);
-  gsl_ccipca(T_transpose,L_pca+1,15,eVts,eVls);
+
+  //  gsl_ccipca(T_transpose,L_pca+1,15,eVts,eVls);
+  /* Use eVls from matlab */
+  for(unsigned int i = 0;i<eVls_matrix->size1;i++){
+    gsl_vector_set(eVls,i,gsl_matrix_get(eVls_matrix,i,i));
+  }
 
   /*
   T_transpose = gsl_matrix_from_bin("T_trans.bin",1276,3000);
