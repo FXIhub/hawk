@@ -55,6 +55,78 @@ Params * init_params(){
   return p;
 }
 
+gsl_vector * find_empty_bins(const gsl_matrix * gtmR,int loopID, int switchEmptyBinCriterion){
+
+  int K = gtmR->size1;
+  int N = gtmR->size2;
+  gsl_vector * occupancies = gsl_vector_alloc(gtmR->size1);
+  gsl_vector_set_all(occupancies,0);
+  gsl_vector * low_occupancy = gsl_vector_alloc(gtmR->size1);
+  gsl_vector_set_all(low_occupancy,0);
+
+  /* find the points that are responsible for each sample */
+  for(unsigned int j = 0;j<gtmR->size2;j++){
+    gsl_vector_const_view view = gsl_matrix_const_column(gtmR,j);
+    size_t point = gsl_vector_max_index(&view.vector);
+    gsl_vector_set(occupancies,point,gsl_vector_get(occupancies,point)+1);
+  }
+  for(unsigned int i = 0;i<gtmR->size1;i++){
+    if(gsl_vector_get(occupancies,i) < 2){
+      gsl_vector_set(low_occupancy,i,1);
+    }
+  }
+
+  gsl_vector * weird_occupancy;
+  if(loopID<switchEmptyBinCriterion){
+    weird_occupancy = gsl_vector_alloc(gtmR->size1);
+    double mu0 = (double)N/K;
+    double sigma0 = sqrt(mu0);
+    gsl_vector * z_less_than_minus_one = gsl_vector_alloc(gtmR->size1);
+    for(unsigned int i = 0;i<gtmR->size1;i++){
+      double z = (gsl_vector_get(occupancies,i)-mu0)/sigma0;
+      gsl_vector_set(z_less_than_minus_one,i,z<-1);
+    }
+    for(unsigned int i = 0;i<gtmR->size1;i++){
+      if(gsl_vector_get(z_less_than_minus_one,i)){
+	/* there's a bug in the original matlab code that prevents it from checking the neighbours 
+	
+	   if(gsl_vector_get(z_less_than_minus_one,i) &&
+	   gsl_vector_get(z_less_than_minus_one,(i-1+gtmR->size1)%gtmR->size1) &&
+	   gsl_vector_get(z_less_than_minus_one,(i-2+gtmR->size1)%gtmR->size1) &&
+	   gsl_vector_get(z_less_than_minus_one,(i+1+gtmR->size1)%gtmR->size1) &&
+	   gsl_vector_get(z_less_than_minus_one,(i+2+gtmR->size1)%gtmR->size1)){*/
+	gsl_vector_set(weird_occupancy,i,1);
+      }else{
+	gsl_vector_set(weird_occupancy,i,0);
+      }
+    }
+  }
+
+  /* return the indexes of the points that have low or weird occupancy */
+  int ret_size = 0;
+  gsl_vector * ret;
+  int index = 0;
+  for(unsigned int i= 0;i<weird_occupancy->size;i++){
+    if(gsl_vector_get(weird_occupancy,i) != 0 || 
+       (loopID<switchEmptyBinCriterion && gsl_vector_get(low_occupancy,i) != 0)){
+      ret_size++;
+      index++;
+    }
+  }
+  ret = gsl_vector_alloc(ret_size);
+  gsl_vector_set_all(ret,0);
+  
+  index = 0;
+  for(unsigned int i= 0;i<weird_occupancy->size;i++){
+    if(gsl_vector_get(weird_occupancy,i) != 0 || 
+       (loopID<switchEmptyBinCriterion &&gsl_vector_get(low_occupancy,i) != 0)){
+      gsl_vector_set(ret,index,i);
+      index++;
+    }
+  }    
+  return ret;
+}
+
 void gtm_Screening(Params * p){
   gsl_matrix * gtmT = p->T;
   gsl_matrix * gtmFI = p->phi;
@@ -87,18 +159,27 @@ void gtm_Screening(Params * p){
     for(int cycle = 0;cycle<numEMcycles;cycle++){
       //      gtm_resp(gtmDIST,gtmminDist,gtmmaxDist,gtmBeta,gtmD,2,gtmR);
       double gtmllhLog = gsl_gtm_resp(gtmDIST,gtmminDist,gtmmaxDist,gtmBeta,gtmD,gtmR);
-      /*
-        gtmR = gtmR*diag(gtmRho);
-        loopID = loopID+1;
-        if loopID>maxIter
-            numEmptyBins = [numEmptyBins; zeros(maxIterInc,1)]; %#ok<AGROW>
+      for(unsigned int i  = 0;i < gtmR->size2;i++){
+	gsl_vector_view view = gsl_matrix_column(gtmR,i);
+	gsl_vector_scale(&view.vector,gsl_vector_get(gtmRho,i));
+      }
+      loopID = loopID+1;
+      if (loopID>=maxIter){
+	fprintf(stderr,"max iterations exceeded!\n");
+	abort();
+	/* extend numEmptyBins */
+	/*	numEmptyBins = [numEmptyBins; zeros(maxIterInc,1)]; %#ok<AGROW>
             newCycle = [newCycle; nan(maxIterInc,1)]; %#ok<AGROW>
-            maxIter = maxIter+maxIterInc;
-        end
-        emptyBin = findEmptyBins(gtmR,loopID<switchEmptyBinCriterion);
-        numEmptyBins(loopID) = numel(emptyBin);
-        if (cycle==1), newCycle(loopID) = 1; end
-        FGF = FI_T*spdiags(sum(gtmR,2),0,gtmK,gtmK)*gtmFI;
+            maxIter = maxIter+maxIterInc;*/
+      }
+      
+      gsl_vector * emptyBin = find_empty_bins(gtmR,loopID,switchEmptyBinCriterion);
+      gsl_vector_set(numEmptyBins,loopID,emptyBin->size);
+      if (cycle==1){
+	gsl_vector_set(newCycle,loopID,1);
+      }
+      /*
+      FGF = FI_T*spdiags(sum(gtmR,2),0,gtmK,gtmK)*gtmFI;
         A = full(FGF+ALPHA/gtmBeta);
         if any(isnan(A)|isinf(A))
 			flag = 1006;
