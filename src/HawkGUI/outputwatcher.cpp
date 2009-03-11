@@ -90,7 +90,13 @@ int OutputWatcher::processFile(const QString file){
     //    qDebug((file+" not valid").toAscii());
     return -2;
   }
+
   QFileInfo fileInfo(file);
+  if(fileInfo.created() < initTime){
+    /* file is from a previous run */
+    return -3;
+  }
+
   if(!outputFiles.contains(fileInfo)){
     outputFiles.append(fileInfo);
   }

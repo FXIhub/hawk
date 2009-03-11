@@ -33,9 +33,12 @@ MapEditorDialog::MapEditorDialog(QWidget * parent)
 void MapEditorDialog::accept(){
   /* this seems to be necessary as when the dialog is hidden the
      delegate immediatly commits the editor data to the model*/
+  editor->finishEditing();
   setResult(Accepted);
   done(Accepted);
 }
+
+
 
 MapEditorWidget::MapEditorWidget(QWidget * parent)
   : QWidget(parent)
@@ -61,6 +64,10 @@ MapEditorWidget::MapEditorWidget(QWidget * parent)
 void MapEditorWidget::mouseDoubleClickEvent ( QMouseEvent * event ){
   QPointF clickPos = transform.inverted().map(QPointF(event->pos()));
   int index = -1;
+  if(popup){
+    /* there is already a point being edited */
+    return;
+  }
   for (int i=0; i<points.size(); ++i) {
     QPainterPath path;
     path.addEllipse(pointBoundingRect(i));
@@ -399,7 +406,7 @@ void MapEditorWidget::updateTransform(){
 }
 
 void MapEditorWidget::updatePointFromPopup(){
-  Q_ASSERT(popup != NULL);
+  //  MapEditorPopup * popup = qobject_cast<MapEditorPopup *>(sender());
   if(popup){
     QPointF p = QPointF(popup->xEdit->text().toDouble(), popup->yEdit->text().toDouble());
     movePoint(popup->index, p);
@@ -407,6 +414,8 @@ void MapEditorWidget::updatePointFromPopup(){
     firePointChange();
     popup->close();
     popup = NULL;
+  }else{
+    qDebug("Tried to update non existing popup");
   }
 }
 
@@ -416,6 +425,12 @@ void MapEditorWidget::setXLabel(QString label){
 
 void MapEditorWidget::setYLabel(QString label){
   yLabel = label;
+}
+
+void MapEditorWidget::finishEditing(){
+  if(popup){
+    updatePointFromPopup();
+  }
 }
 
 MapEditorPopup::MapEditorPopup(QPoint pos,QPointF value, int i,QWidget * parent)
@@ -460,3 +475,4 @@ void MapEditorPopup::keyPressEvent(QKeyEvent * event){
     emit editingFinished();
   }
 }
+

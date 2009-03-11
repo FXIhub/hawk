@@ -36,6 +36,7 @@ public:
   QPolygonF getPoints(){
     return points;
   }
+  void finishEditing();
 signals:
     void pointsChanged(const QPolygonF &points);
  public slots:

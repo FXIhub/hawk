@@ -56,9 +56,13 @@ void ProcessControl::startEmbeddedProcess(){
   connect(process,SIGNAL(readyReadStandardError()),this,SLOT(readStdErr()));
   connect(process,SIGNAL(finished(int,QProcess::ExitStatus)),this,SLOT(onProcessFinished(int,QProcess::ExitStatus)));
   QString programName = QCoreApplication::arguments().at(0);
-  
-  QString command = QFileInfo(programName).absoluteFilePath()+QString(" uwrapc");
+  if(QDir::fromNativeSeparators(programName).contains("/")){
+    /* program given with full path */
+    programName = QFileInfo(programName).absoluteFilePath();
+  }
+  QString command = programName+QString(" uwrapc");
   qDebug("Starting %s",command.toAscii().data());
+  p_startTime = QDateTime::currentDateTime();
   process->start(command);
   bool ok;
   ok = process->waitForStarted(1000);

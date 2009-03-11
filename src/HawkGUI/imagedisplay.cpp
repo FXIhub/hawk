@@ -114,6 +114,7 @@ void ImageDisplay::onProcessStarted(QString type, QString path,ProcessControl * 
 void ImageDisplay::onProcessStopped(){
   if(outputWatcher){
     outputWatcher->stop();
+    delete outputWatcher;
   }
   processRunning = false;
 }
