@@ -62,7 +62,7 @@ IF(MATHEVAL_FOUND)
   TARGET_LINK_LIBRARIES(image_math ${LIBRARY_LIST} ${MATHEVAL_LIBRARIES})
   LIST(APPEND BINS image_math)
 ENDIF(MATHEVAL_FOUND)
-
+ADD_EXECUTABLE(localized_blur localized_blur.c)
 
 #I'm gonna reduce the number of programs actually used
 
@@ -105,8 +105,9 @@ if(GSL_FOUND)
   TARGET_LINK_LIBRARIES(circular_averaging ${LIBRARY_LIST} ${GSL_LIBRARIES})
   TARGET_LINK_LIBRARIES(recover_shanon_mpi2 ${LIBRARY_LIST} ${GSL_LIBRARIES})
 endif(GSL_FOUND)
+TARGET_LINK_LIBRARIES(localized_blur ${LIBRARY_LIST})
 
-LIST(APPEND BINS tiff2h5 image_to_vtk gif2h5image image_to_png png_to_image tiff2png autocorrelate prtf denoise background_subtract propagate matrix2image rs_r_factor average_h5 r_factor shell_plot separate_channel fft_bench manual_merge image_fft spot_integrate image_to_reflections multi_shot_exposure)
+LIST(APPEND BINS tiff2h5 image_to_vtk gif2h5image image_to_png png_to_image tiff2png autocorrelate prtf denoise background_subtract propagate matrix2image rs_r_factor average_h5 r_factor shell_plot separate_channel fft_bench manual_merge image_fft spot_integrate image_to_reflections multi_shot_exposure localized_blur)
 
 INSTALL(TARGETS ${BINS}
             RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
