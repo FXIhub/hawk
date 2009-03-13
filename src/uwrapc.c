@@ -518,6 +518,25 @@ void set_rand_phases(Image * real_in, Image * diff){
 }
 
 
+void set_zero_phases(Image * real_in, Image * diff){
+  Image * tmp = sp_image_duplicate(diff,SP_COPY_DATA|SP_COPY_MASK);
+  Image * r;
+  int i;
+
+/*  tmp = sp_image_fft(real_in); */
+/*  sp_image_smooth_edges(tmp,diff->mask,SP_GAUSSIAN,&value);*/
+/*  sp_image_dephase(tmp); */
+  sp_image_rephase(tmp,SP_ZERO_PHASE);
+  r = sp_image_ifft(tmp);
+  
+  for(i = 0;i<sp_c3matrix_size(real_in->image);i++){
+    real_in->image->data[i] = sp_cscale(r->image->data[i],1.0/(sp_image_size(tmp)));
+  }
+  sp_image_free(tmp);
+  sp_image_free(r);	  
+}
+
+
 void set_rand_ints(Image * real_in, Image * img){
   int i;
   real sum = 0;
@@ -627,10 +646,15 @@ void init_reconstruction(Options * opts){
       fprintf(stderr,"Warning: Using random intensities, with image guess. Think about it...\n");
     }
   }
-  if(opts->rand_phases){
+  if(opts->rand_phases == PHASES_RANDOM){
     set_rand_phases(opts->image_guess,opts->amplitudes);
     if(opts->image_guess_filename[0]){
       fprintf(stderr,"Warning: Using random phases, with image guess. Think about it...\n");
+    }
+  }else if(opts->rand_phases == PHASES_ZERO){
+    set_zero_phases(opts->image_guess,opts->amplitudes);
+    if(opts->image_guess_filename[0]){
+      fprintf(stderr,"Warning: Using zero phases, with image guess. Think about it...\n");
     }
   }
 

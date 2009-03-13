@@ -28,6 +28,7 @@ Image * basic_raar_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in
 			      Options * opts,Log * log);
 real get_beta(Options * opts);
 void set_rand_phases(Image * real_in, Image * diff);
+void set_zero_phases(Image * real_in, Image * diff);
 void set_rand_ints(Image * real_in, Image * img);
 real get_new_threshold(Options * opts,Log * log);
 int get_algorithm(Options * opts,Log  * log);

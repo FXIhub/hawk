@@ -43,7 +43,12 @@ TARGET_LINK_LIBRARIES(process_image ${LIBRARY_LIST})
 TARGET_LINK_LIBRARIES(post_process ${LIBRARY_LIST})
 TARGET_LINK_LIBRARIES(restore_image ${LIBRARY_LIST})
 
+#INSTALL(TARGETS uwrapc process_image post_process restore_image
+#            RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
+#            LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+#            ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+
 INSTALL(TARGETS uwrapc process_image post_process restore_image
-            RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
-            LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
-            ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+            RUNTIME DESTINATION bin
+            LIBRARY DESTINATION lib
+            ARCHIVE DESTINATION lib)

@@ -28,6 +28,7 @@ typedef enum{FIXED=0,STEPPED,REAL_ERROR_CAPPED,REAL_ERROR_ADAPTATIVE,CONSTANT_AR
 
 typedef enum{GAUSSIAN_BLUR_REDUCTION=0,GEOMETRICAL_BLUR_REDUCTION} Blur_Reduction_Method;
 
+  typedef enum{PHASES_FROM_SUPPORT=0, PHASES_ZERO,PHASES_RANDOM}Initial_Phases;
 
 typedef enum {Type_Real=0, Type_Int, Type_String, 
 	      Type_MultipleChoice,Type_Bool, Type_Group, Type_Image, Type_Slice, Type_Vector_Real, Type_Vector_Int,Type_Filename,Type_Directory_Name,Type_Map_Real}Variable_Type;
