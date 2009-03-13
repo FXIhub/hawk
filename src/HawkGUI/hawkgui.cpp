@@ -278,6 +278,8 @@ void HawkGUI::createCategories(){
   imageCategories.append(new ImageCategory("Support","support"));
   imageCategories.append(new ImageCategory("Experimental Pattern","amplitudes"));
   imageCategories.append(new ImageCategory("Autocorrelation","autocorrelation",false));
+  imageCategories.append(new ImageCategory("Initial Image","initial_guess",false));
+  imageCategories.append(new ImageCategory("Initial Support","initial_support",false));
 }
 
 void HawkGUI::onFocusedViewChanged(ImageView * view){

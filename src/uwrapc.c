@@ -265,6 +265,7 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
     sp_image_write(tmp2,"initial_support.png",COLOR_JET);
     sp_image_free(tmp2);
   }
+  sp_image_write(initial_support,"initial_support.h5",0);
 
   /* make sure we make the input complex */
   sp_image_rephase(real_in,SP_ZERO_PHASE);
