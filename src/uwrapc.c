@@ -509,9 +509,11 @@ void set_rand_phases(Image * real_in, Image * diff){
 /*  sp_image_dephase(tmp); */
   sp_image_rephase(tmp,SP_RANDOM_PHASE);
   r = sp_image_ifft(tmp);
-  
+  r->shifted = 1;
+  sp_image_free(tmp);
+  tmp = sp_image_shift(r);  
   for(i = 0;i<sp_c3matrix_size(real_in->image);i++){
-    real_in->image->data[i] = sp_cscale(r->image->data[i],1.0/(sp_image_size(tmp)));
+    real_in->image->data[i] = sp_cscale(tmp->image->data[i],1.0/(sp_image_size(r)));
   }
   sp_image_free(tmp);
   sp_image_free(r);	  
@@ -528,9 +530,11 @@ void set_zero_phases(Image * real_in, Image * diff){
 /*  sp_image_dephase(tmp); */
   sp_image_rephase(tmp,SP_ZERO_PHASE);
   r = sp_image_ifft(tmp);
-  
+  r->shifted = 1;
+  sp_image_free(tmp);
+  tmp = sp_image_shift(r);    
   for(i = 0;i<sp_c3matrix_size(real_in->image);i++){
-    real_in->image->data[i] = sp_cscale(r->image->data[i],1.0/(sp_image_size(tmp)));
+    real_in->image->data[i] = sp_cscale(tmp->image->data[i],1.0/(sp_image_size(tmp)));
   }
   sp_image_free(tmp);
   sp_image_free(r);	  
