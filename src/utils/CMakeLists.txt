@@ -52,6 +52,7 @@ ADD_EXECUTABLE(VMIraw2tiff VMIraw2tiff.c)
 #ADD_EXECUTABLE(recover_shanon2 recover_shanon2.c)
 #ADD_EXECUTABLE(recover_shanon3 recover_shanon3.c)
 #ADD_EXECUTABLE(recover_shanon_mpi recover_shanon_mpi.c)
+ADD_EXECUTABLE(analyse_mask analyse_mask.c ${PORTS})
 if(GSL_FOUND)
   ADD_EXECUTABLE(circular_averaging circular_averaging.c)
   ADD_EXECUTABLE(recover_shanon_mpi2 recover_shanon_mpi2.c)
@@ -101,13 +102,14 @@ TARGET_LINK_LIBRARIES(VMIraw2tiff ${LIBRARY_LIST})
 #TARGET_LINK_LIBRARIES(recover_shanon3 ${LIBRARY_LIST} gsl gslcblas)
 #TARGET_LINK_LIBRARIES(recover_shanon_mpi ${LIBRARY_LIST} gsl gslcblas)
 #TARGET_LINK_LIBRARIES(stretch ${LIBRARY_LIST})
+TARGET_LINK_LIBRARIES(analyse_mask ${LIBRARY_LIST})
 if(GSL_FOUND)
   TARGET_LINK_LIBRARIES(circular_averaging ${LIBRARY_LIST} ${GSL_LIBRARIES})
   TARGET_LINK_LIBRARIES(recover_shanon_mpi2 ${LIBRARY_LIST} ${GSL_LIBRARIES})
 endif(GSL_FOUND)
 TARGET_LINK_LIBRARIES(localized_blur ${LIBRARY_LIST})
 
-LIST(APPEND BINS tiff2h5 image_to_vtk gif2h5image image_to_png png_to_image tiff2png autocorrelate prtf denoise background_subtract propagate matrix2image rs_r_factor average_h5 r_factor shell_plot separate_channel fft_bench manual_merge image_fft spot_integrate image_to_reflections multi_shot_exposure localized_blur)
+LIST(APPEND BINS tiff2h5 image_to_vtk gif2h5image image_to_png png_to_image tiff2png autocorrelate prtf denoise background_subtract propagate matrix2image rs_r_factor average_h5 r_factor shell_plot separate_channel fft_bench manual_merge image_fft spot_integrate image_to_reflections multi_shot_exposure localized_blur analyse_mask)
 
 INSTALL(TARGETS ${BINS}
             RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
