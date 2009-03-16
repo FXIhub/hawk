@@ -16,7 +16,7 @@ typedef struct{
   int loopID;
   gsl_vector * numEmptyBins;
   gsl_vector * newCycle;
-  int emptyBin;
+  gsl_vector * emptyBin;
   int flag;
   int maxIter;
 }IterInfo;
@@ -74,4 +74,6 @@ void init_beta(int K,int D,gsl_matrix * Y,double beta);
 double calculate_beta(int D,int N,int K,gsl_matrix * R,gsl_matrix * delta);
 void gtm_Screening(Params * p);
 gsl_matrix * gsl_pseudo_inverse(const gsl_matrix * A);
+void gtm_Run(Params * p);
+void gtm_Screening(Params * p);
 #endif

@@ -50,6 +50,7 @@ Params * init_params(){
   p->iter_info.loopID = 0;
   p->iter_info.numEmptyBins = gsl_vector_alloc(p->iter_info.maxIter);
   p->iter_info.newCycle = gsl_vector_alloc(p->iter_info.maxIter);
+  p->iter_info.emptyBin = NULL;
   gsl_vector_set_all(p->iter_info.numEmptyBins,-1);
   gsl_vector_set_all(p->iter_info.newCycle,-1);
 
@@ -128,6 +129,52 @@ gsl_vector * find_empty_bins(const gsl_matrix * gtmR,int loopID, int switchEmpty
   return ret;
 }
 
+
+void gtm_Run(Params * p){
+  int numScreeningTrials = p->screening_spec.numScreeningTrials;
+  int flippingKicksIn = p->screening_spec.flippingKicksIn;
+  int minNumLoopsWithFullOccupancy = p->screening_spec.minNumLoopsWithFullOccupancy;
+  
+  int screeningNum = 1;
+  
+  int consecutiveFullOccupancyConditionSatisfied = 0;
+  gsl_vector * numEmptyBins = p->iter_info.numEmptyBins;
+  gsl_matrix * gtmFI = p->phi;
+  gsl_matrix * gtmW = p->W;
+  gsl_matrix * gtmR = p->R;
+  gsl_matrix * oldY =  gsl_matrix_alloc(p->K,p->D);
+  while(screeningNum<numScreeningTrials){
+    gtm_Screening(p);
+    if(p->iter_info.loopID<minNumLoopsWithFullOccupancy){
+      consecutiveFullOccupancyConditionSatisfied = 0;
+    }else{
+      consecutiveFullOccupancyConditionSatisfied = 1;
+      for(unsigned int i = p->iter_info.loopID-minNumLoopsWithFullOccupancy;i<numEmptyBins->size;i++){
+	if(gsl_vector_get(numEmptyBins,i) != 0){
+	  consecutiveFullOccupancyConditionSatisfied = 0;
+	  break;
+	}
+      }
+    }
+    
+    if(!consecutiveFullOccupancyConditionSatisfied){
+      if(0/*flippingKicksIn()*/ && (gsl_vector_max(p->iter_info.emptyBin) != 0)){
+	gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,1.0,gtmFI,gtmW,0.0,oldY);      
+	double cc_threshold = 0.99;
+	//	Y = ccFlipShuffle(gtmT,oldY,gtmR,emptyBin,cc_threshold);
+	//	Y = circshift(Y,ceil(rand(1)*(gtmK-1)));
+	gsl_matrix * pinvFI = gsl_pseudo_inverse(gtmFI);
+	gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,1.0,pinvFI,p->Y,0.0,gtmW);      
+      }
+      screeningNum = screeningNum+1;
+    }else{
+      break;
+    }
+    //    gtm_draw_result(gtmW,gtmR,gtmAlpha,gtmBeta,iterInfo,gtmSamples,gtmX);
+  }
+  gsl_matrix_free(oldY);
+}
+
 void gtm_Screening(Params * p){
   gsl_matrix * gtmT = p->T;
   gsl_matrix * gtmFI = p->phi;
@@ -156,6 +203,9 @@ void gtm_Screening(Params * p){
   gsl_matrix * gtmY = gsl_matrix_alloc(gtmK,gtmD);
   gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,1.0,gtmFI,gtmW,0.0,gtmY);      
   gsl_matrix * gtmDIST = gsl_gtm_dist(gtmT,gtmY,gtmminDist,gtmmaxDist);
+  
+  gsl_matrix * last_FGF = gsl_matrix_alloc(gtmMplus1,gtmMplus1);
+
   for(int update = 0;update<numUpdates;update++){
     gsl_vector * lambdaT = gsl_vector_alloc(gtmMplus1);
     gsl_eigen_symm_workspace * eig_work = gsl_eigen_symm_alloc (gtmMplus1);
@@ -175,13 +225,14 @@ void gtm_Screening(Params * p){
             newCycle = [newCycle; nan(maxIterInc,1)]; %#ok<AGROW>
             maxIter = maxIter+maxIterInc;*/
       }
-      
-      gsl_vector * emptyBin = find_empty_bins(gtmR,loopID,switchEmptyBinCriterion);
-      gsl_vector_set(numEmptyBins,loopID,emptyBin->size);
+      if(p->iter_info.emptyBin){
+	gsl_vector_free(p->iter_info.emptyBin);
+      }
+      p->iter_info.emptyBin = find_empty_bins(gtmR,loopID,switchEmptyBinCriterion);
+      gsl_vector_set(numEmptyBins,loopID,p->iter_info.emptyBin->size);
       if (cycle==1){
 	gsl_vector_set(newCycle,loopID,1);
       }
-      gsl_vector_free(emptyBin);
 
       gsl_matrix * FGF = gsl_matrix_alloc(gtmMplus1,gtmMplus1);
       gsl_matrix * FI_T_sumR = gsl_matrix_alloc(gtmMplus1,gtmK);
@@ -197,7 +248,8 @@ void gtm_Screening(Params * p){
       }
       gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,1.0,FI_T_sumR,gtmFI,0.0,FGF);          
       
-      gsl_eigen_symm(FGF,lambdaT,eig_work);
+      gsl_matrix_memcpy(last_FGF,FGF);
+
       
       gsl_matrix_free(FI_T_sumR);
       /* Add gtmAlpha/gtmBeta to the diagonal except the last cell */
@@ -228,6 +280,9 @@ void gtm_Screening(Params * p){
       gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,1.0,gtmFI,gtmW,0.0,gtmY);      
       gtmDIST = gsl_gtm_dist(gtmT,gtmY,gtmminDist,gtmmaxDist);
     }
+
+    gsl_eigen_symm(last_FGF,lambdaT,eig_work);
+
     gsl_vector_scale(lambdaT,gtmBeta);
     double gamma = 0;
 
@@ -261,7 +316,10 @@ void gtm_Screening(Params * p){
     gsl_vector_free(lambdaT);
     gsl_eigen_symm_free(eig_work);
   }
-  
+  gsl_matrix_free(last_FGF);
+  p->iter_info.loopID = loopID;  
+  p->beta = gtmBeta;
+  p->alpha = gtmAlpha;
 }
 
 gsl_matrix * gsl_matrix_from_bin(char * filename, int row, int col){
@@ -1297,7 +1355,7 @@ double calculate_beta(int D,int N,int K,gsl_matrix * R,gsl_matrix * delta)
 int main(int argc, char ** argv)
 {
   Params * p = init_params();
-  gtm_Screening(p);
+  gtm_Run(p);
   calculate_Y(p->phi,p->W,p->Y);
   init_beta(p->K,p->D,p->Y,p->beta);
   calculate_R_no_beta(p->D,p->K,p->N,p->T,p->Y,p->R);

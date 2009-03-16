@@ -50,6 +50,12 @@ Image * localized_blur(Image * in, Image * mask, double blur){
 
 Image * localized_blur_fourier(Image * in, Image * mask, double blur,int iter){
   Image * out = sp_image_duplicate(in,SP_COPY_MASK|SP_COPY_DATA|SP_COPY_DETECTOR);
+  /* start mask at 0 0 */
+  for(int i = 0;i<sp_image_size(in);i++){
+    if(sp_real(mask->image->data[i]) == 0){
+      out->image->data[i] = sp_cinit(0,0);
+    }
+  }
   for(int i = 0;i<iter;i++){
     Image * tmp = gaussian_blur(out,blur);
     for(int j = 0;j<sp_image_size(in);j++){
@@ -74,7 +80,7 @@ int main(int argc, char ** argv){
   mask = sp_image_read(argv[2],0);
   blur_radius = atof(argv[3]);
   //  Image * out = localized_blur(img,mask,blur_radius);
-  Image * out = localized_blur_fourier(img,mask,blur_radius,10);
+  Image * out = localized_blur_fourier(img,mask,blur_radius,40);
   sp_image_write(out,argv[4],0);
   return 0;
 }
