@@ -180,6 +180,31 @@ void gtm_Run(Params * p){
   gsl_matrix_free(oldY);
 }
 
+void gtm_cc_flip_shuffle(Params * p, double cc_threshold){
+  gsl_matrix * T = p->T;
+  gsl_matrix * Y = p->Y;
+  gsl_vector * emptyBin = p->emptyBin;
+  gsl_matrix * gtmR = p->R;
+  gsl_vector * nodeId = gsl_vector_alloc(gtmR->size2);
+  for(unsigned int j = 0;j<gtmR->size2;j++){
+    gsl_vector_view view = gsl_matrix_column(gtmR,j);
+    gsl_vector_set(nodeId,j,gsl_vector_max_index(&view.vector));
+  }
+  int K = p->Y->size1;
+  gsl_vector * branch_start = gsl_vector_alloc(K);
+  gsl_vector * branch_end = gsl_vector_alloc(K);
+  int n_branches = 0;  
+  int in_branch = 0;     
+  if(gsl_vector_get(emptyBin,0) == 0){
+    gsl_vector_set(branch_start,0,0);
+    n_branches++;
+    in_branch = 1;
+  }
+  for(unsigned int i = 0;i<emptyBin->size;i++){
+    
+  }
+}
+
 void gtm_minimize_difference(gsl_vector * A, const gsl_vector * B){  
   if(A->size != B->size){
     return;
