@@ -1,3 +1,4 @@
+#define _POSIX_C_SOURCE  199309L
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
@@ -54,6 +55,9 @@ Params * init_params(){
   gsl_vector_set_all(p->iter_info.numEmptyBins,-1);
   gsl_vector_set_all(p->iter_info.newCycle,-1);
 
+  p->gtmSamples = gsl_matrix_alloc(p->N,1);
+  p->gtmSamples = gsl_matrix_from_bin("gtmSamples.bin",p->N,1);
+
   return p;
 }
 
@@ -108,9 +112,9 @@ gsl_vector * find_empty_bins(const gsl_matrix * gtmR,int loopID, int switchEmpty
   int ret_size = 0;
   gsl_vector * ret;
   int index = 0;
-  for(unsigned int i= 0;i<weird_occupancy->size;i++){
-    if(gsl_vector_get(weird_occupancy,i) != 0 || 
-       (loopID<switchEmptyBinCriterion && gsl_vector_get(low_occupancy,i) != 0)){
+  for(unsigned int i= 0;i<low_occupancy->size;i++){
+    if(gsl_vector_get(low_occupancy,i) != 0 || 
+       (loopID<switchEmptyBinCriterion && gsl_vector_get(weird_occupancy,i) != 0)){
       ret_size++;
       index++;
     }
@@ -119,9 +123,9 @@ gsl_vector * find_empty_bins(const gsl_matrix * gtmR,int loopID, int switchEmpty
   gsl_vector_set_all(ret,0);
   
   index = 0;
-  for(unsigned int i= 0;i<weird_occupancy->size;i++){
-    if(gsl_vector_get(weird_occupancy,i) != 0 || 
-       (loopID<switchEmptyBinCriterion &&gsl_vector_get(low_occupancy,i) != 0)){
+  for(unsigned int i= 0;i<low_occupancy->size;i++){
+    if(gsl_vector_get(low_occupancy,i) != 0 || 
+       (loopID<switchEmptyBinCriterion &&gsl_vector_get(weird_occupancy,i) != 0)){
       gsl_vector_set(ret,index,i);
       index++;
     }
@@ -158,7 +162,7 @@ void gtm_Run(Params * p){
     }
     
     if(!consecutiveFullOccupancyConditionSatisfied){
-      if(0/*flippingKicksIn()*/ && (gsl_vector_max(p->iter_info.emptyBin) != 0)){
+      if(screeningNum>=20 && (gsl_vector_max(p->iter_info.emptyBin) != 0)){
 	gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,1.0,gtmFI,gtmW,0.0,oldY);      
 	double cc_threshold = 0.99;
 	//	Y = ccFlipShuffle(gtmT,oldY,gtmR,emptyBin,cc_threshold);
@@ -170,9 +174,81 @@ void gtm_Run(Params * p){
     }else{
       break;
     }
+    gtm_print_result(p);
     //    gtm_draw_result(gtmW,gtmR,gtmAlpha,gtmBeta,iterInfo,gtmSamples,gtmX);
   }
   gsl_matrix_free(oldY);
+}
+
+void gtm_minimize_difference(gsl_vector * A, const gsl_vector * B){  
+  if(A->size != B->size){
+    return;
+  }
+ 
+  /* Instead of using the simplex minimization i'm simply gonna
+     do vector sum of all the vectors defined by the angle B-A
+     and compare their angles */
+  Complex sum = sp_cinit(0,0);
+  for(unsigned int i = 0;i<A->size;i++){
+    sp_real(sum) += cos(gsl_vector_get(B,i)-gsl_vector_get(A,i));
+    sp_imag(sum) += sin(gsl_vector_get(B,i)-gsl_vector_get(A,i));
+  }
+  double angle = sp_carg(sum);
+  double res0 = 0;
+  for(unsigned int i = 0;i<A->size;i++){
+    double tmp = gsl_vector_get(B,i)-(gsl_vector_get(A,i)+angle);
+    if(fabs(tmp) > M_PI){
+      tmp = 2*M_PI-fabs(tmp);
+    }
+    res0 += tmp*tmp;
+  }
+  res0 = sqrt(res0/A->size);
+  
+  /* Try flipping */
+  for(unsigned int i = 0;i<A->size;i++){
+    gsl_vector_set(A,i,-gsl_vector_get(A,i));
+  }
+  sum = sp_cinit(0,0);
+  for(unsigned int i = 0;i<A->size;i++){
+    sp_real(sum) += cos(gsl_vector_get(B,i)-gsl_vector_get(A,i));
+    sp_imag(sum) += sin(gsl_vector_get(B,i)-gsl_vector_get(A,i));
+  }
+  angle = sp_carg(sum);
+  double res1 = 0;
+  for(unsigned int i = 0;i<A->size;i++){
+    double tmp = gsl_vector_get(B,i)-(gsl_vector_get(A,i)+angle);
+    if(fabs(tmp) > M_PI){
+      tmp = 2*M_PI-fabs(tmp);
+    }
+    res1 += tmp*tmp;
+  }
+  res1 = sqrt(res1/A->size);
+  
+  /* Flip them back */
+  for(unsigned int i = 0;i<A->size;i++){
+    gsl_vector_set(A,i,-gsl_vector_get(A,i));
+  }
+  double residual = 0;
+  if(res0<res1){
+    residual = res0;
+  }else{
+    residual = res1;
+  }
+  fprintf(stdout,"Average angle error - %f\n",residual*180.0/M_PI);
+}
+
+void gtm_print_result(Params * p){
+  gsl_vector * best_X = gsl_vector_alloc(p->R->size2);
+  /* find the Y point responsible for each image */
+  for(unsigned int j = 0;j<p->R->size2;j++){
+    gsl_vector_view view = gsl_matrix_column(p->R,j);
+    size_t index = gsl_vector_max_index(&view.vector);
+    gsl_vector_set(best_X,j,index*2.0*M_PI/p->R->size1);
+  }  
+  gsl_vector_view view = gsl_matrix_column(p->gtmSamples,0);
+  gtm_minimize_difference(best_X,&view.vector);
+  fprintf(stdout,"Iteration - %d\n",p->iter_info.loopID);
+  gsl_vector_free(best_X);
 }
 
 void gtm_Screening(Params * p){
@@ -405,19 +481,27 @@ double gsl_gtm_resp(gsl_matrix * DIST,gsl_vector * minDist, gsl_vector * maxDist
 }
 
 gsl_matrix * gsl_gtm_dist(gsl_matrix * A, gsl_matrix * B,gsl_vector * minDist, gsl_vector * maxDist){
-  gsl_matrix * ret = gsl_matrix_alloc(B->size1,A->size1);
+  struct timespec tp_i;
+  struct timespec tp_e;
+  gsl_matrix * ret;
   if(A->size2 != B->size2){
     printf("number of cols must match!\n");
     return NULL;
   }
-  for(unsigned int i = 0;i<A->size1;i++){
-    for(unsigned int j = 0;j<B->size1;j++){
-      double dist = 0;
-      for(unsigned int k = 0;k<B->size2;k++){
-	double tmp = gsl_matrix_get(A,i,k)-gsl_matrix_get(B,j,k);
-	dist += tmp*tmp;	
+
+  if(B->size2 > 1){
+    ret = gsl_gtm_dist2(A,B,minDist,maxDist);
+  }else{
+    ret = gsl_matrix_alloc(B->size1,A->size1);
+    for(unsigned int i = 0;i<A->size1;i++){
+      for(unsigned int j = 0;j<B->size1;j++){
+	double dist = 0;
+	for(unsigned int k = 0;k<B->size2;k++){
+	  double tmp = gsl_matrix_get(A,i,k)-gsl_matrix_get(B,j,k);
+	  dist += tmp*tmp;	
+	}
+	gsl_matrix_set(ret,j,i,dist);
       }
-      gsl_matrix_set(ret,j,i,dist);
     }
   }
   if(minDist || maxDist){
@@ -431,6 +515,54 @@ gsl_matrix * gsl_gtm_dist(gsl_matrix * A, gsl_matrix * B,gsl_vector * minDist, g
       }
     }
   }
+  return ret;
+}
+
+
+
+gsl_matrix * gsl_gtm_dist2(gsl_matrix * A, gsl_matrix * B,gsl_vector * minDist, gsl_vector * maxDist){  
+  struct timespec tp_i;
+  struct timespec tp_e;
+  gsl_matrix * ret = gsl_matrix_alloc(B->size1,A->size1);
+  gsl_matrix_set_all(ret,1);
+  if(A->size2 != B->size2){
+    printf("number of cols must match!\n");
+    return NULL;
+  }
+  /*
+    Summing over components of matrices, we can make use of a 'matrix 
+    version' of the identity: (a - b)^2 == a^2 + b^2 - 2*a*b, 
+    which yields faster execution. When T and Y consist of single columns 
+    (which may be the case with calls from gtm_gbf), this has to be handled 
+    as a special case. 
+  */
+  //  clock_gettime(CLOCK_REALTIME,&tp_i);
+  gsl_blas_dgemm(CblasNoTrans,CblasTrans,1.0,B,A,0.0,ret);      
+  //  clock_gettime(CLOCK_REALTIME,&tp_e);
+  //  fprintf(stderr,"gsl_blas_dgemm time - %f ms\n",(tp_e.tv_sec-tp_i.tv_sec)*1000+(tp_e.tv_nsec-tp_i.tv_nsec)/1000000.0);
+
+  gsl_vector * aa = gsl_vector_alloc(A->size1);
+  gsl_vector * bb = gsl_vector_alloc(B->size1);
+
+  for(unsigned int i = 0;i<A->size1;i++){
+    double sum = 0;
+    gsl_vector_view view = gsl_matrix_row(A,i);
+    gsl_blas_ddot(&view.vector,&view.vector,&sum);
+    gsl_vector_set(aa,i,sum);
+  }
+  for(unsigned int i = 0;i<B->size1;i++){
+    double sum = 0;
+    gsl_vector_view view = gsl_matrix_row(B,i);
+    gsl_blas_ddot(&view.vector,&view.vector,&sum);
+    gsl_vector_set(bb,i,sum);
+  }
+  for(unsigned int i = 0;i<ret->size1;i++){
+    for(unsigned int j = 0;j<ret->size2;j++){
+      gsl_matrix_set(ret,i,j,-2*gsl_matrix_get(ret,i,j)+gsl_vector_get(bb,i)+gsl_vector_get(aa,j));
+    }
+  }
+  gsl_vector_free(aa);
+  gsl_vector_free(bb);
   return ret;
 }
 
@@ -797,142 +929,6 @@ gsl_matrix * init_phi(double sigma, int K, int M)
   return phi;
 }
 
-/*
-
-void init_W_pca2()
-{
-  int d1,d2,n,k;
-  W = gsl_matrix_alloc(M,D);
-  gsl_matrix *S = gsl_matrix_alloc(D,D);
-  gsl_vector *mean = gsl_vector_alloc(D);
-  gsl_matrix *T_pca = gsl_matrix_alloc(N,D);
-
-  gsl_matrix *U_pca = gsl_matrix_alloc(D,D);
-  gsl_vector *L_pca = gsl_vector_alloc(D);
-  gsl_vector *work_pca = gsl_vector_alloc(D);
-
-  int time1,time2;
-
-  time1 = clock();
-  for (d1 = 0; d1 < D; d1++) {
-    gsl_vector_set(mean,d1,0.0);
-    for (n = 0; n < N; n++) {
-      gsl_vector_set(mean,d1,gsl_vector_get(mean,d1) +
-		     gsl_matrix_get(T,n,d1));
-    }
-  }
-  gsl_vector_scale(mean, 1.0 / (double) N);
-  time2 = clock();
-  printf("pca loop1: %g sec\n",
-	 (double) (time2-time1) / (double) CLOCKS_PER_SEC);
-
-  time1 = clock();
-  for (d1 = 0; d1 < D; d1++) {
-    if (d1 %100 == 0) printf("%d (%d)\n",d1,D);
-    for (d2 = 0; d2 < D; d2++) {
-      gsl_matrix_set(S,d1,d2,0.0);
-      for (n = 0; n < N; n++) {
-	gsl_matrix_set(S,d1,d2,gsl_matrix_get(S,d1,d2) +
-		       (gsl_matrix_get(T,n,d1) - gsl_vector_get(mean,d1)) *
-		       (gsl_matrix_get(T,n,d2) - gsl_vector_get(mean,d2)));
-      }
-    }
-  }
-  gsl_matrix_scale(S,1.0/(double) (N-1));
-  time2 = clock();
-  printf("pca loop2: %g sec\n",
-	 (double) (time2-time1) / (double) CLOCKS_PER_SEC);
-
-  time1 = clock();
-  gsl_linalg_SV_decomp(S, U_pca, L_pca, work_pca);
-
-  //gsl_linalg_SV_decomp_jacobi(S, U_pca, L_pca);
-  time2 = clock();
-  printf("pca sv_decomp: %g sec\n",
-	 (double) (time2-time1) / (double) CLOCKS_PER_SEC);
-
-  time1 = clock();
-  gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,1.0,T,S,0.0,T_pca);
-  time2 = clock();
-  printf("pca matrix mul: %g sec\n",
-	 (double) (time2-time1) / (double) CLOCKS_PER_SEC);
-
-  time1 = clock();
-  for (k = 0; k < K; k++) {
-    if (k%10 == 0) printf("%d (%d)\n",k,K);
-    for (d1 = 0; d1 < D; d1++) {
-      gsl_matrix_set(Y,k,d1,sqrt(gsl_vector_get(L_pca,0)) *
-		     gsl_matrix_get(U_pca,d1,0) *
-		     cos(2.0 * M_PI * (double) k / (double) K) +
-		     sqrt(gsl_vector_get(L_pca,1)) *
-		     gsl_matrix_get(U_pca,d1,1) *
-		     sin(2.0 * M_PI * (double) k / (double) K) +
-		     gsl_vector_get(mean,d1));
-      
-    }
-  }
-  time2 = clock();
-  printf("pca loop3: %g sec\n",
-	 (double) (time2-time1) / (double) CLOCKS_PER_SEC);
-
-  //left inverse
-
-  gsl_matrix *phi_inverse = gsl_matrix_alloc(M,K);
-  gsl_matrix *phiTphi_inverse = gsl_matrix_alloc(M,M);
-  gsl_matrix *phiTphi = gsl_matrix_alloc(M,M);
-
-  gsl_permutation *perm = gsl_permutation_alloc(M);
-  
-
-  gsl_matrix *V_inverse = gsl_matrix_alloc(M,M);
-  gsl_vector *S_inverse = gsl_vector_alloc(M);
-  gsl_vector *work_inverse = gsl_vector_alloc(M);
-  
-  gsl_matrix *phi_svd = gsl_matrix_alloc(K,M);
-  gsl_matrix_memcpy(phi_svd,phi);
-  gsl_linalg_SV_decomp(phi, V_inverse, S_inverse, work_inverse);
-
-  int m1,m2;  
-  for (m1 = 0; m1 < M; m1++) {
-    if (gsl_vector_get(S_inverse,m1) != 0.0) {
-      gsl_vector_set(S_inverse, m1, 1.0/gsl_vector_get(S_inverse, m1));
-    }
-  }
-
-  for (m1 = 0; m1 < M; m1++) {
-    for (m2 = 0; m2 < M; m2++) {
-      gsl_matrix_set(V_inverse,m1,m2,
-		     gsl_matrix_get(V_inverse,m1,m2)*
-		     gsl_vector_get(S_inverse,m2));
-    }
-  }
-  gsl_blas_dgemm(CblasNoTrans,CblasTrans,1.0,V_inverse,phi_svd,0.0,phi_inverse);
-
-
-  gsl_matrix *id = gsl_matrix_alloc(M,M);
-  gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,1.0,phi_inverse,phi,0.0,id);
-
-  int m;
-  for (m = 0; m < M; m++) {
-    //for (k = 0; k < K; k++) {
-    printf("%d: %g\n",m,gsl_matrix_get(id,m,m));
-  }
-
-  gsl_matrix_free(phi_inverse);
-  gsl_matrix_free(phiTphi_inverse);
-  gsl_matrix_free(phiTphi);
-  gsl_permutation_free(perm);
-
-
-  gsl_matrix_free(S);
-  gsl_vector_free(mean);
-  gsl_matrix_free(T_pca);
-  gsl_matrix_free(U_pca);
-  gsl_vector_free(L_pca);
-  gsl_vector_free(work_pca);
-}
-
-*/
 
 gsl_matrix * init_W_matlab(const gsl_matrix * T,const gsl_matrix * phi, const int K,const int M,const int N,const int D, double * beta){
   gsl_matrix * W = gsl_matrix_alloc(M+1,D);

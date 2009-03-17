@@ -47,6 +47,9 @@ typedef struct{
   double alpha;
   ScreeningSpec screening_spec;
   IterInfo iter_info;
+
+  gsl_matrix * gtmSamples;
+
 }Params;
 
 gsl_matrix * gsl_gtm_dist(gsl_matrix * A, gsl_matrix * B,gsl_vector * minDist,gsl_vector * maxDist);
@@ -76,4 +79,8 @@ void gtm_Screening(Params * p);
 gsl_matrix * gsl_pseudo_inverse(const gsl_matrix * A);
 void gtm_Run(Params * p);
 void gtm_Screening(Params * p);
+void gtm_print_result(Params * p);
+void gtm_minimize_difference(gsl_vector * A, const gsl_vector * B);
+gsl_matrix * gsl_matrix_from_bin(char * filename, int row, int col);
+gsl_matrix * gsl_gtm_dist2(gsl_matrix * A, gsl_matrix * B,gsl_vector * minDist, gsl_vector * maxDist);
 #endif
