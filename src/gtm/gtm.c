@@ -45,7 +45,7 @@ Params * init_params(){
   p->screening_spec.numEMcycles = 5;
   p->screening_spec.switchEmptyBinCriterion = 300;
   p->screening_spec.numScreeningTrials = 120;
-  p->screening_spec.flippingKicksIn = 20;
+  p->screening_spec.flippingKicksIn = 0;
   p->screening_spec.minNumLoopsWithFullOccupancy = 3*p->screening_spec.numEMcycles;
   p->iter_info.maxIter = 3000;
   p->iter_info.loopID = 0;
@@ -136,7 +136,6 @@ gsl_vector * find_empty_bins(const gsl_matrix * gtmR,int loopID, int switchEmpty
 
 void gtm_Run(Params * p){
   int numScreeningTrials = p->screening_spec.numScreeningTrials;
-  int flippingKicksIn = p->screening_spec.flippingKicksIn;
   int minNumLoopsWithFullOccupancy = p->screening_spec.minNumLoopsWithFullOccupancy;
   
   int screeningNum = 1;
@@ -145,7 +144,6 @@ void gtm_Run(Params * p){
   gsl_vector * numEmptyBins = p->iter_info.numEmptyBins;
   gsl_matrix * gtmFI = p->phi;
   gsl_matrix * gtmW = p->W;
-  gsl_matrix * gtmR = p->R;
   gsl_matrix * oldY =  gsl_matrix_alloc(p->K,p->D);
   while(screeningNum<numScreeningTrials){
     gtm_Screening(p);
@@ -162,10 +160,11 @@ void gtm_Run(Params * p){
     }
     
     if(!consecutiveFullOccupancyConditionSatisfied){
-      if(screeningNum>=20 && (gsl_vector_max(p->iter_info.emptyBin) != 0)){
-	gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,1.0,gtmFI,gtmW,0.0,oldY);      
+      if(screeningNum>=p->screening_spec.flippingKicksIn && (gsl_vector_max(p->iter_info.emptyBin) != 0)){
+	gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,1.0,gtmFI,gtmW,0.0,p->Y);      
 	double cc_threshold = 0.99;
-	//	Y = ccFlipShuffle(gtmT,oldY,gtmR,emptyBin,cc_threshold);
+	gtm_cc_flip_shuffle(p,cc_threshold);
+	  //	Y = cc_flip_shuffle(tmT,oldY,gtmR,emptyBin,cc_threshold);
 	//	Y = circshift(Y,ceil(rand(1)*(gtmK-1)));
 	gsl_matrix * pinvFI = gsl_pseudo_inverse(gtmFI);
 	gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,1.0,pinvFI,p->Y,0.0,gtmW);      
@@ -183,26 +182,184 @@ void gtm_Run(Params * p){
 void gtm_cc_flip_shuffle(Params * p, double cc_threshold){
   gsl_matrix * T = p->T;
   gsl_matrix * Y = p->Y;
-  gsl_vector * emptyBin = p->emptyBin;
+  int K = p->Y->size1;
+  gsl_vector * emptyBin = p->iter_info.emptyBin;
   gsl_matrix * gtmR = p->R;
-  gsl_vector * nodeId = gsl_vector_alloc(gtmR->size2);
+  gsl_vector * nodeID = gsl_vector_alloc(gtmR->size2);
+  gsl_vector * temp  = gsl_vector_alloc(K);
+  gsl_vector_set_all(temp,0);  
   for(unsigned int j = 0;j<gtmR->size2;j++){
     gsl_vector_view view = gsl_matrix_column(gtmR,j);
-    gsl_vector_set(nodeId,j,gsl_vector_max_index(&view.vector));
+    gsl_vector_set(nodeID,j,gsl_vector_max_index(&view.vector));
   }
-  int K = p->Y->size1;
-  gsl_vector * branch_start = gsl_vector_alloc(K);
-  gsl_vector * branch_end = gsl_vector_alloc(K);
-  int n_branches = 0;  
-  int in_branch = 0;     
-  if(gsl_vector_get(emptyBin,0) == 0){
-    gsl_vector_set(branch_start,0,0);
-    n_branches++;
-    in_branch = 1;
-  }
+  sp_list * branch_start = sp_list_alloc(10);
+  sp_list * branch_end = sp_list_alloc(10);
+  unsigned int n_branches = 0;  
   for(unsigned int i = 0;i<emptyBin->size;i++){
-    
+    gsl_vector_set(temp,gsl_vector_get(emptyBin,i),1);    
   }
+  /* Take differences */
+  for(unsigned int i = 0;i<temp->size-1;i++){
+    gsl_vector_set(temp,i,gsl_vector_get(temp,i+1)-gsl_vector_get(temp,i));
+  }
+  sp_list_append(branch_start,0);
+  for(unsigned int i = 0;i<temp->size-1;i++){
+    if(gsl_vector_get(temp,i) == -1){
+      sp_list_append(branch_start,i+1);
+    }
+  }
+  n_branches = sp_list_size(branch_start);
+  sp_list * branch_ends_plus_empty = sp_list_alloc(0); // branch-ends (with ensuing empty bins)
+  for(unsigned int i = 1;i<n_branches;i++){    
+    sp_list_append(branch_ends_plus_empty,sp_list_get(branch_start,i)-1);
+  
+  }  
+  sp_list_append(branch_ends_plus_empty,K-1);
+
+  for(unsigned int i = 0;i<temp->size-1;i++){
+    if(gsl_vector_get(temp,i) == 1){
+      sp_list_append(branch_end,i);
+    }
+  }
+  if(sp_list_size(branch_end) < n_branches){
+    sp_list_append(branch_end,K-1);
+  }
+  gsl_vector * branch_length = gsl_vector_alloc(n_branches);
+  for(unsigned int i = 0;i<n_branches;i++){
+    gsl_vector_set(branch_length,i,sp_list_get(branch_ends_plus_empty,i)-sp_list_get(branch_start,i)+1);
+  }
+  /* start with the longest branch */
+  int selected = gsl_vector_max_index(branch_length);
+  sp_list * candidatePool = sp_list_alloc(n_branches);
+  for(unsigned int i = 0;i<n_branches;i++){
+    sp_list_append(candidatePool,i);
+  }
+  sp_list * current_chain = sp_list_alloc(0);
+  for(unsigned int i = sp_list_get(branch_start,selected);i<=sp_list_get(branch_ends_plus_empty,selected);i++){
+    sp_list_append(current_chain,i);
+  }
+  int e0 = sp_list_get(branch_start,selected);
+  int e1 = sp_list_get(branch_end,selected);
+  sp_list_remove_all(candidatePool,selected);
+  
+  gsl_matrix * mean_T_at = gsl_matrix_alloc(K,T->size2);
+  
+  
+  sp_list * nodesOfInterest = sp_list_alloc(0);
+  for(unsigned int i = 0;i<sp_list_size(branch_start);i++){
+    sp_list_append(nodesOfInterest,sp_list_get(branch_start,i));
+  }
+  sp_list_union(nodesOfInterest,branch_end);
+  for(unsigned int i = 0;i<sp_list_size(nodesOfInterest);i++){
+    int nn = sp_list_get(nodesOfInterest,i);
+    int sum = 0;
+    gsl_vector_view mean_T_at_row = gsl_matrix_row(mean_T_at,nn);
+    for(unsigned int j = 0;j<T->size1;j++){
+      if(nn == gsl_vector_get(nodeID,j)){
+	gsl_vector_view T_row = gsl_matrix_row(T,j);
+	sum++;
+	gsl_vector_add(&mean_T_at_row.vector,&T_row.vector);
+      }
+    }
+    gsl_vector_scale(&mean_T_at_row.vector,1.0/sum);
+  }
+  while(sp_list_size(candidatePool)){
+    gsl_matrix * cc = gsl_matrix_alloc(n_branches,4);
+    gsl_matrix_set_all(cc,-1);
+    gsl_vector_view T0_view = gsl_matrix_row(mean_T_at,e0);
+    gsl_vector_view T1_view = gsl_matrix_row(mean_T_at,e1);
+    gsl_vector * T0 = &(T0_view.vector);
+    gsl_vector * T1 = &(T1_view.vector);
+    for(unsigned int i = 0;i<sp_list_size(candidatePool);i++){
+      int jj = sp_list_get(candidatePool,i);
+      gsl_vector_view Y0_view = gsl_matrix_row(mean_T_at,sp_list_get(branch_start,jj));
+      gsl_vector_view Y1_view = gsl_matrix_row(mean_T_at,sp_list_get(branch_end,jj));
+      gsl_vector * Y0 = &(Y0_view.vector);
+      gsl_vector * Y1 = &(Y1_view.vector);
+      gsl_matrix_set(cc,jj,0,gsl_stats_correlation(Y0->data, Y0->stride, T0->data, T0->stride, T0->size));
+      gsl_matrix_set(cc,jj,1,gsl_stats_correlation(Y0->data, Y0->stride, T1->data, T1->stride, T0->size));
+      gsl_matrix_set(cc,jj,2,gsl_stats_correlation(Y1->data, Y1->stride, T0->data, T0->stride, T0->size));
+      gsl_matrix_set(cc,jj,3,gsl_stats_correlation(Y1->data, Y1->stride, T1->data, T1->stride, T0->size));
+    }
+    /* find a random candidate that is over the cc_threshold */
+    double threshold = cc_threshold*gsl_matrix_max(cc);
+    int n_candidates = 0;
+    for(unsigned int i = 0;i<cc->size1;i++){
+      for(unsigned int j = 0;j<cc->size2;j++){
+	if(gsl_matrix_get(cc,i,j) > threshold){
+	  n_candidates++;
+	}
+      }
+    }
+    int candidate = p_drand48()*n_candidates;
+    n_candidates = 0;
+    int config = 0;
+    for(unsigned int i = 0;i<cc->size1;i++){
+      for(unsigned int j = 0;j<cc->size2;j++){
+	if(gsl_matrix_get(cc,i,j) > threshold){
+	  if(n_candidates == candidate){
+	    // we have our men
+	    selected = i;
+	    config = j;
+	  }
+	  n_candidates++;
+	}
+      }
+    }
+    gsl_matrix_free(cc);
+    if(config == 0){
+      for(unsigned int i = sp_list_get(branch_start,selected);i<=sp_list_get(branch_ends_plus_empty,selected);i++){
+	sp_list_insert(current_chain,0,i);
+      }
+      e0 = sp_list_get(branch_end,selected);
+    }else if(config == 1){
+      for(unsigned int i = sp_list_get(branch_start,selected);i<=sp_list_get(branch_ends_plus_empty,selected);i++){
+	sp_list_append(current_chain,i);
+      }
+      e1 = sp_list_get(branch_end,selected);
+    }else if(config == 3){
+      for(unsigned int i = sp_list_get(branch_ends_plus_empty,selected);i>=sp_list_get(branch_start,selected);i--){
+	sp_list_insert(current_chain,0,i);
+      }
+      e0 = sp_list_get(branch_start,selected);
+    }else if(config == 4){
+      for(unsigned int i = sp_list_get(branch_ends_plus_empty,selected);i>=sp_list_get(branch_start,selected);i--){
+	sp_list_append(current_chain,i);
+      }
+      e1 = sp_list_get(branch_start,selected);
+    }
+    sp_list_remove_all(candidatePool,selected);
+  }
+  for(int i = 0;i<K;i++){
+    int found = 0;
+    for(unsigned int j = 0;j<sp_list_size(current_chain);j++){
+      if(sp_list_get(current_chain,j) == i){
+	found = 1;
+	break;
+      }
+    }
+    if(!found){
+      sp_list_append(current_chain,i);
+    }
+  }
+  /* swap the lines of Y according to current_chain */
+
+  gsl_matrix * work_Y = gsl_matrix_alloc(Y->size1,Y->size2);
+  for(unsigned int i =0 ;i<Y->size1;i++){
+    gsl_vector_view Y_view = gsl_matrix_row(Y,sp_list_get(current_chain,i));
+    gsl_vector_view work_Y_view = gsl_matrix_row(Y,i);
+    gsl_vector_memcpy(&work_Y_view.vector,&Y_view.vector);
+  }
+  gsl_matrix_memcpy(Y,work_Y);
+  gsl_matrix_free(work_Y);
+  sp_list_free(branch_start);
+  sp_list_free(branch_end);
+  gsl_vector_free(branch_length);
+  gsl_vector_free(nodeID);
+  gsl_vector_free(temp);
+  sp_list_free(branch_ends_plus_empty);
+  sp_list_free(current_chain);
+  sp_list_free(candidatePool);
 }
 
 void gtm_minimize_difference(gsl_vector * A, const gsl_vector * B){  
@@ -297,7 +454,7 @@ void gtm_Screening(Params * p){
   int flag = 1000;
   gsl_matrix * gtmR = p->R;
   int maxIter = p->iter_info.maxIter;
-  int maxIterInc = 500;  
+  //  int maxIterInc = 500;  
   gsl_vector * gtmminDist = gsl_vector_alloc(gtmN);
   gsl_vector * gtmmaxDist = gsl_vector_alloc(gtmN);
   //  [gtmDIST,gtmminDist,gtmmaxDist] = gtm_dist(gtmT,gtmFI*gtmW,2);
@@ -313,6 +470,7 @@ void gtm_Screening(Params * p){
     for(int cycle = 0;cycle<numEMcycles;cycle++){
       //      gtm_resp(gtmDIST,gtmminDist,gtmmaxDist,gtmBeta,gtmD,2,gtmR);
       double gtmllhLog = gsl_gtm_resp(gtmDIST,gtmminDist,gtmmaxDist,gtmBeta,gtmD,gtmR);
+      fprintf(stderr,"gtmllhLog = %e\n",gtmllhLog);
       for(unsigned int i  = 0;i < gtmR->size2;i++){
 	gsl_vector_view view = gsl_matrix_column(gtmR,i);
 	gsl_vector_scale(&view.vector,gsl_vector_get(gtmRho,i));
@@ -506,8 +664,8 @@ double gsl_gtm_resp(gsl_matrix * DIST,gsl_vector * minDist, gsl_vector * maxDist
 }
 
 gsl_matrix * gsl_gtm_dist(gsl_matrix * A, gsl_matrix * B,gsl_vector * minDist, gsl_vector * maxDist){
-  struct timespec tp_i;
-  struct timespec tp_e;
+  //  struct timespec tp_i;
+  //  struct timespec tp_e;
   gsl_matrix * ret;
   if(A->size2 != B->size2){
     printf("number of cols must match!\n");
@@ -515,7 +673,7 @@ gsl_matrix * gsl_gtm_dist(gsl_matrix * A, gsl_matrix * B,gsl_vector * minDist, g
   }
 
   if(B->size2 > 1){
-    ret = gsl_gtm_dist2(A,B,minDist,maxDist);
+    ret = gsl_gtm_dist2(A,B);
   }else{
     ret = gsl_matrix_alloc(B->size1,A->size1);
     for(unsigned int i = 0;i<A->size1;i++){
@@ -545,9 +703,9 @@ gsl_matrix * gsl_gtm_dist(gsl_matrix * A, gsl_matrix * B,gsl_vector * minDist, g
 
 
 
-gsl_matrix * gsl_gtm_dist2(gsl_matrix * A, gsl_matrix * B,gsl_vector * minDist, gsl_vector * maxDist){  
-  struct timespec tp_i;
-  struct timespec tp_e;
+gsl_matrix * gsl_gtm_dist2(gsl_matrix * A, gsl_matrix * B){
+  //  struct timespec tp_i;
+  //  struct timespec tp_e;
   gsl_matrix * ret = gsl_matrix_alloc(B->size1,A->size1);
   gsl_matrix_set_all(ret,1);
   if(A->size2 != B->size2){
@@ -959,7 +1117,7 @@ gsl_matrix * init_W_matlab(const gsl_matrix * T,const gsl_matrix * phi, const in
   gsl_matrix * W = gsl_matrix_alloc(M+1,D);
   gsl_vector * image_mean = gsl_vector_alloc(D);
   int L_pca = 4;
-  gsl_matrix * eVts = gsl_matrix_alloc(D,L_pca+1);
+  //  gsl_matrix * eVts = gsl_matrix_alloc(D,L_pca+1);
   gsl_matrix * eVls_matrix = gsl_matrix_alloc(L_pca+1,1);
   eVls_matrix = gsl_matrix_from_bin("eVls.bin",L_pca+1,L_pca+1);  
   gsl_vector * eVls = gsl_vector_alloc(L_pca+1);
@@ -1373,7 +1531,7 @@ double calculate_beta(int D,int N,int K,gsl_matrix * R,gsl_matrix * delta)
 
 /* Run with argument "1" to use a saved starting W.
  */
-int main(int argc, char ** argv)
+int main()
 {
   Params * p = init_params();
   gtm_Run(p);
