@@ -45,7 +45,7 @@ Params * init_params(){
   p->screening_spec.numEMcycles = 5;
   p->screening_spec.switchEmptyBinCriterion = 300;
   p->screening_spec.numScreeningTrials = 120;
-  p->screening_spec.flippingKicksIn = 0;
+  p->screening_spec.flippingKicksIn = 20;
   p->screening_spec.minNumLoopsWithFullOccupancy = 3*p->screening_spec.numEMcycles;
   p->iter_info.maxIter = 3000;
   p->iter_info.loopID = 0;
@@ -61,7 +61,7 @@ Params * init_params(){
   return p;
 }
 
-gsl_vector * find_empty_bins(const gsl_matrix * gtmR,int loopID, int switchEmptyBinCriterion){
+sp_list * find_empty_bins(const gsl_matrix * gtmR,int loopID, int switchEmptyBinCriterion){
 
   int K = gtmR->size1;
   int N = gtmR->size2;
@@ -110,7 +110,7 @@ gsl_vector * find_empty_bins(const gsl_matrix * gtmR,int loopID, int switchEmpty
 
   /* return the indexes of the points that have low or weird occupancy */
   int ret_size = 0;
-  gsl_vector * ret;
+  sp_list * ret = sp_list_alloc(0);
   int index = 0;
   for(unsigned int i= 0;i<low_occupancy->size;i++){
     if(gsl_vector_get(low_occupancy,i) != 0 || 
@@ -119,17 +119,13 @@ gsl_vector * find_empty_bins(const gsl_matrix * gtmR,int loopID, int switchEmpty
       index++;
     }
   }
-  ret = gsl_vector_alloc(ret_size);
-  gsl_vector_set_all(ret,0);
-  
   index = 0;
-  for(unsigned int i= 0;i<low_occupancy->size;i++){
-    if(gsl_vector_get(low_occupancy,i) != 0 || 
-       (loopID<switchEmptyBinCriterion &&gsl_vector_get(weird_occupancy,i) != 0)){
-      gsl_vector_set(ret,index,i);
-      index++;
-    }
-  }    
+    for(unsigned int i= 0;i<low_occupancy->size;i++){
+      if(gsl_vector_get(low_occupancy,i) != 0 || 
+	 (loopID<switchEmptyBinCriterion &&gsl_vector_get(weird_occupancy,i) != 0)){
+	sp_list_append(ret,i);
+      }
+    }    
   return ret;
 }
 
@@ -160,14 +156,15 @@ void gtm_Run(Params * p){
     }
     
     if(!consecutiveFullOccupancyConditionSatisfied){
-      if(screeningNum>=p->screening_spec.flippingKicksIn && (gsl_vector_max(p->iter_info.emptyBin) != 0)){
+      if(screeningNum>=p->screening_spec.flippingKicksIn && sp_list_size(p->iter_info.emptyBin)){
 	gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,1.0,gtmFI,gtmW,0.0,p->Y);      
 	double cc_threshold = 0.99;
 	gtm_cc_flip_shuffle(p,cc_threshold);
 	  //	Y = cc_flip_shuffle(tmT,oldY,gtmR,emptyBin,cc_threshold);
 	//	Y = circshift(Y,ceil(rand(1)*(gtmK-1)));
 	gsl_matrix * pinvFI = gsl_pseudo_inverse(gtmFI);
-	gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,1.0,pinvFI,p->Y,0.0,gtmW);      
+	gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,1.0,pinvFI,p->Y,0.0,gtmW);
+	gsl_matrix_free(pinvFI);
       }
       screeningNum = screeningNum+1;
     }else{
@@ -183,7 +180,7 @@ void gtm_cc_flip_shuffle(Params * p, double cc_threshold){
   gsl_matrix * T = p->T;
   gsl_matrix * Y = p->Y;
   int K = p->Y->size1;
-  gsl_vector * emptyBin = p->iter_info.emptyBin;
+  sp_list * emptyBin = p->iter_info.emptyBin;
   gsl_matrix * gtmR = p->R;
   gsl_vector * nodeID = gsl_vector_alloc(gtmR->size2);
   gsl_vector * temp  = gsl_vector_alloc(K);
@@ -195,8 +192,8 @@ void gtm_cc_flip_shuffle(Params * p, double cc_threshold){
   sp_list * branch_start = sp_list_alloc(10);
   sp_list * branch_end = sp_list_alloc(10);
   unsigned int n_branches = 0;  
-  for(unsigned int i = 0;i<emptyBin->size;i++){
-    gsl_vector_set(temp,gsl_vector_get(emptyBin,i),1);    
+  for(unsigned int i = 0;i<sp_list_size(emptyBin);i++){
+    gsl_vector_set(temp,sp_list_get(emptyBin,i),1);    
   }
   /* Take differences */
   for(unsigned int i = 0;i<temp->size-1;i++){
@@ -243,7 +240,7 @@ void gtm_cc_flip_shuffle(Params * p, double cc_threshold){
   sp_list_remove_all(candidatePool,selected);
   
   gsl_matrix * mean_T_at = gsl_matrix_alloc(K,T->size2);
-  
+  gsl_matrix_set_all(mean_T_at,0);
   
   sp_list * nodesOfInterest = sp_list_alloc(0);
   for(unsigned int i = 0;i<sp_list_size(branch_start);i++){
@@ -261,7 +258,9 @@ void gtm_cc_flip_shuffle(Params * p, double cc_threshold){
 	gsl_vector_add(&mean_T_at_row.vector,&T_row.vector);
       }
     }
-    gsl_vector_scale(&mean_T_at_row.vector,1.0/sum);
+    if(sum){
+      gsl_vector_scale(&mean_T_at_row.vector,1.0/sum);
+    }
   }
   while(sp_list_size(candidatePool)){
     gsl_matrix * cc = gsl_matrix_alloc(n_branches,4);
@@ -292,10 +291,12 @@ void gtm_cc_flip_shuffle(Params * p, double cc_threshold){
       }
     }
     int candidate = p_drand48()*n_candidates;
+    //    candidate = 0;
     n_candidates = 0;
     int config = 0;
-    for(unsigned int i = 0;i<cc->size1;i++){
-      for(unsigned int j = 0;j<cc->size2;j++){
+    /* looks like matlab find does the sorting from the last dimension */
+    for(unsigned int j = 0;j<cc->size2;j++){
+      for(unsigned int i = 0;i<cc->size1;i++){
 	if(gsl_matrix_get(cc,i,j) > threshold){
 	  if(n_candidates == candidate){
 	    // we have our men
@@ -308,22 +309,22 @@ void gtm_cc_flip_shuffle(Params * p, double cc_threshold){
     }
     gsl_matrix_free(cc);
     if(config == 0){
-      for(unsigned int i = sp_list_get(branch_start,selected);i<=sp_list_get(branch_ends_plus_empty,selected);i++){
+      for(int i = sp_list_get(branch_start,selected);i<=sp_list_get(branch_ends_plus_empty,selected);i++){
 	sp_list_insert(current_chain,0,i);
       }
       e0 = sp_list_get(branch_end,selected);
     }else if(config == 1){
-      for(unsigned int i = sp_list_get(branch_start,selected);i<=sp_list_get(branch_ends_plus_empty,selected);i++){
+      for(int i = sp_list_get(branch_start,selected);i<=sp_list_get(branch_ends_plus_empty,selected);i++){
 	sp_list_append(current_chain,i);
       }
       e1 = sp_list_get(branch_end,selected);
-    }else if(config == 3){
-      for(unsigned int i = sp_list_get(branch_ends_plus_empty,selected);i>=sp_list_get(branch_start,selected);i--){
+    }else if(config == 2){
+      for(int i = sp_list_get(branch_ends_plus_empty,selected);i>=sp_list_get(branch_start,selected);i--){
 	sp_list_insert(current_chain,0,i);
       }
       e0 = sp_list_get(branch_start,selected);
-    }else if(config == 4){
-      for(unsigned int i = sp_list_get(branch_ends_plus_empty,selected);i>=sp_list_get(branch_start,selected);i--){
+    }else if(config == 3){
+      for(int i = sp_list_get(branch_ends_plus_empty,selected);i>=sp_list_get(branch_start,selected);i--){
 	sp_list_append(current_chain,i);
       }
       e1 = sp_list_get(branch_start,selected);
@@ -345,9 +346,11 @@ void gtm_cc_flip_shuffle(Params * p, double cc_threshold){
   /* swap the lines of Y according to current_chain */
 
   gsl_matrix * work_Y = gsl_matrix_alloc(Y->size1,Y->size2);
+  int circ_shift = p_drand48()*Y->size1;
+    circ_shift = 0; // no random please 
   for(unsigned int i =0 ;i<Y->size1;i++){
-    gsl_vector_view Y_view = gsl_matrix_row(Y,sp_list_get(current_chain,i));
-    gsl_vector_view work_Y_view = gsl_matrix_row(Y,i);
+    gsl_vector_view Y_view = gsl_matrix_row(Y,(int)(sp_list_get(current_chain,i)+circ_shift)%Y->size1);
+    gsl_vector_view work_Y_view = gsl_matrix_row(work_Y,i);
     gsl_vector_memcpy(&work_Y_view.vector,&Y_view.vector);
   }
   gsl_matrix_memcpy(Y,work_Y);
@@ -388,7 +391,7 @@ void gtm_minimize_difference(gsl_vector * A, const gsl_vector * B){
   
   /* Try flipping */
   for(unsigned int i = 0;i<A->size;i++){
-    gsl_vector_set(A,i,-gsl_vector_get(A,i));
+    gsl_vector_set(A,i,2*M_PI-gsl_vector_get(A,i));
   }
   sum = sp_cinit(0,0);
   for(unsigned int i = 0;i<A->size;i++){
@@ -408,7 +411,7 @@ void gtm_minimize_difference(gsl_vector * A, const gsl_vector * B){
   
   /* Flip them back */
   for(unsigned int i = 0;i<A->size;i++){
-    gsl_vector_set(A,i,-gsl_vector_get(A,i));
+    gsl_vector_set(A,i,-(gsl_vector_get(A,i)-2*M_PI));
   }
   double residual = 0;
   if(res0<res1){
@@ -430,6 +433,7 @@ void gtm_print_result(Params * p){
   gsl_vector_view view = gsl_matrix_column(p->gtmSamples,0);
   gtm_minimize_difference(best_X,&view.vector);
   fprintf(stdout,"Iteration - %d\n",p->iter_info.loopID);
+  fprintf(stdout,"Empty Bins - %d\n",sp_list_size(p->iter_info.emptyBin));
   gsl_vector_free(best_X);
 }
 
@@ -485,10 +489,10 @@ void gtm_Screening(Params * p){
             maxIter = maxIter+maxIterInc;*/
       }
       if(p->iter_info.emptyBin){
-	gsl_vector_free(p->iter_info.emptyBin);
+	sp_list_free(p->iter_info.emptyBin);
       }
       p->iter_info.emptyBin = find_empty_bins(gtmR,loopID,switchEmptyBinCriterion);
-      gsl_vector_set(numEmptyBins,loopID,p->iter_info.emptyBin->size);
+      gsl_vector_set(numEmptyBins,loopID,sp_list_size(p->iter_info.emptyBin));
       if (cycle==1){
 	gsl_vector_set(newCycle,loopID,1);
       }
@@ -1535,40 +1539,4 @@ int main()
 {
   Params * p = init_params();
   gtm_Run(p);
-  calculate_Y(p->phi,p->W,p->Y);
-  init_beta(p->K,p->D,p->Y,p->beta);
-  calculate_R_no_beta(p->D,p->K,p->N,p->T,p->Y,p->R);
-
-
-  write_gsl_matrix(p->T,"T.data");
-  write_gsl_matrix(p->phi,"phi.data");
-  write_gsl_matrix(p->W,"W.data");
-  write_gsl_matrix(p->Y,"Y.data");
-  write_gsl_matrix(p->R,"R.data");
-  write_gsl_matrix(p->delta,"delta.data");
-
-  int i;
-  char buffer[1000];
-  for (i = 0; i < 100; i++) {
-    printf("%d\n",i);
-
-    calculate_G(p->K,p->N,p->G,p->R);
-    calculate_W(p->K,p->M,p->G,p->W_b,p->W_x,p->phi,p->phiTGphi,p->inverse,p->R,p->phiTR,p->T,p->W,p->alpha,p->beta);
-    //calculate_beta();
-    //beta = 0.5;
-    printf("beta = %g\n",p->beta);
-    sprintf(buffer,"W_%d.data",i);
-    write_gsl_matrix(p->W,buffer);
-    
-    sprintf(buffer,"delta_%d.data",i);
-    write_gsl_matrix(p->delta,buffer);
-
-    calculate_Y(p->phi,p->W,p->Y);
-    sprintf(buffer,"Y_%d.data",i);
-    write_gsl_matrix(p->Y,buffer);
-
-    calculate_R_no_beta(p->D,p->K,p->N,p->T,p->Y,p->R);
-    sprintf(buffer,"R_%d.data",i);
-    write_gsl_matrix(p->R,buffer);
-  }
 }

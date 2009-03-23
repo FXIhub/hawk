@@ -1,6 +1,8 @@
 #ifndef _GTM_H_
 #define _GTM_H_ 1
 
+#include <spimage.h>
+
 typedef struct{
   int numUpdates;
   int numEMcycles;
@@ -16,7 +18,7 @@ typedef struct{
   int loopID;
   gsl_vector * numEmptyBins;
   gsl_vector * newCycle;
-  gsl_vector * emptyBin;
+  sp_list * emptyBin;
   int flag;
   int maxIter;
 }IterInfo;
