@@ -1,0 +1,65 @@
+# csh/tcsh configuration file for Hawk.
+# Adapted from Gromacs
+# First we remove previous Hawk stuff from paths 
+# by selecting everything else. 
+# Removal is not 100% necessary, but very useful when we
+# repeatedly switch between hawk versions in a shell.
+
+# zero possibly unset vars to avoid warnings
+if (! $?LD_LIBRARY_PATH) setenv LD_LIBRARY_PATH ""
+if (! $?PATH) setenv PATH ""
+if (! $?MANPATH) setenv MANPATH ""
+if (! $?HAWKLDLIB) setenv HAWKLDLIB ""
+if (! $?HAWKBIN) setenv HAWKBIN ""
+if (! $?HAWKMAN) setenv HAWKMAN ""
+
+# remove previous hawk part from ld_library_path
+set tmppath = ""
+foreach i ( `echo $LD_LIBRARY_PATH | sed "s/:/ /g"` )
+  if ( "$i" != "$HAWKLDLIB" ) set tmppath = "${tmppath}:$i"
+end
+setenv LD_LIBRARY_PATH $tmppath
+
+# remove hawk stuff from binary path
+set tmppath = ""
+foreach i ( `echo $PATH | sed "s/:/ /g"` )
+  if ( "$i" != "$HAWKBIN" ) set tmppath = "${tmppath}:$i"
+end
+setenv PATH $tmppath
+
+# and remove stuff from manual path
+set tmppath = ""
+foreach i ( `echo $MANPATH | sed "s/:/ /g"` )
+  if ( "$i" != "$HAWKMAN" ) set tmppath = "${tmppath}:$i"
+end
+setenv MANPATH $tmppath
+
+##########################################################
+# This is the real configuration part. We save the Hawk
+# things in separate vars, so we can remove them later.
+# If you move Hawk, change the next four line.
+##########################################################
+setenv HAWKBIN @bindir@
+setenv HAWKLDLIB @libdir@
+setenv HAWKMAN @mandir@
+setenv HAWKDATA @datadir@
+
+# old variables begin with ':' now, or are empty.
+setenv PATH ${HAWKBIN}${PATH}
+setenv LD_LIBRARY_PATH ${HAWKLDLIB}${LD_LIBRARY_PATH}
+setenv MANPATH ${HAWKMAN}${MANPATH}
+
+#setenv HAWKFONT	10x20
+
+# Read completions if we understand it (i.e. have tcsh)
+# if { complete >& /dev/null } then
+#   if ( -f $HAWKBIN/completion.csh ) source $HAWKBIN/completion.csh
+# endif
+
+
+
+
+
+
+
+
