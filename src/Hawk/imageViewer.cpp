@@ -3,7 +3,7 @@
 #include "imageItem.h"
 #include "imageBay.h"
 #include "mainwindow.h"
-#include <QGLWidget>
+//#include <QGLWidget>
 
 ImageViewer::ImageViewer(QWidget * parent)
   :QGraphicsView(parent)
@@ -13,7 +13,7 @@ ImageViewer::ImageViewer(QWidget * parent)
   itemsScale.setY(1);
   mode = ModeDefault;
   controlDown = false;
-  setViewport(new QGLWidget);
+  //  setViewport(new QGLWidget);
 }
 
 void ImageViewer::mousePressEvent(QMouseEvent * event){

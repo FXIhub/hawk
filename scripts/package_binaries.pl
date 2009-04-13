@@ -11,7 +11,7 @@ my $basedir =  dirname(abs_path(__FILE__));
                                                                localtime(time);
 
 my $version = sprintf("%02d.%02d.%02d",$year%100,$mon,$mday);
-my $arch = `uname -sm|tr " /" "_"`;
+my $arch = `gcc -dumpmachine`;
 chomp($arch);
 my $reldir =($basedir."/../releases/hawk-$version-$arch");
 my $builddir = ($basedir."/../releases/hawk-build-$arch");

@@ -1,7 +1,6 @@
 #include "imageview.h"
 #include <QtGui>
 #include "imageitem.h"
-#include <QGLWidget>
 #include <QMainWindow>
 #include "imageloader.h"
 #include "imagecategory.h"
@@ -12,7 +11,6 @@ ImageView::ImageView(QWidget * parent)
   dragged = 0;
   autoUpdate = 1;
   imageItem = NULL;
-  //  setViewport(new QGLWidget);
   setup();
   QWidgetList tlwidgets =  QApplication::topLevelWidgets();
   int size = tlwidgets.size();

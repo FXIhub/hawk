@@ -2,7 +2,7 @@
 #include "workspace.h"
 #include "server.h"
 #include <spimage.h>
-#include <QGLWidget>
+//#include <QGLWidget>
 #include "mainwindow.h"
 #include <QtGui>
 
