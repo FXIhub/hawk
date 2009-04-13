@@ -144,7 +144,11 @@ void PlotDisplay::createDataset(QString name,int id){
   QwtLegendItem * li = (QwtLegendItem *)(legend()->find(curve));
   li->setChecked(true);
   li->setToolTip(name);
+#if QWT_VERSION < 0x050200
   li->setIdentfierWidth(18);
+#else
+  li->setIdentifierWidth(18);
+#endif
   d_curves.insert(id,curve);
   QVector<QColor> colors = generatePlotColors(d_curves.size());
   QList<QwtPlotCurve *> curves = d_curves.values();
