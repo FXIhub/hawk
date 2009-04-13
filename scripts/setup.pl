@@ -4,8 +4,8 @@ use strict;
 use Cwd 'abs_path';
 
 my $basedir =  abs_path(__FILE__);
-$basename = `dirname $basedir`;
-chomp($basename);
+$basedir = `dirname $basedir`;
+chomp($basedir);
 my $bindir = $basedir."/bin";
 my $libdir = $basedir."/lib";
 my $mandir = $basedir."/man";

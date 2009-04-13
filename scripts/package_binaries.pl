@@ -30,7 +30,7 @@ sub get_dependencies{
       $line =~ /\s*(.*dylib)/;
       $lib = $1;
     }
-    if($lib ne ""){
+    if(defined $lib && $lib ne ""){
       push(@deps, $lib);
     }
   }
