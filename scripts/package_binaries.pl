@@ -99,7 +99,7 @@ mkdir("lib");
 chdir("lib");
 my @deps = get_all_dependencies("../bin");
 foreach my $dep(@deps){
-  if($dep =~ /libc\.so/ || $dep =~ /libgcc_s\.so/ || $dep =~ /libm\.so/ || $dep =~ /libstdc\+\+\.so/){
+  if($dep =~ /libc\.so/ || $dep =~ /libgcc_s\.so/ || $dep =~ /libm\.so/ || $dep =~ /libstdc\+\+\.so/ || $dep =~ /libpthread\.so/){
     next;
   }
   system("cp $dep $libdir");
