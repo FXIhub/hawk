@@ -105,4 +105,4 @@ system("cp $basedir/hawkrc* $scriptdir");
 system("cp $basedir/setup.pl $reldir");
 chdir($reldir);
 chdir("..");
-system("tar -zcvf ".$reldir.".tar.gz  $reldir")
+system("tar -zcvf ".$reldir.".tar.gz hawk-$version-$arch");

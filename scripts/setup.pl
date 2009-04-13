@@ -2,9 +2,10 @@
 
 use strict;
 use Cwd 'abs_path';
-use File::Basename;
 
-my $basedir =  dirname(abs_path(__FILE__));
+my $basedir =  abs_path(__FILE__);
+$basename = `dirname $basedir`;
+chomp($basename);
 my $bindir = $basedir."/bin";
 my $libdir = $basedir."/lib";
 my $mandir = $basedir."/man";
