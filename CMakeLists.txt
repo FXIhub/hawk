@@ -32,7 +32,7 @@ SET(DMALLOC_USE OFF CACHE BOOL "If ON link to dmalloc library if possible.")
 SET(DOUBLE_PRECISION OFF CACHE BOOL "If ON use double precision. Otherwise use single precision")
 SET(DEBUG_MEM OFF CACHE BOOL "If ON use memory debugging code.")
 
-SET(USE_QT4 OFF CACHE BOOL "If ON use Qt4.")
+SET(USE_QT4 ON CACHE BOOL "If ON use Qt4.")
 SET(USE_MPI OFF CACHE BOOL "If ON use MPI for parallelization.")
 
 
