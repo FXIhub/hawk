@@ -1,4 +1,4 @@
-#!/usr/bin/perl -d
+#!/usr/bin/perl -w
 
 # This script assumes no intervention is necessary on cmake
 
@@ -103,3 +103,6 @@ foreach my $dep(@deps){
 }
 system("cp $basedir/hawkrc* $scriptdir");
 system("cp $basedir/setup.pl $reldir");
+chdir($reldir);
+chdir("..");
+system("tar -zcvf ".$reldir.".tar.gz  $reldir")
