@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl -d
 
 # This script assumes no intervention is necessary on cmake
 
@@ -72,6 +72,28 @@ sub get_all_dependencies{
   return keys %deps;
 }
 
+sub change_install_name{
+  my $bindir = shift;
+  my $dir = `pwd`;
+  chdir($bindir);  
+  my $f = `ls -1`;
+  my @files = split("\n",$f);
+  chdir($dir);
+  foreach my $file(@files){
+    my $libs = `otool -L $file`;
+    my @lines = split("\n",$libs);
+    foreach my $line (@lines){
+      $line =~ /\s*(.*\.dylib)/;
+      my $old = $1;
+      $line =~ /([^\/]*\.dylib)/;
+      my $dylib = $1;
+      if(-f "../lib/$dylib"){
+	system("install_name_tool -change $old \@loader_path/../lib/$dylib $file");
+      }
+    }
+  }
+}
+
 my $basedir =  dirname(abs_path(__FILE__));
 (my $sec,my $min,my $hour,my $mday,my $mon,my $year,my $wday,my $yday,my $isdst) =
                                                                localtime(time);
@@ -87,6 +109,7 @@ $reldir = abs_path($reldir);
 my $libdir = $reldir."/lib/";
 my $scriptdir = $reldir."/scripts/";
 my $utilsdir = $reldir."/utils/";
+my $bindir = $reldir."/bin/";
 `mkdir -p $scriptdir`;
 $builddir = abs_path($builddir);
 print $builddir;
@@ -102,8 +125,9 @@ my @deps = get_all_dependencies("../bin");
 foreach my $dep(@deps){
     # Only package certain dependencies
     unless($dep =~ /libQt/ || $dep =~ /libtiff/ ||  $dep =~ /libpng/ || $dep =~ /libgsl/ || 
-	   $dep =~ /libgsl/ || $dep =~ /libaudio.so/ || $dep =~ /libhdf5/  ||
-	   $dep =~ /libjpeg/ || $dep =~ /libqwt/ || $dep =~ /libspimage/ || $dep =~  /libz\.so/){
+	   $dep =~ /libgsl/ || $dep =~ /libaudio\./ || $dep =~ /libhdf5/  ||
+	   $dep =~ /libjpeg/ || $dep =~ /libqwt/ || $dep =~ /libspimage/ || $dep =~  /libz\.so/ ||
+	   $dep =~ /libfftw/ || $dep =~ /libsz\./){
 	next;
     }
   system("cp $dep $libdir");
@@ -111,8 +135,13 @@ foreach my $dep(@deps){
 system("cp $basedir/hawkrc* $scriptdir");
 
 #system("cp $basedir/setup.pl $reldir");
+if(`uname -s` =~ /Darwin/){
+  change_install_name($bindir);
+  change_install_name($libdir);
+}
 chdir($reldir);
 #mkdir($utilsdir);
 #system("cp $basedir/../utils/$arch/chrpath $utilsdir");
+
 chdir("..");
 system("tar -zcvf ".$reldir.".tar.gz hawk-$version-$arch");

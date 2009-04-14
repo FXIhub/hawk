@@ -109,6 +109,10 @@ if(GSL_FOUND)
 endif(GSL_FOUND)
 TARGET_LINK_LIBRARIES(localized_blur ${LIBRARY_LIST})
 
+SET_TARGET_PROPERTIES(analyse_mask PROPERTIES
+  INSTALL_NAME_DIR "@loader_path/../lib"
+  )
+
 LIST(APPEND BINS tiff2h5 image_to_vtk gif2h5image image_to_png png_to_image tiff2png autocorrelate prtf denoise background_subtract propagate matrix2image rs_r_factor average_h5 r_factor shell_plot separate_channel fft_bench manual_merge image_fft spot_integrate image_to_reflections multi_shot_exposure localized_blur analyse_mask)
 
 INSTALL(TARGETS ${BINS}

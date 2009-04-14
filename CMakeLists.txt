@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.6)
 
 PROJECT (uwrapc)
 
+SET(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS true)
+
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
 ADD_DEFINITIONS(-D H5_USE_16_API)
@@ -9,10 +11,18 @@ ADD_DEFINITIONS(-D H5_USE_16_API)
 IF(WIN32)
 	ADD_DEFINITIONS(-D_HDF5USEDLL_)
 	ADD_DEFINITIONS(-D_CRT_SECURE_NO_DEPRECATE)
-ELSE(WIN32)
+ELSE()
 	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall  -W  -std=c99")
 	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
-ENDIF(WIN32)
+ENDIF()
+
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  SET(APPLE 1)
+ENDIF()
+
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+  SET(LINUX 1)
+ENDIF()
 
 find_package(TIFF REQUIRED)
 find_package(HDF5 REQUIRED)
@@ -91,8 +101,9 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib:$ORIGIN/../lib")
 endif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 
+
 if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-  SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib:@loader_path/../lib")
+#  SET(CMAKE_INSTALL_RPATH "@loader_path/../lib")
 endif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 
 # add the automatically determined parts of the RPATH
@@ -133,4 +144,9 @@ ENDIF(LINK_TO_DMALLOC)
 
 ADD_SUBDIRECTORY(src)
 
+########### Macosx Bundling ###############
+IF(APPLE)
+  ADD_CUSTOM_TARGET(macosx_bundle perl scripts/macosx_dependencies.pl ${CMAKE_INSTALL_PREFIX}  DEPENDS ${CMAKE_INSTALL_PREFIX}/bin/uwrapc WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMENT "making the macosx bundle." VERBATIM)
+#  ADD_CUSTOM_TARGET(macosx_bundle perl scripts/macosx_dependencies.pl ${CMAKE_INSTALL_PREFIX} DEPENDS install  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMENT "making the macosx bundle." VERBATIM)
+ENDIF()
 
