@@ -59,3 +59,13 @@ while($_ = <FIN>){
 }
 close FOUT;
 close FIN;
+
+my $f = `ls -1 $bindir`;
+my @binfiles = split("\n",$f);
+foreach my $file(@binfiles){
+    if($file =~ /\.pl/ || $file =~ /hawkrc/){
+	#skip perl script
+	next;
+    }
+    `utils/chrpath -r $libdir $bindir/$file`;
+}

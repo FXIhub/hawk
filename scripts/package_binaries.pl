@@ -86,12 +86,13 @@ my $builddir = ($basedir."/../releases/hawk-build-$arch");
 $reldir = abs_path($reldir);
 my $libdir = $reldir."/lib/";
 my $scriptdir = $reldir."/scripts/";
+my $utilsdir = $reldir."/utils/";
 `mkdir -p $scriptdir`;
 $builddir = abs_path($builddir);
 print $builddir;
 chdir($builddir) or die($!);
 print `pwd`;
-system("cmake ../.. -DCMAKE_INSTALL_PREFIX:PATH=$reldir");
+system("cmake ../.. -DCMAKE_BUILD_TYPE=release -DCMAKE_INSTALL_PREFIX:PATH=$reldir");
 system("make -j 4");
 system("make install");
 chdir($reldir);
@@ -99,13 +100,19 @@ mkdir("lib");
 chdir("lib");
 my @deps = get_all_dependencies("../bin");
 foreach my $dep(@deps){
-  if($dep =~ /libc\.so/ || $dep =~ /libgcc_s\.so/ || $dep =~ /libm\.so/ || $dep =~ /libstdc\+\+\.so/ || $dep =~ /libpthread\.so/){
-    next;
-  }
+    # Only package certain dependencies
+    unless($dep =~ /libQt/ || $dep =~ /libtiff/ ||  $dep =~ /libpng/ || $dep =~ /libgsl/ || 
+	   $dep =~ /libgsl/ || $dep =~ /libaudio.so/ || $dep =~ /libhdf5/  ||
+	   $dep =~ /libjpeg/ || $dep =~ /libqwt/ || $dep =~ /libspimage/ || $dep =~  /libz\.so/){
+	next;
+    }
   system("cp $dep $libdir");
 }
 system("cp $basedir/hawkrc* $scriptdir");
-system("cp $basedir/setup.pl $reldir");
+
+#system("cp $basedir/setup.pl $reldir");
 chdir($reldir);
+#mkdir($utilsdir);
+#system("cp $basedir/../utils/$arch/chrpath $utilsdir");
 chdir("..");
 system("tar -zcvf ".$reldir.".tar.gz hawk-$version-$arch");

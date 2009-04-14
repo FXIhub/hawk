@@ -37,12 +37,12 @@ SET(USE_MPI OFF CACHE BOOL "If ON use MPI for parallelization.")
 
 
 IF(DMALLOC_USE)
-		    FIND_LIBRARY (DMALLOC_LIBRARY dmalloc /usr/lib /sw/lib)
-		    FIND_PATH (DMALLOC_INCLUDE_DIR dmalloc.h PATHS /usr/include /sw/include)	
-		    IF(DMALLOC_LIBRARY)
-			ADD_DEFINITIONS(-D_USE_DMALLOC)
-			SET(LINK_TO_DMALLOC 1)
-		    ENDIF(DMALLOC_LIBRARY)
+  FIND_LIBRARY (DMALLOC_LIBRARY dmalloc /usr/lib /sw/lib)
+  FIND_PATH (DMALLOC_INCLUDE_DIR dmalloc.h PATHS /usr/include /sw/include)	
+  IF(DMALLOC_LIBRARY)
+    ADD_DEFINITIONS(-D_USE_DMALLOC)
+    SET(LINK_TO_DMALLOC 1)
+  ENDIF(DMALLOC_LIBRARY)
 ENDIF(DMALLOC_USE)
 
 
@@ -76,6 +76,29 @@ ADD_DEFINITIONS(-D_CRT_SECURE_NO_DEPRECATE)
 ELSE(WIN32)
 	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -Wall -std=c99")
 ENDIF(WIN32)
+
+
+# Add rpath to the binaries
+# use, i.e. don't skip the full RPATH for the build tree
+SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
+
+# when building, don't use the install RPATH already
+# (but later on when installing)
+SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
+
+# the RPATH to be used when installing
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib:$ORIGIN/../lib")
+endif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+  SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib:@loader_path/../lib")
+endif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+
+# add the automatically determined parts of the RPATH
+# which point to directories outside the build tree to the install RPATH
+SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
 
 SET(LOCAL_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/include/)
 
