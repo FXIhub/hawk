@@ -27,8 +27,12 @@ sub get_dependencies{
       $line =~ /.*? => (.*?) \(0x[0-9abcdef]+\)/;
       $lib = $1;
     }else{
-      $line =~ /\s*(.*dylib)/;
-      $lib = $1;
+      if($line =~ /\s*(.*dylib)/){
+	$lib = $1;
+      }
+      if($line =~ /\s*(Qt.*?)\s/){
+	$lib = "/Library/Frameworks/".$1;
+      }
     }
     if(defined $lib && $lib ne ""){
       push(@deps, $lib);
@@ -72,28 +76,6 @@ sub get_all_dependencies{
   return keys %deps;
 }
 
-sub change_install_name{
-  my $bindir = shift;
-  my $dir = `pwd`;
-  chdir($bindir);  
-  my $f = `ls -1`;
-  my @files = split("\n",$f);
-  chdir($dir);
-  foreach my $file(@files){
-    my $libs = `otool -L $file`;
-    my @lines = split("\n",$libs);
-    foreach my $line (@lines){
-      $line =~ /\s*(.*\.dylib)/;
-      my $old = $1;
-      $line =~ /([^\/]*\.dylib)/;
-      my $dylib = $1;
-      if(-f "../lib/$dylib"){
-	system("install_name_tool -change $old \@loader_path/../lib/$dylib $file");
-      }
-    }
-  }
-}
-
 my $basedir =  dirname(abs_path(__FILE__));
 (my $sec,my $min,my $hour,my $mday,my $mon,my $year,my $wday,my $yday,my $isdst) =
                                                                localtime(time);
@@ -103,14 +85,13 @@ my $arch = `gcc -dumpmachine`;
 chomp($arch);
 my $reldir =($basedir."/../releases/hawk-$version-$arch");
 my $builddir = ($basedir."/../releases/hawk-build-$arch");
+`rm -rf $reldir`;
 `mkdir -p $reldir`;
 `mkdir -p $builddir`;
 $reldir = abs_path($reldir);
 my $libdir = $reldir."/lib/";
-my $scriptdir = $reldir."/scripts/";
 my $utilsdir = $reldir."/utils/";
 my $bindir = $reldir."/bin/";
-`mkdir -p $scriptdir`;
 $builddir = abs_path($builddir);
 print $builddir;
 chdir($builddir) or die($!);
@@ -124,24 +105,22 @@ chdir("lib");
 my @deps = get_all_dependencies("../bin");
 foreach my $dep(@deps){
     # Only package certain dependencies
-    unless($dep =~ /libQt/ || $dep =~ /libtiff/ ||  $dep =~ /libpng/ || $dep =~ /libgsl/ || 
+    unless($dep =~ /Qt/ || $dep =~ /libtiff/ ||  $dep =~ /libpng/ || $dep =~ /libgsl/ || 
 	   $dep =~ /libgsl/ || $dep =~ /libaudio\./ || $dep =~ /libhdf5/  ||
 	   $dep =~ /libjpeg/ || $dep =~ /libqwt/ || $dep =~ /libspimage/ || $dep =~  /libz\.so/ ||
 	   $dep =~ /libfftw/ || $dep =~ /libsz\./){
 	next;
     }
-  system("cp $dep $libdir");
+    if(-f $dep){
+      system("cp $dep $libdir");
+    }
 }
-system("cp $basedir/hawkrc* $scriptdir");
 
-#system("cp $basedir/setup.pl $reldir");
 if(`uname -s` =~ /Darwin/){
-  change_install_name($bindir);
-  change_install_name($libdir);
+  chdir($builddir);
+  system("make macosx_bundle");
 }
-chdir($reldir);
-#mkdir($utilsdir);
-#system("cp $basedir/../utils/$arch/chrpath $utilsdir");
 
+chdir($reldir);
 chdir("..");
 system("tar -zcvf ".$reldir.".tar.gz hawk-$version-$arch");
