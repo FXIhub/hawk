@@ -1,4 +1,4 @@
-#!/usr/bin/perl -d
+#!/usr/bin/perl -w
 
 # This script assumes no intervention is necessary on cmake
 
@@ -106,19 +106,33 @@ my @deps = get_all_dependencies("../bin");
 foreach my $dep(@deps){
     # Only package certain dependencies
     unless($dep =~ /Qt/ || $dep =~ /libtiff/ ||  $dep =~ /libpng/ || $dep =~ /libgsl/ || 
-	   $dep =~ /libgsl/ || $dep =~ /libaudio\./ || $dep =~ /libhdf5/  ||
-	   $dep =~ /libjpeg/ || $dep =~ /libqwt/ || $dep =~ /libspimage/ || $dep =~  /libz\.so/ ||
-	   $dep =~ /libfftw/ || $dep =~ /libsz\./){
-	next;
+ 	   $dep =~ /libgsl/ || $dep =~ /libaudio\./ || $dep =~ /libhdf5/  ||
+ 	   $dep =~ /libjpeg/ || $dep =~ /libqwt/ || $dep =~ /libspimage/ || $dep =~  /libz\.so/ ||
+ 	   $dep =~ /libfftw/ || $dep =~ /libsz\./){
+ 	next;
     }
     if(-f $dep){
-      system("cp $dep $libdir");
+ 	if($dep =~ s/libQt.*/libQt\*/){
+ 	    #copy all Qt libs
+ 	    system("cp -d $dep $libdir");
+ 	}else{
+ 	    system("cp $dep $libdir");
+ 	}
     }
 }
+# remove debug libs and strip the rest of the libs
+system("rm $libdir/*.debug");
+system("strip -s $libdir/*");
+
 
 if(`uname -s` =~ /Darwin/){
   chdir($builddir);
   system("make macosx_bundle");
+}
+
+if(`uname -s` =~ /Linux/){
+  chdir($builddir);
+  system("make linux_bundle");
 }
 
 chdir($reldir);

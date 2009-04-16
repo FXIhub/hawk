@@ -1,4 +1,4 @@
-#!/usr/bin/perl -d
+#!/usr/bin/perl -w
 
 # This script assumes no intervention is necessary on cmake
 

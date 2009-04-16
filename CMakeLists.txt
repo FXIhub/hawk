@@ -90,25 +90,25 @@ ENDIF(WIN32)
 
 # Add rpath to the binaries
 # use, i.e. don't skip the full RPATH for the build tree
-SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
+#SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
 
 # when building, don't use the install RPATH already
 # (but later on when installing)
-SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
+#SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
 
 # the RPATH to be used when installing
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-  SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib:$ORIGIN/../lib")
-endif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+#if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+#  SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib:$ORIGIN/../lib")
+#endif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 
 
-if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+#if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 #  SET(CMAKE_INSTALL_RPATH "@loader_path/../lib")
-endif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+#endif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 
 # add the automatically determined parts of the RPATH
 # which point to directories outside the build tree to the install RPATH
-SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+#SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 
 SET(LOCAL_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/include/)
@@ -146,7 +146,14 @@ ADD_SUBDIRECTORY(src)
 
 ########### Macosx Bundling ###############
 IF(APPLE)
-  ADD_CUSTOM_TARGET(macosx_bundle perl scripts/macosx_dependencies.pl ${CMAKE_INSTALL_PREFIX}  DEPENDS ${CMAKE_INSTALL_PREFIX}/bin/uwrapc WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMENT "making the macosx bundle." VERBATIM)
+  ADD_CUSTOM_TARGET(macosx_bundle perl scripts/macosx_dependencies.pl ${CMAKE_INSTALL_PREFIX}  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMENT "making the macosx bundle." VERBATIM)
+#  ADD_CUSTOM_TARGET(macosx_bundle perl scripts/macosx_dependencies.pl ${CMAKE_INSTALL_PREFIX} DEPENDS install  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMENT "making the macosx bundle." VERBATIM)
+ENDIF()
+
+########### Linux Bundling ###############
+
+IF(LINUX)
+  ADD_CUSTOM_TARGET(linux_bundle perl scripts/linux_dependencies.pl ${CMAKE_INSTALL_PREFIX}   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMENT "making the linux bundle." VERBATIM)
 #  ADD_CUSTOM_TARGET(macosx_bundle perl scripts/macosx_dependencies.pl ${CMAKE_INSTALL_PREFIX} DEPENDS install  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMENT "making the macosx bundle." VERBATIM)
 ENDIF()
 
