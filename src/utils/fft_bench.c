@@ -16,7 +16,7 @@
 #  include <time.h>
 # include <windows.h>
 #include <direct.h>
-#ifdef _TIMEVAL_DEFINED /* also in winsock[2].h */
+#ifndef _TIMEVAL_DEFINED /* also in winsock[2].h */
 #define _TIMEVAL_DEFINED
 struct timeval {
     long tv_sec;
@@ -111,12 +111,13 @@ int main(int argc, char ** argv){
   home_dir = getenv("USERPROFILE");
   sprintf(buffer2,"%s/.uwrapc",home_dir);
   _mkdir(buffer2);
+  strcpy(hostname,getenv("COMPUTERNAME"));
 #else
   home_dir = getenv("HOME");
   sprintf(buffer2,"%s/.uwrapc",home_dir);
   mkdir(buffer2,0755);
-#endif
   gethostname(hostname,1024);
+#endif
   sprintf(buffer2,"%s/.uwrapc/fft_speed-%s-%d_cores",home_dir,hostname,nthreads);
   printf("Outputing results to %s\n",buffer2);
   f = fopen(buffer2,"w");

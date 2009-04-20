@@ -27,6 +27,9 @@
 extern "C" {
 #endif /* __cplusplus */
 
+
+  /* I'm not building any DLL*/
+  /*
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 #if defined(DLL_EXPORT) || defined(LIBCONFIG_EXPORTS)
 #define LIBCONFIG_API __declspec(dllexport)
@@ -36,6 +39,8 @@ extern "C" {
 #else // ! WIN32
 #define LIBCONFIG_API
 #endif // WIN32
+  */
+#define LIBCONFIG_API
 
 #include <stdio.h>
 

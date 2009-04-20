@@ -122,6 +122,7 @@ QWidget *ComboBoxDelegate::createEditor(QWidget *parent,
   }else if(md->variable_type == Type_Filename){  
     QFileInfo fi = QFileInfo((char *)md->variable_address);
     QFileDialog * editor = new QFileDialog(NULL,Qt::Dialog);
+    editor->setAttribute(Qt::WA_DeleteOnClose,false);
     editor->setDirectory(fi.path());
     editor->setWindowTitle(md->variable_name);
     editor->setModal(true);
@@ -255,7 +256,9 @@ void ComboBoxDelegate::setModelData(QWidget *editor, QAbstractItemModel *model,
   }else if(md->variable_type == Type_Filename){
     QFileDialog * fe = static_cast<QFileDialog*>(editor);  
     QStringList sf = fe->selectedFiles();
-    if(fe->result() == QDialog::Accepted && sf.size()){
+    int result = fe->result();
+    //    if(result == QDialog::Accepted && sf.size()){
+    if(sf.size()){
       QFileInfo fi(sf.first());
       model->setData(index, fi.fileName(), Qt::DisplayRole);
       model->setData(index, fi.absoluteFilePath(), Qt::ToolTipRole);
@@ -263,7 +266,8 @@ void ComboBoxDelegate::setModelData(QWidget *editor, QAbstractItemModel *model,
   }else if(md->variable_type == Type_Directory_Name ){
     QFileDialog * fe = static_cast<QFileDialog*>(editor);  
     QStringList sf = fe->selectedFiles();
-    if(fe->result() == QDialog::Accepted && sf.size()){
+    //    if(fe->result() == QDialog::Accepted && sf.size()){
+    if(sf.size()){
       QFileInfo fi(sf.first());
       fi.makeAbsolute();
       QString display =  fi.absoluteFilePath();
@@ -468,7 +472,7 @@ void ComboBoxDelegate::commitAndCloseFileEditor(int r)
   if(r){
     emit commitData(editor);
   }
-  emit closeEditor(editor);
+  //  emit closeEditor(editor);
 }
 
 

@@ -322,7 +322,7 @@ int main(int argc, char ** argv){
     printf("Image - %s Corr BG - %f\n",img_list[i],corr);
     strcpy(buffer,img_list[i]);
     /* get basename */
-    *(index(buffer,'.')) = 0;
+    *(strchr(buffer,'.')) = 0;
 /*    int k = lookup_by_name(pd,buffer);
     printf("Hall Ion - %f\n",pd->Hall_Ion[k]);*/
     if(corr < 0.95){

@@ -17,7 +17,7 @@
 /* First, we deal with  platform-specific or compiler-specific issues. */
 
 #ifdef _WIN32
-#define strdup _strup
+#define strdup _strdup
 #else
 #define _XOPEN_SOURCE 500
 #endif

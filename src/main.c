@@ -66,7 +66,7 @@ int main(int argc, char ** argv){
     check_options_and_load_images(opts);
     char buffer[OPTION_STRING_SIZE*2+1];
 #if defined(_MSC_VER) || defined(__MINGW32__)
-    _mkdir(opts->work_dir,0755);
+    _mkdir(opts->work_dir);
 #else
     mkdir(opts->work_dir,0755);
 #endif
