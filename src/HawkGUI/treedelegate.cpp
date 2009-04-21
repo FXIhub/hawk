@@ -120,20 +120,10 @@ QWidget *ComboBoxDelegate::createEditor(QWidget *parent,
     }
     ret = editor;
   }else if(md->variable_type == Type_Filename){  
-    QFileInfo fi = QFileInfo((char *)md->variable_address);
-    QFileDialog * editor = new QFileDialog(NULL,Qt::Dialog);
-    editor->setAttribute(Qt::WA_DeleteOnClose,false);
-    editor->setDirectory(fi.path());
-    editor->setWindowTitle(md->variable_name);
-    editor->setModal(true);
-    connect(editor,SIGNAL(finished(int)),this, SLOT(commitAndCloseFileEditor(int)));
+    QLineEdit * editor = new QLineEdit(parent);
     ret = editor;
   }else if(md->variable_type == Type_Directory_Name){  
-    QFileDialog * editor = new QFileDialog(NULL,Qt::Dialog);
-    editor->setFileMode(QFileDialog::DirectoryOnly);
-    connect(editor,SIGNAL(finished(int)),this, SLOT(commitAndCloseFileEditor(int)));
-    editor->setModal(true);
-    editor->setWindowTitle(md->variable_name);
+    QLineEdit * editor = new QLineEdit(parent);
     ret = editor;
   }else if(md->variable_type == Type_Map_Real){  
     MapEditorDialog * editor = new MapEditorDialog(parent);
@@ -193,16 +183,28 @@ void ComboBoxDelegate::setEditorData(QWidget *editor,
     comboBox->setCurrentIndex(comboBox->findData(option, int(Qt::DisplayRole)));
   }else if(md->variable_type == Type_Filename){      
     QFileInfo fi = QFileInfo((char *)md->variable_address);
-    QFileDialog * fe = static_cast<QFileDialog*>(editor);  
-    fe->selectFile(fi.fileName());
-    fe->resize(fe->sizeHint());
+    QLineEdit * le = static_cast<QLineEdit*>(editor);  
+    /* This is necessary otherwise setEditorData is called multiple times */
+    if(!le->isReadOnly()){
+      le->setText(QFileDialog::getOpenFileName(NULL, md->variable_name,
+					     fi.fileName()));
+      // Simulate key press
+      QCoreApplication::postEvent(le,new QKeyEvent(QEvent::KeyPress,Qt::Key_Return,Qt::NoModifier));
+      QCoreApplication::postEvent(le,new QKeyEvent(QEvent::KeyRelease,Qt::Key_Return,Qt::NoModifier));
+      le->setReadOnly(true);
+    }
   }else if(md->variable_type == Type_Directory_Name){  
     QFileInfo fi = QFileInfo((char *)md->variable_address);
-    fi.makeAbsolute();
-    QFileDialog * fe = static_cast<QFileDialog*>(editor);  
-    fe->setDirectory(fi.path());
-    fe->resize(fe->sizeHint());
-    fe->selectFile(fi.fileName());
+    QLineEdit * le = static_cast<QLineEdit*>(editor);  
+    /* This is necessary otherwise setEditorData is called multiple times */
+    if(!le->isReadOnly()){
+      le->setText(QFileDialog::getExistingDirectory(NULL, md->variable_name,
+						    fi.fileName()));
+      // Simulate key press
+      QCoreApplication::postEvent(le,new QKeyEvent(QEvent::KeyPress,Qt::Key_Return,Qt::NoModifier));
+      QCoreApplication::postEvent(le,new QKeyEvent(QEvent::KeyRelease,Qt::Key_Return,Qt::NoModifier));
+      le->setReadOnly(true);
+    }
   }else if(md->variable_type == Type_Map_Real){
     MapEditorDialog * me = static_cast<MapEditorDialog *>(editor);  
     sp_smap * map = *((sp_smap **)md->variable_address);
@@ -254,28 +256,23 @@ void ComboBoxDelegate::setModelData(QWidget *editor, QAbstractItemModel *model,
     QString option = (comboBox->itemData(comboBox->currentIndex(), Qt::DisplayRole)).toString();    
     model->setData(index, option, Qt::DisplayRole);
   }else if(md->variable_type == Type_Filename){
-    QFileDialog * fe = static_cast<QFileDialog*>(editor);  
-    if(editorResult.size()){
-      QString fileName = editorResult.value(fe);
-      if(!fileName.isEmpty()){
-	QFileInfo fi(fileName);
-	model->setData(index, fi.fileName(), Qt::DisplayRole);
-	model->setData(index, fi.absoluteFilePath(), Qt::ToolTipRole);
-
-      }
+    QLineEdit * le = static_cast<QLineEdit*>(editor);  
+    if(!le->text().isEmpty()){
+      QFileInfo fi(le->text());
+      model->setData(index, fi.fileName(), Qt::DisplayRole);
+      model->setData(index, fi.absoluteFilePath(), Qt::ToolTipRole);     
     }
   }else if(md->variable_type == Type_Directory_Name ){
-    QFileDialog * fe = static_cast<QFileDialog*>(editor);  
-    QStringList sf = fe->selectedFiles();
-    //    if(fe->result() == QDialog::Accepted && sf.size()){
-    if(sf.size()){
-      QFileInfo fi(sf.first());
+    QLineEdit * le = static_cast<QLineEdit*>(editor);  
+    if(!le->text().isEmpty()){
+      QFileInfo fi(le->text());
       fi.makeAbsolute();
       QString display =  fi.absoluteFilePath();
       QFontMetrics fm = QFontMetrics(index.data(Qt::FontRole).value<QFont>());
       QString elided = fm.elidedText(display,Qt::ElideLeft,200);
+
       model->setData(index, elided, Qt::DisplayRole);
-      model->setData(index, fi.absoluteFilePath(), Qt::ToolTipRole);
+      model->setData(index, fi.absoluteFilePath(), Qt::ToolTipRole);     
     }
   }else if(md->variable_type == Type_Map_Real ){
     MapEditorDialog * me = static_cast<MapEditorDialog *>(editor);  
@@ -466,21 +463,6 @@ QVariant ComboBoxDelegate::decorationFromMetadata(const VariableMetadata * md,QF
   }
   return QVariant();
 }
-
-void ComboBoxDelegate::commitAndCloseFileEditor(int r)
-{
-  QFileDialog *editor = qobject_cast<QFileDialog *>(sender());
-  fileEditorReturn = r;
-  if(r){
-    QStringList sf = editor->selectedFiles();
-     if(sf.size()){
-       editorResult.insert(editor,sf.first());
-       emit commitData(editor);   
-     }
-  }
-  emit closeEditor(editor);
-}
-
 
 void ComboBoxDelegate::commitAndCloseMapEditor(int r)
 {

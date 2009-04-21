@@ -78,7 +78,6 @@ public:
  signals:
     void modelDataUpdated() const;
  private slots:
-    void commitAndCloseFileEditor(int r);
     void commitAndCloseMapEditor(int r);
     void specialValueComboBoxActivated(int index);
  private:
