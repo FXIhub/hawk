@@ -47,6 +47,7 @@
 #include <QTreeWidget>
 #include <QFont>
 #include <QMap>
+#include <QFileDialog>
 
 #include "configuration.h"
 
@@ -80,6 +81,10 @@ public:
     void commitAndCloseFileEditor(int r);
     void commitAndCloseMapEditor(int r);
     void specialValueComboBoxActivated(int index);
+ private:
+    QMap<QFileDialog *,QString> editorResult;
+    int fileEditorReturn;
+    QString fileEditorValue;
 };
 
 typedef QMap<double,double> DoubleMap;

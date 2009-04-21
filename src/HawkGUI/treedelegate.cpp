@@ -255,13 +255,14 @@ void ComboBoxDelegate::setModelData(QWidget *editor, QAbstractItemModel *model,
     model->setData(index, option, Qt::DisplayRole);
   }else if(md->variable_type == Type_Filename){
     QFileDialog * fe = static_cast<QFileDialog*>(editor);  
-    QStringList sf = fe->selectedFiles();
-    int result = fe->result();
-    //    if(result == QDialog::Accepted && sf.size()){
-    if(sf.size()){
-      QFileInfo fi(sf.first());
-      model->setData(index, fi.fileName(), Qt::DisplayRole);
-      model->setData(index, fi.absoluteFilePath(), Qt::ToolTipRole);
+    if(editorResult.size()){
+      QString fileName = editorResult.value(fe);
+      if(!fileName.isEmpty()){
+	QFileInfo fi(fileName);
+	model->setData(index, fi.fileName(), Qt::DisplayRole);
+	model->setData(index, fi.absoluteFilePath(), Qt::ToolTipRole);
+
+      }
     }
   }else if(md->variable_type == Type_Directory_Name ){
     QFileDialog * fe = static_cast<QFileDialog*>(editor);  
@@ -469,10 +470,15 @@ QVariant ComboBoxDelegate::decorationFromMetadata(const VariableMetadata * md,QF
 void ComboBoxDelegate::commitAndCloseFileEditor(int r)
 {
   QFileDialog *editor = qobject_cast<QFileDialog *>(sender());
+  fileEditorReturn = r;
   if(r){
-    emit commitData(editor);
+    QStringList sf = editor->selectedFiles();
+     if(sf.size()){
+       editorResult.insert(editor,sf.first());
+       emit commitData(editor);   
+     }
   }
-  //  emit closeEditor(editor);
+  emit closeEditor(editor);
 }
 
 
@@ -480,7 +486,7 @@ void ComboBoxDelegate::commitAndCloseMapEditor(int r)
 {
   MapEditorDialog *editor = qobject_cast<MapEditorDialog *>(sender());
   if(r){
-    emit commitData(editor);
+    emit commitData(editor);   
   }
   emit closeEditor(editor);
 }
