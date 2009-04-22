@@ -119,7 +119,8 @@ int OutputWatcher::processFile(const QString file){
 
 void OutputWatcher::stop(){
   if(pooler){
-    pooler->stop();
+    emit stopPooler();
+    //    pooler->stop();
   }
   quit();
 }
@@ -212,6 +213,7 @@ QFileInfo OutputWatcher::getPreviousFile(QString file){
 void OutputWatcher::run(){
   pooler = new QTimer;
   connect(pooler,SIGNAL(timeout()),this,SLOT(checkForNewFiles()));
+  connect(this,SIGNAL(stopPooler()),pooler,SLOT(stop()));
   pooler->start(2000);
   exec();
 }

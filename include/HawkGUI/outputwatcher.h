@@ -31,6 +31,7 @@ class OutputWatcher: public QThread
  signals:
   void newOutput(QString type, QFileInfo fi,QFileInfo old);
   void initialOutput(QString type,QFileInfo fi);
+  void stopPooler();
   private slots:
   void checkForNewFiles();
  protected:
