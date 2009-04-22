@@ -347,6 +347,10 @@ void PlotDisplay::updateCurves(){
 	canvas()->testAttribute(Qt::WA_PaintOutsidePaintEvent);
       
       const QPaintEngine *pe = canvas()->paintEngine();
+      if(!pe){	
+	/* For some reason there's no paintEngine still? */
+	return;
+      }
       bool directPaint = pe->hasFeature(QPaintEngine::PaintOutsidePaintEvent);
       if ( pe->type() == QPaintEngine::X11 ){
 	// Even if not recommended by TrollTech, Qt::WA_PaintOutsidePaintEvent 

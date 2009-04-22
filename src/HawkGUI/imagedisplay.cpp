@@ -107,14 +107,17 @@ void ImageDisplay::onProcessStarted(QString type, QString path,ProcessControl * 
   }else{
     qDebug("Process type unkown in %s:%d",__FILE__,__LINE__);
   }
+  connect(this,SIGNAL(stopOutputWatcher()),outputWatcher,SLOT(stop()));
   processRunning = true;
   process = p;
 }
 
 void ImageDisplay::onProcessStopped(){
   if(outputWatcher){
-    outputWatcher->stop();
-    delete outputWatcher;
+    emit stopOutputWatcher();
+    outputWatcher = NULL;
+    /*    outputWatcher->stop();
+	  delete outputWatcher;*/
   }
   processRunning = false;
 }
