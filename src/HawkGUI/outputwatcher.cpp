@@ -11,8 +11,6 @@ OutputWatcher::OutputWatcher(QString outputDir, QObject * parent,QList<ImageCate
   initTime = startTime;
   increment = inc;
   imageCategories = ic;
-  pooler = new QTimer;
-  connect(pooler,SIGNAL(timeout()),this,SLOT(checkForNewFiles()));
   //  connect(this,SIGNAL(directoryChanged(const QString &)),this,SLOT(checkForNewFiles()));
   setupQDir(outputDir);
 }
@@ -45,6 +43,7 @@ void OutputWatcher::checkForNewFiles(){
   QFileInfo fi;
   QString file;
   QFileInfo previousFile;
+  qDebug("checkForNewFiles");
   while(1){
     if(newestFiles.contains("Object")){
       fi = newestFiles.value("Object");
@@ -122,6 +121,7 @@ void OutputWatcher::stop(){
   if(pooler){
     pooler->stop();
   }
+  quit();
 }
 
 QList<QFileInfo> OutputWatcher::getOutputFiles(){
@@ -210,7 +210,10 @@ QFileInfo OutputWatcher::getPreviousFile(QString file){
 
 
 void OutputWatcher::run(){
+  pooler = new QTimer;
+  connect(pooler,SIGNAL(timeout()),this,SLOT(checkForNewFiles()));
   pooler->start(2000);
+  exec();
 }
 
 
