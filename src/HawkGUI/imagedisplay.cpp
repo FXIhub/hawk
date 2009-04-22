@@ -107,17 +107,16 @@ void ImageDisplay::onProcessStarted(QString type, QString path,ProcessControl * 
   }else{
     qDebug("Process type unkown in %s:%d",__FILE__,__LINE__);
   }
-  connect(this,SIGNAL(stopOutputWatcher()),outputWatcher,SLOT(stop()));
+  //  connect(this,SIGNAL(stopOutputWatcher()),outputWatcher,SLOT(stop()));
   processRunning = true;
   process = p;
 }
 
 void ImageDisplay::onProcessStopped(){
   if(outputWatcher){
-    emit stopOutputWatcher();
-    outputWatcher = NULL;
-    /*    outputWatcher->stop();
-	  delete outputWatcher;*/
+    connect(outputWatcher,SIGNAL(finished()),this,SLOT(deleteOutputWatcher()));
+    outputWatcher->stop();
+    //    delete outputWatcher;
   }
   processRunning = false;
 }
@@ -298,4 +297,8 @@ void ImageDisplay::logScaleSelectedImage(bool on){
   if(selected){
     selected->logScale(on);
   }
+}
+
+void ImageDisplay::deleteOutputWatcher(){
+  delete sender();
 }

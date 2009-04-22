@@ -49,6 +49,7 @@ public slots:
   void setColormap(int color);
   void maxContrastSelectedImage();
   void logScaleSelectedImage(bool on);
+  void deleteOutputWatcher();
  signals:
   void focusedViewChanged(ImageView * focused);
   void stopOutputWatcher();

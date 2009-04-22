@@ -211,8 +211,9 @@ QFileInfo OutputWatcher::getPreviousFile(QString file){
 
 
 void OutputWatcher::run(){
-  pooler = new QTimer;
+  pooler = new QTimer;  
   connect(pooler,SIGNAL(timeout()),this,SLOT(checkForNewFiles()));
+  //  connect(this,SIGNAL(stopPooler()),pooler,SLOT(stop()),Qt::BlockingQueuedConnection);
   connect(this,SIGNAL(stopPooler()),pooler,SLOT(stop()));
   pooler->start(2000);
   exec();
