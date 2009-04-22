@@ -51,6 +51,7 @@ public slots:
   void logScaleSelectedImage(bool on);
  signals:
   void focusedViewChanged(ImageView * focused);
+  void stopOutputWatcher();
   private slots:
   void onImageLoaded(QString image);
 private:

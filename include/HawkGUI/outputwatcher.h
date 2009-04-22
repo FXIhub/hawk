@@ -19,7 +19,6 @@ class OutputWatcher: public QThread
   Q_OBJECT
  public:
   OutputWatcher(QString outputDir,QObject * parent,QList<ImageCategory *> * ic,int inc,QDateTime startTime);
-  void stop();
   QList<QFileInfo> getOutputFiles();
   bool fileExists(QString file);
   QFileInfo getFileInfo(QString file);
@@ -27,6 +26,8 @@ class OutputWatcher: public QThread
   QFileInfo getPreviousFile(QString file);
   static QString incrementFilename(QString file, int increment);
   bool isFileValid(QString file);
+ public slots:
+  void stop();
  signals:
   void newOutput(QString type, QFileInfo fi,QFileInfo old);
   void initialOutput(QString type,QFileInfo fi);
