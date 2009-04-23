@@ -7,10 +7,17 @@
 # also defined, but not for general use are
 #  SZIP_LIBRARY, where to find the SZIP library.
 
-FIND_PATH(SZIP_INCLUDE_DIR szlib.h PATHS $ENV{SZIP}/include)
+IF(WIN32)
+SET(EXTRA_PREFIX c:/MinGW/)
+ELSEIF(APPLE)
+SET(EXTRA_PREFIX /sw/)
+ELSE()
+ENDIF()
+
+FIND_PATH(SZIP_INCLUDE_DIR szlib.h PATHS $ENV{SZIP}/include ${EXTRA_PREFIX} PATH_SUFFIXES include)
 
 SET(SZIP_NAMES ${SZIP_NAMES} sz)
-FIND_LIBRARY(SZIP_LIBRARY NAMES ${SZIP_NAMES} PATHS $ENV{SZIP}/lib )
+FIND_LIBRARY(SZIP_LIBRARY NAMES ${SZIP_NAMES} PATHS $ENV{SZIP}/lib ${EXTRA_PREFIX} PATH_SUFFIXES lib)
 
 # handle the QUIETLY and REQUIRED arguments and set SZIP_FOUND to TRUE if 
 # all listed variables are TRUE

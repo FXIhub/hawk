@@ -34,6 +34,7 @@
    $ENV{SOURCE_DIR}/fftw3/include
    $ENV{SOURCE_DIR}/fftw
    $ENV{SOURCE_DIR}/fftw/include
+   c:/mingw/include
  )
 #MESSAGE("DBG FFTW3_INCLUDE_DIR=${FFTW3_INCLUDE_DIR}")  
 
@@ -55,6 +56,7 @@ SET(FFTW3_POSSIBLE_LIBRARY_PATH
   $ENV{SOURCE_DIR}/fftw3/lib
   $ENV{SOURCE_DIR}/fftw
   $ENV{SOURCE_DIR}/fftw/lib
+  c:/mingw/lib
 )
 
   
