@@ -6,6 +6,7 @@
 use strict;
 use Cwd 'abs_path';
 use File::Basename;
+use File::Spec;
 
 sub get_dependencies{
   my $bin = shift;
@@ -76,7 +77,7 @@ sub get_all_dependencies{
   return keys %deps;
 }
 
-my $basedir =  dirname(abs_path(__FILE__));
+my $basedir =  dirname( File::Spec->rel2abs(__FILE__));
 (my $sec,my $min,my $hour,my $mday,my $mon,my $year,my $wday,my $yday,my $isdst) =
                                                                localtime(time);
 
@@ -96,12 +97,17 @@ $builddir = abs_path($builddir);
 print $builddir;
 chdir($builddir) or die($!);
 print `pwd`;
-system("cmake ../.. -DCMAKE_BUILD_TYPE=release -DCMAKE_INSTALL_PREFIX:PATH=$reldir");
+if(`uname -s` =~ /MINGW32/){
+    system("cmake -G \"MSYS Makefiles\" ../.. -DCMAKE_BUILD_TYPE=release -DCMAKE_INSTALL_PREFIX:PATH=$reldir");
+}else{
+    system("cmake ../.. -DCMAKE_BUILD_TYPE=release -DCMAKE_INSTALL_PREFIX:PATH=$reldir");
+}
 system("make -j 4");
 system("make install");
 chdir($reldir);
 mkdir("lib");
 chdir("lib");
+unless(`uname -s` =~ /MINGW32/){
 my @deps = get_all_dependencies("../bin");
 foreach my $dep(@deps){
     # Only package certain dependencies
@@ -123,6 +129,7 @@ foreach my $dep(@deps){
 # remove debug libs and strip the rest of the libs
 system("rm $libdir/*.debug");
 system("strip -s $libdir/*");
+}
 
 
 if(`uname -s` =~ /Darwin/){
