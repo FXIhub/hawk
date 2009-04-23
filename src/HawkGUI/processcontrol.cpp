@@ -63,7 +63,8 @@ void ProcessControl::startEmbeddedProcess(){
   QString command = programName+QString(" uwrapc");
   qDebug("Starting %s",command.toAscii().data());
   p_startTime = QDateTime::currentDateTime();
-  process->start(command);
+  QStringList arguments("uwrapc");
+  process->start(programName,arguments);
   bool ok;
   ok = process->waitForStarted(1000);
   if(!ok){
