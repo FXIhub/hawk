@@ -11,13 +11,21 @@
 # PNG depends on Zlib
 INCLUDE(FindZLIB)
 
+IF(WIN32)
+  SET(EXTRA_PREFIX c:/MinGW/)
+ELSEIF(APPLE)
+  SET(EXTRA_PREFIX /sw/)
+ELSE()
+ENDIF()
+  
 IF(ZLIB_FOUND)
   FIND_PATH(PNG_PNG_INCLUDE_DIR png.h
-  /usr/local/include/libpng             # OpenBSD
+  PATHS /usr/local/include/libpng             # OpenBSD
+  ${EXTRA_PREFIX} PATH_SUFFIXES include
   )
 
   SET(PNG_NAMES ${PNG_NAMES} png libpng png12 libpng12)
-  FIND_LIBRARY(PNG_LIBRARY NAMES ${PNG_NAMES} )
+  FIND_LIBRARY(PNG_LIBRARY NAMES ${PNG_NAMES} PATHS ${EXTRA_PREFIX} PATH_SUFFIXES lib)
 
   IF (PNG_LIBRARY AND PNG_PNG_INCLUDE_DIR)
       # png.h includes zlib.h. Sigh.
