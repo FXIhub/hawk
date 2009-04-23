@@ -7,10 +7,12 @@
 # also defined, but not for general use are
 #  TIFF_LIBRARY, where to find the TIFF library.
 
-FIND_PATH(TIFF_INCLUDE_DIR tiff.h)
+INCLUDE(ExtraPrefixes)
+
+FIND_PATH(TIFF_INCLUDE_DIR tiff.h PATHS ${EXTRA_PREFIX} PATH_SUFFIXES include)
 
 SET(TIFF_NAMES ${TIFF_NAMES} tiff libtiff libtiff3)
-FIND_LIBRARY(TIFF_LIBRARY NAMES ${TIFF_NAMES} )
+FIND_LIBRARY(TIFF_LIBRARY NAMES ${TIFF_NAMES} PATHS ${EXTRA_PREFIX} PATH_SUFFIXES lib)
 
 # handle the QUIETLY and REQUIRED arguments and set TIFF_FOUND to TRUE if 
 # all listed variables are TRUE

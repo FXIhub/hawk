@@ -5,16 +5,22 @@
 #  ZLIB_LIBRARIES   - List of libraries when using zlib.
 #  ZLIB_FOUND       - True if zlib found.
 
+IF(WIN32)
+  SET(EXTRA_PREFIX c:/MinGW/)
+ELSEIF(APPLE)
+  SET(EXTRA_PREFIX /sw/)
+ELSE()
+ENDIF()
 
 IF (ZLIB_INCLUDE_DIR)
   # Already in cache, be silent
   SET(ZLIB_FIND_QUIETLY TRUE)
 ENDIF (ZLIB_INCLUDE_DIR)
 
-FIND_PATH(ZLIB_INCLUDE_DIR zlib.h)
+FIND_PATH(ZLIB_INCLUDE_DIR zlib.h PATHS ${EXTRA_PREFIX} PATH_SUFFIXES include)
 
 SET(ZLIB_NAMES z zlib zdll)
-FIND_LIBRARY(ZLIB_LIBRARY NAMES ${ZLIB_NAMES} )
+FIND_LIBRARY(ZLIB_LIBRARY NAMES ${ZLIB_NAMES} PATHS ${EXTRA_PREFIX} PATH_SUFFIXES lib)
 
 # handle the QUIETLY and REQUIRED arguments and set ZLIB_FOUND to TRUE if 
 # all listed variables are TRUE

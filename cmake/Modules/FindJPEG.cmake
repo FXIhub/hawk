@@ -7,10 +7,17 @@
 # also defined, but not for general use are
 #  JPEG_LIBRARY, where to find the JPEG library.
 
-FIND_PATH(JPEG_INCLUDE_DIR jpeglib.h)
+IF(WIN32)
+  SET(EXTRA_PREFIX c:/MinGW/)
+ELSEIF(APPLE)
+  SET(EXTRA_PREFIX /sw/)
+ELSE()
+ENDIF()
+
+FIND_PATH(JPEG_INCLUDE_DIR jpeglib.h PATHS ${EXTRA_PREFIX} PATH_SUFFIXES include)
 
 SET(JPEG_NAMES ${JPEG_NAMES} jpeg)
-FIND_LIBRARY(JPEG_LIBRARY NAMES ${JPEG_NAMES} )
+FIND_LIBRARY(JPEG_LIBRARY NAMES ${JPEG_NAMES} PATHS ${EXTRA_PREFIX} PATH_SUFFIXES lib)
 
 # handle the QUIETLY and REQUIRED arguments and set JPEG_FOUND to TRUE if 
 # all listed variables are TRUE
