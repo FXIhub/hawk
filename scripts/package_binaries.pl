@@ -135,6 +135,11 @@ if(`uname -s` =~ /Linux/){
   system("make linux_bundle");
 }
 
+if(`uname -s` =~ /MINGW32/){
+  chdir($builddir);
+  system("make windows_bundle");
+}
+
 chdir($reldir);
 chdir("..");
 system("tar -zcvf ".$reldir.".tar.gz hawk-$version-$arch");
