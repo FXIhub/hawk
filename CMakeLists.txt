@@ -169,3 +169,16 @@ IF(WIN32)
 #  ADD_CUSTOM_TARGET(macosx_bundle perl scripts/macosx_dependencies.pl ${CMAKE_INSTALL_PREFIX} DEPENDS install  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMENT "making the macosx bundle." VERBATIM)
 ENDIF()
 
+
+
+set(top_level_DOCFILES
+  AUTHORS
+  COPYING
+  Changelog
+  Copyright
+  PROBLEMS
+  README
+  )
+install(FILES ${top_level_DOCFILES} DESTINATION doc)
+install(FILES doc/UserManual.pdf DESTINATION doc)
+ADD_SUBDIRECTORY(examples)

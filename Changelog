@@ -1,3 +1,8 @@
+2009-04-23	Filipe Maia	<filipe@xray.bmc.uu.se>
+	* Made everything compile in windows
+	* New alpha quality graphical interface
+	* New gtm like dummy package
+	* Made self contained packages for windows linux and macosx
 2008-08-16	Filipe Maia	<filipe@xray.bmc.uu.se>
 	* Added the capability to work with 3D images.
 	* Added many new options to control the support update mechanism.

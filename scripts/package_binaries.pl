@@ -6,7 +6,7 @@
 use strict;
 use Cwd 'abs_path';
 use File::Basename;
-use File::Spec;
+use File::Spec;    
 
 sub get_dependencies{
   my $bin = shift;
