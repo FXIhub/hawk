@@ -81,7 +81,7 @@ my $basedir =  dirname( File::Spec->rel2abs(__FILE__));
 (my $sec,my $min,my $hour,my $mday,my $mon,my $year,my $wday,my $yday,my $isdst) =
                                                                localtime(time);
 
-my $version = sprintf("%02d.%02d.%02d",$year%100,$mon,$mday);
+my $version = sprintf("%02d.%02d.%02d",$year%100,$mon+1,$mday);
 my $arch = `gcc -dumpmachine`;
 chomp($arch);
 my $reldir =($basedir."/../releases/hawk-$version-$arch");
