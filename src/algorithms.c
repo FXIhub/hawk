@@ -667,6 +667,121 @@ Image * basic_cflip_iteration(Image * exp_amp, Image * real_in, Image * support,
   return real_out;
 }
 
+Image * basic_espresso_iteration(Image * exp_amp, Image * real_in, Image * support, 
+			    Options * opts, Log * log){
+  Image * real_out;
+  Image * fft_out;
+  Image * pattern;
+  static char * weak_reflections = NULL;
+  real * tmp;
+  int i,j;
+  int size = sp_c3matrix_size(real_in->image);
+  real max = 0;
+  fft_out = sp_image_fft(real_in);
+  if(opts->perturb_weak_reflections && !weak_reflections){
+    weak_reflections = sp_malloc(sp_c3matrix_size(exp_amp->image)*sizeof(char));
+    tmp = sp_malloc(sp_c3matrix_size(exp_amp->image)*sizeof(real));
+    memcpy(tmp,exp_amp->image->data,sp_c3matrix_size(exp_amp->image)*sizeof(real));
+    qsort(tmp,sp_c3matrix_size(exp_amp->image),sizeof(real),descend_complex_compare);
+    /* get the weak reflections threshold */
+    max = tmp[(int)(sp_c3matrix_size(exp_amp->image)*opts->perturb_weak_reflections)];
+    fprintf(stderr,"max - %f\nindex - %d\n",max,(int)(sp_c3matrix_size(exp_amp->image)*opts->perturb_weak_reflections));
+    sp_free(tmp);
+    j = 0;
+    for(i = 0;i<sp_c3matrix_size(exp_amp->image);i++){
+      if(exp_amp->mask->data[i] && sp_real(exp_amp->image->data[i]) <= max){
+	weak_reflections[i] = 1;
+	j++;
+      }else{
+	weak_reflections[i] = 0;
+      }
+    }
+    fprintf(stderr,"marked %d reflections\n",j);  
+  }
+
+  
+  pattern = sp_image_duplicate(exp_amp,SP_COPY_DATA|SP_COPY_MASK);
+  sp_image_rephase(pattern,SP_ZERO_PHASE);
+  for(i = 0;i<sp_c3matrix_size(exp_amp->image);i++){
+    if(!exp_amp->mask->data[i]){
+      /*
+	use the calculated amplitudes for the places
+	masked out
+      */
+      pattern->image->data[i] = fft_out->image->data[i];
+    }else{
+      if(opts->perturb_weak_reflections && weak_reflections[i]){
+	/* take the calculated phases, rotate PI/2 and apply to the experimental intensities */
+	pattern->image->data[i] = sp_cscale(sp_cmul(sp_cinit(0,1),fft_out->image->data[i]),sp_real(exp_amp->image->data[i])/sp_cabs(fft_out->image->data[i]));
+      }else{
+	/* take the calculated phases and apply to the experimental intensities */	
+	pattern->image->data[i] = sp_cscale(fft_out->image->data[i],sp_real(exp_amp->image->data[i])/sp_cabs(fft_out->image->data[i]));
+      }
+    }
+  }
+  real_out = sp_image_ifft(pattern);
+  for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
+    /* normalize */
+    if(opts->enforce_real){
+      real_out->image->data[i] = sp_cinit(sp_real(real_out->image->data[i])/size,0);
+    }else{
+      real_out->image->data[i] = sp_cscale(real_out->image->data[i],1.0/size);
+    }
+    if(sp_cabs(real_out->image->data[i]) > max){
+      max = sp_cabs(real_out->image->data[i]);
+    }
+  }
+
+  /* espresso specific stuff */
+  Complex es_tmp;
+  for (i = 0; i < sp_c3matrix_size(real_out->image); i++) {
+    if (sp_cabs(sp_csub(real_out->image->data[i],real_in->image->data[i])) > opts->espresso_tau*max) {
+      sp_real(support->image->data[i]) = 1.0;
+    } else {
+      sp_real(support->image->data[i]) = 0.0;
+    }
+    if (sp_real(real_out->image->data[i]) > 0.0) {
+      sp_imag(support->image->data[i]) = 1.0;
+    } else {
+      sp_imag(support->image->data[i]) = 0.0;
+    }
+  }
+
+  for (i = 0; i < sp_c3matrix_size(real_out->image); i++) {
+    /*
+    sp_real(es_tmp) = 0.0;
+    sp_imag(es_tmp) = 0.0;
+    if (sp_real(support->image->data[i]) == 1 &&
+	sp_imag(support->image->data[i]) == 1) {
+      es_tmp = real_out->image->data[i];
+    }
+    if (sp_real(support->image->data[i]) == 0) {
+      es_tmp = sp_cadd(es_tmp,real_in->image->data[i]);
+    }
+    es_tmp = sp_csub(es_tmp,sp_cscale(real_out->image->data[i],opts->beta));
+
+    real_out->image->data[i] = es_tmp;
+    */
+
+    sp_real(es_tmp) = 0.0;
+    sp_imag(es_tmp) = 0.0;
+    real_out->image->data[i] = sp_csub(sp_cadd(sp_cscale(real_out->image->data[i],sp_real(support->image->data[i])*sp_imag(support->image->data[i])),sp_cscale(real_in->image->data[i],1.0-sp_real(support->image->data[i]))),sp_cscale(real_out->image->data[i],opts->beta));
+  }
+
+  if(opts->enforce_positivity){
+    for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
+      real_out->image->data[i] =  sp_cinit(fabs(sp_real(real_out->image->data[i])),fabs(sp_imag(real_out->image->data[i])));
+    }
+  }
+
+  if(opts->cur_iteration%opts->log_output_period == opts->log_output_period-1){
+    output_to_log(exp_amp,real_in, real_out, fft_out,support, opts,log);
+  }
+  sp_image_free(pattern);
+  sp_image_free(fft_out);
+  return real_out;
+}
+
 
 int get_algorithm(Options * opts,Log * log){
   if(opts->automatic){

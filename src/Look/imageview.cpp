@@ -143,7 +143,6 @@ void ImageView::showDistance(int on, bool bar, double value)
 {
   if (on) {
     if (bar) {
-
       distanceBarLength = value;
       circleResolution = 0.0;
     } else {

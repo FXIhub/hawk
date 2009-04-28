@@ -14,6 +14,13 @@ int main(int argc, char ** argv){
     a = sp_image_shift(a);
   }
   out = sp_image_fft(a);
+
+  int i;
+  const i_max = sp_image_size(out);
+  for (i = 0; i < i_max; i++) {
+    out->mask->data[i] = 1;
+  }
+
   sp_image_write(out,argv[2],0);
   return 0;
 }

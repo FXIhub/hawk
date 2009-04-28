@@ -288,6 +288,8 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
     real_out = basic_hpr_iteration(amp, real_in, support,opts,&log);
   }else if(get_algorithm(opts,&log) == CFLIP){
     real_out = basic_cflip_iteration(amp, real_in, support,opts,&log);
+  }else if(get_algorithm(opts,&log) == ESPRESSO) {
+    real_out = basic_espresso_iteration(amp, real_in, support, opts, &log);
   }else if(get_algorithm(opts,&log) == HAAR){
     real_out = basic_haar_iteration(amp, NULL, real_in, support,opts,&log);
   }else if(get_algorithm(opts,&log) == SO2D){
@@ -446,6 +448,8 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
       real_out = basic_hpr_iteration(amp, real_in, support,opts,&log);
     }else if(get_algorithm(opts,&log) == CFLIP){     
       real_out = basic_cflip_iteration(amp, real_in, support,opts,&log);
+    }else if(get_algorithm(opts,&log) == ESPRESSO){
+      real_out = basic_espresso_iteration(amp, real_in, support, opts, &log);
     }else if(get_algorithm(opts,&log) == HAAR){     
       real_out = basic_haar_iteration(amp, exp_sigma,real_in, support,opts,&log);
     }else if(get_algorithm(opts,&log) == SO2D){     

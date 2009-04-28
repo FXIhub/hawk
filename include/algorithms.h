@@ -33,7 +33,9 @@ Image * basic_hpr_iteration(Image * exp_amp, Image * real_in, Image * support,
 
 Image * basic_cflip_iteration(Image * exp_amp, Image * real_in, Image * support, 
 			      Options * opts, Log * log);
-
+Image * basic_espresso_iteration(Image * exp_amp, Image * real_in, Image * support, 
+				 Options * opts, Log * log);
+ 
 Image * basic_haar_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in, Image * support, 
 			     Options * opts, Log * log);
 

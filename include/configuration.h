@@ -19,7 +19,7 @@ extern "C"
 #define OPTION_STRING_SIZE 10024
 
 
-typedef enum{HIO=0,RAAR,HPR,CFLIP,RAAR_CFLIP,HAAR,SO2D,RAAR_PROJ,HIO_PROJ,DIFF_MAP} Phasing_Algorithms;
+  typedef enum{HIO=0,RAAR,HPR,CFLIP,RAAR_CFLIP,ESPRESSO,HAAR,SO2D,RAAR_PROJ,HIO_PROJ,DIFF_MAP} Phasing_Algorithms;
 
 
 
@@ -41,7 +41,7 @@ typedef enum {Id_Diffraction_Filename=0,Id_Real_Image_Filename,Id_Max_Blur_Radiu
 	      Id_Algorithm,Id_Exp_Sigma,Id_Dyn_Beta,Id_Rand_Phases,Id_Rand_Intensities,Id_Cur_Iteration,
 	      Id_Adapt_Thres,Id_Automatic,Id_Work_Dir,Id_Real_Error_Threshold,Id_Support_Update_Algorithm,
 	      Id_Output_Precision,Id_Error_Reduction_Iterations_After_Loop,Id_Enforce_Positivity,
-	      Id_Genetic_Optimization,Id_Charge_Flip_Sigma,Id_Rescale_Amplitudes,Id_Square_Mask,
+	      Id_Genetic_Optimization,Id_Charge_Flip_Sigma,Id_Espresso_Tau,Id_Rescale_Amplitudes,Id_Square_Mask,
 	      Id_Patterson_Blur_Radius,Id_Remove_Central_Pixel_Phase,Id_Perturb_Weak_Reflections,Id_Nthreads,
 	      Id_Break_Centrosym_Period,Id_Reconstruction_Finished,Id_Real_Error_Tolerance,Id_Root,
 	      Id_Remove_Central_Pixel_phase,Id_Max_Iterations,Id_Patterson_Level_Algorithm,Id_Object_Area,
@@ -107,6 +107,7 @@ typedef struct {
   int enforce_positivity;
   int genetic_optimization;
   real charge_flip_sigma;
+  real espresso_tau;
   int rescale_amplitudes;
   real square_mask;
   real patterson_blur_radius;
@@ -174,7 +175,7 @@ typedef struct _VariableMetadata{
 
 extern Options global_options;
 extern const int number_of_global_options;
-extern VariableMetadata variable_metadata[200];
+extern VariableMetadata variable_metadata[201];
 
   void init_options_metadata(Options * opt);
   void read_options_file(const char * filename);

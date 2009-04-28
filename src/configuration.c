@@ -116,6 +116,7 @@ void set_defaults(Options * opt){
   opt->enforce_positivity = 0;
   opt->genetic_optimization = 0;
   opt->charge_flip_sigma = (real)0.05;
+  opt->espresso_tau = (real)0.05;
   opt->rescale_amplitudes = 1;
   opt->square_mask = 0;
   opt->patterson_blur_radius = (real)0;

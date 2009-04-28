@@ -62,6 +62,13 @@ static int depends_on_phasing_algorithm_is_cflip(const Options * opt){
   return 0;
 }
 
+static int depends_on_phasing_algorithm_is_espresso(const Options *opt){
+  if(opt->algorithm == ESPRESSO){
+    return 1;
+  }
+  return 0;
+}
+
 static int depends_on_phasing_algorithm_is_raar(const Options * opt){  
   if(opt->algorithm == RAAR){
     return 1;
@@ -88,7 +95,8 @@ static int depends_on_phasing_algorithm_with_enforce_real(const Options * opt){
 static int depends_on_phasing_algorithm_with_beta(const Options * opt){  
   if(opt->algorithm == RAAR || opt->algorithm == HIO ||
      opt->algorithm == HPR || opt->algorithm == RAAR_PROJ ||
-     opt->algorithm == HIO_PROJ || opt->algorithm == DIFF_MAP){
+     opt->algorithm == HIO_PROJ || opt->algorithm == DIFF_MAP ||
+     opt->algorithm == ESPRESSO){
     return 1;
   }
   return 0;
@@ -135,7 +143,7 @@ static int depends_on_support_algorithm_with_real_error_threshold(const Options 
 }
 
 
-VariableMetadata variable_metadata[200] = {
+VariableMetadata variable_metadata[201] = {
   {
     .variable_name = "ROOT",
     .variable_type = Type_Group,
@@ -1350,6 +1358,20 @@ VariableMetadata variable_metadata[200] = {
     .reserved = NULL
   },
   {
+    .variable_name = "espresso_tau",
+    .display_name = "espresso tau",
+    .variable_type = Type_Real,
+    .id = Id_Espresso_Tau,
+    .parent = &(variable_metadata[20]),
+    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
+    .list_valid_values = {0},
+    .list_valid_names = {0},
+    .variable_address = &(global_options.espresso_tau),
+    .documentation = "Value of the tau parameter used in the Espresso algorithm",
+    .dependencies = depends_on_phasing_algorithm_is_espresso,
+    .reserved = NULL
+  },
+  {
     .variable_name = "real_image_file",
     .display_name = "Realspace Image File",
     .variable_type = Type_Filename,
@@ -1780,8 +1802,8 @@ VariableMetadata variable_metadata[200] = {
     .id = Id_Algorithm,
     .parent = &(variable_metadata[20]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
-    .list_valid_values = {HIO,RAAR,HPR,CFLIP,SO2D,RAAR_PROJ,HIO_PROJ,DIFF_MAP,0},
-    .list_valid_names = {"hio","raar","hpr","cflip","so2d","raar_proj", "hio_proj","diff_map",0},
+    .list_valid_values = {HIO,RAAR,HPR,CFLIP,ESPRESSO,SO2D,RAAR_PROJ,HIO_PROJ,DIFF_MAP,0},
+    .list_valid_names = {"hio","raar","hpr","cflip","espresso","so2d","raar_proj", "hio_proj","diff_map",0},
     .variable_address = &(global_options.algorithm),
     .documentation = "The type of algorithm used during the phase retrieval. A few other options then depend on the type of algorithm chosen.",
     .dependencies = NULL,
@@ -1794,8 +1816,8 @@ VariableMetadata variable_metadata[200] = {
     .id = Id_Algorithm,
     .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun|deprecated,
-    .list_valid_values = {HIO,RAAR,HPR,CFLIP,RAAR_CFLIP,HAAR,SO2D,RAAR_PROJ,HIO_PROJ,DIFF_MAP,0},
-    .list_valid_names = {"hio","raar","hpr","cflip","raar_cflip","haar","so2d","raar_proj","hio_proj","diff_map",0},
+    .list_valid_values = {HIO,RAAR,HPR,CFLIP,RAAR_CFLIP,ESPRESSO,HAAR,SO2D,RAAR_PROJ,HIO_PROJ,DIFF_MAP,0},
+    .list_valid_names = {"hio","raar","hpr","cflip","raar_cflip","espresso","haar","so2d","raar_proj","hio_proj","diff_map",0},
     .variable_address = &(global_options.algorithm),
     .documentation = "The type of algorithm used during the phase retrieval. A few other options then depend on the type of algorithm chosen.",
     .dependencies = NULL,
@@ -1875,7 +1897,7 @@ VariableMetadata variable_metadata[200] = {
 
 
 /* Don't forget to update this one!! */
-const int number_of_global_options = 131;
+const int number_of_global_options = 132;
 
 
 int get_list_value_from_list_name(VariableMetadata * md,char * name){
