@@ -114,7 +114,7 @@ unless(`uname -s` =~ /MINGW32/){
 	unless($dep =~ /Qt/ || $dep =~ /libtiff/ ||  $dep =~ /libpng/ || $dep =~ /libgsl/ || 
 	       $dep =~ /libgsl/ || $dep =~ /libaudio\./ || $dep =~ /libhdf5/  ||
 	       $dep =~ /libjpeg/ || $dep =~ /libqwt/ || $dep =~ /libspimage/ || $dep =~  /libz\.so/ ||
-	       $dep =~ /libfftw/ || $dep =~ /libsz\./ || $dep =~ /libssl\./){
+	       $dep =~ /libfftw/ || $dep =~ /libsz\./ || $dep =~ /libssl\./ || $dep =~ /libcrypto\./){
 	    next;
 	}
 	if(-f $dep){
