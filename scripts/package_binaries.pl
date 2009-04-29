@@ -108,27 +108,27 @@ chdir($reldir);
 mkdir("lib");
 chdir("lib");
 unless(`uname -s` =~ /MINGW32/){
-my @deps = get_all_dependencies("../bin");
-foreach my $dep(@deps){
-    # Only package certain dependencies
-    unless($dep =~ /Qt/ || $dep =~ /libtiff/ ||  $dep =~ /libpng/ || $dep =~ /libgsl/ || 
- 	   $dep =~ /libgsl/ || $dep =~ /libaudio\./ || $dep =~ /libhdf5/  ||
- 	   $dep =~ /libjpeg/ || $dep =~ /libqwt/ || $dep =~ /libspimage/ || $dep =~  /libz\.so/ ||
- 	   $dep =~ /libfftw/ || $dep =~ /libsz\./){
- 	next;
+    my @deps = get_all_dependencies("../bin");
+    foreach my $dep(@deps){
+	# Only package certain dependencies
+	unless($dep =~ /Qt/ || $dep =~ /libtiff/ ||  $dep =~ /libpng/ || $dep =~ /libgsl/ || 
+	       $dep =~ /libgsl/ || $dep =~ /libaudio\./ || $dep =~ /libhdf5/  ||
+	       $dep =~ /libjpeg/ || $dep =~ /libqwt/ || $dep =~ /libspimage/ || $dep =~  /libz\.so/ ||
+	       $dep =~ /libfftw/ || $dep =~ /libsz\./ || $dep =~ /libssl\./){
+	    next;
+	}
+	if(-f $dep){
+	    if($dep =~ s/libQt.*/libQt\*/){
+		#copy all Qt libs
+		system("cp -d $dep $libdir");
+	    }else{
+		system("cp $dep $libdir");
+	    }
+	}
     }
-    if(-f $dep){
- 	if($dep =~ s/libQt.*/libQt\*/){
- 	    #copy all Qt libs
- 	    system("cp -d $dep $libdir");
- 	}else{
- 	    system("cp $dep $libdir");
- 	}
-    }
-}
 # remove debug libs and strip the rest of the libs
-system("rm $libdir/*.debug");
-system("strip -s $libdir/*");
+    system("rm $libdir/*.debug");
+    system("strip -s $libdir/*");
 }
 
 

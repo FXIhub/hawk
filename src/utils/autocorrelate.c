@@ -18,8 +18,9 @@ int main(int argc, char ** argv){
   int i;
   real max;
   real min;
-  if(argc != 2){
-    printf("Usage: %s <img.h5>\n"
+  if(argc != 2 && argc != 3){
+    printf("Usage: %s <img.h5> [-d]\n"
+	   "If -d is given the input is taken to be a diffraction image and the autocorrelation is calculated by taking its fourier transform.\n"
 	   "Output: img_autocorrelation.vtk and img_autocorrelation.png\n",argv[0]);
     exit(0);
   }
@@ -29,8 +30,14 @@ int main(int argc, char ** argv){
       a->image->data[i] = sp_cinit(0,0);
     }
   }
-  b = sp_image_cross_correlate(a,a,NULL);
-  a = sp_image_shift(b);
+  if(argc == 3){
+    sp_image_to_intensities(a);
+    b = sp_image_fft(a);
+    a = sp_image_shift(b);
+  }else{
+    b = sp_image_cross_correlate(a,a,NULL);
+    a = sp_image_shift(b);
+  }
   sprintf(base,"%s",argv[1]);
   base[strlen(base)-3] = 0;
   sprintf(buffer,"%s_autocorrelation.vtk",base);
