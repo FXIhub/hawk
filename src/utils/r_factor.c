@@ -250,7 +250,7 @@ int main(int argc, char ** argv){
     sp_image_dephase(opts->rs_img);
   }
   if(opts->rs_sol && opts->rs_img){
-    sp_image_superimpose(opts->rs_sol,opts->rs_img,SP_ENANTIOMORPH);
+    sp_image_superimpose(opts->rs_sol,opts->rs_img,SpEnantiomorph);
   }
 /*  sprintf(buffer,"superimposed_%s.vtk",opts->image_file);
   sp_image_write(opts->rs_img,buffer,0);*/

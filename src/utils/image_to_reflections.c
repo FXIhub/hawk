@@ -106,12 +106,12 @@ int image_index_to_coords(Image * in,int index,int * x, int * y, int * z, SpOrig
   nx = sp_image_x(in);
   ny = sp_image_y(in);
   nz = sp_image_z(in);
-  if(origin == TopLeftCorner){
+  if(origin == SpTopLeftCorner){
     *z = index/(ny*nx);
     *y = (index%(ny*nx))/nx;
     *x = index%(nx);
     return 0;
-  }else if(origin == ImageCenter){
+  }else if(origin == SpImageCenter){
     *z = index/(ny*nx);
     *y = (index%(ny*nx))/nx;
     *x = index%(nx);

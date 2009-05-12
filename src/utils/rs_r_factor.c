@@ -89,7 +89,7 @@ int main(int argc, char ** argv){
     sp_imag(opts->image->image->data[i]) *= ratio;
   }
 
-  sp_image_superimpose(opts->solution,opts->image,SP_ENANTIOMORPH);
+  sp_image_superimpose(opts->solution,opts->image,SpEnantiomorph);
   sprintf(buffer,"superimposed_%s.vtk",opts->image_file);
   sp_image_write(opts->image,buffer,0);
   sprintf(buffer,"superimposed_%s.h5",opts->image_file);

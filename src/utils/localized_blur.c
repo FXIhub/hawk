@@ -16,7 +16,7 @@ Image * localized_blur(Image * in, Image * mask, double blur){
     if(sp_real(mask->image->data[i]) != 0){
       continue;
     }
-    sp_image_get_coords_from_index(in,i,&px,&py,&pz,TopLeftCorner);
+    sp_image_get_coords_from_index(in,i,&px,&py,&pz,SpTopLeftCorner);
     double gaussian_sum = 0;
     double convolution = 0;
     for(int x = floor(px-kernel_cutoff);x<ceil(px+kernel_cutoff);x++){

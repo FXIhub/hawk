@@ -168,7 +168,7 @@ void fill_image_blanks(Image * a, char * filler_image){
   real x,y,z;
   for(int i= 0;i < sp_image_size(a);i++){
     if(a->mask->data[i] == 0){
-      sp_image_get_coords_from_index(a,i,&x,&y,&z,ImageCenter);
+      sp_image_get_coords_from_index(a,i,&x,&y,&z,SpImageCenter);
       if(x+filler->detector->image_center[0] >= 0 && x+filler->detector->image_center[0] < sp_image_x(filler) &&
 	 y+filler->detector->image_center[1] >= 0 && y+filler->detector->image_center[1] < sp_image_y(filler) &&
 	 z+filler->detector->image_center[2] >= 0 && z+filler->detector->image_center[2] < sp_image_z(filler)){

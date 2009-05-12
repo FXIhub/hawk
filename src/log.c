@@ -286,7 +286,7 @@ void output_to_log(Image * exp_amp,Image * real_in, Image * real_out, Image * fo
   log->dSupSize += log->SupSize_run_avg;
   if(opts->solution_image){
     if(sol_superimpose_counter%10 == 0){
-      sp_image_superimpose(real_out,opts->solution_image,SP_ENANTIOMORPH);
+      sp_image_superimpose(real_out,opts->solution_image,SpEnantiomorph);
     }
     sol_superimpose_counter++;
     log->sol_correlation = sp_image_correlation_coefficient(opts->solution_image,real_out);
