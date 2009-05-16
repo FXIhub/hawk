@@ -65,6 +65,8 @@ private:
   
   QAction * loadImage;
   QAction * shiftImage;
+  QAction * fourierTransformImage;
+  QAction * fourierTransformSquaredImage;
   QAction * maxContrastImage;
   QAction * logScaleImage;
 

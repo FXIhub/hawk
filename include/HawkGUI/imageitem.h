@@ -37,6 +37,7 @@ class ImageItem: public QGraphicsPixmapItem
     return Type;
   }
   void shiftImage();
+  void fourierTransform(QRectF area,bool squared);
   void setColormap(int color);
   int colormap();
   void setDisplay(int display);

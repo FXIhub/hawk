@@ -103,6 +103,8 @@ void HawkGUI::createToolBars(){
   imageDisplayToolBar->addSeparator();
   imageDisplayToolBar->addAction(loadImage);
   imageDisplayToolBar->addAction(shiftImage);
+  imageDisplayToolBar->addAction(fourierTransformImage);
+  imageDisplayToolBar->addAction(fourierTransformSquaredImage);
   imageDisplayToolBar->addAction(maxContrastImage);
   imageDisplayToolBar->addAction(logScaleImage);
 
@@ -181,6 +183,14 @@ void HawkGUI::createActions(){
   shiftImage = new QAction(QIcon(":images/image_shift.png"),tr("&Shift Image"), this);
   shiftImage->setStatusTip(tr("Shifts the quadrants of the selected image."));
   connect(shiftImage,SIGNAL(triggered(bool)),imageDisplay,SLOT(shiftSelectedImage()));
+  fourierTransformImage = new QAction(QIcon(":images/fourier_transform.png"),tr("&Fourier Transform Image"), this);
+  fourierTransformImage->setStatusTip(tr("Fourier Transforms the part of the image currently visible."));
+  connect(fourierTransformImage,SIGNAL(triggered(bool)),imageDisplay,SLOT(fourierTransformSelectedImage()));
+  fourierTransformSquaredImage = new QAction(QIcon(":images/fourier_transform_squared.png"),tr("&Fourier Transform the square of the Image"), this);
+  fourierTransformSquaredImage->setStatusTip(tr("Fourier Transform of the square of the absolute value of the part of the image currently visible."));
+  connect(fourierTransformSquaredImage,SIGNAL(triggered(bool)),imageDisplay,SLOT(fourierTransformSquaredSelectedImage()));
+
+
   maxContrastImage = new QAction(QIcon(":images/bricontrast.png"),tr("&Maximize Contrast"), this);
   maxContrastImage->setStatusTip(tr("Maximizes the contrast of the selected image."));
   connect(maxContrastImage,SIGNAL(triggered(bool)),imageDisplay,SLOT(maxContrastSelectedImage()));

@@ -36,6 +36,8 @@ public slots:
   void loadUserSelectedImage();
   void loadInitialProcessOutput(QString key, QFileInfo file);
   void shiftSelectedImage();
+  void fourierTransformSelectedImage();
+  void fourierTransformSquaredSelectedImage();
   void displayAmplitudes();
   void displayPhases();
   void displayMask();

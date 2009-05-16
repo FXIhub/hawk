@@ -284,6 +284,12 @@ void ImageView::shiftImage(){
   }
 }
 
+void ImageView::fourierTransform(bool squared){
+  if(imageItem){
+    imageItem->fourierTransform((mapToScene(0,0,width(),height())).boundingRect(),squared);
+  }
+}
+
 
 void ImageView::setColormap(int color){
   if(imageItem){

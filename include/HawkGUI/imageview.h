@@ -35,6 +35,7 @@ class ImageView: public QGraphicsView
   QString currentlyLoadingFilename();
   QString getScheduledFilename();
   void shiftImage();
+  void fourierTransform(bool squared);
   void setColormap(int color);
   int colormap();
   void setDisplay(int display);

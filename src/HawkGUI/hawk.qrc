@@ -14,5 +14,7 @@
      <file>images/stop.png</file>
      <file>images/bricontrast.png</file>
      <file>images/log_scale.png</file>
+     <file>images/fourier_transform.png</file>
+     <file>images/fourier_transform_squared.png</file>
  </qresource>
  </RCC>

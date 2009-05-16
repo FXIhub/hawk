@@ -96,6 +96,52 @@ void ImageItem::shiftImage(){
   }
 }
 
+void ImageItem::fourierTransform(QRectF area,bool squared){
+  if(image){
+    // the area is given in scene coordinates. We have to change to item coordinates
+    QPointF tl = mapFromScene(area.topLeft());
+    QPointF br = mapFromScene(area.bottomRight());
+    int origin_x = sp_max(0,tl.x());
+    int origin_y = sp_max(0,tl.y());
+    int width = sp_min(sp_image_x(image),br.x()) - sp_max(0,tl.x());
+    int height = sp_min(sp_image_y(image),br.y()) - sp_max(0,tl.y());
+    Image * tmp = sp_image_alloc(width,height,1);
+    for(int x = (int)tl.x();x<=br.x();x++){
+      if(x < 0 || x >= sp_image_x(tmp)){
+	continue;
+      }
+      for(int y = (int)tl.y();y<=br.y();y++){
+	if(y < 0 || y >= sp_image_y(tmp)){
+	  continue;
+	}
+	sp_image_set(tmp,x-origin_x,y-origin_y,0,sp_image_get(image,x,y,0));
+      }
+    }
+    memcpy(tmp->detector,image->detector,sizeof(Detector));
+    //    Image * tmp = sp_image_duplicate(image,SP_COPY_ALL);
+    if(squared){
+      for(int i= 0;i<sp_image_size(tmp);i++){
+	tmp->image->data[i] = sp_cinit(sp_cabs2(tmp->image->data[i]),0);
+      }
+    }
+    Image * tmp2 = sp_image_fft(tmp);
+    sp_image_scale(tmp2,1.0/sqrt(sp_image_size(tmp2)));
+    sp_image_free(tmp);
+    tmp = tmp2;
+    
+    if(tmp && sp_image_is_valid(tmp)){
+      sp_image_free(image);
+      image = tmp;
+      colormap_data = sp_image_get_false_color(image,colormap_flags,colormap_min,colormap_max);
+      data = QImage(colormap_data,sp_image_x(image),sp_image_y(image),QImage::Format_RGB32);
+      setPixmap(QPixmap::fromImage(data));
+    }else if(tmp){
+      sp_image_free(tmp);
+    }
+  }
+}
+
+
 bool ImageItem::isShifted(){
   if(image){
     return image->shifted;

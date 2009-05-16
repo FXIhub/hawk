@@ -193,6 +193,19 @@ void ImageDisplay::shiftSelectedImage(){
   }
 }
 
+void ImageDisplay::fourierTransformSelectedImage(){
+  if(selected){
+    selected->fourierTransform(false);
+  }
+}
+
+void ImageDisplay::fourierTransformSquaredSelectedImage(){
+  if(selected){
+    selected->fourierTransform(true);
+  }
+}
+
+
 void ImageDisplay::displayAmplitudes(){
   if(selected){
     selected->setDisplay(0);
