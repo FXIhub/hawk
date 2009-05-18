@@ -57,10 +57,14 @@ Image * basic_hio_iteration(Image * exp_amp, Image * real_in, Image * support,
   for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
     /* Treat points outside support*/
     if(!sp_real(support->image->data[i])){
-      if(opts->enforce_real){
-	real_out->image->data[i] = sp_cinit(sp_real(sp_csub(real_in->image->data[i],sp_cscale(real_out->image->data[i],beta))),0); 
-      }else{
-	real_out->image->data[i] = sp_csub(real_in->image->data[i],sp_cscale(real_out->image->data[i],beta)); 
+      real_out->image->data[i] = sp_csub(real_in->image->data[i],sp_cscale(real_out->image->data[i],beta)); 
+    }
+  }
+  /* Only apply constraints inside the support */
+  if(opts->enforce_real){
+    for(i = 0;i<sp_image_size(real_out);i++){
+      if(sp_real(support->image->data[i])){
+	sp_imag(real_out->image->data[i]) = 0;
       }
     }
   }
