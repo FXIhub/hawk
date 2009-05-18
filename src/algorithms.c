@@ -110,11 +110,7 @@ Image * basic_hio_proj_iteration(Image * exp_amp, Image * int_std_dev, Image * r
 
   for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
     if(!sp_real(support->image->data[i])){
-      if(opts->enforce_real){
-	real_out->image->data[i] = sp_cinit(sp_real(sp_csub(real_in->image->data[i],sp_cscale(real_out->image->data[i],beta))),0);
-      }else{
-	real_out->image->data[i] = sp_csub(real_in->image->data[i],sp_cscale(real_out->image->data[i],beta));
-      }
+      real_out->image->data[i] = sp_csub(real_in->image->data[i],sp_cscale(real_out->image->data[i],beta));
     }
   }
 
@@ -134,11 +130,6 @@ Image * basic_hio_proj_iteration(Image * exp_amp, Image * int_std_dev, Image * r
     }
   }
 
-  if (opts->enforce_positivity) {
-    for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
-      real_out->image->data[i] = sp_cinit(fabs(sp_real(real_out->image->data[i])),fabs(sp_imag(real_out->image->data[i])));
-    }
-  }
   
   if(opts->cur_iteration%opts->log_output_period == opts->log_output_period-1){
     output_to_log(exp_amp,real_in, real_out, fft_in,support, opts,log);
@@ -226,14 +217,20 @@ Image * serial_raar_iteration(Image * exp_amp, Image * real_in, Image * support,
       real_out->image->data[i] = sp_cadd(sp_cscale(real_out->image->data[i],one_minus_2_beta),sp_cscale(real_in->image->data[i],beta));      
     }
   }
-  if(opts->enforce_positivity){
-    for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
-      real_out->image->data[i] =  sp_cinit(fabs(sp_real(real_out->image->data[i])),fabs(sp_imag(real_out->image->data[i])));
+
+  /* Only apply constraints inside the support */
+  if(opts->enforce_real){
+    for(i = 0;i<sp_image_size(real_out);i++){
+      if(sp_real(support->image->data[i])){
+	sp_imag(real_out->image->data[i]) = 0;
+      }
     }
   }
-  if(opts->enforce_real){
+  if(opts->enforce_positivity){
     for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
-      real_out->image->data[i] =  sp_cinit(sp_cabs(real_out->image->data[i]),0);
+      if(sp_real(support->image->data[i])){
+	real_out->image->data[i] =  sp_cinit(fabs(sp_real(real_out->image->data[i])),fabs(sp_imag(real_out->image->data[i])));
+      }
     }
   }
 
@@ -353,14 +350,20 @@ Image * basic_raar_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in
       real_out->image->data[i] = sp_cadd(sp_cscale(real_out->image->data[i],one_minus_2_beta),sp_cscale(real_in->image->data[i],beta));      
     }
   }
-  if(opts->enforce_positivity){
-    for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
-      real_out->image->data[i] =  sp_cinit(fabs(sp_real(real_out->image->data[i])),fabs(sp_imag(real_out->image->data[i])));
+
+  /* Only apply constraints inside the support */
+  if(opts->enforce_real){
+    for(i = 0;i<sp_image_size(real_out);i++){
+      if(sp_real(support->image->data[i])){
+	sp_imag(real_out->image->data[i]) = 0;
+      }
     }
   }
-  if(opts->enforce_real){
+  if(opts->enforce_positivity){
     for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
-      real_out->image->data[i] =  sp_cinit(sp_cabs(real_out->image->data[i]),0);
+      if(sp_real(support->image->data[i])){
+	real_out->image->data[i] =  sp_cinit(fabs(sp_real(real_out->image->data[i])),fabs(sp_imag(real_out->image->data[i])));
+      }
     }
   }
 
@@ -414,6 +417,21 @@ Image * basic_raar_proj_iteration(Image * exp_amp, Image * int_std_dev, Image * 
     */    
     if(!sp_cabs(support->image->data[i])){
       real_out->image->data[i] = sp_cadd(sp_cscale(real_out->image->data[i],one_minus_2_beta),sp_cscale(real_in->image->data[i],beta));      
+    }
+  }
+  /* Only apply constraints inside the support */
+  if(opts->enforce_real){
+    for(i = 0;i<sp_image_size(real_out);i++){
+      if(sp_real(support->image->data[i])){
+	sp_imag(real_out->image->data[i]) = 0;
+      }
+    }
+  }
+  if(opts->enforce_positivity){
+    for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
+      if(sp_real(support->image->data[i])){
+	real_out->image->data[i] =  sp_cinit(fabs(sp_real(real_out->image->data[i])),fabs(sp_imag(real_out->image->data[i])));
+      }
     }
   }
   if(opts->cur_iteration%opts->log_output_period == opts->log_output_period-1){
@@ -535,9 +553,19 @@ Image * basic_error_reduction_iteration(Image * exp_amp, Image * real_in, Image 
       real_out->image->data[i] = sp_cinit(0,0);
     }
   }
+  /* Only apply constraints inside the support */
+  if(opts->enforce_real){
+    for(i = 0;i<sp_image_size(real_out);i++){
+      if(sp_real(support->image->data[i])){
+	sp_imag(real_out->image->data[i]) = 0;
+      }
+    }
+  }
   if(opts->enforce_positivity){
     for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
-      real_out->image->data[i] =  sp_cinit(fabs(sp_real(real_out->image->data[i])),fabs(sp_imag(real_out->image->data[i])));
+      if(sp_real(support->image->data[i])){
+	real_out->image->data[i] =  sp_cinit(fabs(sp_real(real_out->image->data[i])),fabs(sp_imag(real_out->image->data[i])));
+      }
     }
   }
 
@@ -590,9 +618,19 @@ Image * basic_hpr_iteration(Image * exp_amp, Image * real_in, Image * support,
       }
     }
   }
+  /* Only apply constraints inside the support */
+  if(opts->enforce_real){
+    for(i = 0;i<sp_image_size(real_out);i++){
+      if(sp_real(support->image->data[i])){
+	sp_imag(real_out->image->data[i]) = 0;
+      }
+    }
+  }
   if(opts->enforce_positivity){
     for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
-      real_out->image->data[i] =  sp_cinit(fabs(sp_real(real_out->image->data[i])),fabs(sp_imag(real_out->image->data[i])));
+      if(sp_real(support->image->data[i])){
+	real_out->image->data[i] =  sp_cinit(fabs(sp_real(real_out->image->data[i])),fabs(sp_imag(real_out->image->data[i])));
+      }
     }
   }
 
@@ -676,6 +714,7 @@ Image * basic_cflip_iteration(Image * exp_amp, Image * real_in, Image * support,
       real_out->image->data[i] = sp_cscale(real_out->image->data[i],-1);
     }
   }
+
   if(opts->enforce_positivity){
     for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
       real_out->image->data[i] =  sp_cinit(fabs(sp_real(real_out->image->data[i])),fabs(sp_imag(real_out->image->data[i])));
@@ -791,9 +830,20 @@ Image * basic_espresso_iteration(Image * exp_amp, Image * real_in, Image * suppo
     real_out->image->data[i] = sp_csub(sp_cadd(sp_cscale(real_out->image->data[i],sp_real(support->image->data[i])*sp_imag(support->image->data[i])),sp_cscale(real_in->image->data[i],1.0-sp_real(support->image->data[i]))),sp_cscale(real_out->image->data[i],opts->beta));
   }
 
+
+  /* Only apply constraints inside the support */
+  if(opts->enforce_real){
+    for(i = 0;i<sp_image_size(real_out);i++){
+      if(sp_real(support->image->data[i])){
+	sp_imag(real_out->image->data[i]) = 0;
+      }
+    }
+  }
   if(opts->enforce_positivity){
     for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
-      real_out->image->data[i] =  sp_cinit(fabs(sp_real(real_out->image->data[i])),fabs(sp_imag(real_out->image->data[i])));
+      if(sp_real(support->image->data[i])){
+	real_out->image->data[i] =  sp_cinit(fabs(sp_real(real_out->image->data[i])),fabs(sp_imag(real_out->image->data[i])));
+      }
     }
   }
 
@@ -1044,6 +1094,23 @@ Image * serial_difference_map_iteration(Image * exp_amp, Image * real_in, Image 
   }
   sp_image_free(Pi2f1);
   sp_image_free(Pi2rho);
+
+  /* Only apply constraints inside the support */
+  if(opts->enforce_real){
+    for(int i = 0;i<sp_image_size(real_out);i++){
+      if(sp_real(support->image->data[i])){
+	sp_imag(real_out->image->data[i]) = 0;
+      }
+    }
+  }
+  if(opts->enforce_positivity){
+    for(int i = 0;i<sp_c3matrix_size(real_out->image);i++){
+      if(sp_real(support->image->data[i])){
+	real_out->image->data[i] =  sp_cinit(fabs(sp_real(real_out->image->data[i])),fabs(sp_imag(real_out->image->data[i])));
+      }
+    }
+  }
+
   if(opts->cur_iteration%opts->log_output_period == opts->log_output_period-1){
     output_to_log(exp_amp,real_in, real_out, fft_in,support, opts,log);
   }

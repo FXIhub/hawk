@@ -71,6 +71,7 @@ Options * parse_options(int argc, char ** argv){
     case 'i':
       res->fs_img = sp_image_read(optarg,0);
       strcpy(res->image_file,optarg);
+      break;
     case 'S':
       res->rs_sol = sp_image_read(optarg,0);
       break;
