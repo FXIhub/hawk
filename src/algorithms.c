@@ -117,6 +117,23 @@ Image * basic_hio_proj_iteration(Image * exp_amp, Image * int_std_dev, Image * r
       }
     }
   }
+
+  /* Only apply constraints inside the support */
+  if(opts->enforce_real){
+    for(i = 0;i<sp_image_size(real_out);i++){
+      if(sp_real(support->image->data[i])){
+	sp_imag(real_out->image->data[i]) = 0;
+      }
+    }
+  }
+  if(opts->enforce_positivity){
+    for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
+      if(sp_real(support->image->data[i])){
+	real_out->image->data[i] =  sp_cinit(fabs(sp_real(real_out->image->data[i])),fabs(sp_imag(real_out->image->data[i])));
+      }
+    }
+  }
+
   if (opts->enforce_positivity) {
     for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
       real_out->image->data[i] = sp_cinit(fabs(sp_real(real_out->image->data[i])),fabs(sp_imag(real_out->image->data[i])));
@@ -949,7 +966,7 @@ Image * serial_difference_map_f1(Image * real_in,Image * support,real gamma1){
    This is the Fourier constraint map.
 */
 Image * serial_difference_map_f2(Image * exp_amp, Image * fft_in,real gamma2){
-  Image * tmp2 = sp_proj_module(fft_in,exp_amp);
+  Image * tmp2 = sp_proj_module(fft_in,exp_amp,SpOutOfPlace);
   for(int i = 0;i<sp_image_size(tmp2);i++){
     sp_real(tmp2->image->data[i]) = (1+gamma2)*sp_real(tmp2->image->data[i])-gamma2*sp_real(fft_in->image->data[i]);
     sp_imag(tmp2->image->data[i]) = (1+gamma2)*sp_imag(tmp2->image->data[i])-gamma2*sp_imag(fft_in->image->data[i]);
@@ -1007,12 +1024,12 @@ Image * serial_difference_map_iteration(Image * exp_amp, Image * real_in, Image 
   Image * f1 = serial_difference_map_f1(real_in,support,gamma1);
   Image * tmp = sp_image_fft(f1);
   sp_image_free(f1);
-  Image * tmp2 = sp_proj_module(tmp,exp_amp);
+  Image * tmp2 = sp_proj_module(tmp,exp_amp,SpOutOfPlace);
   sp_image_free(tmp);
   Image * Pi2f1 = sp_image_ifft(tmp2);
   sp_image_free(tmp2);
 
-  tmp2 = sp_proj_module(fft_in,exp_amp);
+  tmp2 = sp_proj_module(fft_in,exp_amp,SpOutOfPlace);
   Image * Pi2rho = sp_image_ifft(tmp2);
   sp_image_free(tmp2);
 
