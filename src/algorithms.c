@@ -1043,7 +1043,7 @@ Image * serial_difference_map_iteration(Image * exp_amp, Image * exp_sigma, Imag
   sp_image_free(f2);
   Image * tmp = sp_image_fft(f1);
   sp_image_free(f1);
-  Image * tmp2 = sp_proj_module(tmp,exp_amp);
+  Image * tmp2 = sp_proj_module(tmp,exp_amp,0);
   sp_image_free(tmp);
   Image * Pi2f1 = sp_image_ifft(tmp2);
   sp_image_free(tmp2);

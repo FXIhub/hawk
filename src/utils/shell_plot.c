@@ -10,6 +10,8 @@ typedef struct{
 }Binned_Data;
 
 
+Binned_Data * image_std_deviation_by_r(Image * a, int nshells);
+
 void write_array_file(char  * filename, int n,Binned_Data * y, real * x){
   FILE  * fp = fopen(filename,"w");
   for(int i = 0;i<n;i++){
@@ -49,6 +51,46 @@ Binned_Data * bin_image_by_r(Image * a, int nshells){
  return res;
 }
 
+Binned_Data * image_std_deviation_by_r(Image * a, int nshells){
+  Binned_Data * res = sp_malloc(sizeof(Binned_Data));
+  res->f = sp_malloc(sizeof(double)*nshells);
+  double avg[nshells];
+  res->bin_pop = sp_malloc(sizeof(int)*nshells);
+  real max_dist = sqrt(sp_image_x(a)*sp_image_x(a)+sp_image_y(a)*sp_image_y(a)+
+		       sp_image_z(a)*sp_image_z(a));
+ max_dist /= 2;
+ for(int i = 0;i<nshells;i++){
+   res->f[i] = 0;
+   res->bin_pop[i] = 0;
+   avg[i] = 0;
+ }
+ for(int i = 0;i<sp_image_size(a);i++){
+   real dist = sp_image_dist(a,i,SP_TO_CENTER);
+   int bin = sp_min(dist*nshells/max_dist,nshells-1);
+   avg[bin] += sp_cabs(a->image->data[i]);
+   res->bin_pop[bin]++;
+ }
+ for(int i = 0;i<nshells;i++){
+   avg[i] /= res->bin_pop[i];
+ }
+ for(int i = 0;i<sp_image_size(a);i++){
+   real dist = sp_image_dist(a,i,SP_TO_CENTER);
+   int bin = sp_min(dist*nshells/max_dist,nshells-1);
+   res->f[bin] += (sp_cabs(a->image->data[i])-avg[bin])*
+     (sp_cabs(a->image->data[i])-avg[bin]);
+ }
+ for(int i = 0;i<nshells;i++){
+   res->f[i] = sqrt(res->f[i]/res->bin_pop[i]);
+ }
+ // Calculate the relative standard deviation (relative to the average value)
+ for(int i = 0;i<nshells;i++){
+   res->f[i] /= avg[i];
+ }
+
+ return res;
+}
+
+
 int main(int argc, char ** argv){
   int nshells = 141;
   Binned_Data * out;
@@ -67,6 +109,8 @@ int main(int argc, char ** argv){
   }
   Image * a= sp_image_read(argv[1],0);
   out = bin_image_by_r(a,nshells);
+  Binned_Data * std_dev = image_std_deviation_by_r(a,nshells);
   write_array_file("shells.data",nshells,out,shell_res);
+  write_array_file("shells_std_dev.data",nshells,std_dev,shell_res);
   return 0;
 }
