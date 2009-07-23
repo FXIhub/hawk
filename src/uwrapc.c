@@ -466,12 +466,13 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
 
   //sp_image_write(real_out,"real_out_final.h5",opts->output_precision|SP_2D);
   //sp_image_write(real_out,"real_out_final.png",COLOR_JET|SP_2D);
-  sp_image_write(real_out,"real_out_final.vtk",0);
+  //  sp_image_write(real_out,"real_out_final.vtk",0);
+  sp_image_write(real_out,"real_out_final.h5",0);
   //sprintf(buffer,"support-final.png");
   //sp_image_write(support,buffer,COLOR_JET|SP_2D);
   //sprintf(buffer,"support-final.h5");
-  //sp_image_write(support,buffer,opts->output_precision|SP_2D);
-  sprintf(buffer,"support-final.vtk");
+  sp_image_write(support,"support-final.h5",0);
+  //sprintf(buffer,"support-final.vtk");
   sp_image_write(support,buffer,opts->output_precision);
   tmp = sp_image_fft(real_out); 
   for(i = 0;i<sp_c3matrix_size(tmp->image);i++){
@@ -479,9 +480,9 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
   }
   sprintf(buffer,"pattern-final.h5");
   //sp_image_write(tmp,buffer,opts->output_precision);
-  sprintf(buffer,"pattern-final.png");
+  //  sprintf(buffer,"pattern-final.png");
   //sp_image_write(tmp,buffer,COLOR_JET);
-  sprintf(buffer,"pattern-final.vtk");
+  //  sprintf(buffer,"pattern-final.vtk");
   sp_image_write(tmp,buffer,0);
   sp_image_free(tmp);
   

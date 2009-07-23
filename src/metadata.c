@@ -78,7 +78,7 @@ static int depends_on_phasing_algorithm_is_raar(const Options * opt){
 
 static int depends_on_phasing_algorithm_with_positivity(const Options * opt){  
   if(opt->algorithm == RAAR || opt->algorithm == HIO ||
-     opt->algorithm == HPR || opt->algorithm == CFLIP){
+     opt->algorithm == HPR || opt->algorithm == CFLIP || opt->algorithm == DIFF_MAP){
     return 1;
   }
   return 0;
@@ -86,7 +86,7 @@ static int depends_on_phasing_algorithm_with_positivity(const Options * opt){
 
 static int depends_on_phasing_algorithm_with_enforce_real(const Options * opt){  
   if(opt->algorithm == RAAR || opt->algorithm == HIO ||
-     opt->algorithm == HPR || opt->algorithm == CFLIP){
+     opt->algorithm == HPR || opt->algorithm == CFLIP || opt->algorithm == DIFF_MAP){
     return 1;
   }
   return 0;
@@ -144,6 +144,7 @@ static int depends_on_support_algorithm_with_real_error_threshold(const Options 
 
 
 VariableMetadata variable_metadata[201] = {
+  /*  0 */
   {
     .variable_name = "ROOT",
     .variable_type = Type_Group,
@@ -290,6 +291,8 @@ VariableMetadata variable_metadata[201] = {
     .dependencies = NULL,
     .reserved = NULL
   },
+
+  /* 10 */
   {
     .variable_name = "added_noise",
     .variable_type = Type_Real,
@@ -427,6 +430,7 @@ VariableMetadata variable_metadata[201] = {
     .dependencies = NULL,
     .reserved = NULL
   },
+  /* 20 */
   {
     .variable_name = "phasing_method",
     .display_name = "Phasing Method",
@@ -554,6 +558,7 @@ VariableMetadata variable_metadata[201] = {
     .dependencies = NULL,
     .reserved = NULL
   },
+  /* 30 */
   {
     .variable_name = "support_update_method",
     .display_name = "Support Update Method",
@@ -677,6 +682,7 @@ VariableMetadata variable_metadata[201] = {
     .dependencies = NULL,
     .reserved = NULL
   },
+  /* 40 */
   {
     .variable_name = "remove_central_pixel_phase",
     .variable_type = Type_Bool,
@@ -801,6 +807,7 @@ VariableMetadata variable_metadata[201] = {
     .dependencies = NULL,
     .reserved = NULL
   },
+  /* 50 */
   {
     .variable_name = "image_blur_radius",
     .variable_type = Type_Real,
@@ -923,6 +930,7 @@ VariableMetadata variable_metadata[201] = {
     .dependencies = NULL,
     .reserved = NULL
   },
+  /* 60 */
   {
     .variable_name = "autocorrelation_support_file",
     .variable_type = Type_Filename,
@@ -1050,6 +1058,7 @@ VariableMetadata variable_metadata[201] = {
     .dependencies = NULL,
     .reserved = NULL
   },
+  /* 70 */
   {
     .variable_name = "added_noise",
     .display_name = "Added Noise",
@@ -1199,6 +1208,7 @@ VariableMetadata variable_metadata[201] = {
     .dependencies = NULL,
     .reserved = NULL
   },
+  /* 80 */
   {
     .variable_name = "RAAR_sigma",
     .display_name = "RAAR Sigma",
@@ -1343,6 +1353,7 @@ VariableMetadata variable_metadata[201] = {
     .dependencies = depends_on_phasing_algorithm_with_enforce_real,
     .reserved = NULL
   },
+  /* 90 */
   {
     .variable_name = "charge_flip_sigma",
     .display_name = "Charge Flip Sigma",
@@ -1484,6 +1495,7 @@ VariableMetadata variable_metadata[201] = {
     .dependencies = depends_on_patterson_algorithm_constant_area,
     .reserved = NULL
   },
+  /* 100 */
   {
     .variable_name = "real_error_tolerance",
     .display_name = "Real Error Tolerance",
@@ -1624,6 +1636,7 @@ VariableMetadata variable_metadata[201] = {
     .dependencies = NULL,
     .reserved = NULL
   },
+  /* 110 */
   {
     .variable_name = "phases_min_blur_radius",
     .display_name = "Phases Min. Blur Radius",
@@ -1765,6 +1778,7 @@ VariableMetadata variable_metadata[201] = {
     .dependencies = depends_on_no_realspace_image_file,
     .reserved = NULL
   },
+  /* 120 */
   {
     .variable_name = "autocorrelation_threshold",
     .display_name = "Autocorrelation Threshold",
@@ -1779,6 +1793,7 @@ VariableMetadata variable_metadata[201] = {
     " After normalizing to the maximum value pixels which have a value higher than this fraction will be included in the support.",
     .dependencies = depends_on_patterson_algorithm_fixed,
     .reserved = NULL
+
   },
   {
     .variable_name = "real_image_file",
@@ -1830,8 +1845,8 @@ VariableMetadata variable_metadata[201] = {
     .id = Id_Support_Update_Algorithm,
     .parent = &(variable_metadata[30]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
-    .list_valid_values = {FIXED,STEPPED,REAL_ERROR_CAPPED,REAL_ERROR_ADAPTATIVE,DECREASING_AREA,COMPLEX_DECREASING_AREA,0},
-    .list_valid_names = {"threshold","stepped","real_error_capped","real_error_adaptative","decreasing_area","complex_decreasing_area",0},
+    .list_valid_values = {FIXED,STEPPED,REAL_ERROR_CAPPED,REAL_ERROR_ADAPTATIVE,CONSTANT_AREA,DECREASING_AREA,COMPLEX_DECREASING_AREA,0},
+    .list_valid_names = {"threshold","stepped","real_error_capped","real_error_adaptative","constant_area","decreasing_area","complex_decreasing_area",0},
     .variable_address = &(global_options.support_update_algorithm),
     .dependencies = NULL,
     .reserved = NULL

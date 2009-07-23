@@ -53,8 +53,11 @@ ADD_EXECUTABLE(VMIraw2tiff VMIraw2tiff.c)
 #ADD_EXECUTABLE(recover_shanon3 recover_shanon3.c)
 #ADD_EXECUTABLE(recover_shanon_mpi recover_shanon_mpi.c)
 ADD_EXECUTABLE(analyse_mask analyse_mask.c ${PORTS})
-ADD_EXECUTABLE(combine_phases_and_amplitudes combine_phases_and_amplitudes.c)
-ADD_EXECUTABLE(fft_image fft_image.c)
+#ADD_EXECUTABLE(combine_phases_and_amplitudes combine_phases_and_amplitudes.c)
+#ADD_EXECUTABLE(fft_image fft_image.c)
+ADD_EXECUTABLE(image_square image_square.c)
+ADD_EXECUTABLE(image_superimpose image_superimpose.c)
+ADD_EXECUTABLE(image_gaussian_filter image_gaussian_filter.c)
 if(GSL_FOUND)
   ADD_EXECUTABLE(circular_averaging circular_averaging.c)
   ADD_EXECUTABLE(recover_shanon_mpi2 recover_shanon_mpi2.c)
@@ -106,8 +109,11 @@ TARGET_LINK_LIBRARIES(VMIraw2tiff ${LIBRARY_LIST})
 #TARGET_LINK_LIBRARIES(recover_shanon_mpi ${LIBRARY_LIST} gsl gslcblas)
 #TARGET_LINK_LIBRARIES(stretch ${LIBRARY_LIST})
 TARGET_LINK_LIBRARIES(analyse_mask ${LIBRARY_LIST})
-TARGET_LINK_LIBRARIES(combine_phases_and_amplitudes ${LIBRARY_LIST})
-TARGET_LINK_LIBRARIES(fft_image ${LIBRARY_LIST})
+#TARGET_LINK_LIBRARIES(combine_phases_and_amplitudes ${LIBRARY_LIST})
+#TARGET_LINK_LIBRARIES(fft_image ${LIBRARY_LIST)}
+TARGET_LINK_LIBRARIES(image_square ${LIBRARY_LIST})
+TARGET_LINK_LIBRARIES(image_superimpose ${LIBRARY_LIST})
+TARGET_LINK_LIBRARIES(image_gaussian_filter ${LIBRARY_LIST})
 if(GSL_FOUND)
   TARGET_LINK_LIBRARIES(circular_averaging ${LIBRARY_LIST} ${GSL_LIBRARIES})
   TARGET_LINK_LIBRARIES(recover_shanon_mpi2 ${LIBRARY_LIST} ${GSL_LIBRARIES})
@@ -118,7 +124,8 @@ SET_TARGET_PROPERTIES(analyse_mask PROPERTIES
   INSTALL_NAME_DIR "@loader_path/../lib"
   )
 
-LIST(APPEND BINS tiff2h5 image_to_vtk gif2h5image image_to_png png_to_image tiff2png autocorrelate prtf denoise background_subtract propagate matrix2image rs_r_factor average_h5 r_factor shell_plot separate_channel fft_bench manual_merge image_fft spot_integrate image_to_reflections multi_shot_exposure localized_blur analyse_mask combine_phases_and_amplitudes)
+LIST(APPEND BINS tiff2h5 image_to_vtk gif2h5image image_to_png png_to_image tiff2png autocorrelate prtf denoise background_subtract propagate matrix2image rs_r_factor average_h5 r_factor shell_plot separate_channel fft_bench manual_merge image_fft spot_integrate image_to_reflections multi_shot_exposure localized_blur analyse_mask image_superimpose image_gaussian_filter)
+# combine_phases_and_amplitudes)
 
 INSTALL(TARGETS ${BINS}
             RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin

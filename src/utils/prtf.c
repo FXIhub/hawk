@@ -223,8 +223,10 @@ int main(int argc, char ** argv){
     sp_image_phase_match(avg_img,img,2);
     sp_image_add(avg_img,img);
     char buff2[1024];
-    sprintf(buff2,"%s-super.png",argv[i+1]);
-    sp_image_write(img,buff2,COLOR_WHEEL|COLOR_PHASE);
+    if(img->num_dimensions == SP_2D){
+      sprintf(buff2,"%s-super.png",argv[i+1]);
+      sp_image_write(img,buff2,COLOR_WHEEL|COLOR_PHASE);
+    }
     tmp = sp_image_fft(img);
     //    sprintf(buff2,"%s.png",argv[i+1]);
     //    sp_image_write(tmp,buff2,COLOR_PHASE);
@@ -277,10 +279,12 @@ int main(int argc, char ** argv){
   sp_image_write(sum,buffer2,sizeof(real));
   sprintf(buffer2,"%s-avg_image.h5",output);
   sp_image_write(avg_img,buffer2,sizeof(real));
-  sprintf(buffer2,"%s-avg_image-phase.png",output);
-  sp_image_write(avg_img,buffer2,COLOR_WHEEL|COLOR_PHASE);
-  sprintf(buffer2,"%s-avg_image.png",output);
-  sp_image_write(avg_img,buffer2,COLOR_JET);
+  if(avg_img->num_dimensions == SP_2D){
+    sprintf(buffer2,"%s-avg_image-phase.png",output);
+    sp_image_write(avg_img,buffer2,COLOR_WHEEL|COLOR_PHASE);
+    sprintf(buffer2,"%s-avg_image.png",output);
+    sp_image_write(avg_img,buffer2,COLOR_JET);
+  }
   sprintf(buffer2,"%s-amps.h5",output);
   sp_image_write(amps,buffer2,sizeof(real));
   sprintf(buffer2,"%s-prtf.h5",output);

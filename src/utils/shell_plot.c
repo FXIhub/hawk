@@ -16,9 +16,13 @@ void write_array_file(char  * filename, int n,Binned_Data * y, real * x){
   FILE  * fp = fopen(filename,"w");
   for(int i = 0;i<n;i++){
     if(x){
-      fprintf(fp,"%f\t%e\t%d\n",x[i],y->f[i],y->bin_pop[i]);
+      if(isfinite(y->f[i])){
+	fprintf(fp,"%f\t%e\t%d\n",x[i],y->f[i],y->bin_pop[i]);
+      }
     }else if(y){
-      fprintf(fp,"%d\t%e\t%d\n",i,y->f[i],y->bin_pop[i]);
+      if(isfinite(y->f[i])){
+	fprintf(fp,"%d\t%e\t%d\n",i,y->f[i],y->bin_pop[i]);
+      }
     }
   }
   fclose(fp);
@@ -71,7 +75,7 @@ Binned_Data * image_std_deviation_by_r(Image * a, int nshells){
    res->bin_pop[bin]++;
  }
  for(int i = 0;i<nshells;i++){
-   avg[i] /= res->bin_pop[i];
+   avg[i] /= (res->bin_pop[i]);
  }
  for(int i = 0;i<sp_image_size(a);i++){
    real dist = sp_image_dist(a,i,SP_TO_CENTER);
@@ -80,10 +84,7 @@ Binned_Data * image_std_deviation_by_r(Image * a, int nshells){
      (sp_cabs(a->image->data[i])-avg[bin]);
  }
  for(int i = 0;i<nshells;i++){
-   res->f[i] = sqrt(res->f[i]/res->bin_pop[i]);
- }
- // Calculate the relative standard deviation (relative to the average value)
- for(int i = 0;i<nshells;i++){
+   res->f[i] = sqrt(res->f[i]/(res->bin_pop[i]-1));
    res->f[i] /= avg[i];
  }
 
@@ -111,6 +112,10 @@ int main(int argc, char ** argv){
   out = bin_image_by_r(a,nshells);
   Binned_Data * std_dev = image_std_deviation_by_r(a,nshells);
   write_array_file("shells.data",nshells,out,shell_res);
+  write_array_file("shells_std_dev.data",nshells,std_dev,shell_res);
+  for(int i = 0;i<nshells;i++){
+    shell_res[i] = (real)i/nshells*1.0/max_res;
+  }
   write_array_file("shells_std_dev.data",nshells,std_dev,shell_res);
   return 0;
 }

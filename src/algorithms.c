@@ -71,7 +71,13 @@ Image * basic_hio_iteration(Image * exp_amp, Image * real_in, Image * support,
   if(opts->enforce_positivity){
     for(i = 0;i<sp_c3matrix_size(real_out->image);i++){
       if(sp_real(support->image->data[i])){
-	real_out->image->data[i] =  sp_cinit(fabs(sp_real(real_out->image->data[i])),fabs(sp_imag(real_out->image->data[i])));
+	if(sp_real(real_out->image->data[i]) < 0){
+	  sp_real(real_out->image->data[i]) = 0;
+	}
+	if(sp_imag(real_out->image->data[i]) < 0){
+	  sp_imag(real_out->image->data[i]) = 0;
+	}
+	    //	real_out->image->data[i] =  sp_cinit(fabs(sp_real(real_out->image->data[i])),fabs(sp_imag(real_out->image->data[i])));
       }
     }
   }
@@ -1030,6 +1036,7 @@ Image * serial_difference_map_f2(Image * exp_amp, Image * fft_in,real gamma2){
 
 #if 0 
 
+/* This is just a reference implmentation, commented out */
 Image * serial_difference_map_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in, Image * support, 
 					Options * opts, Log * log){
   real beta = get_beta(opts);
