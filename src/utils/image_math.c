@@ -6,6 +6,161 @@
 #include <ctype.h>
 #include "spimage.h"
 
+#define IMAGE_STACK_MAX 100
+
+/* All operators are lowercase and all variables are uppercase! 
+   Variables names start with A for the first given file B for the second
+   and so on until Z, AA, AB, AC ...
+   A typical expression would be (A - B) / abs(C).
+*/
+
+typedef struct{
+  Image * stack[IMAGE_STACK_MAX];
+  int top;
+}ImageStack;
+
+typedef struct{
+  /* function pointer to the function that executes the operator */
+  void (*op)(ImageStack *);
+  /* number of operands that the operator applies to */
+  int n_operands;
+  /* higher numbers take precedence over lower numbers */
+  int precedence;  
+  /* string identifier(s)
+     NULL terminated list of strings 
+  */
+  char * identifier[10];
+}Operator;
+
+Image * image_stack_pop(ImageStack * stack){
+  return stack->stack[--stack->top];
+}
+
+void image_stack_push(ImageStack * stack, Image * a){
+  stack->stack[stack->top++] = a;
+}
+
+void image_stack_add(ImageStack * stack){
+  Image * a = image_stack_pop(stack);
+  Image * b = image_stack_pop(stack);
+  sp_image_add(a,b);
+  sp_image_free(b);
+  image_stack_push(stack,a);  
+}
+
+static Operator operator_table[100] = {
+  {
+    .op = NULL,
+    .n_operands = 0,
+    .precedence = 1000,
+    .identifier = {"(",NULL}
+  },
+  {
+    .op = NULL,
+    .n_operands = 0,
+    .precedence = 1000,
+    .identifier = {")",NULL}
+  },
+  {
+    .op = image_stack_add,
+    .n_operands = 2,
+    .precedence = 1,
+    .identifier = {"+",NULL}
+  },
+  {
+    .identifier = {NULL}
+  }
+};
+
+/* All Elements are either an operator or an Image */
+typedef struct{
+  Operator * operator;
+  Image * image;
+}ParsedElements;
+
+
+
+static ParsedElements * postfix_to_infix_string(ParsedElements * infix);
+
+static ParsedElements * tokenize_string(char * input, Operator * op_table);
+
+
+ParsedElements * postfix_to_infix_string(ParsedElements * infix){
+  return NULL;
+}
+
+int index_from_variable_name(char * name){
+  int index = 0;
+  int base = 1;
+  for(int i = strlen(name)-1;i>=0;i--){
+    index += (name[i]-'A')*base;
+    base *= ('Z'-'A')+1;
+  }
+  return index;
+}
+
+ParsedElements * tokenize_string(char * input, Operator * op_table, Image ** image_list){
+  ParsedElements pe[1000];
+  int pe_used = 0;
+  char * token_start = NULL;
+  char * token_end = NULL;
+  int image_list_size = 0;
+  while(image_list[image_list_size]){
+    image_list_size++;
+  }
+
+  for(int i = 0;i<strlen(input);i++){
+    if(isblank(input[i])){
+      
+    }else if(isdigit(input[i]) || input[i] == '.'){
+      token_start = &(input[i]);
+      double d = strtod(token_start,&token_end);
+      if(token_end == NULL){
+	/* number goes to the end of the string */
+	i = strlen(input); 
+      }else{
+	/* otherwise fast forward i to the end of the number */
+	while(&input[i] < token_end){
+	  i++;
+	}
+      }
+      /* create an image with the required amplitude */
+      Image * a = sp_image_create(sp_image_x(image_list[0]),
+				  sp_image_y(image_list[0]),
+				  sp_image_z(image_list[0]));
+      sp_image_fill(a,sp_cinit(d,0));
+      pe[pe_used].operator = NULL;
+      pe[pe_used].image = a;
+      pe_used++;      
+    }else if(isupper(input[i])){
+      token_start = &(input[i]);
+      int j = i;
+      while(isupper(input[j])){
+	j++;
+      }
+      token_end = &(input[j]);
+      /* temporarily truncate the string*/
+      char tmp = input[j];
+      input[j] = 0;
+      int index = index_from_variable_name(token_start);
+      if(index >= image_list_size){
+	fprintf(stderr,"Variable %s has no matching file!\n",token_start);
+	exit(1);
+      }
+      /* restore the string back */
+      input[j] = tmp;
+      /* fast forward i */
+      i = j;
+      Image * a = image_list[index];
+      pe[pe_used].operator = NULL;
+      pe[pe_used].image = a;
+      pe_used++;            
+    }
+  }
+  return NULL;
+}
+
+
 
 static char * sp_strdup(char * str){
   char * p = malloc(sizeof(char)*(strlen(str)+1));
