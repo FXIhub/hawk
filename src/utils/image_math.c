@@ -6,7 +6,7 @@
 #include <ctype.h>
 #include "spimage.h"
 
-#define IMAGE_STACK_MAX 100
+#define STACK_MAX 100
 
 /* All operators are lowercase and all variables are uppercase! 
    Variables names start with A for the first given file B for the second
@@ -14,79 +14,394 @@
    A typical expression would be (A - B) / abs(C).
 */
 
-typedef struct{
-  Image * stack[IMAGE_STACK_MAX];
-  int top;
-}ImageStack;
+struct _TokenStack;
+
+typedef enum{Prefix, Infix, Postfix} OperatorPosition;
+typedef enum{LeftAssociative,RightAssociative,NonAssociative}OperatorAssociativity;
+typedef enum{Operand=1,LeftParenthesis,RightParenthesis,Addition,UnaryPlus,Subtraction,UnaryMinus,Multiplication,Division,
+	     Exponentiation,AbsoluteValue,FourierTransform,InverseFourierTransform,Integrate,RealPart,ImaginaryPart,ImaginaryUnit,ComplexArgument}TokenName;
 
 typedef struct{
   /* function pointer to the function that executes the operator */
-  void (*op)(ImageStack *);
+  void (*op)( struct _TokenStack *);
   /* number of operands that the operator applies to */
   int n_operands;
   /* higher numbers take precedence over lower numbers */
-  int precedence;  
+  int precedence; 
+  OperatorPosition position;
+  OperatorAssociativity associativity;
   /* string identifier(s)
      NULL terminated list of strings 
   */
   char * identifier[10];
+  TokenName name;
 }Operator;
 
-Image * image_stack_pop(ImageStack * stack){
+/* All Elements are either an operator or an Image*/
+typedef struct{
+  Operator * operator;
+  Image * image;
+}Token;
+
+typedef struct _TokenStack{
+  Token * stack[STACK_MAX];
+  int top;
+}TokenStack;
+
+
+static char * sp_strdup(char * str){
+  char * p = malloc(sizeof(char)*(strlen(str)+1));
+  strcpy(p,str);
+  return p;
+}
+
+TokenStack * token_stack_init(){
+  TokenStack * ret = malloc(sizeof(TokenStack));
+  ret->top = 0;
+  return ret;
+}
+
+Token * token_stack_pop(TokenStack * stack){
   return stack->stack[--stack->top];
 }
 
-void image_stack_push(ImageStack * stack, Image * a){
+Token * token_stack_top(TokenStack * stack){
+  return stack->stack[stack->top-1];
+}
+
+int token_stack_size(TokenStack * stack){
+  return stack->top;
+}
+
+void token_stack_push(TokenStack * stack, Token * a){
   stack->stack[stack->top++] = a;
 }
 
-void image_stack_add(ImageStack * stack){
-  Image * a = image_stack_pop(stack);
-  Image * b = image_stack_pop(stack);
-  sp_image_add(a,b);
-  sp_image_free(b);
-  image_stack_push(stack,a);  
+void token_stack_add(TokenStack * stack){
+  Token * a = token_stack_pop(stack);
+  Token * b = token_stack_pop(stack);
+  sp_image_add(a->image,b->image);
+  sp_image_free(b->image);
+  token_stack_push(stack,a);  
+}
+
+void token_stack_mul(TokenStack * stack){
+  Token * a = token_stack_pop(stack);
+  Token * b = token_stack_pop(stack);
+  sp_image_mul_elements(a->image,b->image);
+  sp_image_free(b->image);
+  token_stack_push(stack,a);  
+}
+
+void token_stack_div(TokenStack * stack){
+  Token * b = token_stack_pop(stack);
+  Token * a = token_stack_pop(stack);
+  sp_image_invert(b->image);
+  sp_image_mul_elements(a->image,b->image);
+  sp_image_free(b->image);
+  token_stack_push(stack,a);  
+}
+
+void token_stack_abs(TokenStack * stack){
+  Token * a = token_stack_pop(stack);
+  sp_image_dephase(a->image);
+  token_stack_push(stack,a);  
+}
+
+void token_stack_sub(TokenStack * stack){
+  Token * b = token_stack_pop(stack);
+  Token * a = token_stack_pop(stack);
+  sp_image_sub(a->image,b->image);
+  sp_image_free(b->image);
+  token_stack_push(stack,a);  
+}
+
+void token_stack_unary_plus(TokenStack * stack){
+  return;
+}
+
+void token_stack_unary_minus(TokenStack * stack){
+  Token * a = token_stack_pop(stack);
+  sp_image_scale(a->image,-1);
+  token_stack_push(stack,a);  
+}
+
+void token_stack_pow(TokenStack * stack){
+  Token * b = token_stack_pop(stack);
+  Token * a = token_stack_pop(stack);
+  Complex v = sp_image_get(b->image,0,0,0);
+  double exponent = sp_real(v);
+  for(int i = 0;i<sp_image_size(a->image);i++){
+    sp_real(a->image->image->data[i]) = pow(sp_real(a->image->image->data[i]),exponent);
+    sp_imag(a->image->image->data[i]) = pow(sp_imag(a->image->image->data[i]),exponent);
+  }
+  sp_image_free(b->image);
+  token_stack_push(stack,a);  
+}
+
+void token_stack_fft(TokenStack * stack){
+  Token * a = token_stack_pop(stack);
+  Image * b = sp_image_fft(a->image);
+  sp_image_free(a->image);
+  a->image = b;
+  token_stack_push(stack,a);  
+}
+
+void token_stack_ifft(TokenStack * stack){
+  Token * a = token_stack_pop(stack);
+  /* avoid checks */
+  a->image->phased = 1;
+  a->image->shifted = 1;
+  Image * b = sp_image_ifft(a->image);
+  sp_image_free(a->image);
+  a->image = b;
+  token_stack_push(stack,a);  
+}
+
+void token_stack_real(TokenStack * stack){
+  Token * a = token_stack_pop(stack);
+  /* avoid checks */
+  for(int i = 0;i<sp_image_size(a->image);i++){
+    sp_imag(a->image->image->data[i]) = 0;
+  }
+  token_stack_push(stack,a);  
+}
+
+void token_stack_arg(TokenStack * stack){
+  Token * a = token_stack_pop(stack);
+  /* avoid checks */
+  for(int i = 0;i<sp_image_size(a->image);i++){
+    sp_real(a->image->image->data[i]) = sp_carg(a->image->image->data[i]);
+    sp_imag(a->image->image->data[i]) = 0;
+  }
+  token_stack_push(stack,a);  
+}
+
+void token_stack_imag(TokenStack * stack){
+  Token * a = token_stack_pop(stack);
+  /* avoid checks */
+  for(int i = 0;i<sp_image_size(a->image);i++){
+    sp_real(a->image->image->data[i]) = 0;
+  }
+  token_stack_push(stack,a);  
+}
+
+void token_stack_imaginary_unit(TokenStack * stack){
+  Token * a = token_stack_pop(stack);
+  /* avoid checks */
+  for(int i = 0;i<sp_image_size(a->image);i++){
+    a->image->image->data[i] = sp_cmul(a->image->image->data[i],sp_cinit(0,1));
+  }  
+  token_stack_push(stack,a);  
+}
+
+void token_stack_integrate(TokenStack * stack){
+  Token * a = token_stack_pop(stack);
+  /* avoid checks */
+  Complex sum = sp_image_integrate(a->image);
+  Image * b = sp_image_alloc(1,1,1);
+  sp_image_set(b,0,0,0,sum);
+  sp_image_free(a->image);
+  a->image = b;
+  token_stack_push(stack,a);  
 }
 
 static Operator operator_table[100] = {
   {
-    .op = NULL,
-    .n_operands = 0,
-    .precedence = 1000,
-    .identifier = {"(",NULL}
-  },
-  {
-    .op = NULL,
-    .n_operands = 0,
-    .precedence = 1000,
-    .identifier = {")",NULL}
-  },
-  {
-    .op = image_stack_add,
+    .op = token_stack_add,
     .n_operands = 2,
     .precedence = 1,
-    .identifier = {"+",NULL}
+    .associativity = LeftAssociative,
+    .position = Infix,
+    .identifier = {"+",NULL},
+    .name = Addition
+  },
+  {
+    .op = token_stack_unary_plus,
+    .n_operands = 1,
+    .precedence = 3,
+    .associativity = RightAssociative,
+    .position = Infix,
+    .identifier = {"+",NULL},
+    .name = UnaryPlus
+  },
+  {
+    .op = token_stack_sub,
+    .n_operands = 2,
+    .precedence = 1,
+    .associativity = LeftAssociative,
+    .position = Infix,
+    .identifier = {"-",NULL},
+    .name = Subtraction
+  },
+  {
+    .op = token_stack_unary_minus,
+    .n_operands = 2,
+    .precedence = 3,
+    .associativity = RightAssociative,
+    .position = Infix,
+    .identifier = {"-",NULL},
+    .name = UnaryMinus
+  },
+  {
+    .op = token_stack_mul,
+    .n_operands = 2,
+    .precedence = 2,
+    .associativity = LeftAssociative,
+    .position = Infix,
+    .identifier = {"*",NULL},
+    .name = Multiplication
+  },
+  {
+    .op = token_stack_div,
+    .n_operands = 2,
+    .precedence = 2,
+    .associativity = LeftAssociative,
+    .position = Infix,
+    .identifier = {"/",NULL},
+    .name = Division
+  },
+  {
+    .op = token_stack_abs,
+    .n_operands = 1,
+    .precedence = 1,
+    .associativity = NonAssociative,
+    .position = Prefix,
+    .identifier = {"abs",NULL},
+    .name = AbsoluteValue
+  },
+  {
+    .op = token_stack_pow,
+    .n_operands = 1,
+    .precedence = 4,
+    .associativity = RightAssociative,
+    .position = Infix,
+    .identifier = {"^",NULL},
+    .name = Exponentiation
+  },
+  {
+    .op = token_stack_fft,
+    .n_operands = 1,
+    .precedence = 1,
+    .associativity = NonAssociative,
+    .position = Prefix,
+    .identifier = {"fft",NULL},
+    .name = FourierTransform
+  },
+  {
+    .op = token_stack_ifft,
+    .n_operands = 1,
+    .precedence = 1,
+    .associativity = NonAssociative,
+    .position = Prefix,
+    .identifier = {"ifft",NULL},
+    .name = InverseFourierTransform
+  },
+  {
+    .op = token_stack_integrate,
+    .n_operands = 1,
+    .precedence = 1,
+    .associativity = NonAssociative,
+    .position = Prefix,
+    .identifier = {"sum",NULL},
+    .name = Integrate
+  },
+  {
+    .op = token_stack_arg,
+    .n_operands = 1,
+    .precedence = 1,
+    .associativity = NonAssociative,
+    .position = Postfix,
+    .identifier = {"arg",NULL},
+    .name = ComplexArgument
+  },
+  {
+    .op = token_stack_real,
+    .n_operands = 1,
+    .precedence = 1,
+    .associativity = NonAssociative,
+    .position = Prefix,
+    .identifier = {"re",NULL},
+    .name = RealPart
+  },
+  {
+    .op = token_stack_imag,
+    .n_operands = 1,
+    .precedence = 1,
+    .associativity = NonAssociative,
+    .position = Prefix,
+    .identifier = {"im",NULL},
+    .name = ImaginaryPart
+  },
+  {
+    .op = token_stack_imaginary_unit,
+    .n_operands = 1,
+    .precedence = 3,
+    .associativity = NonAssociative,
+    .position = Postfix,
+    .identifier = {"i",NULL},
+    .name = ImaginaryUnit
   },
   {
     .identifier = {NULL}
   }
 };
 
-/* All Elements are either an operator or an Image */
-typedef struct{
-  Operator * operator;
-  Image * image;
-}ParsedElements;
 
 
 
-static ParsedElements * postfix_to_infix_string(ParsedElements * infix);
 
-static ParsedElements * tokenize_string(char * input, Operator * op_table);
+static Token ** parse_tokens(Token ** infix);
 
+static Token ** tokenize_string(char * input, Operator * op_table, Image ** image_list);
 
-ParsedElements * postfix_to_infix_string(ParsedElements * infix){
+Image * evaluate_postfix(Token ** postfix){
+  TokenStack * stack = token_stack_init();
+  for(int i = 0;postfix[i];i++){
+    if(postfix[i]->operator){
+      postfix[i]->operator->op(stack);
+    }else{
+      token_stack_push(stack,postfix[i]);
+    }
+  }
+  if(token_stack_size(stack) == 1){   
+    return token_stack_pop(stack)->image;
+  }else{
+    fprintf(stderr,"Stack contains %d members after evaluation. Expecting 1. Abort!\n",token_stack_size(stack));
+    exit(1);
+  }
   return NULL;
+}
+
+Token ** parse_tokens(Token ** infix){
+  TokenStack * stack = token_stack_init();
+  int infix_size = 0;
+  for(;infix[infix_size];infix_size++);
+  Token ** postfix = malloc(sizeof(Token *)*(infix_size+1));
+  int postfix_index = 0;
+
+  for(int i = 0;infix[i];i++){
+    if(infix[i]->image){
+      postfix[postfix_index++] = infix[i];
+    }else if(infix[i]->operator){
+
+      while(token_stack_size(stack) && infix[i]->operator->precedence < token_stack_top(stack)->operator->precedence){
+	postfix[postfix_index++] =  token_stack_pop(stack);
+      }
+      /* The rules for poping from the stack when the precedence is the same depend on the associativity */
+      if(infix[i]->operator->associativity == LeftAssociative){
+	while(token_stack_size(stack) && infix[i]->operator->precedence == token_stack_top(stack)->operator->precedence){
+	  postfix[postfix_index++] =  token_stack_pop(stack);
+	}
+      }
+      token_stack_push(stack,infix[i]);
+    }
+  }
+  while(token_stack_size(stack)){
+    postfix[postfix_index++] =  token_stack_pop(stack);
+  }
+  postfix[infix_size] = NULL;
+  return postfix;
 }
 
 int index_from_variable_name(char * name){
@@ -99,19 +414,28 @@ int index_from_variable_name(char * name){
   return index;
 }
 
-ParsedElements * tokenize_string(char * input, Operator * op_table, Image ** image_list){
-  ParsedElements pe[1000];
+Token ** tokenize_string(char * input, Operator * op_table, Image ** image_list){
+  Token pe[1000];
   int pe_used = 0;
   char * token_start = NULL;
   char * token_end = NULL;
   int image_list_size = 0;
+  TokenName lastToken = 0;
   while(image_list[image_list_size]){
     image_list_size++;
   }
-
-  for(int i = 0;i<strlen(input);i++){
+  int precedence_modifier = 0;
+  for(int i = 0;i<(int)strlen(input);){
     if(isblank(input[i])){
-      
+      i++;
+    }else if(input[i] == '('){
+      precedence_modifier += 1000;
+      lastToken = LeftParenthesis;
+      i++;
+    }else if(input[i] == ')'){
+      precedence_modifier -= 1000;
+      lastToken = RightParenthesis;
+      i++;
     }else if(isdigit(input[i]) || input[i] == '.'){
       token_start = &(input[i]);
       double d = strtod(token_start,&token_end);
@@ -125,12 +449,11 @@ ParsedElements * tokenize_string(char * input, Operator * op_table, Image ** ima
 	}
       }
       /* create an image with the required amplitude */
-      Image * a = sp_image_create(sp_image_x(image_list[0]),
-				  sp_image_y(image_list[0]),
-				  sp_image_z(image_list[0]));
+      Image * a = sp_image_alloc(1,1,1);
       sp_image_fill(a,sp_cinit(d,0));
       pe[pe_used].operator = NULL;
       pe[pe_used].image = a;
+      lastToken = Operand;
       pe_used++;      
     }else if(isupper(input[i])){
       token_start = &(input[i]);
@@ -151,21 +474,136 @@ ParsedElements * tokenize_string(char * input, Operator * op_table, Image ** ima
       input[j] = tmp;
       /* fast forward i */
       i = j;
-      Image * a = image_list[index];
+      Image * a = sp_image_duplicate(image_list[index],SP_COPY_ALL);
       pe[pe_used].operator = NULL;
       pe[pe_used].image = a;
+      lastToken = Operand;
       pe_used++;            
+    }else{
+      /* Try to match any of the operands */
+      token_start = &(input[i]);
+      int operator_found_flag = 0;
+      for(int j = 0;op_table[j].identifier[0];j++){
+	for(int k = 0; op_table[j].identifier[k];k++){
+	  if(strstr(token_start,op_table[j].identifier[k]) == token_start){
+	    /* we found our operator */	    
+	    if(op_table[j].name == Subtraction && (lastToken != Operand && lastToken != RightParenthesis && lastToken != ImaginaryUnit)){
+	      /* this is actually a unary minus not a subtraction */
+	      j++;
+	    }
+	    if(op_table[j].name == Addition && (lastToken != Operand && lastToken != RightParenthesis && lastToken != ImaginaryUnit)){
+	      /* this is actually a unary plus not a subtraction */
+	      j++;
+	    }
+	    if(op_table[j].name == ImaginaryUnit && (lastToken != Operand && lastToken != RightParenthesis && lastToken != ImaginaryUnit)){
+	      /* this is actually an operand 0+i not a multiplication by i */
+	      Image * a = sp_image_alloc(1,1,1);
+	      sp_image_fill(a,sp_cinit(0,1));
+	      pe[pe_used].operator = NULL;
+	      pe[pe_used].image = a;
+	      lastToken = Operand;
+	      pe_used++;      
+	      operator_found_flag = 1;
+	      i++;
+	      break;
+	    }
+	    pe[pe_used].operator = malloc(sizeof(Operator));
+	    *pe[pe_used].operator = op_table[j];
+	    /* Apply precedence modifier resulting from the parenthesis */
+	    pe[pe_used].operator->precedence += precedence_modifier;
+	    pe[pe_used].image = NULL;
+	    operator_found_flag = 1;
+	    lastToken = pe[pe_used].operator->name;
+	    pe_used++;
+	    /* fast forward i */
+	    i += strlen(op_table[j].identifier[k]);
+	    break;
+	  }
+	}
+	if(operator_found_flag){
+	  break;
+	}
+      }
+      if(!operator_found_flag){
+	fprintf(stderr,"Could not tokenize expression starting at %s!\n",token_start);
+	exit(1);
+      }
     }
   }
-  return NULL;
+  Token ** ret = malloc(sizeof(Token *) * (pe_used+1));
+  for(int i = 0;i<pe_used;i++){
+    ret[i] = malloc(sizeof(Token));
+    *ret[i] = pe[i];
+  }
+  ret[pe_used] = NULL;
+  if(precedence_modifier != 0){
+    fprintf(stderr,"Warning: Unbalanced parenthesis!\n");
+  }
+  return ret;
 }
 
 
-
-static char * sp_strdup(char * str){
-  char * p = malloc(sizeof(char)*(strlen(str)+1));
-  strcpy(p,str);
-  return p;
+int main(int argc, char ** argv){
+  int c;
+  static char optstring[] = "e:o:h";
+  char * expression = NULL;
+  char * output_file = NULL;
+  static char help_text[] = "\
+    \n\
+         Usage:\n\
+    \n\
+    image_math <-e expression> [-o output] [inputA] [inputB] ...\n\
+    \n\
+         Options description:\n\
+    \n\
+    -e: Expression to be applied to input\n\
+    -o: Output file\n\
+    -h: Print help text\n\
+    \n\
+    In the expression (specified by -e), the first input dataset\n\
+    (from left to right) is  referred to as A, the second as B,\n\
+    and so on.\n\
+    Expressions use a C-like  infix  notation,  with  most  standard\n\
+    operators  and  mathematical functions (+, sin, etc.) being sup‐\n\
+    ported.\n\
+";
+  while(1){
+    c = getopt(argc,argv,optstring);
+    if(c == -1){
+      break;
+    }
+    switch(c){
+    case 'e':
+      free(expression);
+      expression = sp_strdup(optarg);
+      break;
+    case 'o':
+      free(output_file);
+      output_file = sp_strdup(optarg);
+      break;
+    case 'h':
+      printf("%s",help_text);
+      exit(0);
+      break;
+    default:
+      printf ("?? getopt returned character code 0%o ??\n", c);
+    }
+  }
+  /* Now the rest of the arguments should be image files */
+  Image ** image_list = malloc(sizeof(Image *)*(argc-optind));
+  int image_list_size = 0;
+  for(int i = optind;i<argc;i++){
+    image_list[image_list_size++] = sp_image_read(argv[i],0);
+  }
+  image_list[image_list_size] = NULL;
+  Token ** tokens = tokenize_string(expression,operator_table,image_list);
+  Token ** postfix = parse_tokens(tokens);
+  Image * out = evaluate_postfix(postfix);
+  if(sp_image_size(out) == 1){
+    Complex v = sp_image_get(out,0,0,0);
+    printf("%g + %g i\n",sp_real(v),sp_imag(v));
+  }
+  return 0;
 }
 
 typedef struct {
@@ -253,6 +691,7 @@ void set_defaults(Options * opt){
   opt->variables = 0;
   opt->verbose = 0;
 }
+#if 0
 
 int main(int argc, char ** argv){
   int i,j;
@@ -329,3 +768,5 @@ int main(int argc, char ** argv){
   sp_image_write(opts->output_image,opts->output_filename,0);
   return 0;
 }
+
+#endif
