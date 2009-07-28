@@ -176,6 +176,8 @@ void token_stack_sub(TokenStack * stack){
 }
 
 void token_stack_unary_plus(TokenStack * stack){
+  /**/
+  stack = NULL;
   return;
 }
 
@@ -676,6 +678,18 @@ Token ** tokenize_string(char * input, Operator * op_table, Image ** image_list)
   return ret;
 }
 
+void check_image_size(Image ** image_list){
+  if(image_list[0] == NULL){
+    return;
+  }
+  int dim[3] = {sp_image_x(image_list[0]),sp_image_y(image_list[0]),sp_image_z(image_list[0])};
+  for(int i = 1;image_list[i] != NULL;i++){
+    if(sp_image_x(image_list[0]) != dim[0] || sp_image_y(image_list[0]) != dim[1] || sp_image_z(image_list[0]) != dim[2]){
+      fprintf(stderr,"All images must have the same dimensions!\n Image number %d doesn't match the first image.\n",i+1);
+      abort();
+    }
+  }
+}
 
 int main(int argc, char ** argv){
   int c;
@@ -734,6 +748,7 @@ int main(int argc, char ** argv){
     image_list[image_list_size++] = sp_image_read(argv[i],0);
   }
   image_list[image_list_size] = NULL;
+  check_image_size(image_list);
   Token ** tokens = tokenize_string(expression,operator_table,image_list);
   Token ** postfix = parse_tokens(tokens);
   Token * out = evaluate_postfix(postfix);
