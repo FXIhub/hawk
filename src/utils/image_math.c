@@ -19,7 +19,7 @@ struct _TokenStack;
 typedef enum{Prefix, Infix, Postfix} OperatorPosition;
 typedef enum{LeftAssociative,RightAssociative,NonAssociative}OperatorAssociativity;
 typedef enum{Operand=1,LeftParenthesis,RightParenthesis,Addition,UnaryPlus,Subtraction,UnaryMinus,Multiplication,Division,
-	     Exponentiation,AbsoluteValue,FourierTransform,InverseFourierTransform,Integrate,RealPart,ImaginaryPart,ImaginaryUnit,ComplexArgument,Exponential}TokenName;
+	     Exponentiation,AbsoluteValue,FourierTransform,InverseFourierTransform,Integrate,RealPart,ImaginaryPart,ImaginaryUnit,ComplexArgument,Exponential,Logarythm}TokenName;
 typedef enum{TokenImage,TokenScalar,TokenOperator}TokenType;
 
 typedef struct{
@@ -199,19 +199,36 @@ void token_stack_pow(TokenStack * stack){
     fprintf(stderr,"Can only exponentiate to a scalar power!\n");
     abort();
   }
-  if(sp_imag(b->scalar) != 0){
-    fprintf(stderr,"At the moment it's only possible to raise to stricly real powers!\n");
-    abort();
-  }
-  double exponent = sp_real(b->scalar);
   if(a->type == TokenImage){
     for(int i = 0;i<sp_image_size(a->image);i++){
-      sp_real(a->image->image->data[i]) = pow(sp_real(a->image->image->data[i]),exponent);
-      sp_imag(a->image->image->data[i]) = pow(sp_imag(a->image->image->data[i]),exponent);
+      a->image->image->data[i] = sp_cpow(a->image->image->data[i],b->scalar);
     }
   }else if(a->type == TokenScalar){
-    sp_real(a->scalar) = pow(sp_real(a->scalar),exponent);
-    sp_imag(a->scalar) = pow(sp_imag(a->scalar),exponent);
+    a->scalar = sp_cpow(a->scalar,b->scalar);
+  }
+  token_stack_push(stack,a);  
+}
+
+void token_stack_exp(TokenStack * stack){
+  Token * a = token_stack_pop(stack);
+  if(a->type == TokenImage){
+    for(int i = 0;i<sp_image_size(a->image);i++){
+      a->image->image->data[i] = sp_cexp(a->image->image->data[i]);
+    }
+  }else if(a->type == TokenScalar){
+    a->scalar = sp_cexp(a->scalar);
+  }
+  token_stack_push(stack,a);  
+}
+
+void token_stack_log(TokenStack * stack){
+  Token * a = token_stack_pop(stack);
+  if(a->type == TokenImage){
+    for(int i = 0;i<sp_image_size(a->image);i++){
+      a->image->image->data[i] = sp_clog(a->image->image->data[i]);
+    }
+  }else if(a->type == TokenScalar){
+    a->scalar = sp_clog(a->scalar);
   }
   token_stack_push(stack,a);  
 }
@@ -362,7 +379,7 @@ static Operator operator_table[100] = {
   {
     .op = token_stack_abs,
     .n_operands = 1,
-    .precedence = 1,
+    .precedence = 5,
     .associativity = NonAssociative,
     .position = Prefix,
     .identifier = {"abs",NULL},
@@ -380,7 +397,7 @@ static Operator operator_table[100] = {
   {
     .op = token_stack_fft,
     .n_operands = 1,
-    .precedence = 1,
+    .precedence = 5,
     .associativity = NonAssociative,
     .position = Prefix,
     .identifier = {"fft",NULL},
@@ -389,7 +406,7 @@ static Operator operator_table[100] = {
   {
     .op = token_stack_ifft,
     .n_operands = 1,
-    .precedence = 1,
+    .precedence = 5,
     .associativity = NonAssociative,
     .position = Prefix,
     .identifier = {"ifft",NULL},
@@ -398,7 +415,7 @@ static Operator operator_table[100] = {
   {
     .op = token_stack_integrate,
     .n_operands = 1,
-    .precedence = 1,
+    .precedence = 5,
     .associativity = NonAssociative,
     .position = Prefix,
     .identifier = {"sum",NULL},
@@ -407,7 +424,7 @@ static Operator operator_table[100] = {
   {
     .op = token_stack_arg,
     .n_operands = 1,
-    .precedence = 1,
+    .precedence = 5,
     .associativity = NonAssociative,
     .position = Postfix,
     .identifier = {"arg",NULL},
@@ -416,16 +433,24 @@ static Operator operator_table[100] = {
   {
     .op = token_stack_exp,
     .n_operands = 1,
-    .precedence = 1,
+    .precedence = 5,
     .associativity = NonAssociative,
     .position = Prefix,
     .identifier = {"exp",NULL},
     .name = Exponential
+  },  {
+    .op = token_stack_log,
+    .n_operands = 1,
+    .precedence = 5,
+    .associativity = NonAssociative,
+    .position = Prefix,
+    .identifier = {"log",NULL},
+    .name = Logarythm
   },
   {
     .op = token_stack_real,
     .n_operands = 1,
-    .precedence = 1,
+    .precedence = 5,
     .associativity = NonAssociative,
     .position = Prefix,
     .identifier = {"re",NULL},
@@ -434,7 +459,7 @@ static Operator operator_table[100] = {
   {
     .op = token_stack_imag,
     .n_operands = 1,
-    .precedence = 1,
+    .precedence = 5,
     .associativity = NonAssociative,
     .position = Prefix,
     .identifier = {"im",NULL},
