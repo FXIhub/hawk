@@ -19,7 +19,8 @@ struct _TokenStack;
 typedef enum{Prefix, Infix, Postfix} OperatorPosition;
 typedef enum{LeftAssociative,RightAssociative,NonAssociative}OperatorAssociativity;
 typedef enum{Operand=1,LeftParenthesis,RightParenthesis,Addition,UnaryPlus,Subtraction,UnaryMinus,Multiplication,Division,
-	     Exponentiation,AbsoluteValue,FourierTransform,InverseFourierTransform,Integrate,RealPart,ImaginaryPart,ImaginaryUnit,ComplexArgument}TokenName;
+	     Exponentiation,AbsoluteValue,FourierTransform,InverseFourierTransform,Integrate,RealPart,ImaginaryPart,ImaginaryUnit,ComplexArgument,Exponential}TokenName;
+typedef enum{TokenImage,TokenScalar,TokenOperator}TokenType;
 
 typedef struct{
   /* function pointer to the function that executes the operator */
@@ -39,8 +40,10 @@ typedef struct{
 
 /* All Elements are either an operator or an Image*/
 typedef struct{
+  TokenType type;
   Operator * operator;
   Image * image;
+  Complex scalar;
 }Token;
 
 typedef struct _TokenStack{
@@ -80,40 +83,96 @@ void token_stack_push(TokenStack * stack, Token * a){
 void token_stack_add(TokenStack * stack){
   Token * a = token_stack_pop(stack);
   Token * b = token_stack_pop(stack);
-  sp_image_add(a->image,b->image);
-  sp_image_free(b->image);
-  token_stack_push(stack,a);  
+  
+  if(a->type == TokenImage && b->type == TokenImage){
+    sp_image_add(a->image,b->image);
+    sp_image_free(b->image);
+    token_stack_push(stack,a);  
+  }else if(a->type == TokenImage && b->type == TokenScalar){ 
+    for(int i = 0;i<sp_image_size(a->image);i++){
+      a->image->image->data[i] = sp_cadd(a->image->image->data[i],b->scalar);
+    }
+    token_stack_push(stack,a);  
+  }else if(b->type == TokenImage && a->type == TokenScalar){
+    for(int i = 0;i<sp_image_size(b->image);i++){
+      b->image->image->data[i] = sp_cadd(b->image->image->data[i],a->scalar);
+    }    
+    token_stack_push(stack,b);  
+  }else if(a->type == TokenScalar && b->type == TokenScalar){
+    a->scalar = sp_cadd(a->scalar,b->scalar);
+    token_stack_push(stack,a);
+  }else{
+    abort();
+  }
 }
 
 void token_stack_mul(TokenStack * stack){
   Token * a = token_stack_pop(stack);
   Token * b = token_stack_pop(stack);
-  sp_image_mul_elements(a->image,b->image);
-  sp_image_free(b->image);
-  token_stack_push(stack,a);  
+  if(a->type == TokenImage && b->type == TokenImage){
+    sp_image_mul_elements(a->image,b->image);
+    sp_image_free(b->image);
+    token_stack_push(stack,a);  
+  }else if(a->type == TokenImage && b->type == TokenScalar){ 
+    for(int i = 0;i<sp_image_size(a->image);i++){
+      a->image->image->data[i] = sp_cmul(a->image->image->data[i],b->scalar);
+    }
+    token_stack_push(stack,a);  
+  }else if(b->type == TokenImage && a->type == TokenScalar){
+    for(int i = 0;i<sp_image_size(b->image);i++){
+      b->image->image->data[i] = sp_cmul(b->image->image->data[i],a->scalar);
+    }    
+    token_stack_push(stack,b);  
+  }else if(a->type == TokenScalar && b->type == TokenScalar){
+    a->scalar = sp_cmul(a->scalar,b->scalar);
+    token_stack_push(stack,a);
+  }else{
+    abort();
+  }
 }
 
 void token_stack_div(TokenStack * stack){
   Token * b = token_stack_pop(stack);
-  Token * a = token_stack_pop(stack);
-  sp_image_invert(b->image);
-  sp_image_mul_elements(a->image,b->image);
-  sp_image_free(b->image);
-  token_stack_push(stack,a);  
+  if(b->type == TokenImage){
+    sp_image_invert(b->image);
+  }else if(b->type == TokenScalar){
+    if(sp_real(b->scalar)){
+      sp_real(b->scalar) = 1.0/(sp_real(b->scalar));
+    }
+    if(sp_imag(b->scalar)){
+      sp_imag(b->scalar) = 1.0/(sp_imag(b->scalar));
+    }
+  }else{
+    abort();
+  }
+  token_stack_push(stack,b);  
+  token_stack_mul(stack);
 }
 
 void token_stack_abs(TokenStack * stack){
   Token * a = token_stack_pop(stack);
-  sp_image_dephase(a->image);
+  if(a->type == TokenImage){
+    sp_image_dephase(a->image);
+  }else if(a->type == TokenScalar){
+    sp_real(a->scalar) = sp_cabs(a->scalar);
+    sp_imag(a->scalar) = 0;
+  }else{
+    abort();
+  }
   token_stack_push(stack,a);  
 }
 
 void token_stack_sub(TokenStack * stack){
   Token * b = token_stack_pop(stack);
-  Token * a = token_stack_pop(stack);
-  sp_image_sub(a->image,b->image);
-  sp_image_free(b->image);
-  token_stack_push(stack,a);  
+  if(b->type == TokenScalar){
+    b->scalar = sp_cmul(b->scalar,sp_cinit(-1,0));
+  }else if(b->type == TokenImage){
+    sp_image_scale(b->image,-1);
+  }else{
+    abort();
+  }
+  token_stack_push(stack,b);  
+  token_stack_add(stack);
 }
 
 void token_stack_unary_plus(TokenStack * stack){
@@ -122,34 +181,59 @@ void token_stack_unary_plus(TokenStack * stack){
 
 void token_stack_unary_minus(TokenStack * stack){
   Token * a = token_stack_pop(stack);
-  sp_image_scale(a->image,-1);
+  if(a->type == TokenImage){
+    sp_image_scale(a->image,-1);
+  }else if(a->type == TokenScalar){
+    sp_real(a->scalar) *= -1;
+    sp_imag(a->scalar) *= -1;
+  }else{
+    abort();
+  }
   token_stack_push(stack,a);  
 }
 
 void token_stack_pow(TokenStack * stack){
   Token * b = token_stack_pop(stack);
   Token * a = token_stack_pop(stack);
-  Complex v = sp_image_get(b->image,0,0,0);
-  double exponent = sp_real(v);
-  for(int i = 0;i<sp_image_size(a->image);i++){
-    sp_real(a->image->image->data[i]) = pow(sp_real(a->image->image->data[i]),exponent);
-    sp_imag(a->image->image->data[i]) = pow(sp_imag(a->image->image->data[i]),exponent);
+  if(b->type != TokenScalar){
+    fprintf(stderr,"Can only exponentiate to a scalar power!\n");
+    abort();
   }
-  sp_image_free(b->image);
+  if(sp_imag(b->scalar) != 0){
+    fprintf(stderr,"At the moment it's only possible to raise to stricly real powers!\n");
+    abort();
+  }
+  double exponent = sp_real(b->scalar);
+  if(a->type == TokenImage){
+    for(int i = 0;i<sp_image_size(a->image);i++){
+      sp_real(a->image->image->data[i]) = pow(sp_real(a->image->image->data[i]),exponent);
+      sp_imag(a->image->image->data[i]) = pow(sp_imag(a->image->image->data[i]),exponent);
+    }
+  }else if(a->type == TokenScalar){
+    sp_real(a->scalar) = pow(sp_real(a->scalar),exponent);
+    sp_imag(a->scalar) = pow(sp_imag(a->scalar),exponent);
+  }
   token_stack_push(stack,a);  
 }
 
 void token_stack_fft(TokenStack * stack){
   Token * a = token_stack_pop(stack);
+  if(a->type != TokenImage){
+    fprintf(stderr,"Can only do fft on images!\n");
+    abort();
+  }
   Image * b = sp_image_fft(a->image);
   sp_image_free(a->image);
   a->image = b;
   token_stack_push(stack,a);  
 }
 
-void token_stack_ifft(TokenStack * stack){
+void token_stack_ifft(TokenStack * stack){  
   Token * a = token_stack_pop(stack);
-  /* avoid checks */
+  if(a->type != TokenImage){
+    fprintf(stderr,"Can only do ifft on images!\n");
+    abort();
+  }
   a->image->phased = 1;
   a->image->shifted = 1;
   Image * b = sp_image_ifft(a->image);
@@ -160,49 +244,63 @@ void token_stack_ifft(TokenStack * stack){
 
 void token_stack_real(TokenStack * stack){
   Token * a = token_stack_pop(stack);
-  /* avoid checks */
-  for(int i = 0;i<sp_image_size(a->image);i++){
-    sp_imag(a->image->image->data[i]) = 0;
+  if(a->type == TokenScalar){
+    sp_imag(a->scalar) = 0;
+  }else{
+    for(int i = 0;i<sp_image_size(a->image);i++){
+      sp_imag(a->image->image->data[i]) = 0;
+    }
   }
   token_stack_push(stack,a);  
 }
 
 void token_stack_arg(TokenStack * stack){
   Token * a = token_stack_pop(stack);
-  /* avoid checks */
-  for(int i = 0;i<sp_image_size(a->image);i++){
-    sp_real(a->image->image->data[i]) = sp_carg(a->image->image->data[i]);
-    sp_imag(a->image->image->data[i]) = 0;
+  if(a->type == TokenScalar){
+    sp_real(a->scalar) = sp_carg(a->scalar);
+  }else{
+    for(int i = 0;i<sp_image_size(a->image);i++){
+      sp_real(a->image->image->data[i]) = sp_carg(a->image->image->data[i]);
+      sp_imag(a->image->image->data[i]) = 0;
+    }
   }
   token_stack_push(stack,a);  
 }
 
 void token_stack_imag(TokenStack * stack){
   Token * a = token_stack_pop(stack);
-  /* avoid checks */
-  for(int i = 0;i<sp_image_size(a->image);i++){
-    sp_real(a->image->image->data[i]) = 0;
+  if(a->type == TokenScalar){
+    sp_real(a->scalar) = 0;
+  }else{
+    for(int i = 0;i<sp_image_size(a->image);i++){
+      sp_real(a->image->image->data[i]) = 0;
+    }
   }
   token_stack_push(stack,a);  
 }
 
 void token_stack_imaginary_unit(TokenStack * stack){
   Token * a = token_stack_pop(stack);
-  /* avoid checks */
-  for(int i = 0;i<sp_image_size(a->image);i++){
-    a->image->image->data[i] = sp_cmul(a->image->image->data[i],sp_cinit(0,1));
-  }  
+  if(a->type == TokenScalar){
+    a->scalar = sp_cmul(a->scalar,sp_cinit(0,1));
+  }else{
+    for(int i = 0;i<sp_image_size(a->image);i++){
+      a->image->image->data[i] = sp_cmul(a->image->image->data[i],sp_cinit(0,1));
+    }  
+  }
   token_stack_push(stack,a);  
 }
 
 void token_stack_integrate(TokenStack * stack){
   Token * a = token_stack_pop(stack);
-  /* avoid checks */
-  Complex sum = sp_image_integrate(a->image);
-  Image * b = sp_image_alloc(1,1,1);
-  sp_image_set(b,0,0,0,sum);
+  if(a->type == TokenScalar){
+    token_stack_push(stack,a);  
+    return;
+  }
+  a->scalar = sp_image_integrate(a->image);
   sp_image_free(a->image);
-  a->image = b;
+  a->image = NULL;
+  a->type = TokenScalar;
   token_stack_push(stack,a);  
 }
 
@@ -316,6 +414,15 @@ static Operator operator_table[100] = {
     .name = ComplexArgument
   },
   {
+    .op = token_stack_exp,
+    .n_operands = 1,
+    .precedence = 1,
+    .associativity = NonAssociative,
+    .position = Prefix,
+    .identifier = {"exp",NULL},
+    .name = Exponential
+  },
+  {
     .op = token_stack_real,
     .n_operands = 1,
     .precedence = 1,
@@ -355,17 +462,17 @@ static Token ** parse_tokens(Token ** infix);
 
 static Token ** tokenize_string(char * input, Operator * op_table, Image ** image_list);
 
-Image * evaluate_postfix(Token ** postfix){
+Token * evaluate_postfix(Token ** postfix){
   TokenStack * stack = token_stack_init();
   for(int i = 0;postfix[i];i++){
-    if(postfix[i]->operator){
+    if(postfix[i]->type == TokenOperator){
       postfix[i]->operator->op(stack);
     }else{
       token_stack_push(stack,postfix[i]);
     }
   }
   if(token_stack_size(stack) == 1){   
-    return token_stack_pop(stack)->image;
+    return token_stack_pop(stack);
   }else{
     fprintf(stderr,"Stack contains %d members after evaluation. Expecting 1. Abort!\n",token_stack_size(stack));
     exit(1);
@@ -381,7 +488,7 @@ Token ** parse_tokens(Token ** infix){
   int postfix_index = 0;
 
   for(int i = 0;infix[i];i++){
-    if(infix[i]->image){
+    if(infix[i]->type != TokenOperator){
       postfix[postfix_index++] = infix[i];
     }else if(infix[i]->operator){
 
@@ -395,6 +502,8 @@ Token ** parse_tokens(Token ** infix){
 	}
       }
       token_stack_push(stack,infix[i]);
+    }else{
+      abort();
     }
   }
   while(token_stack_size(stack)){
@@ -448,11 +557,10 @@ Token ** tokenize_string(char * input, Operator * op_table, Image ** image_list)
 	  i++;
 	}
       }
-      /* create an image with the required amplitude */
-      Image * a = sp_image_alloc(1,1,1);
-      sp_image_fill(a,sp_cinit(d,0));
       pe[pe_used].operator = NULL;
-      pe[pe_used].image = a;
+      pe[pe_used].image = NULL;
+      pe[pe_used].scalar = sp_cinit(d,0);
+      pe[pe_used].type = TokenScalar;
       lastToken = Operand;
       pe_used++;      
     }else if(isupper(input[i])){
@@ -477,6 +585,7 @@ Token ** tokenize_string(char * input, Operator * op_table, Image ** image_list)
       Image * a = sp_image_duplicate(image_list[index],SP_COPY_ALL);
       pe[pe_used].operator = NULL;
       pe[pe_used].image = a;
+      pe[pe_used].type = TokenImage;
       lastToken = Operand;
       pe_used++;            
     }else{
@@ -492,15 +601,14 @@ Token ** tokenize_string(char * input, Operator * op_table, Image ** image_list)
 	      j++;
 	    }
 	    if(op_table[j].name == Addition && (lastToken != Operand && lastToken != RightParenthesis && lastToken != ImaginaryUnit)){
-	      /* this is actually a unary plus not a subtraction */
+	      /* this is a unary plus not an addition */
 	      j++;
 	    }
 	    if(op_table[j].name == ImaginaryUnit && (lastToken != Operand && lastToken != RightParenthesis && lastToken != ImaginaryUnit)){
-	      /* this is actually an operand 0+i not a multiplication by i */
-	      Image * a = sp_image_alloc(1,1,1);
-	      sp_image_fill(a,sp_cinit(0,1));
 	      pe[pe_used].operator = NULL;
-	      pe[pe_used].image = a;
+	      pe[pe_used].image = NULL;
+	      pe[pe_used].scalar = sp_cinit(0,1);
+	      pe[pe_used].type = TokenScalar;
 	      lastToken = Operand;
 	      pe_used++;      
 	      operator_found_flag = 1;
@@ -512,6 +620,7 @@ Token ** tokenize_string(char * input, Operator * op_table, Image ** image_list)
 	    /* Apply precedence modifier resulting from the parenthesis */
 	    pe[pe_used].operator->precedence += precedence_modifier;
 	    pe[pe_used].image = NULL;
+	    pe[pe_used].type = TokenOperator;
 	    operator_found_flag = 1;
 	    lastToken = pe[pe_used].operator->name;
 	    pe_used++;
@@ -567,6 +676,10 @@ int main(int argc, char ** argv){
     operators  and  mathematical functions (+, sin, etc.) being sup‐\n\
     ported.\n\
 ";
+  if(argc < 2){
+    printf("Try image_math -h for help\n");
+    return 0;
+  }
   while(1){
     c = getopt(argc,argv,optstring);
     if(c == -1){
@@ -598,9 +711,10 @@ int main(int argc, char ** argv){
   image_list[image_list_size] = NULL;
   Token ** tokens = tokenize_string(expression,operator_table,image_list);
   Token ** postfix = parse_tokens(tokens);
-  Image * out = evaluate_postfix(postfix);
-  if(sp_image_size(out) == 1){
-    Complex v = sp_image_get(out,0,0,0);
+  Token * out = evaluate_postfix(postfix);
+  
+  if(out->type == TokenScalar){
+    Complex v = out->scalar;
     printf("%g + %g i\n",sp_real(v),sp_imag(v));
   }
   return 0;
