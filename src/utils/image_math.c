@@ -18,9 +18,11 @@ struct _TokenStack;
 
 typedef enum{Prefix, Infix, Postfix} OperatorPosition;
 typedef enum{LeftAssociative,RightAssociative,NonAssociative}OperatorAssociativity;
-typedef enum{Operand=1,LeftParenthesis,RightParenthesis,Addition,UnaryPlus,Subtraction,UnaryMinus,Multiplication,Division,
-	     Exponentiation,AbsoluteValue,FourierTransform,InverseFourierTransform,Integrate,RealPart,ImaginaryPart,ImaginaryUnit,ComplexArgument,Exponential,Logarythm}TokenName;
-typedef enum{TokenImage,TokenScalar,TokenOperator}TokenType;
+typedef enum{Operand=1,Comma,LeftParenthesis,RightParenthesis,Addition,UnaryPlus,Subtraction,
+	     UnaryMinus,Multiplication,Division,Exponentiation,AbsoluteValue,
+	     FourierTransform,InverseFourierTransform,Integrate,RealPart,ImaginaryPart,
+	     ImaginaryUnit,ComplexArgument,Exponential,Logarythm,Minimum,Maximum,ComplexConjugate}TokenName;
+typedef enum{TokenImage,TokenScalar,TokenOperator,TokenComma}TokenType;
 
 typedef struct{
   /* function pointer to the function that executes the operator */
@@ -50,6 +52,7 @@ typedef struct _TokenStack{
   Token * stack[STACK_MAX];
   int top;
 }TokenStack;
+
 
 
 static char * sp_strdup(char * str){
@@ -162,6 +165,21 @@ void token_stack_abs(TokenStack * stack){
   token_stack_push(stack,a);  
 }
 
+void token_stack_conj(TokenStack * stack){
+  Token * a = token_stack_pop(stack);
+  if(a->type == TokenImage){
+    for(int i = 0;i<sp_image_size(a->image);i++){
+      sp_imag(a->image->image->data[i]) = -sp_imag(a->image->image->data[i]);
+    }
+  }else if(a->type == TokenScalar){
+    sp_imag(a->scalar) = -sp_imag(a->scalar);
+  }else{
+    abort();
+  }
+  token_stack_push(stack,a);  
+}
+
+
 void token_stack_sub(TokenStack * stack){
   Token * b = token_stack_pop(stack);
   if(b->type == TokenScalar){
@@ -176,6 +194,12 @@ void token_stack_sub(TokenStack * stack){
 }
 
 void token_stack_unary_plus(TokenStack * stack){
+  /**/
+  stack = NULL;
+  return;
+}
+
+void token_stack_comma(TokenStack * stack){
   /**/
   stack = NULL;
   return;
@@ -323,6 +347,69 @@ void token_stack_integrate(TokenStack * stack){
   token_stack_push(stack,a);  
 }
 
+void token_stack_min(TokenStack * stack){
+  Token * a = token_stack_pop(stack);
+  Token * b = token_stack_pop(stack);
+  
+  if(a->type == TokenImage && b->type == TokenImage){
+    for(int i = 0;i<sp_image_size(a->image);i++){
+      sp_real(a->image->image->data[i]) = sp_min(sp_real(a->image->image->data[i]),sp_real(b->image->image->data[i]));
+      sp_imag(a->image->image->data[i]) = sp_min(sp_imag(a->image->image->data[i]),sp_imag(b->image->image->data[i]));
+    }
+    token_stack_push(stack,a);  
+  }else if(a->type == TokenImage && b->type == TokenScalar){ 
+    for(int i = 0;i<sp_image_size(a->image);i++){
+      sp_real(a->image->image->data[i]) = sp_min(sp_real(a->image->image->data[i]),sp_real(b->scalar));
+      sp_imag(a->image->image->data[i]) = sp_min(sp_imag(a->image->image->data[i]),sp_imag(b->scalar));
+    }
+    token_stack_push(stack,a);  
+  }else if(b->type == TokenImage && a->type == TokenScalar){
+    for(int i = 0;i<sp_image_size(b->image);i++){
+      sp_real(b->image->image->data[i]) = sp_min(sp_real(b->image->image->data[i]),sp_real(a->scalar));
+      sp_imag(b->image->image->data[i]) = sp_min(sp_imag(b->image->image->data[i]),sp_imag(a->scalar));
+    }    
+    token_stack_push(stack,b);  
+  }else if(a->type == TokenScalar && b->type == TokenScalar){
+    sp_real(a->scalar) = sp_min(sp_real(a->scalar),sp_real(b->scalar));
+    sp_imag(a->scalar) = sp_min(sp_imag(a->scalar),sp_imag(b->scalar));
+    token_stack_push(stack,a);
+  }else{
+    abort();
+  }
+}
+
+void token_stack_max(TokenStack * stack){
+  Token * a = token_stack_pop(stack);
+  Token * b = token_stack_pop(stack);
+  
+  if(a->type == TokenImage && b->type == TokenImage){
+    for(int i = 0;i<sp_image_size(a->image);i++){
+      sp_real(a->image->image->data[i]) = sp_max(sp_real(a->image->image->data[i]),sp_real(b->image->image->data[i]));
+      sp_imag(a->image->image->data[i]) = sp_max(sp_imag(a->image->image->data[i]),sp_imag(b->image->image->data[i]));
+    }
+    token_stack_push(stack,a);  
+  }else if(a->type == TokenImage && b->type == TokenScalar){ 
+    for(int i = 0;i<sp_image_size(a->image);i++){
+      sp_real(a->image->image->data[i]) = sp_max(sp_real(a->image->image->data[i]),sp_real(b->scalar));
+      sp_imag(a->image->image->data[i]) = sp_max(sp_imag(a->image->image->data[i]),sp_imag(b->scalar));
+    }
+    token_stack_push(stack,a);  
+  }else if(b->type == TokenImage && a->type == TokenScalar){
+    for(int i = 0;i<sp_image_size(b->image);i++){
+      sp_real(b->image->image->data[i]) = sp_max(sp_real(b->image->image->data[i]),sp_real(a->scalar));
+      sp_imag(b->image->image->data[i]) = sp_max(sp_imag(b->image->image->data[i]),sp_imag(a->scalar));
+    }    
+    token_stack_push(stack,b);  
+  }else if(a->type == TokenScalar && b->type == TokenScalar){
+    sp_real(a->scalar) = sp_max(sp_real(a->scalar),sp_real(b->scalar));
+    sp_imag(a->scalar) = sp_max(sp_imag(a->scalar),sp_imag(b->scalar));
+    token_stack_push(stack,a);
+  }else{
+    abort();
+  }
+}
+
+
 static Operator operator_table[100] = {
   {
     .op = token_stack_add,
@@ -353,7 +440,7 @@ static Operator operator_table[100] = {
   },
   {
     .op = token_stack_unary_minus,
-    .n_operands = 2,
+    .n_operands = 1,
     .precedence = 3,
     .associativity = RightAssociative,
     .position = Infix,
@@ -377,6 +464,15 @@ static Operator operator_table[100] = {
     .position = Infix,
     .identifier = {"/",NULL},
     .name = Division
+  },
+  {
+    .op = token_stack_conj,
+    .n_operands = 1,
+    .precedence = 5,
+    .associativity = NonAssociative,
+    .position = Prefix,
+    .identifier = {"conj",NULL},
+    .name = ComplexConjugate
   },
   {
     .op = token_stack_abs,
@@ -440,7 +536,8 @@ static Operator operator_table[100] = {
     .position = Prefix,
     .identifier = {"exp",NULL},
     .name = Exponential
-  },  {
+  },  
+  {
     .op = token_stack_log,
     .n_operands = 1,
     .precedence = 5,
@@ -448,6 +545,24 @@ static Operator operator_table[100] = {
     .position = Prefix,
     .identifier = {"log",NULL},
     .name = Logarythm
+  },
+  {
+    .op = token_stack_min,
+    .n_operands = 2,
+    .precedence = 5,
+    .associativity = NonAssociative,
+    .position = Prefix,
+    .identifier = {"min",NULL},
+    .name = Minimum
+  },
+  {
+    .op = token_stack_max,
+    .n_operands = 2,
+    .precedence = 5,
+    .associativity = NonAssociative,
+    .position = Prefix,
+    .identifier = {"max",NULL},
+    .name = Maximum
   },
   {
     .op = token_stack_real,
@@ -477,10 +592,18 @@ static Operator operator_table[100] = {
     .name = ImaginaryUnit
   },
   {
+    .op = token_stack_comma,
+    .n_operands = 2,
+    .precedence = 0,
+    .associativity = NonAssociative,
+    .position = Infix,
+    .identifier = {",",NULL},
+    .name = Comma
+  },
+  {
     .identifier = {NULL}
   }
 };
-
 
 
 
@@ -493,6 +616,10 @@ Token * evaluate_postfix(Token ** postfix){
   TokenStack * stack = token_stack_init();
   for(int i = 0;postfix[i];i++){
     if(postfix[i]->type == TokenOperator){
+      if(token_stack_size(stack) < postfix[i]->operator->n_operands){
+	fprintf(stderr,"%d operands expected but just %d in stack for operator %s!\n",postfix[i]->operator->n_operands,token_stack_size(stack), postfix[i]->operator->identifier[0]);
+	abort();
+      }
       postfix[i]->operator->op(stack);
     }else{
       token_stack_push(stack,postfix[i]);
@@ -756,6 +883,17 @@ int main(int argc, char ** argv){
   if(out->type == TokenScalar){
     Complex v = out->scalar;
     printf("%g + %g i\n",sp_real(v),sp_imag(v));
+  }else if(out->type == TokenImage){
+    if(output_file){
+      printf("Writing output to %s\n",output_file);
+      sp_image_write(out->image,output_file,0);
+    }else{
+      printf("Writing output to %s\n","output.h5");
+      sp_image_write(out->image,"output.h5",0);
+    }
+  }else{
+    fprintf(stderr,"Unexepected output type!\n");
+    abort();
   }
   return 0;
 }
