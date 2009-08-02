@@ -15,6 +15,7 @@ class QKeyEvent;
 class QFocusFrame;
 class QMainWindow;
 class ImageLoader;
+class ImageViewPanel;
 
 class ImageView: public QGraphicsView
 {
@@ -42,14 +43,14 @@ class ImageView: public QGraphicsView
   int display();
   QString newestFilename();
   QString getCurrentIteration();
-  void maxContrast();
-  void logScale(bool on);
  public slots:
   void scheduleImageLoad(QString file);
   bool loadImage(QString file);
   void loadImage(QPixmap pix);
   void setPos(QPointF pos);
   void setTransform(QTransform t);
+  void logScale(bool on);
+  void maxContrast();
  signals:
   void focusedIn(ImageView * focused);
   void scaleBy(qreal scale);
@@ -84,6 +85,7 @@ class ImageView: public QGraphicsView
   QString scheduledImage;
   QString currentlyLoading;
   QString currentIteration;
+  ImageViewPanel * panel;
 };
 
 #else

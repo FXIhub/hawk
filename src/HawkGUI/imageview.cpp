@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include "imageloader.h"
 #include "imagecategory.h"
+#include "imageviewpanel.h"
 
 ImageView::ImageView(QWidget * parent)
   :QGraphicsView(parent)
@@ -29,6 +30,11 @@ ImageView::ImageView(QWidget * parent)
   connect(delayedLoader,SIGNAL(timeout()),this,SLOT(loadScheduledImage()));
   delayedLoader->start(3);
   loader = NULL;
+  QVBoxLayout * vbox = new QVBoxLayout(this);
+  setLayout(vbox);
+  vbox->addStretch();
+  panel = new ImageViewPanel(this);
+  vbox->addWidget(panel);
 }
 
 ImageView::~ImageView()

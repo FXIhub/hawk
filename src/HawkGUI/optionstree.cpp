@@ -89,9 +89,9 @@ void OptionsTree::createGUI(){
   //    tree->horizontalHeader()->resizeSection(1, 150);
   
   QGridLayout *layout = new QGridLayout;
-  layout->addWidget(tree, 0, 0,1,5);
+  layout->addWidget(tree, 0, 0,1,3);
   
-  QCheckBox * advancedButton = new QCheckBox("Show Advanced",this);
+  QCheckBox * advancedButton = new QCheckBox(tr("Advanced"),this);
   showAdvancedOptionsToggled = false;
   QPushButton * saveOptionsButton = new QPushButton(QIcon(":images/config_save.png"),tr("Save"),this);
   QPushButton * loadOptionsButton = new QPushButton(QIcon(":images/config_open.png"),tr("Load"),this);
@@ -105,8 +105,8 @@ void OptionsTree::createGUI(){
   layout->addWidget(advancedButton, 1, 0);
   layout->addWidget(saveOptionsButton, 1, 1);
   layout->addWidget(loadOptionsButton, 1, 2);
-  layout->addWidget(resetOptionButton, 1, 3);
-  layout->addWidget(resetAllOptionsButton, 1, 4);
+  layout->addWidget(resetOptionButton, 2, 0);
+  layout->addWidget(resetAllOptionsButton, 2, 1);
   
   setLayout(layout);
   

@@ -2,13 +2,28 @@
 #define _IMAGEVIEWPANEL_H_
 #if defined __cplusplus || defined Q_MOC_RUN
 
+#include <QToolBar>
 #include <QWidget>
+#include <QFrame>
+
+class ImageView;
 
 class ImageViewPanel: public QWidget
 {
   Q_OBJECT
     public:
-  ImageViewPanel(QWidget * parent = 0);
+  ImageViewPanel(ImageView * parent = 0);
+  bool eventFilter(QObject * w, QEvent * e);
+private slots:
+    void changeVisibility();
+    //    void setLinearScale();
+    //    void setLogScale();
+ private:
+  QFrame * frame;
+  QList<QObject *>underMouse;
+  ImageView * imageView;
+    
+
 };
 
 #else
