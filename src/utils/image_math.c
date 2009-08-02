@@ -882,7 +882,11 @@ int main(int argc, char ** argv){
   
   if(out->type == TokenScalar){
     Complex v = out->scalar;
-    printf("%g + %g i\n",sp_real(v),sp_imag(v));
+    if(sp_imag(v) == 0){
+      printf("%g\n",sp_real(v),sp_imag(v));
+    }else{
+      printf("%g + %g i\n",sp_real(v),sp_imag(v));
+    }
   }else if(out->type == TokenImage){
     if(output_file){
       printf("Writing output to %s\n",output_file);
