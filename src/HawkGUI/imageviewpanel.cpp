@@ -51,9 +51,15 @@ ImageViewPanel::ImageViewPanel(ImageView * parent)
   scaleBox->setLayout(vbox);
   QRadioButton * rb = new QRadioButton("Linear",scaleBox);
   rb->setToolTip(tr("Set Linear Scale"));
+  QPalette p = QPalette(rb->palette());
+  p.setColor(QPalette::WindowText,Qt::white);
+  rb->setPalette(p);
   rb->setChecked(true);
   vbox->addWidget(rb);
   rb = new QRadioButton("Log",scaleBox);
+  p = QPalette(rb->palette());
+  p.setColor(QPalette::WindowText,Qt::white);
+  rb->setPalette(p);
   rb->setToolTip(tr("Set Logarythmic Scale"));
   vbox->addWidget(rb);
   connect(rb,SIGNAL(toggled(bool)),imageView,SLOT(logScale(bool)));
@@ -86,15 +92,12 @@ bool ImageViewPanel::eventFilter(QObject * w,QEvent * e){
 	visibilityTimer.start();
     }
     if(e->type() == QEvent::Leave){
-      //        underMouse.removeAll(w);
 	visibilityTimer.start();
     }
-    /*    if(e->type() == QEvent::ChildAdded){
-	  QChildEvent * ce = (QChildEvent *)e;
-	  underMouse.append(ce->child());
-	  ce->child()->installEventFilter(this);
-	  qDebug("Added child of type %s named %s\n", ce->child()->metaObject()->className(),ce->child()->objectName().toAscii().data());
-	  }*/
+    if(e->type() == QEvent::ChildAdded){
+      QChildEvent * ce = (QChildEvent *)e;
+      ce->child()->installEventFilter(this);
+    }
     return false;
 }
 
