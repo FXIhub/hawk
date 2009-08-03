@@ -103,24 +103,24 @@ int main(int argc, char **argv)
 
   if (opts->output[0]) {
     sprintf(buffer,"%s_inside_mask.png",opts->output);
-    sp_image_write(sp_image_shift(inside_mask),buffer,COLOR_JET);
+    sp_image_write(sp_image_shift(inside_mask),buffer,SpColormapJet);
     sprintf(buffer,"%s_outside_mask.png",opts->output);
-    sp_image_write(sp_image_shift(outside_mask),buffer,COLOR_JET);
+    sp_image_write(sp_image_shift(outside_mask),buffer,SpColormapJet);
     sprintf(buffer,"%s_inside_mask_real.png",opts->output);
-    sp_image_write(inside_fft,buffer,COLOR_JET|LOG_SCALE);
+    sp_image_write(inside_fft,buffer,SpColormapJet|SpColormapLogScale);
     sprintf(buffer,"%s_inside_mask_real_phase.png",opts->output);
-    sp_image_write(inside_fft,buffer,COLOR_WHEEL|COLOR_WEIGHTED_PHASE|LOG_SCALE);
+    sp_image_write(inside_fft,buffer,SpColormapWheel|SpColormapWeightedPhase|SpColormapLogScale);
     sprintf(buffer,"%s_outside_mask_real.png",opts->output);
-    sp_image_write(outside_fft,buffer,COLOR_JET|LOG_SCALE);
+    sp_image_write(outside_fft,buffer,SpColormapJet|SpColormapLogScale);
     sprintf(buffer,"%s_outside_mask_real_phase.png",opts->output);
-    sp_image_write(outside_fft,buffer,COLOR_WHEEL|COLOR_WEIGHTED_PHASE|LOG_SCALE);
+    sp_image_write(outside_fft,buffer,SpColormapWheel|SpColormapWeightedPhase|SpColormapLogScale);
   } else {
-    sp_image_write(sp_image_shift(inside_mask),"inside_mask.png",COLOR_JET);
-    sp_image_write(sp_image_shift(outside_mask),"outside_mask.png",COLOR_JET);
-    sp_image_write(inside_fft,"inside_mask_real.png",COLOR_JET|LOG_SCALE);
-    sp_image_write(inside_fft,"inside_mask_real_phase.png",COLOR_WHEEL|COLOR_WEIGHTED_PHASE|LOG_SCALE);
-    sp_image_write(outside_fft,"outside_mask_real.png",COLOR_JET|LOG_SCALE);
-    sp_image_write(outside_fft,"outside_mask_real_phase.png",COLOR_WHEEL|COLOR_WEIGHTED_PHASE|LOG_SCALE);
+    sp_image_write(sp_image_shift(inside_mask),"inside_mask.png",SpColormapJet);
+    sp_image_write(sp_image_shift(outside_mask),"outside_mask.png",SpColormapJet);
+    sp_image_write(inside_fft,"inside_mask_real.png",SpColormapJet|SpColormapLogScale);
+    sp_image_write(inside_fft,"inside_mask_real_phase.png",SpColormapWheel|SpColormapWeightedPhase|SpColormapLogScale);
+    sp_image_write(outside_fft,"outside_mask_real.png",SpColormapJet|SpColormapLogScale);
+    sp_image_write(outside_fft,"outside_mask_real_phase.png",SpColormapWheel|SpColormapWeightedPhase|SpColormapLogScale);
   }
   sp_image_free(inside_mask);
   sp_image_free(outside_mask);

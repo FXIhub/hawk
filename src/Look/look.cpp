@@ -75,7 +75,7 @@ Look::Look(QMainWindow *parent)// : QWidget(parent)
   logScale = 0;
   subtract = 0;
   range = 1;
-  colorscale = COLOR_JET;
+  colorscale = SpColormapJet;
   propertiesSet = false;
   showDistanceActive = false;
   backgroundLevel = NULL;
@@ -472,7 +472,7 @@ void Look::drawImage()
       //printf("freed it\n");
     }
     int flags;
-    if (logScale) flags = colorscale | LOG_SCALE;
+    if (logScale) flags = colorscale | SpColormapLogScale;
     else flags = colorscale;
 
     if (viewType == ViewAutocorrelation) {
@@ -812,11 +812,11 @@ void Look::setLogScale(int on)
 
 void Look::setColorscale(int kind)
 {
-  if (kind == 1) colorscale = COLOR_GRAYSCALE;
-  if (kind == 2) colorscale = COLOR_TRADITIONAL;
-  if (kind == 3) colorscale = COLOR_HOT;
-  if (kind == 4) colorscale = COLOR_RAINBOW;
-  if (kind == 5) colorscale = COLOR_JET;
+  if (kind == 1) colorscale = SpColormapGrayScale;
+  if (kind == 2) colorscale = SpColormapTraditional;
+  if (kind == 3) colorscale = SpColormapHot;
+  if (kind == 4) colorscale = SpColormapRainbow;
+  if (kind == 5) colorscale = SpColormapJet;
   drawImage();
 }
 
@@ -928,7 +928,7 @@ void Look::showBackground()
   backgroundView = new ImageView;
   //backgroundView->setMinimumWidth(500);
   //backgroundView->setMaximumWidth(500);
-  if (logScale) colormap_data = sp_image_get_false_color(background,colorscale | LOG_SCALE,-1,(int)(65535.0*range));
+  if (logScale) colormap_data = sp_image_get_false_color(background,colorscale | SpColormapLogScale,-1,(int)(65535.0*range));
   else colormap_data = sp_image_get_false_color(background,colorscale,-1,(int)(65535.0*range));
   backgroundQi = QImage(colormap_data,sp_image_x(img),sp_image_y(img),QImage::Format_RGB32);
   //backgroundQi = backgroundQi.scaled(backgroundLabel->width(),backgroundLabel->height(),Qt::KeepAspectRatio);

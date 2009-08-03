@@ -55,7 +55,7 @@ int main(int argc, char ** argv){
   sprintf(buffer,"%s.vtk",argv[3]);
   sp_image_write(b,buffer,0);
   sprintf(buffer,"%s.png",argv[3]);
-  sp_image_write(b,buffer,COLOR_JET|LOG_SCALE);
+  sp_image_write(b,buffer,SpColormapJet|SpColormapLogScale);
   /*write capped version */
   max = 0;
   for(int i = 0;i<sp_image_size(b);i++){
@@ -71,6 +71,6 @@ int main(int argc, char ** argv){
     }    
   }
   sprintf(buffer,"%s_capped.png",argv[3]);
-  sp_image_write(b,buffer,COLOR_JET|LOG_SCALE);  
+  sp_image_write(b,buffer,SpColormapJet|SpColormapLogScale);  
   return 0;
 }

@@ -553,7 +553,7 @@ void output_result(Image * a, Image * restore,FILE * log,int iter,int timer){
 
   char buffer[1024];
   sprintf(buffer,"orient_restore-%06d.png",iter);
-  sp_image_write(orient_restore,buffer,COLOR_GRAYSCALE);
+  sp_image_write(orient_restore,buffer,SpColormapGrayScale);
   sp_image_free(orient_restore);
   //    sp_image_write(restore,"restore.png",COLOR_GRAYSCALE);
 }
@@ -734,9 +734,9 @@ void tomas_iteration(Image * restore,Image * after,sp_sparse_matrix ** random_or
   mpi_sync_images(restore);  
 #endif
 
-  sp_image_write(a,"orig.png",COLOR_GRAYSCALE);
-  sp_image_write(avg_samples,"avg_sample.png",COLOR_GRAYSCALE);
-  sp_image_write(avg_random_samples,"avg_random_sample.png",COLOR_GRAYSCALE);
+  sp_image_write(a,"orig.png",SpColormapGrayScale);
+  sp_image_write(avg_samples,"avg_sample.png",SpColormapGrayScale);
+  sp_image_write(avg_random_samples,"avg_random_sample.png",SpColormapGrayScale);
   sp_image_free(avg_random_samples);
   sp_image_free(avg_samples);
   int timer = sp_timer_start();

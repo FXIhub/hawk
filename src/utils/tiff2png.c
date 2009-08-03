@@ -98,7 +98,7 @@ int main(int argc, char ** argv){
   Image * out = sp_image_read(opts->input,0);
   /* write HDF5 */
   sprintf(buffer,"%s.png",opts->output);
-  sp_image_write(out,buffer,COLOR_JET|LOG_SCALE);
+  sp_image_write(out,buffer,SpColormapJet|SpColormapLogScale);
   sprintf(buffer,"%s.vtk",opts->output);
   /*  write_vtk(out,buffer);*/
   return 0;

@@ -5,8 +5,11 @@
 #include <QToolBar>
 #include <QWidget>
 #include <QFrame>
+#include <QTimer>
 
 class ImageView;
+class QTimer;
+class QComboBox;
 
 class ImageViewPanel: public QWidget
 {
@@ -18,11 +21,13 @@ private slots:
     void changeVisibility();
     //    void setLinearScale();
     //    void setLogScale();
+    void changeColormap(int index);
  private:
   QFrame * frame;
   QList<QObject *>underMouse;
   ImageView * imageView;
-    
+  QTimer visibilityTimer;
+  QComboBox * colormapCombo;
 
 };
 

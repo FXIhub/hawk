@@ -104,7 +104,7 @@ int main(int argc, char ** argv){
 	append_tag(buffer,buffer3,buffer2);
 	free(gd);
       }
-      sp_image_write(image,buffer,COLOR_JET);
+      sp_image_write(image,buffer,SpColormapJet);
       sp_image_free(image);
       //      exit(0);
     }
@@ -137,7 +137,7 @@ int main(int argc, char ** argv){
       append_tag(buffer,buffer3,buffer2);
       free(gd);
     }
-    sp_image_write(image,buffer,COLOR_JET);
+    sp_image_write(image,buffer,SpColormapJet);
     
   }
   return 0;

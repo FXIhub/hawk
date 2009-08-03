@@ -6,7 +6,7 @@ ImageItem::ImageItem(Image * sp_image,QString file,QGraphicsItem * parent)
   :QGraphicsPixmapItem(parent)
 { 
   filename = file;
-  colormap_flags = COLOR_JET;
+  colormap_flags = SpColormapJet;
   colormap_min = 0;
   colormap_max = 0;
   image = sp_image;
@@ -40,7 +40,7 @@ ImageItem::ImageItem(Image * sp_image,QString file,QGraphicsItem * parent)
 ImageItem::ImageItem(QPixmap pix,QGraphicsItem * parent)
   :QGraphicsPixmapItem(parent)
 { 
-  colormap_flags = COLOR_JET;
+  colormap_flags = SpColormapJet;
   setPixmap(pix);
   colormap_data = NULL;
   image = NULL;
@@ -152,7 +152,7 @@ bool ImageItem::isShifted(){
 void ImageItem::setColormap(int color){
  // clear color bits
   if(image){
-    colormap_flags &= ~(COLOR_GRAYSCALE|COLOR_TRADITIONAL|COLOR_HOT|COLOR_JET|COLOR_WHEEL|COLOR_RAINBOW);
+    colormap_flags &= ~(SpColormapLastColorScheme-1);
     colormap_flags |= color;
     updateImage();
   }
@@ -171,20 +171,20 @@ void ImageItem::updateImage(){
 }
 
 int ImageItem::colormap(){
-  return colormap_flags & (COLOR_GRAYSCALE|COLOR_TRADITIONAL|COLOR_HOT|COLOR_JET|COLOR_WHEEL|COLOR_RAINBOW|LOG_SCALE);
+  return colormap_flags & (SpColormapLastColorScheme-1);
 }
 
 void ImageItem::setDisplay(int display){
  // clear display bits
   if(image){
-    colormap_flags &= ~(COLOR_MASK|COLOR_PHASE);
+    colormap_flags &= ~(SpColormapPhase|SpColormapMask);
     colormap_flags |= display;
     updateImage();
   }
 }
 
 int ImageItem::display(){
-  return colormap_flags & (COLOR_MASK|COLOR_PHASE);
+  return colormap_flags & (SpColormapPhase|SpColormapMask);
 }
 
 void ImageItem::maxContrast(QRectF area){
@@ -228,9 +228,9 @@ void ImageItem::maxContrast(QRectF area){
 }
 
 void ImageItem::logScale(bool on){
-  colormap_flags &= ~(LOG_SCALE);
+  colormap_flags &= ~(SpColormapLogScale);
   if(on){
-    colormap_flags |= LOG_SCALE;    
+    colormap_flags |= SpColormapLogScale;    
   }
   updateImage();
 }

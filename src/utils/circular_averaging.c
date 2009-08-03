@@ -379,17 +379,17 @@ int main(int argc, char ** argv){
     mask_overexposure(image,opts->saturation); 
   }
   if(opts->verbose){
-     sp_image_write(image,"after_saturation_mask.png",COLOR_GRAYSCALE);
+     sp_image_write(image,"after_saturation_mask.png",SpColormapGrayScale);
   }
 
   if(opts->dark[0]){
     if(opts->verbose){
-      sp_image_write(image,"before_minus_dark.png",COLOR_JET|LOG_SCALE);
+      sp_image_write(image,"before_minus_dark.png",SpColormapJet|SpColormapLogScale);
     }
     Image * dark = sp_image_read(opts->dark,0);
     subtract_dark(image,dark);
     if(opts->verbose){
-      sp_image_write(image,"after_minus_dark.png",COLOR_JET|LOG_SCALE);
+      sp_image_write(image,"after_minus_dark.png",SpColormapJet|SpColormapLogScale);
     }
   }
   if(opts->mask[0]){
@@ -404,7 +404,7 @@ int main(int argc, char ** argv){
       }
     }
     if(opts->verbose){
-      write_mask_to_png(image,"after_apllying_mask.png",COLOR_GRAYSCALE);
+      write_mask_to_png(image,"after_apllying_mask.png",SpColormapGrayScale);
     }
   }
   /* remove flat background */

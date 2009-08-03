@@ -214,51 +214,51 @@ void ImageDisplay::displayAmplitudes(){
 
 void ImageDisplay::displayPhases(){
   if(selected){
-    selected->setDisplay(COLOR_PHASE);
+    selected->setDisplay(SpColormapPhase);
   }
 }
 
 void ImageDisplay::displayMask(){
   if(selected){
-    selected->setDisplay(COLOR_MASK);
+    selected->setDisplay(SpColormapMask);
   }
 }
 
 void ImageDisplay::setColorGray(){
   if(selected){
-    selected->setColormap(COLOR_GRAYSCALE);
+    selected->setColormap(SpColormapGrayScale);
   }
 }
 
 
 void ImageDisplay::setColorJet(){
   if(selected){
-    selected->setColormap(COLOR_JET);
+    selected->setColormap(SpColormapJet);
   }
 }
 
 void ImageDisplay::setColorHot(){
   if(selected){
-    selected->setColormap(COLOR_HOT);
+    selected->setColormap(SpColormapHot);
   }
 }
 
 void ImageDisplay::setColorWheel(){
   if(selected){
-    selected->setColormap(COLOR_WHEEL);
+    selected->setColormap(SpColormapWheel);
   }
 }
 
 void ImageDisplay::setColorTraditional(){
   if(selected){
-    selected->setColormap(COLOR_TRADITIONAL);
+    selected->setColormap(SpColormapTraditional);
   }
 }
 
 
 void ImageDisplay::setColorRainbow(){
   if(selected){
-    selected->setColormap(COLOR_RAINBOW);
+    selected->setColormap(SpColormapRainbow);
   }
 }
 

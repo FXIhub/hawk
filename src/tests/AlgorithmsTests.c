@@ -85,7 +85,7 @@ float test_raar_success(float criteria, float * pgm,int runs, int iter_per_run,f
     sp_real(s->image->data[i]) = 1;
   }
   Image * real =  sp_image_edge_extend(a,oversampling*sp_image_x(a),SP_ZERO_PAD_EDGE,SP_2D);
-  sp_image_write(real,"real.png",COLOR_GRAYSCALE);
+  sp_image_write(real,"real.png",SpColormapGrayScale);
   Image * support = sp_image_edge_extend(s,oversampling*sp_image_x(a),SP_ZERO_PAD_EDGE,SP_2D);
   Image * perf_amp = sp_image_fft(real);
   perf_amp->scaled = 1;
@@ -103,7 +103,7 @@ float test_raar_success(float criteria, float * pgm,int runs, int iter_per_run,f
   }
   sp_image_free(perf_amp);
 
-  sp_image_write(amp,"amp.png",LOG_SCALE|COLOR_GRAYSCALE);
+  sp_image_write(amp,"amp.png",SpColormapLogScale|SpColormapGrayScale);
   for(int i = 0;i<sp_image_size(amp);i++){
     amp->mask->data[i] = 1;
   }
@@ -128,7 +128,7 @@ float test_raar_success(float criteria, float * pgm,int runs, int iter_per_run,f
     //    printf("Final correlation = %f\n",score);
     //        sp_image_write(real_out,"real_out.png",COLOR_GRAYSCALE);
     if(score > criteria){
-      sp_image_write(real_out,"raar_real_out.png",COLOR_GRAYSCALE);
+      sp_image_write(real_out,"raar_real_out.png",SpColormapGrayScale);
       success++;
     }
     sp_image_free(real_in);
@@ -158,7 +158,7 @@ float test_difference_map_run(Image * real, Image * support, Image * amp, Option
   //  printf("Final correlation = %f\n",score);
   //  sp_image_write(real_out,"real_out.png",COLOR_GRAYSCALE);
   if(score > 0.99){
-    sp_image_write(real_in,"diff_map_real_out.png",COLOR_GRAYSCALE);
+    sp_image_write(real_in,"diff_map_real_out.png",SpColormapGrayScale);
   }
 
 
@@ -175,7 +175,7 @@ float test_difference_map_success(float criteria, float * pgm,int runs, int iter
     sp_real(s->image->data[i]) = 1;
   }
   Image * real =  sp_image_edge_extend(a,oversampling*sp_image_x(a),SP_ZERO_PAD_EDGE,SP_2D);
-  sp_image_write(real,"real.png",COLOR_GRAYSCALE);
+  sp_image_write(real,"real.png",SpColormapGrayScale);
   Image * support = sp_image_edge_extend(s,oversampling*sp_image_x(a),SP_ZERO_PAD_EDGE,SP_2D);
   Image * perf_amp = sp_image_fft(real);
   perf_amp->scaled = 1;
@@ -233,7 +233,7 @@ float test_hio_success(float criteria, float * pgm,int runs, int iter_per_run,fl
   }
 
   Image * real =  sp_image_edge_extend(a,oversampling*sp_image_x(a),SP_ZERO_PAD_EDGE,SP_2D);
-  sp_image_write(real,"real.png",COLOR_GRAYSCALE);
+  sp_image_write(real,"real.png",SpColormapGrayScale);
   Image * support = sp_image_edge_extend(s,oversampling*sp_image_x(a),SP_ZERO_PAD_EDGE,SP_2D);
   Image * perf_amp = sp_image_fft(real);
   perf_amp->scaled = 1;
@@ -276,7 +276,7 @@ float test_hio_success(float criteria, float * pgm,int runs, int iter_per_run,fl
     //         printf("Final correlation = %f\n",score);
     //          sp_image_write(real_out,"real_out.png",COLOR_GRAYSCALE);
     if(score > criteria){
-      sp_image_write(real_out,"hio_real_out.png",COLOR_GRAYSCALE);
+      sp_image_write(real_out,"hio_real_out.png",SpColormapGrayScale);
       success++;
     }
     sp_image_free(real_in);

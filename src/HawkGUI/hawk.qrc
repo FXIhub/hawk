@@ -16,5 +16,7 @@
      <file>images/log_scale.png</file>
      <file>images/fourier_transform.png</file>
      <file>images/fourier_transform_squared.png</file>
+     <file>images/dropdownarrow.png</file>
+     <file>images/dropdownarrow_16.png</file>
  </qresource>
  </RCC>

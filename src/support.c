@@ -76,7 +76,7 @@ Image * get_support_from_patterson(Image * input, Options * opts){
     strcat(buffer,"/");
     strcat(buffer,"autocorrelation.png");
 
-    sp_image_write(patterson,buffer,COLOR_JET|LOG_SCALE);
+    sp_image_write(patterson,buffer,SpColormapJet|SpColormapLogScale);
   }
   char buffer[OPTION_STRING_SIZE*2+1];
   strcpy(buffer,opts->work_dir);
@@ -135,7 +135,7 @@ Image * get_support_from_patterson(Image * input, Options * opts){
     strcpy(buffer,opts->work_dir);
     strcat(buffer,"/");
     strcat(buffer,"patterson_support.png");
-    sp_image_write(patterson,buffer,COLOR_GRAYSCALE);
+    sp_image_write(patterson,buffer,SpColormapGrayScale);
   }else if(patterson->num_dimensions == SP_3D){
     char buffer[OPTION_STRING_SIZE*2+1];
     strcpy(buffer,opts->work_dir);

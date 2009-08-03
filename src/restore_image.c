@@ -231,7 +231,7 @@ void harmonize_sizes(Options * opts){
     tmp = fourier_rescale(opts->image_guess,sp_c3matrix_x(exp->image),sp_c3matrix_y(exp->image),sp_c3matrix_z(exp->image));
     sp_image_free(opts->image_guess);
     opts->image_guess = tmp;
-    sp_image_write(tmp,"rescaled_guess.png",COLOR_JET);
+    sp_image_write(tmp,"rescaled_guess.png",SpColormapJet);
   }
 }
 
@@ -286,10 +286,10 @@ void complete_restoration(Image * amp, Image * initial_support, Options * opts, 
   mkdir(dir,0755);
   chdir(dir);
 #endif
-  sp_image_write(support,"support.png",COLOR_JET);
-  sp_image_write(real_in,"initial_guess.png",COLOR_JET);
+  sp_image_write(support,"support.png",SpColormapJet);
+  sp_image_write(real_in,"initial_guess.png",SpColormapJet);
   sp_image_write(real_in,"initial_guess.h5",sizeof(real));
-  sp_image_write(initial_support,"initial_support.png",COLOR_JET);
+  sp_image_write(initial_support,"initial_support.png",SpColormapJet);
 
   if(get_algorithm(opts,&log) == HIO){     
     real_out = restore_hio_iteration(amp, real_in, support,opts,&log);
@@ -338,11 +338,11 @@ void complete_restoration(Image * amp, Image * initial_support, Options * opts, 
       sprintf(buffer,"real_out-%07d.h5",opts->cur_iteration);
       sp_image_write(real_out,buffer,opts->output_precision);
       sprintf(buffer,"real_out-%07d.png",opts->cur_iteration);
-      sp_image_write(real_out,buffer,COLOR_JET);
+      sp_image_write(real_out,buffer,SpColormapJet);
       sprintf(buffer,"real_out_phase-%07d.png",opts->cur_iteration);
-      sp_image_write(real_out,buffer,COLOR_JET|COLOR_PHASE);
+      sp_image_write(real_out,buffer,SpColormapJet|SpColormapPhase);
       sprintf(buffer,"support-%07d.png",opts->cur_iteration);
-      sp_image_write(support,buffer,COLOR_JET);
+      sp_image_write(support,buffer,SpColormapJet);
       sprintf(buffer,"support-%07d.h5",opts->cur_iteration);
       sp_image_write(support,buffer,opts->output_precision);
       tmp = sp_image_duplicate(real_out,SP_COPY_DATA|SP_COPY_MASK);
@@ -357,7 +357,7 @@ void complete_restoration(Image * amp, Image * initial_support, Options * opts, 
       /*      tmp = zero_pad_image(tmp,sp_cmatrix_cols(tmp->image)*4,sp_cmatrix_rows(tmp->image)*4,1);
       sp_image_write(tmp,buffer,opts->output_precision);
       sprintf(buffer,"pre_pattern-%07d.png",opts->cur_iteration);
-      sp_image_write(tmp,buffer,COLOR_JET|LOG_SCALE);
+      sp_image_write(tmp,buffer,SpColormapJet|LOG_SCALE);
       */
       tmp2 = sp_image_fft(tmp); 
       sp_image_free(tmp);
@@ -368,7 +368,7 @@ void complete_restoration(Image * amp, Image * initial_support, Options * opts, 
       sprintf(buffer,"pattern-%07d.h5",opts->cur_iteration);
       sp_image_write(tmp,buffer,opts->output_precision);
       sprintf(buffer,"pattern-%07d.png",opts->cur_iteration);
-      sp_image_write(tmp,buffer,COLOR_JET);
+      sp_image_write(tmp,buffer,SpColormapJet);
       sp_image_free(tmp);
 
     }    
@@ -386,9 +386,9 @@ void complete_restoration(Image * amp, Image * initial_support, Options * opts, 
   }  
 
   sp_image_write(real_out,"real_out_final.h5",opts->output_precision);
-  sp_image_write(real_out,"real_out_final.png",COLOR_JET);
+  sp_image_write(real_out,"real_out_final.png",SpColormapJet);
   sprintf(buffer,"support-final.png");
-  sp_image_write(support,buffer,COLOR_JET|SP_2D);
+  sp_image_write(support,buffer,SpColormapJet|SP_2D);
   sprintf(buffer,"support-final.h5");
   sp_image_write(support,buffer,opts->output_precision);
   tmp = sp_image_fft(real_out); 
@@ -398,10 +398,10 @@ void complete_restoration(Image * amp, Image * initial_support, Options * opts, 
   sprintf(buffer,"pattern-final.h5");
   sp_image_write(tmp,buffer,opts->output_precision);
   sprintf(buffer,"pattern-final.png");
-  sp_image_write(tmp,buffer,COLOR_JET);
+  sp_image_write(tmp,buffer,SpColormapJet);
   sp_image_free(tmp);
   
-  sp_image_write(real_out,"phases_out_final.png",COLOR_PHASE|COLOR_JET|SP_2D);
+  sp_image_write(real_out,"phases_out_final.png",SpColormapPhase|SpColormapJet|SP_2D);
   sp_image_free(support);
   sp_image_free(prev_support);
   sp_image_free(real_in);
@@ -449,7 +449,7 @@ int main(){
     fprintf(stderr,"Error: Diffraction pattern not specified!\n");
     exit(1);
   }
-  sp_image_write(img,"intensities.png",COLOR_JET);
+  sp_image_write(img,"intensities.png",SpColormapJet);
 
   if(!opts->init_support){
     sp_image_rephase(img,SP_ZERO_PHASE);

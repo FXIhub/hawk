@@ -125,10 +125,10 @@ int main(int argc, char ** argv){
   //  sp_image_fft(sp_image_shift(out));
   autocorrelation = bilinear_rescale(sp_image_shift(sp_image_fft(sp_image_shift(out))),256,256,1);
   
-  sp_image_write(autocorrelation,"autocorrelation.png",COLOR_GRAYSCALE|LOG_SCALE|SP_2D);
+  sp_image_write(autocorrelation,"autocorrelation.png",SpColormapGrayScale|SpColormapLogScale|SP_2D);
   sp_image_write(autocorrelation,"autocorrelation.vtk",SP_2D);
   sprintf(buffer,"%s.png",opts->output);
-  sp_image_write(out,buffer,COLOR_JET|LOG_SCALE);
+  sp_image_write(out,buffer,SpColormapJet|SpColormapLogScale);
   sprintf(buffer,"%s.vtk",opts->output);
   sp_image_write(out,buffer,SP_2D);
   return 0;

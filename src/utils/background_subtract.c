@@ -333,7 +333,7 @@ int main(int argc, char ** argv){
       strcat(buffer,img_list[i]);    
 /*      scale_image_to_background(tmp, back);*/
       sp_image_sub(tmp,back);    
-      sp_image_write(tmp,buffer,COLOR_JET|LOG_SCALE);
+      sp_image_write(tmp,buffer,SpColormapJet|SpColormapLogScale);
       hits_in_a_row++;
     }else{
       sp_image_scale(back,window-1);

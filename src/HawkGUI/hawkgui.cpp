@@ -110,8 +110,8 @@ void HawkGUI::createToolBars(){
 
   displayBox = new QComboBox;  
   displayBox->addItem("Amplitudes",0);
-  displayBox->addItem("Phases",COLOR_PHASE);
-  displayBox->addItem("Mask",COLOR_MASK);
+  displayBox->addItem("Phases",SpColormapPhase);
+  displayBox->addItem("Mask",SpColormapMask);
 
   stretcher = new QWidget(imageDisplayToolBar);
   stretcher->setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred));
@@ -124,12 +124,12 @@ void HawkGUI::createToolBars(){
   */
       
   colorBox = new QComboBox;
-  colorBox->addItem("Gray",COLOR_GRAYSCALE);
-  colorBox->addItem("Jet",COLOR_JET);
-  colorBox->addItem("Hot",COLOR_HOT);
-  colorBox->addItem("Rainbow",COLOR_RAINBOW);
-  colorBox->addItem("Traditional",COLOR_TRADITIONAL);
-  colorBox->addItem("Wheel",COLOR_WHEEL);
+  colorBox->addItem("Gray",SpColormapGrayScale);
+  colorBox->addItem("Jet",SpColormapJet);
+  colorBox->addItem("Hot",SpColormapHot);
+  colorBox->addItem("Rainbow",SpColormapRainbow);
+  colorBox->addItem("Traditional",SpColormapTraditional);
+  colorBox->addItem("Wheel",SpColormapWheel);
 
   imageDisplayToolBar->addWidget(colorBox);
 
@@ -304,26 +304,26 @@ void HawkGUI::onFocusedViewChanged(ImageView * view){
   if(index >= 0){
     displayBox->setCurrentIndex(index);    
   }
-  if(color & COLOR_GRAYSCALE){
+  if(color & SpColormapGrayScale){
     colorGray->setChecked(true);
   }
-  if(color & COLOR_JET){
+  if(color & SpColormapJet){
     colorJet->setChecked(true);
   }
-  if(color & COLOR_HOT){
+  if(color & SpColormapHot){
     colorHot->setChecked(true);
   }
-  if(color & COLOR_TRADITIONAL){
+  if(color & SpColormapTraditional){
     colorTraditional->setChecked(true);
   }
-  if(color & COLOR_RAINBOW){
+  if(color & SpColormapRainbow){
     colorRainbow->setChecked(true);
   }
-  if(color & COLOR_WHEEL){
+  if(color & SpColormapWheel){
     colorWheel->setChecked(true);
   }
   logScaleImage->blockSignals(true);
-  if(color & LOG_SCALE){
+  if(color & SpColormapLogScale){
     logScaleImage->setChecked(true);
   }else{
     logScaleImage->setChecked(false);

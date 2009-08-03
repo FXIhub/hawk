@@ -44,29 +44,29 @@ int main(int argc, char ** argv){
       }
     }
     sprintf(buffer,"tmp-%04d.png",i);
-    sp_image_write(tmp,buffer,COLOR_GRAYSCALE);
+    sp_image_write(tmp,buffer,SpColormapGrayScale);
     sprintf(buffer,"tmp-%04d-phase.png",i);
-    sp_image_write(tmp,buffer,COLOR_PHASE|COLOR_WHEEL);
+    sp_image_write(tmp,buffer,SpColormapPhase|SpColormapWheel);
 
     Image * diff_tmp = sp_image_fft(tmp);
     diff_tmp->scaled = 1;
     sp_image_to_intensities(diff_tmp);    
     sprintf(buffer,"diff_tmp-%04d.png",i);
-    sp_image_write(sp_image_shift(diff_tmp),buffer,COLOR_JET|LOG_SCALE);
+    sp_image_write(sp_image_shift(diff_tmp),buffer,SpColormapJet|SpColormapLogScale);
     sp_image_add(diff,diff_tmp);
     sp_image_free(diff_tmp);
     sp_image_free(tmp);
     
   }
-  sp_image_write(sp_image_shift(diff),"diff.png",COLOR_JET|LOG_SCALE);
+  sp_image_write(sp_image_shift(diff),"diff.png",SpColormapJet|SpColormapLogScale);
   Image * phases = sp_image_fft(a);
   Image * autocorr = sp_image_fft(diff);
-  sp_image_write(sp_image_shift(autocorr),"autocorrelation.png",COLOR_GRAYSCALE|LOG_SCALE);
+  sp_image_write(sp_image_shift(autocorr),"autocorrelation.png",SpColormapGrayScale|SpColormapLogScale);
   sp_image_to_amplitudes(diff);
   for(int i = 0;i<sp_image_size(a);i++){
     phases->image->data[i] = sp_cscale(phases->image->data[i],sp_cabs(diff->image->data[i])/sp_cabs(phases->image->data[i]));
   }
   Image * real_space = sp_image_ifft(phases);
-  sp_image_write(real_space,"real_space.png",COLOR_GRAYSCALE);
+  sp_image_write(real_space,"real_space.png",SpColormapGrayScale);
   return 0;
 }

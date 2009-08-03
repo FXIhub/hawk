@@ -89,7 +89,7 @@ int main(){
       tmp = sp_image_duplicate(Gs,SP_COPY_DATA|SP_COPY_MASK);
       tmp2 = sp_image_ifft(tmp);
       sp_image_free(tmp);
-      sp_image_write(tmp2,"g.png",COLOR_GRAYSCALE);
+      sp_image_write(tmp2,"g.png",SpColormapGrayScale);
       sp_image_free(tmp2);
     }
   }

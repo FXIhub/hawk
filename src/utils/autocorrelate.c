@@ -43,7 +43,7 @@ int main(int argc, char ** argv){
   sprintf(buffer,"%s_autocorrelation.vtk",base);
   sp_image_write(a,buffer,0);
   sprintf(buffer,"%s_autocorrelation.png",base);
-  sp_image_write(a,buffer,COLOR_JET|LOG_SCALE);
+  sp_image_write(a,buffer,SpColormapJet|SpColormapLogScale);
   max = 0;
   min = 1<< 20;
   for(i = 0;i<sp_c3matrix_size(b->image);i++){
@@ -62,7 +62,7 @@ int main(int argc, char ** argv){
   }
   sprintf(buffer,"%s_capped_autocorrelation.png",base);
   a = sp_image_shift(b);
-  sp_image_write(a,buffer,COLOR_JET|LOG_SCALE);  
+  sp_image_write(a,buffer,SpColormapJet|SpColormapLogScale);  
   return 0;
   
 }
