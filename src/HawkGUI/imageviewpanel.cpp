@@ -13,8 +13,6 @@ ImageViewPanel::ImageViewPanel(ImageView * parent)
   setLayout(vbox);
   vbox->setContentsMargins(0,0,0,0);
   //   frame = new QFrame(this);
-  QWidget * stretcher = new QWidget(this);
-  setSizePolicy(QSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred));
   //  stretcher->setSizePolicy(QSizePolicy(QSizePolicy::Preferred,QSizePolicy::Expanding));
   //  vbox->addWidget(stretcher);
   frame = new QScrollArea(this);
@@ -22,27 +20,41 @@ ImageViewPanel::ImageViewPanel(ImageView * parent)
   frame->setObjectName("panelFrame");
   frame->setFrameStyle(QFrame::NoFrame);
   vbox->addWidget(frame);
-  QGridLayout * grid = new QGridLayout(frame);
   //  frame->setLayout(vbox);
   
   QFrame * toolbar = new QFrame(frame);
-  toolbar->setLayout(grid);
-  grid->setContentsMargins(0,0,0,0);
+
+  vbox = new QVBoxLayout(toolbar);
+  QHBoxLayout * htop = new QHBoxLayout();
+  QHBoxLayout * hbottom = new QHBoxLayout();
+  vbox->addLayout(htop);
+  vbox->addLayout(hbottom);
+  htop->addStretch();
+  hbottom->addStretch();
+
+  toolbar->setLayout(vbox);
+  vbox->setContentsMargins(0,0,0,0);
+  htop->setContentsMargins(0,0,0,0);
+  hbottom->setContentsMargins(0,0,0,0);
 
   toolbar->setObjectName("panelToolBar");
 
-  //  vbox->addWidget(toolbar);
-   stretcher = new QWidget(toolbar);
-  stretcher->setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred));
-  grid->addWidget(stretcher,0,0);
+
+  QToolButton *  loadImage= new QToolButton(toolbar);
+  loadImage->setIcon(QIcon(":images/fileopen.png"));
+  loadImage->setToolTip(tr("Load Image"));
+  htop->addWidget(loadImage);
+  connect(loadImage,SIGNAL(clicked()),imageView,SLOT(loadUserSelectedImage()));
+
   displayCombo = new QComboBox; 
-  displayCombo->setMinimumContentsLength(4);
-  displayCombo->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
+  /*  displayCombo->setMinimumContentsLength(4);
+      displayCombo->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);*/
   displayCombo->addItem("Amplitudes",0);
   displayCombo->addItem("Phases",SpColormapPhase);
   displayCombo->addItem("Mask",SpColormapMask);
   connect(displayCombo,SIGNAL(currentIndexChanged(int)),this,SLOT(onDisplayComboChanged(int)));
-  grid->addWidget(displayCombo,0,1);
+  htop->addWidget(displayCombo);
+
   colormapCombo = new QComboBox(toolbar);
   colormapCombo->setToolTip(tr("Select Colormap"));
   connect(colormapCombo,SIGNAL(currentIndexChanged(int)),this,SLOT(changeColormap(int)));
@@ -63,68 +75,43 @@ ImageViewPanel::ImageViewPanel(ImageView * parent)
     colormapCombo->addItem(QIcon(pixmap),QString(),colormap);
   }
   colormapCombo->setCurrentIndex(colormapCombo->findData(imageView->colormap()));
-  grid->addWidget(colormapCombo,0,2);
+  htop->addWidget(colormapCombo);
 
-  /* Add radio buttons for the scale type */
-  /*  QWidget * scaleBox = new QWidget(toolbar);
-  vbox = new QVBoxLayout(scaleBox);
-  scaleBox->setLayout(vbox);
-  QRadioButton * rb = new QRadioButton("Linear",scaleBox);
-  rb->setToolTip(tr("Set Linear Scale"));
-  QPalette p = QPalette(rb->palette());
-  p.setColor(QPalette::WindowText,Qt::white);
-  rb->setPalette(p);
-  rb->setChecked(true);
-  vbox->addWidget(rb);  
-  rb = new QRadioButton("Log",scaleBox);
-  p = QPalette(rb->palette());
-  p.setColor(QPalette::WindowText,Qt::white);
-  rb->setPalette(p);
-  rb->setToolTip(tr("Set Logarythmic Scale"));
-  vbox->addWidget(rb);
-  connect(rb,SIGNAL(toggled(bool)),imageView,SLOT(logScale(bool)));
-  hbox->addWidget(scaleBox);
-  */
   logPush = new QPushButton("",toolbar);
   logPush->setIcon(QIcon(":images/log_scale.png"));
   logPush->setCheckable(true);
   logPush->setToolTip(tr("Toggle Logarythmic Scale"));
   connect(logPush,SIGNAL(toggled(bool)),imageView,SLOT(setLogScale(bool)));
-  grid->addWidget(logPush,0,3);
+  hbottom->addWidget(logPush);
 
   
   QToolButton * maxContrastImage = new QToolButton(toolbar);
   maxContrastImage->setIcon(QIcon(":images/bricontrast.png"));
   maxContrastImage->setToolTip(tr("Maximize Contrast"));
-  grid->addWidget(maxContrastImage,0,4);
+  hbottom->addWidget(maxContrastImage);
   connect(maxContrastImage,SIGNAL(clicked()),imageView,SLOT(maxContrast()));
-  QToolButton *  loadImage= new QToolButton(toolbar);
-  loadImage->setIcon(QIcon(":images/fileopen.png"));
-  loadImage->setToolTip(tr("Load Image"));
-  grid->addWidget(loadImage,0,5);
-  connect(loadImage,SIGNAL(clicked()),imageView,SLOT(loadUserSelectedImage()));
   QToolButton * shiftImage = new QToolButton(toolbar);
   shiftImage->setIcon(QIcon(":images/crossing_arrows.png"));
   shiftImage->setToolTip(tr("Shift Image"));
-  grid->addWidget(shiftImage,0,6);
+  hbottom->addWidget(shiftImage);
   connect(shiftImage,SIGNAL(clicked()),imageView,SLOT(shiftImage()));
 
   QToolButton * fourierTransformImage = new QToolButton(toolbar);
   fourierTransformImage->setIcon(QIcon(":images/fourier_transform.png"));
   fourierTransformImage->setToolTip(tr("Fourier Transforms the part of the image currently visible."));
-  grid->addWidget(fourierTransformImage,0,7);
+  hbottom->addWidget(fourierTransformImage);
   connect(fourierTransformImage,SIGNAL(clicked()),imageView,SLOT(fourierTransform()));
 
   QToolButton * fourierTransformSquaredImage = new QToolButton(toolbar);
   fourierTransformSquaredImage->setIcon(QIcon(":images/fourier_transform_squared.png"));
   fourierTransformSquaredImage->setToolTip(tr("Fourier Transforms the part of the image currently visible."));
-  grid->addWidget(fourierTransformSquaredImage,0,8);
+  hbottom->addWidget(fourierTransformSquaredImage);
   connect(fourierTransformSquaredImage,SIGNAL(clicked()),imageView,SLOT(fourierTransformSquared()));
 
 
-  stretcher = new QWidget(toolbar);
-  stretcher->setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred));
-  grid->addWidget(stretcher,0,9);  
+  hbottom->addStretch();
+  htop->addStretch();
+
   setFixedHeight(toolbar->sizeHint().height()+frame->horizontalScrollBar()->sizeHint().height());
   toolbar->setMinimumWidth(toolbar->sizeHint().width());
   frame->hide();
