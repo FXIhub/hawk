@@ -18,5 +18,7 @@
      <file>images/fourier_transform_squared.png</file>
      <file>images/dropdownarrow.png</file>
      <file>images/dropdownarrow_16.png</file>
+     <file>images/fileopen.png</file>
+     <file>images/crossing_arrows.png</file>
  </qresource>
  </RCC>

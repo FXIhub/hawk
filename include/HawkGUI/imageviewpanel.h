@@ -7,6 +7,7 @@
 #include <QFrame>
 #include <QTimer>
 
+class QScrollArea;
 class ImageView;
 class QTimer;
 class QComboBox;
@@ -22,12 +23,14 @@ private slots:
     //    void setLinearScale();
     //    void setLogScale();
     void changeColormap(int index);
+    void onDisplayComboChanged(int index);
  private:
-  QFrame * frame;
+  QScrollArea * frame;
   QList<QObject *>underMouse;
   ImageView * imageView;
   QTimer visibilityTimer;
   QComboBox * colormapCombo;
+  QComboBox * displayCombo;;
 
 };
 

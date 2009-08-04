@@ -77,7 +77,9 @@ QWidget * HawkGUI::createRightPanel(){
   
   QSplitter * rightPanel = new QSplitter(Qt::Vertical,centralWidget());
   rightPanel->addWidget(imageDisplay);
+  rightPanel->setStretchFactor(0,4);
   rightPanel->addWidget(plotDisplay);
+  rightPanel->setStretchFactor(1,1);
   return rightPanel;
 }
 

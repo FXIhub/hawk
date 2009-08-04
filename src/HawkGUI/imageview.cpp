@@ -229,6 +229,15 @@ void ImageView::setup(){
   setScene(graphicsScene);    
 }
 
+void ImageView::loadUserSelectedImage(){
+  QString fileName = QFileDialog::getOpenFileName(this, tr("Load Image"),
+						  QString(),
+						  tr("Images (*.h5 *.png *tif *tiff)"));
+   if(!fileName.isEmpty()){
+     loadImage(fileName);
+   }
+}
+
 bool ImageView::loadImage(QString file){
   if(loader == NULL){
     scheduledImage.clear();

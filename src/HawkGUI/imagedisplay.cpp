@@ -143,11 +143,8 @@ void ImageDisplay::setAutoUpdate(bool update){
 }
 
 void ImageDisplay::loadUserSelectedImage(){
-  QString fileName = QFileDialog::getOpenFileName(this, tr("Load Image"),
-						  QString(),
-						  tr("Images (*.h5 *.png *tif *tiff)"));
-  if(!fileName.isEmpty()){
-    selected->loadImage(fileName);
+  if(selected){
+    selected->loadUserSelectedImage();
   }
 }
 
@@ -258,7 +255,7 @@ void ImageDisplay::setColorTraditional(){
 
 void ImageDisplay::setColorRainbow(){
   if(selected){
-    selected->setColormap(SpColormapRainbow);
+    selected->setColormap(SpColormapLogScale);
   }
 }
 

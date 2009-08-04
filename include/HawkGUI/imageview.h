@@ -35,15 +35,16 @@ class ImageView: public QGraphicsView
   QString scheduledFilename();
   QString currentlyLoadingFilename();
   QString getScheduledFilename();
-  void shiftImage();
   void fourierTransform(bool squared);
   void setColormap(int color);
   int colormap();
-  void setDisplay(int display);
   int display();
   QString newestFilename();
-  QString getCurrentIteration();
+  QString getCurrentIteration();  
+  void setDisplay(int display);
  public slots:
+  void shiftImage();
+  void loadUserSelectedImage();
   void scheduleImageLoad(QString file);
   bool loadImage(QString file);
   void loadImage(QPixmap pix);

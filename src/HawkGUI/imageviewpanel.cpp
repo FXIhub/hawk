@@ -12,18 +12,28 @@ ImageViewPanel::ImageViewPanel(ImageView * parent)
   QVBoxLayout * vbox = new QVBoxLayout(this);
   setLayout(vbox);
   vbox->setContentsMargins(0,0,0,0);
-   frame = new QFrame(this);
+  //   frame = new QFrame(this);
+  frame = new QScrollArea(this);
   frame->setObjectName("panelFrame");
   vbox->addWidget(frame);
-  vbox = new QVBoxLayout(frame);
-  frame->setLayout(vbox);
-  vbox->setContentsMargins(0,0,0,0);
+  //  vbox = new QVBoxLayout(frame);
+  //  frame->setLayout(vbox);
+  //  vbox->setContentsMargins(0,0,0,0);
   QToolBar * toolbar = new QToolBar(frame);
   toolbar->setObjectName("panelToolBar");
-  vbox->addWidget(toolbar);
+  frame->setWidget(toolbar);
+    frame->setWidgetResizable(true);
+
+  //  vbox->addWidget(toolbar);
   QWidget * stretcher = new QWidget(toolbar);
   stretcher->setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred));
   toolbar->addWidget(stretcher);
+  displayCombo = new QComboBox;  
+  displayCombo->addItem("Amplitudes",0);
+  displayCombo->addItem("Phases",SpColormapPhase);
+  displayCombo->addItem("Mask",SpColormapMask);
+  connect(displayCombo,SIGNAL(currentIndexChanged(int)),this,SLOT(onDisplayComboChanged(int)));
+  toolbar->addWidget(displayCombo);
   colormapCombo = new QComboBox(toolbar);
   colormapCombo->setToolTip(tr("Select Colormap"));
   connect(colormapCombo,SIGNAL(currentIndexChanged(int)),this,SLOT(changeColormap(int)));
@@ -66,14 +76,23 @@ ImageViewPanel::ImageViewPanel(ImageView * parent)
   toolbar->addWidget(scaleBox);
   QAction * maxContrastImage = new QAction(QIcon(":images/bricontrast.png"),tr("&Maximize Contrast"), toolbar);
   maxContrastImage->setStatusTip(tr("Maximizes the contrast of the selected image."));
-  connect(maxContrastImage,SIGNAL(triggered(bool)),parent,SLOT(maxContrast()));
+  connect(maxContrastImage,SIGNAL(triggered(bool)),imageView,SLOT(maxContrast()));
   toolbar->addAction(maxContrastImage);
+  QAction * loadImage = new QAction(QIcon(":images/fileopen.png"),tr("&Load Image"), toolbar);
+  loadImage->setStatusTip(tr("Load image file."));
+  connect(loadImage,SIGNAL(triggered(bool)),imageView,SLOT(loadUserSelectedImage()));
+  toolbar->addAction(loadImage);
+  QAction * shiftImage = new QAction(QIcon(":images/crossing_arrows.png"),tr("&Shift Image"), this);
+  shiftImage->setStatusTip(tr("Shifts the quadrants of the selected image."));
+  connect(shiftImage,SIGNAL(triggered(bool)),imageView,SLOT(shiftImage()));
+  toolbar->addAction(shiftImage);
+
   stretcher = new QWidget(toolbar);
   stretcher->setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred));
   toolbar->addWidget(stretcher);  
   
   setMinimumSize(0,sizeHint().height());
-  frame->hide();
+  //    frame->hide();
   visibilityTimer.setSingleShot(true);
   visibilityTimer.setInterval(200);
   connect(&visibilityTimer,SIGNAL(timeout()),this,SLOT(changeVisibility()));
@@ -118,4 +137,12 @@ void ImageViewPanel::changeColormap(int index){
   }
   int colormap = colormapCombo->itemData(index).toInt();
   imageView->setColormap(colormap);
+}
+
+void ImageViewPanel::onDisplayComboChanged(int index){
+  if(index < 0){
+    return;
+  }
+  int display = displayCombo->itemData(index).toInt();
+  imageView->setDisplay(display);
 }
