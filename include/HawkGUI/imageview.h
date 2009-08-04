@@ -35,13 +35,13 @@ class ImageView: public QGraphicsView
   QString scheduledFilename();
   QString currentlyLoadingFilename();
   QString getScheduledFilename();
-  void fourierTransform(bool squared);
   void setColormap(int color);
   int colormap();
   int display();
   QString newestFilename();
   QString getCurrentIteration();  
   void setDisplay(int display);
+  bool logScale();
  public slots:
   void shiftImage();
   void loadUserSelectedImage();
@@ -50,8 +50,11 @@ class ImageView: public QGraphicsView
   void loadImage(QPixmap pix);
   void setPos(QPointF pos);
   void setTransform(QTransform t);
-  void logScale(bool on);
+  void setLogScale(bool on);
   void maxContrast();
+  void fourierTransform();
+  void fourierTransformSquared();
+  
  signals:
   void focusedIn(ImageView * focused);
   void scaleBy(qreal scale);

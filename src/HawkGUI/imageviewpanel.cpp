@@ -85,30 +85,46 @@ ImageViewPanel::ImageViewPanel(ImageView * parent)
   connect(rb,SIGNAL(toggled(bool)),imageView,SLOT(logScale(bool)));
   hbox->addWidget(scaleBox);
   */
-  QCheckBox * logCheck = new QCheckBox(tr("log"),toolbar);
-  logCheck->setToolTip(tr("Toggle Logarythmic Scale"));
-  connect(logCheck,SIGNAL(toggled(bool)),imageView,SLOT(logScale(bool)));
-  grid->addWidget(logCheck,0,3);
+  logPush = new QPushButton("",toolbar);
+  logPush->setIcon(QIcon(":images/log_scale.png"));
+  logPush->setCheckable(true);
+  logPush->setToolTip(tr("Toggle Logarythmic Scale"));
+  connect(logPush,SIGNAL(toggled(bool)),imageView,SLOT(setLogScale(bool)));
+  grid->addWidget(logPush,0,3);
 
   
   QToolButton * maxContrastImage = new QToolButton(toolbar);
   maxContrastImage->setIcon(QIcon(":images/bricontrast.png"));
   maxContrastImage->setToolTip(tr("Maximize Contrast"));
   grid->addWidget(maxContrastImage,0,4);
-  connect(maxContrastImage,SIGNAL(toggled(bool)),imageView,SLOT(maxContrast()));
+  connect(maxContrastImage,SIGNAL(clicked()),imageView,SLOT(maxContrast()));
   QToolButton *  loadImage= new QToolButton(toolbar);
   loadImage->setIcon(QIcon(":images/fileopen.png"));
   loadImage->setToolTip(tr("Load Image"));
   grid->addWidget(loadImage,0,5);
-  connect(loadImage,SIGNAL(toggled(bool)),imageView,SLOT(loadUserSelectedImage()));
+  connect(loadImage,SIGNAL(clicked()),imageView,SLOT(loadUserSelectedImage()));
   QToolButton * shiftImage = new QToolButton(toolbar);
   shiftImage->setIcon(QIcon(":images/crossing_arrows.png"));
   shiftImage->setToolTip(tr("Shift Image"));
   grid->addWidget(shiftImage,0,6);
-  connect(shiftImage,SIGNAL(toggled(bool)),imageView,SLOT(shiftImage()));
+  connect(shiftImage,SIGNAL(clicked()),imageView,SLOT(shiftImage()));
+
+  QToolButton * fourierTransformImage = new QToolButton(toolbar);
+  fourierTransformImage->setIcon(QIcon(":images/fourier_transform.png"));
+  fourierTransformImage->setToolTip(tr("Fourier Transforms the part of the image currently visible."));
+  grid->addWidget(fourierTransformImage,0,7);
+  connect(fourierTransformImage,SIGNAL(clicked()),imageView,SLOT(fourierTransform()));
+
+  QToolButton * fourierTransformSquaredImage = new QToolButton(toolbar);
+  fourierTransformSquaredImage->setIcon(QIcon(":images/fourier_transform_squared.png"));
+  fourierTransformSquaredImage->setToolTip(tr("Fourier Transforms the part of the image currently visible."));
+  grid->addWidget(fourierTransformSquaredImage,0,8);
+  connect(fourierTransformSquaredImage,SIGNAL(clicked()),imageView,SLOT(fourierTransformSquared()));
+
+
   stretcher = new QWidget(toolbar);
   stretcher->setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred));
-  grid->addWidget(stretcher,0,7);  
+  grid->addWidget(stretcher,0,9);  
   setFixedHeight(toolbar->sizeHint().height()+frame->horizontalScrollBar()->sizeHint().height());
   toolbar->setMinimumWidth(toolbar->sizeHint().width());
   frame->hide();
@@ -126,6 +142,8 @@ ImageViewPanel::ImageViewPanel(ImageView * parent)
   for(int i = 0;i<children.size();i++){
     underMouse.append(children[i]);
   }
+
+  connect(imageView,SIGNAL(imageLoaded(QString)),this,SLOT(onImageLoaded()));
 }
 
 
@@ -169,4 +187,10 @@ void ImageViewPanel::onDisplayComboChanged(int index){
   }
   int display = displayCombo->itemData(index).toInt();
   imageView->setDisplay(display);
+}
+
+void ImageViewPanel::onImageLoaded(){
+  colormapCombo->setCurrentIndex(colormapCombo->findData(imageView->colormap()));
+  displayCombo->setCurrentIndex(displayCombo->findData(imageView->display()));
+  logPush->setChecked(imageView->logScale());
 }

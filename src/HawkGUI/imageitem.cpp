@@ -227,10 +227,18 @@ void ImageItem::maxContrast(QRectF area){
   }
 }
 
-void ImageItem::logScale(bool on){
+void ImageItem::setLogScale(bool on){
   colormap_flags &= ~(SpColormapLogScale);
   if(on){
     colormap_flags |= SpColormapLogScale;    
   }
   updateImage();
+}
+
+bool ImageItem::logScale(){
+  colormap_flags &= ~(SpColormapLogScale);
+  if(colormap_flags & SpColormapLogScale){
+    return true;
+  }
+  return false;
 }

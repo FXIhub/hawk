@@ -192,13 +192,13 @@ void ImageDisplay::shiftSelectedImage(){
 
 void ImageDisplay::fourierTransformSelectedImage(){
   if(selected){
-    selected->fourierTransform(false);
+    selected->fourierTransform();
   }
 }
 
 void ImageDisplay::fourierTransformSquaredSelectedImage(){
   if(selected){
-    selected->fourierTransform(true);
+    selected->fourierTransformSquared();
   }
 }
 
@@ -305,7 +305,7 @@ void ImageDisplay::maxContrastSelectedImage(){
 
 void ImageDisplay::logScaleSelectedImage(bool on){
   if(selected){
-    selected->logScale(on);
+    selected->setLogScale(on);
   }
 }
 

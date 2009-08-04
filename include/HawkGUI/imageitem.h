@@ -43,7 +43,8 @@ class ImageItem: public QGraphicsPixmapItem
   void setDisplay(int display);
   int display();
   void maxContrast(QRectF area);
-  void logScale(bool on);
+  void setLogScale(bool on);
+  bool logScale();
   bool isShifted();
  private:
   void updateImage();

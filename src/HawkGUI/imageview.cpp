@@ -299,9 +299,15 @@ void ImageView::shiftImage(){
   }
 }
 
-void ImageView::fourierTransform(bool squared){
+void ImageView::fourierTransform(){
   if(imageItem){
-    imageItem->fourierTransform((mapToScene(0,0,width(),height())).boundingRect(),squared);
+    imageItem->fourierTransform((mapToScene(0,0,width(),height())).boundingRect(),false);
+  }
+}
+
+void ImageView::fourierTransformSquared(){
+  if(imageItem){
+    imageItem->fourierTransform((mapToScene(0,0,width(),height())).boundingRect(),true);
   }
 }
 
@@ -397,8 +403,15 @@ void ImageView::maxContrast(){
   }
 }
 
-void ImageView::logScale(bool on ){
+void ImageView::setLogScale(bool on){
   if(imageItem){
-    return imageItem->logScale(on);
+    return imageItem->setLogScale(on);
   }
+}
+
+bool ImageView::logScale(){
+  if(imageItem){
+    return imageItem->logScale();
+  }
+  return false;
 }

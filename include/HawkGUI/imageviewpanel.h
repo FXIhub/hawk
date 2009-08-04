@@ -10,6 +10,7 @@
 class QScrollArea;
 class ImageView;
 class QTimer;
+class QPushButton;
 class QComboBox;
 
 class ImageViewPanel: public QWidget
@@ -24,13 +25,15 @@ private slots:
     //    void setLogScale();
     void changeColormap(int index);
     void onDisplayComboChanged(int index);
+    void onImageLoaded();
  private:
   QScrollArea * frame;
   QList<QObject *>underMouse;
   ImageView * imageView;
   QTimer visibilityTimer;
   QComboBox * colormapCombo;
-  QComboBox * displayCombo;;
+  QComboBox * displayCombo;
+  QPushButton * logPush;
 
 };
 
