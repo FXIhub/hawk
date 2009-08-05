@@ -31,6 +31,7 @@ ImageView::ImageView(QWidget * parent)
   delayedLoader->start(3);
   loader = NULL;
   QVBoxLayout * vbox = new QVBoxLayout(this);
+  vbox->setContentsMargins(0,0,0,0);
   setLayout(vbox);
   vbox->addStretch();
   panel = new ImageViewPanel(this);

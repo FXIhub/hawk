@@ -10,8 +10,8 @@ ImageViewPanel::ImageViewPanel(ImageView * parent)
   frame = NULL;
   installEventFilter(this);
   QVBoxLayout * vbox = new QVBoxLayout(this);
-  setLayout(vbox);
   vbox->setContentsMargins(0,0,0,0);
+  setLayout(vbox);
   //   frame = new QFrame(this);
   //  stretcher->setSizePolicy(QSizePolicy(QSizePolicy::Preferred,QSizePolicy::Expanding));
   //  vbox->addWidget(stretcher);
@@ -25,6 +25,7 @@ ImageViewPanel::ImageViewPanel(ImageView * parent)
   QFrame * toolbar = new QFrame(frame);
 
   vbox = new QVBoxLayout(toolbar);
+  vbox->setContentsMargins(0,0,0,0);
   QHBoxLayout * htop = new QHBoxLayout();
   QHBoxLayout * hbottom = new QHBoxLayout();
   vbox->addLayout(htop);
@@ -120,6 +121,7 @@ ImageViewPanel::ImageViewPanel(ImageView * parent)
   frame->setWidget(toolbar);
   frame->setWidgetResizable(true);
   frame->setAlignment(Qt::AlignBottom);
+
 
   visibilityTimer.setSingleShot(true);
   visibilityTimer.setInterval(200);
