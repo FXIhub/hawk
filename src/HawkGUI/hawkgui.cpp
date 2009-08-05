@@ -33,6 +33,7 @@ void HawkGUI::createGUI(){
   QWidget * centralWidget = new QWidget(this);
   centralLayout = new QStackedLayout(centralWidget);
   centralWidget->setLayout(centralLayout);
+  centralLayout->setStackingMode(QStackedLayout::StackOne);
   setCentralWidget(centralWidget);
   phaserWorkspace = createPhaserWorkspace();
   centralLayout->addWidget(phaserWorkspace);

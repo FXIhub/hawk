@@ -39,6 +39,7 @@ ImageViewPanel::ImageViewPanel(ImageView * parent)
   hbottom->setContentsMargins(0,0,0,0);
 
   toolbar->setObjectName("panelToolBar");
+  QSize iconSize = QSize(22,22);
 
 
   QToolButton *  loadImage= new QToolButton(toolbar);
@@ -46,14 +47,17 @@ ImageViewPanel::ImageViewPanel(ImageView * parent)
   loadImage->setToolTip(tr("Load Image"));
   htop->addWidget(loadImage);
   connect(loadImage,SIGNAL(clicked()),imageView,SLOT(loadUserSelectedImage()));
+  loadImage->setIconSize(iconSize);
 
   displayCombo = new QComboBox; 
-  /*  displayCombo->setMinimumContentsLength(4);
-      displayCombo->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);*/
+  displayCombo->setMinimumContentsLength(8);
+  displayCombo->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
   displayCombo->setToolTip(tr("Select display class"));
   displayCombo->addItem("Amplitudes",0);
   displayCombo->addItem("Phases",SpColormapPhase);
   displayCombo->addItem("Mask",SpColormapMask);
+  displayCombo->view()->setAutoScrollMargin(0);
+  displayCombo->view()->setAutoScroll(false);
   connect(displayCombo,SIGNAL(currentIndexChanged(int)),this,SLOT(onDisplayComboChanged(int)));
   htop->addWidget(displayCombo);
 
@@ -61,7 +65,6 @@ ImageViewPanel::ImageViewPanel(ImageView * parent)
   colormapCombo->setToolTip(tr("Select Colormap"));
   connect(colormapCombo,SIGNAL(currentIndexChanged(int)),this,SLOT(changeColormap(int)));
   colormapCombo->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
-  QSize iconSize = QSize(22,22);
   colormapCombo->setIconSize(iconSize);
   for(int colormap =  SpColormapFirstColorScheme;colormap < SpColormapLastColorScheme;colormap*=2){
     QLinearGradient gradient = QLinearGradient(QPointF(0,0),QPointF(iconSize.width(),0));
@@ -83,6 +86,7 @@ ImageViewPanel::ImageViewPanel(ImageView * parent)
   logPush->setIcon(QIcon(":images/log_scale.png"));
   logPush->setCheckable(true);
   logPush->setToolTip(tr("Toggle Logarythmic Scale"));
+  logPush->setIconSize(iconSize);
   connect(logPush,SIGNAL(toggled(bool)),imageView,SLOT(setLogScale(bool)));
   hbottom->addWidget(logPush);
 
@@ -92,24 +96,25 @@ ImageViewPanel::ImageViewPanel(ImageView * parent)
   maxContrastImage->setToolTip(tr("Maximize Contrast"));
   hbottom->addWidget(maxContrastImage);
   connect(maxContrastImage,SIGNAL(clicked()),imageView,SLOT(maxContrast()));
+  maxContrastImage->setIconSize(iconSize);
   QToolButton * shiftImage = new QToolButton(toolbar);
   shiftImage->setIcon(QIcon(":images/crossing_arrows.png"));
   shiftImage->setToolTip(tr("Shift Image"));
   hbottom->addWidget(shiftImage);
   connect(shiftImage,SIGNAL(clicked()),imageView,SLOT(shiftImage()));
-
+  shiftImage->setIconSize(iconSize);
   QToolButton * fourierTransformImage = new QToolButton(toolbar);
   fourierTransformImage->setIcon(QIcon(":images/fourier_transform.png"));
   fourierTransformImage->setToolTip(tr("Fourier Transforms the part of the image currently visible."));
   hbottom->addWidget(fourierTransformImage);
   connect(fourierTransformImage,SIGNAL(clicked()),imageView,SLOT(fourierTransform()));
-
+  fourierTransformImage->setIconSize(iconSize);
   QToolButton * fourierTransformSquaredImage = new QToolButton(toolbar);
   fourierTransformSquaredImage->setIcon(QIcon(":images/fourier_transform_squared.png"));
   fourierTransformSquaredImage->setToolTip(tr("Fourier Transforms the square of the part of the image currently visible."));
   hbottom->addWidget(fourierTransformSquaredImage);
   connect(fourierTransformSquaredImage,SIGNAL(clicked()),imageView,SLOT(fourierTransformSquared()));
-
+  fourierTransformSquaredImage->setIconSize(iconSize);
 
   hbottom->addStretch();
   htop->addStretch();

@@ -23,38 +23,97 @@
     background: rgba(0,0,0,0);
 }
 
-#panelToolBar QPushButton{
-    background: rgba(0,0,0,0);
-}
-
 #panelToolBar QComboBox {
      border:  2px solid #26466D;
-     padding: 0px;
-     min-width: 22px;
+
+     border-bottom-color: #26466D;
+     border-right-color: #26466D;
+     border-top-color: #46668D;
+     border-left-color: #46668D;
+     min-width: 36px; 
      background: rgba(0,0,0,0);
      color: white;
+     height: 25px;
+     icon-size: 22px;
      selection-background-color: #B2DFEE;
+     selection-color: white;
+     background-clip: margin;
+     background-origin: margin;
 
 }
 
+
 #panelToolBar QComboBox::drop-down {
-     background: rgba(0,0,0,0);
+     background: rgba(0,0,0,0); 
  }
 
 
 #panelToolBar QComboBox::down-arrow {
-    top: 1px; right: 2px;
+    top: 1px; right: 0px; 
     image: url(:/images/dropdownarrow_16.png);     
  }
 
 
 #panelToolBar QComboBox QAbstractItemView {
      background: #16364D;
-     padding: 0px;
-     border: 1px solid #26466D;
+     border: 2px solid #26466D;
+     icon-size: 22px;
 }
 
+/*
+#panelToolBar QComboBox QAbstractItemView::icon {
+     background: #16364D;
+     border: 1px solid #26466D;
+     selection-background-color: #B2DFEE;
+}*/
+
 #panelToolBar QToolButton{
+     background-color: rgba(0,0,0,0);
+     border: 2px solid;
+     border-bottom-color: #26466D;
+     border-right-color: #26466D;
+     border-top-color: #46668D;
+     border-left-color: #46668D;
+}
+
+#panelToolBar QToolButton:pressed{
+     background-color: rgba(0,0,0,0);
+     border: 2px solid;
+     border-top-color: #26466D;
+     border-left-color: #26466D;
+     border-bottom-color: #46668D;
+     border-right-color: #46668D;
+}
+
+
+
+#panelToolBar QPushButton{
+     background-color: rgba(0,0,0,0);
+     border: 2px solid;
+     border-bottom-color: #26466D;
+     border-right-color: #26466D;
+     border-top-color: #46668D;
+     border-left-color: #46668D;
+     height: 25px;
+     width: 25px;
+    margin-bottom:3px;
+}
+
+#panelToolBar QPushButton:checked{
+     border: 2px solid;
+     border-top-color: #26466D;
+     border-left-color: #26466D;
+     border-bottom-color: #46668D;
+     border-right-color: #46668D;
+     background-color: rgba(0,0,0,0);
+}
+
+#panelToolBar QPushButton:pressed{
+     border: 2px solid;
+     border-top-color: #26466D;
+     border-left-color: #26466D;
+     border-bottom-color: #46668D;
+     border-right-color: #46668D;
      background-color: rgba(0,0,0,0);
 }
 
@@ -79,8 +138,6 @@ QTreeView::item:last {
 }
 
 
-
-
 QTreeView::item {
     border: 1px solid #d9d9d9;
     border-top-color: transparent;
@@ -93,7 +150,7 @@ QTreeView {
     background-color: #f0f6f8;
     background-clip: content;
     background-origin: margin;
-
+    paint-alternating-row-colors-for-empty-area: 0;
 }
 
 

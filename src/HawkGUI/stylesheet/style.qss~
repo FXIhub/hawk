@@ -70,3 +70,30 @@
     background-color: rgba(0,0,0,0);
 /*    padding: 5px;*/
 }
+
+
+
+
+QTreeView::item:last {
+    border-left-color: #d9d9d9;	
+}
+
+
+
+
+QTreeView::item {
+    border: 1px solid #d9d9d9;
+    border-top-color: transparent;
+    border-right-color: transparent;	
+    border-left-color: transparent;	
+}
+
+QTreeView {
+    alternate-background-color: #bbddee;
+    background-color: #f0f6f8;
+    background-clip: content;
+    background-origin: margin;
+
+}
+
+
