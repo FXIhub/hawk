@@ -102,8 +102,9 @@ void HawkGUI::createToolBars(){
   imageDisplayToolBar->addAction(lockTransformation);
   imageDisplayToolBar->addAction(lockBrowse);
   imageDisplayToolBar->addAction(autoUpdateView);
-  imageDisplayToolBar->addSeparator();
-  imageDisplayToolBar->addAction(loadImage);
+  /*
+    imageDisplayToolBar->addSeparator();
+    imageDisplayToolBar->addAction(loadImage);
   imageDisplayToolBar->addAction(shiftImage);
   imageDisplayToolBar->addAction(fourierTransformImage);
   imageDisplayToolBar->addAction(fourierTransformSquaredImage);
@@ -115,16 +116,16 @@ void HawkGUI::createToolBars(){
   displayBox->addItem("Phases",SpColormapPhase);
   displayBox->addItem("Mask",SpColormapMask);
 
-  stretcher = new QWidget(imageDisplayToolBar);
-  stretcher->setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred));
   imageDisplayToolBar->addWidget(displayBox);
+  */
   
   /*  
       imageDisplayToolBar->addAction(displayAmplitudes);
       imageDisplayToolBar->addAction(displayPhases);
       imageDisplayToolBar->addAction(displayMask);
   */
-      
+    
+  /*  
   colorBox = new QComboBox;
   colorBox->addItem("Gray",SpColormapGrayScale);
   colorBox->addItem("Jet",SpColormapJet);
@@ -134,6 +135,9 @@ void HawkGUI::createToolBars(){
   colorBox->addItem("Wheel",SpColormapWheel);
 
   imageDisplayToolBar->addWidget(colorBox);
+  */
+  stretcher = new QWidget(imageDisplayToolBar);
+  stretcher->setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred));
 
   imageDisplayToolBar->addWidget(stretcher);
 
@@ -178,7 +182,7 @@ void HawkGUI::createActions(){
   connect(autoUpdateView,SIGNAL(toggled(bool)),imageDisplay,SLOT(setAutoUpdate(bool)));
   autoUpdateView->setChecked(true);
 
-
+  /*
   loadImage = new QAction(QIcon(":images/image_open.png"),tr("&Load Image"), this);
   loadImage->setStatusTip(tr("Load image file."));
   connect(loadImage,SIGNAL(triggered(bool)),imageDisplay,SLOT(loadUserSelectedImage()));
@@ -234,7 +238,7 @@ void HawkGUI::createActions(){
   colorWheel = new QAction(tr("Wheel"),this);
   colorWheel->setCheckable(true);
   colorGroup->addAction(colorWheel);
-
+  */
 
   loadLog = new QAction(QIcon(":images/log_open.png"),tr("&Load Log"), this);
   loadLog->setStatusTip(tr("Load log file."));
@@ -265,6 +269,7 @@ void HawkGUI::connectGUIToControls(){
 
   connect(deleteOutput,SIGNAL(triggered()),this,SLOT(onDeleteOutputTriggered()));
 
+  /*
   connect(displayAmplitudes,SIGNAL(triggered()),imageDisplay,SLOT(displayAmplitudes()));
   connect(displayPhases,SIGNAL(triggered()),imageDisplay,SLOT(displayPhases()));
   connect(displayMask,SIGNAL(triggered()),imageDisplay,SLOT(displayMask()));
@@ -278,6 +283,7 @@ void HawkGUI::connectGUIToControls(){
 
   connect(colorBox,SIGNAL(currentIndexChanged(int)),this,SLOT(onColorBoxChanged(int)));
   connect(displayBox,SIGNAL(currentIndexChanged(int)),this,SLOT(onDisplayBoxChanged(int)));
+  */
   // force initial signal
   optionsTree->rebuildTree();
 }
@@ -296,6 +302,7 @@ void HawkGUI::createCategories(){
 
 void HawkGUI::onFocusedViewChanged(ImageView * view){
   autoUpdateView->setChecked(view->getAutoUpdate());
+  /*
   int color = view->colormap();
   int index = colorBox->findData(color);
   if(index >= 0){
@@ -331,7 +338,7 @@ void HawkGUI::onFocusedViewChanged(ImageView * view){
     logScaleImage->setChecked(false);
   }
   logScaleImage->blockSignals(false);
-
+  */
 }
 
 

@@ -49,6 +49,7 @@ ImageViewPanel::ImageViewPanel(ImageView * parent)
   displayCombo = new QComboBox; 
   /*  displayCombo->setMinimumContentsLength(4);
       displayCombo->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);*/
+  displayCombo->setToolTip(tr("Select display class"));
   displayCombo->addItem("Amplitudes",0);
   displayCombo->addItem("Phases",SpColormapPhase);
   displayCombo->addItem("Mask",SpColormapMask);
@@ -104,7 +105,7 @@ ImageViewPanel::ImageViewPanel(ImageView * parent)
 
   QToolButton * fourierTransformSquaredImage = new QToolButton(toolbar);
   fourierTransformSquaredImage->setIcon(QIcon(":images/fourier_transform_squared.png"));
-  fourierTransformSquaredImage->setToolTip(tr("Fourier Transforms the part of the image currently visible."));
+  fourierTransformSquaredImage->setToolTip(tr("Fourier Transforms the square of the part of the image currently visible."));
   hbottom->addWidget(fourierTransformSquaredImage);
   connect(fourierTransformSquaredImage,SIGNAL(clicked()),imageView,SLOT(fourierTransformSquared()));
 

@@ -155,10 +155,11 @@ void ImageView::setImage(ImageItem * item){
   int color = -1;
   bool isShifted = false;
   if(imageItem){
-    // If we already have an image loaded we're gonna preserve the location
+    // If we already have an image loaded we're gonna preserve the location of the center
     // and the zoom
     item->setTransform(imageItem->transform());
-    item->setPos(imageItem->pos());
+    QSizeF center_correction = imageItem->boundingRect().size()/2-item->boundingRect().size()/2;
+    item->setPos(imageItem->pos()+QPointF(center_correction.width(),center_correction.height()));
 
     // and colormap and display
     color = imageItem->colormap();

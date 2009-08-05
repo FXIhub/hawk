@@ -62,7 +62,7 @@ private:
   QAction * lockTransformation;
   QAction * lockBrowse;
   QAction * autoUpdateView;
-  
+  /*
   QAction * loadImage;
   QAction * shiftImage;
   QAction * fourierTransformImage;
@@ -70,6 +70,7 @@ private:
   QAction * maxContrastImage;
   QAction * logScaleImage;
 
+  
   QAction * displayAmplitudes;
   QAction * displayPhases;
   QAction * displayMask;
@@ -82,7 +83,7 @@ private:
   QAction * colorTraditional;
   QAction * colorWheel;
   QActionGroup * colorGroup;
-
+  */
 
   QAction * loadLog;
 
