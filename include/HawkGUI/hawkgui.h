@@ -6,16 +6,18 @@
 
 class QGridLayout;
 class QLabel;
-class ImageDisplay;
+class QComboBox;
+class QStackedLayout;
 class QActionGroup;
 class OptionsTree;
+
+class ImageDisplay;
 
 class ProcessDisplay;
 class ProcessControl;
 class ImageCategory;
 class ImageView;
 class PlotDisplay;
-class QComboBox;
 
 class HawkGUI : public QMainWindow
 {
@@ -35,12 +37,17 @@ private slots:
   void onDisplayBoxChanged(int index);
   void onLockTransformationToggled(bool on);
   void onLockBrowseToggled(bool on);
+  void showPhaserWorkspace();
+  void showEditorWorkspace();
 private:
   void createGUI();
   void createCategories();
   void createControls();
   void connectGUIToControls();
-
+  void loadStyleSheet();
+  
+  QWidget *createPhaserWorkspace();
+  QWidget *createEditorWorkspace();
   QWidget * createLeftPanel();
   QWidget * createRightPanel();
   QWidget * processControlButtons();
@@ -48,6 +55,10 @@ private:
   void createStatusBar();
   void createActions();
 
+
+  QStackedLayout * centralLayout;
+  QWidget * phaserWorkspace;
+  QWidget * editorWorkspace;
   QGridLayout * topLayout;
   //  QLabel * optionsTree;
   OptionsTree * optionsTree;
@@ -55,6 +66,7 @@ private:
   ImageDisplay * imageDisplay;
   PlotDisplay * plotDisplay;
 
+  QToolBar * workspaceToolBar;
   QToolBar * imageDisplayToolBar;
   QToolBar * plotToolBar;
   QToolBar * processToolBar;
@@ -89,6 +101,11 @@ private:
 
   QAction * runProcess;
   QAction * deleteOutput;
+
+  QActionGroup * workspaceGroup;
+  QAction * phaserWorkspaceAction;
+  QAction * editorWorkspaceAction;
+
 
   QComboBox * colorBox;
   QComboBox * displayBox;

@@ -1,0 +1,99 @@
+
+
+#panelFrame QScrollBar:horizontal {
+    background: rgba(0,0,0,0);
+}
+
+#panelFrame QScrollBar::add-page:horizontal {
+    background: rgba(0,0,0,0);
+}
+
+#panelFrame QScrollBar::sub-page:horizontal {
+    background: rgba(0,0,0,0);
+}
+
+#panelFrame QScrollArea{
+     background: rgba(0,0,0,0);
+     height: 15px;
+     margin: 0px 20px 0 20px;
+}
+
+#panelToolBar QCheckBox {
+    color: white;
+    background: rgba(0,0,0,0);
+}
+
+#panelToolBar QPushButton{
+    background: rgba(0,0,0,0);
+}
+
+#panelToolBar QComboBox {
+     border:  2px solid #26466D;
+     padding: 0px;
+     min-width: 22px;
+     background: rgba(0,0,0,0);
+     color: white;
+     selection-background-color: #B2DFEE;
+
+}
+
+#panelToolBar QComboBox::drop-down {
+     background: rgba(0,0,0,0);
+ }
+
+
+#panelToolBar QComboBox::down-arrow {
+    top: 1px; right: 2px;
+    image: url(:/images/dropdownarrow_16.png);     
+ }
+
+
+#panelToolBar QComboBox QAbstractItemView {
+     background: #16364D;
+     padding: 0px;
+     border: 1px solid #26466D;
+}
+
+#panelToolBar QToolButton{
+     background-color: rgba(0,0,0,0);
+}
+
+#panelToolBar{
+/*    border: 2px solid #26466D;*/
+/*    border-radius: 6px;*/
+    border-top: 2px solid #26466D;
+    padding: 4px;
+    background-color: rgba(0,0,0,100);
+}
+
+#panelFrame{
+    background-color: rgba(0,0,0,0);
+/*    padding: 5px;*/
+}
+
+
+
+
+QTreeView::item:last {
+    border-left-color: #d9d9d9;	
+}
+
+
+
+
+QTreeView::item {
+    border: 1px solid #d9d9d9;
+    border-top-color: transparent;
+    border-right-color: transparent;	
+    border-left-color: transparent;	
+}
+
+QTreeView {
+    alternate-background-color: #bbddee;
+    background-color: #f0f6f8;
+    background-clip: content;
+    background-origin: margin;
+
+}
+
+

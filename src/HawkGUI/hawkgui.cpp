@@ -9,10 +9,12 @@
 #include "imagecategory.h"
 #include "imageview.h"
 #include "plotdisplay.h"
+#include "editor_workspace.h"
 
 HawkGUI::HawkGUI()
   :QMainWindow()
 {
+  loadStyleSheet();
   createCategories();
   createGUI();
   createControls();
@@ -28,9 +30,21 @@ HawkGUI::~HawkGUI(){
 }
 
 void HawkGUI::createGUI(){
+  QWidget * centralWidget = new QWidget(this);
+  centralLayout = new QStackedLayout(centralWidget);
+  centralWidget->setLayout(centralLayout);
+  setCentralWidget(centralWidget);
+  phaserWorkspace = createPhaserWorkspace();
+  centralLayout->addWidget(phaserWorkspace);
+  editorWorkspace = createEditorWorkspace();
+  centralLayout->addWidget(editorWorkspace);
+  createActions();
+  createToolBars();
+  createStatusBar();
+}
 
+QWidget * HawkGUI::createPhaserWorkspace(){
   QSplitter * splitter = new QSplitter(Qt::Horizontal,this);
-  setCentralWidget(splitter);
 
   QWidget * leftPanel = createLeftPanel();
   QWidget * rightPanel = createRightPanel();
@@ -39,10 +53,12 @@ void HawkGUI::createGUI(){
   splitter->addWidget(rightPanel);
   splitter->setStretchFactor (0,0);
   splitter->setStretchFactor (1,1);
+  return splitter;
+}
 
-  createActions();
-  createToolBars();
-  createStatusBar();
+QWidget * HawkGUI::createEditorWorkspace(){
+  return new EditorWorkspace(this);
+  
 }
 
 QWidget * HawkGUI::createLeftPanel(){
@@ -85,6 +101,10 @@ QWidget * HawkGUI::createRightPanel(){
 
 
 void HawkGUI::createToolBars(){
+  workspaceToolBar = addToolBar(tr("Workspace"));
+  workspaceToolBar->setIconSize(QSize(32,32));
+  workspaceToolBar->addAction(phaserWorkspaceAction);
+  workspaceToolBar->addAction(editorWorkspaceAction);
   processToolBar = addToolBar(tr("Process"));
   processToolBar->addAction(runProcess);
   processToolBar->addAction(deleteOutput);
@@ -250,6 +270,24 @@ void HawkGUI::createActions(){
   deleteOutput = new QAction(QIcon(":images/image_delete.png"),tr("&Delete Output"), this);
   deleteOutput->setStatusTip(tr("Delete output images from a directory."));
 
+
+  workspaceGroup = new QActionGroup(this);
+  phaserWorkspaceAction = new QAction(QIcon(":/images/theta.png"),tr("Phaser"),this);
+  editorWorkspaceAction = new QAction(QIcon(":/images/package_graphics.png"),tr("Editor"),this);
+  workspaceGroup->addAction(phaserWorkspaceAction);
+  workspaceGroup->addAction(editorWorkspaceAction);
+  editorWorkspaceAction->setCheckable(true);
+  phaserWorkspaceAction->setCheckable(true);
+  editorWorkspaceAction->setStatusTip(tr("Change to phasing workspace"));
+  editorWorkspaceAction->setStatusTip(tr("Change to editor workspace"));
+  connect(editorWorkspaceAction,SIGNAL(triggered()),this,SLOT(showEditorWorkspace()));
+  connect(phaserWorkspaceAction,SIGNAL(triggered()),this,SLOT(showPhaserWorkspace()));
+  if(centralLayout->currentWidget() == phaserWorkspace){
+    phaserWorkspaceAction->setChecked(true);
+  }
+  if(centralLayout->currentWidget() == editorWorkspace){
+    editorWorkspaceAction->setChecked(true);
+  }
 } 
 
 
@@ -407,3 +445,16 @@ void HawkGUI::closeEvent(QCloseEvent *event){
   event->accept();
 }
 
+void HawkGUI::loadStyleSheet(){
+  QFile qss(":stylesheet/style.qss");
+  qss.open(QIODevice::ReadOnly);
+  ((QApplication *)QApplication::instance())->setStyleSheet(qss.readAll());  
+}
+
+void HawkGUI::showPhaserWorkspace(){
+  centralLayout->setCurrentWidget(phaserWorkspace);
+}
+
+void HawkGUI::showEditorWorkspace(){
+  centralLayout->setCurrentWidget(editorWorkspace);
+}

@@ -20,5 +20,9 @@
      <file>images/dropdownarrow_16.png</file>
      <file>images/fileopen.png</file>
      <file>images/crossing_arrows.png</file>
+     <file>images/package_graphics.png</file>
+     <file>images/star_trek_phaser.png</file>
+     <file>images/theta.png</file>
+     <file>stylesheet/style.qss</file>
  </qresource>
  </RCC>

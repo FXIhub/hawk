@@ -40,6 +40,7 @@ set(GUI_SRCS
   processdisplay.cpp
   treedelegate.cpp
   imageviewpanel.cpp
+  editor_workspace.cpp
 )
 
 set(GUI_MOC_HDRS
@@ -57,6 +58,7 @@ set(GUI_MOC_HDRS
   ${LOCAL_INCLUDE}/HawkGUI/logtailer.h 
   ${LOCAL_INCLUDE}/HawkGUI/imageloader.h
   ${LOCAL_INCLUDE}/HawkGUI/imageviewpanel.h
+  ${LOCAL_INCLUDE}/HawkGUI/editor_workspace.h
   ${LOCAL_INCLUDE}/communicator.h
   ${LOCAL_INCLUDE}/client_decoder.h 
   ${LOCAL_INCLUDE}/decoder.h 

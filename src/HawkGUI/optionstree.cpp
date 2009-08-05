@@ -31,6 +31,8 @@ void OptionsTree::createGUI(){
   tree->setItemDelegate(delegate);
   tree->setHeaderLabels(QStringList() << tr("Options")
 			<< tr("Value"));
+  tree->setWordWrap(true);
+  tree->setAlternatingRowColors(true);
   tree->resize(150, 50);
   // This seems to fix an apparent bug in MacOSX which causes the file items to be too big
   //  tree->setUniformRowHeights(true);
