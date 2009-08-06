@@ -6,6 +6,9 @@
 
 class QTreeView;
 class QTreeWidgetItem;
+class ImageEditorView;
+class QStandardItem;
+
 
 class EditorWorkspace: public QWidget
 {
@@ -15,7 +18,9 @@ class EditorWorkspace: public QWidget
  private:
   QTreeView * createPropertiesTree();
   QTreeView * propertiesTree;
+  ImageEditorView * editorView;
   private slots:
   void clicked(QModelIndex index);
+  void onItemChanged(QStandardItem * item);
 };
 #endif
