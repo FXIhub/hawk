@@ -1,7 +1,7 @@
 #include <QtGui>
 
 #include "editorworkspace.h"
-#include "imageview.h"
+#include "imageeditorview.h"
 
 EditorWorkspace::EditorWorkspace(QWidget * parent)
   :QWidget(parent)
@@ -10,7 +10,7 @@ EditorWorkspace::EditorWorkspace(QWidget * parent)
   this->setLayout(hbox);
   QSplitter * leftSplitter = new QSplitter(Qt::Vertical,this);
   hbox->addWidget(leftSplitter);
-  ImageView * editor = new ImageView(this);
+  ImageEditorView * editor = new ImageEditorView(this);
   hbox->addWidget(editor);
   QGroupBox * toolBox = new QGroupBox(tr("Tools"),this);
   leftSplitter->addWidget(toolBox);

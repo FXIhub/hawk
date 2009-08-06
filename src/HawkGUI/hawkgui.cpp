@@ -9,7 +9,7 @@
 #include "imagecategory.h"
 #include "imageview.h"
 #include "plotdisplay.h"
-#include "editor_workspace.h"
+#include "editorworkspace.h"
 
 HawkGUI::HawkGUI()
   :QMainWindow()
