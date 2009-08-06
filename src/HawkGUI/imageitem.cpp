@@ -242,3 +242,4 @@ bool ImageItem::logScale(){
   }
   return false;
 }
+

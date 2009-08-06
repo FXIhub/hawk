@@ -67,6 +67,7 @@ class ImageView: public QGraphicsView
   void mousePressEvent(QMouseEvent * event);
   void mouseReleaseEvent( QMouseEvent * mouseEvent );
   void keyPressEvent ( QKeyEvent * event );
+  ImageItem * imageItem;
   private slots:
   void finishLoadImage();
   void loadScheduledImage();
@@ -76,7 +77,6 @@ class ImageView: public QGraphicsView
   ImageItem * dragged;
   QPointF draggedInitialPos;
   QPointF itemsScale;
-  ImageItem * imageItem;
   bool mouseInsideImage;
   QFocusFrame * focusFrame;
   QString displayType;

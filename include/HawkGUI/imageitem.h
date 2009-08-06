@@ -29,7 +29,6 @@ class ImageItem: public QGraphicsPixmapItem
   QString getFilename(){
     return filename;
   }
-  void setImageCenter(QPointF scenePos);
   bool isSelected();
   QPointF getScale();
   int type() const{

@@ -1,6 +1,6 @@
 #include <QtGui>
 
-#include "editor_workspace.h"
+#include "editorworkspace.h"
 #include "imageview.h"
 
 EditorWorkspace::EditorWorkspace(QWidget * parent)
@@ -19,8 +19,30 @@ EditorWorkspace::EditorWorkspace(QWidget * parent)
 }
 
 
-QTreeWidget * EditorWorkspace::createPropertiesTree(){
+QTreeView * EditorWorkspace::createPropertiesTree(){
   /* need a real QTreeView with a model */
+  QStandardItemModel * model = new QStandardItemModel;
+  QStandardItem *parentItem = model->invisibleRootItem();
+  for (int i = 0; i < 4; ++i) {
+    QStandardItem *item = new QStandardItem(QString("item %0").arg(i));
+    QStandardItem *value = new QStandardItem(QString("value %0").arg(i));
+    value->setFlags(value->flags() | Qt::ItemIsEditable);
+    item->setFlags(item->flags() & ~Qt::ItemIsEditable);
+    parentItem->appendRow(QList<QStandardItem *>() << item << value);
+    parentItem = item;
+  }
+  QTreeView *treeView = new QTreeView(this);
+  treeView->setModel(model);
+  treeView->setAlternatingRowColors(true);
+  treeView->setSelectionMode(QAbstractItemView::SingleSelection);
+  treeView->setSelectionBehavior(QAbstractItemView::SelectRows);
+  treeView->resizeColumnToContents(0);
+  treeView->resizeColumnToContents(1);
+  /*
+  connect(treeView, SIGNAL(clicked(QModelIndex)),
+  this, SLOT(clicked(QModelIndex)));*/
+
+  /*
   QTreeWidget * tree = new QTreeWidget(this);
   QStringList labels;
   labels << "Property" << "Value";
@@ -31,11 +53,18 @@ QTreeWidget * EditorWorkspace::createPropertiesTree(){
   itemPosY->setFlags(Qt::ItemIsEditable|Qt::ItemIsEnabled);
   itemPosX->setFlags(Qt::ItemIsEditable|Qt::ItemIsEnabled);
   tree->addTopLevelItem(itemPos);
-  //  tree->setAnimated(true);
+    tree->setAnimated(true);
   tree->setAlternatingRowColors(true);
   tree->setEditTriggers(QAbstractItemView::AllEditTriggers);
   tree->setSelectionMode(QAbstractItemView::SingleSelection);
   //  tree->setFrameStyle(QFrame::Panel);
-  return tree;  
+  */
+  return treeView;  
 }
 
+
+void EditorWorkspace::clicked(QModelIndex index){
+  if(index.column() == 1){
+    qDebug("clicked to edit");
+  }
+}

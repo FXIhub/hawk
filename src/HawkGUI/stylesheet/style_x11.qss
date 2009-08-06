@@ -78,22 +78,48 @@ QTreeView::item:last {
     border-left-color: #d9d9d9;	
 }
 
+QTreeView::item:bottom {
+    border-bottom-color: #d9d9d9;	
+}
 
-
-
-QTreeView::item {
+QTreeView::item:alternate {
     border: 1px solid #d9d9d9;
     border-top-color: transparent;
     border-right-color: transparent;	
     border-left-color: transparent;	
+    background-color: #bbddee;
+}
+
+QTreeView::item:alternate:selected {
+    background-color: #628cb2;
+}
+
+QTreeView::item {
+    border: 1px solid #d9d9d9;
+    border-bottom-color: #d9d9d9;	
+    border-top-color: transparent;
+    border-right-color: transparent;	
+    border-left-color: transparent;	
+    background-color: #f0f6f8;
+}
+
+
+QTreeView::item:selected {
+    background-color: #628cb2;
+}
+
+/*
+QTreeView::branch {
+    border-bottom: 1px solid #d9d9d9;
+}
+
+QTreeView::branch:alternate {
+    border-bottom: 1px solid #d9d9d9;
 }
 
 QTreeView {
-    alternate-background-color: #bbddee;
-    background-color: #f0f6f8;
-    background-clip: content;
+    background-clip: margin;
     background-origin: margin;
-
 }
-
+*/
 
