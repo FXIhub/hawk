@@ -447,7 +447,17 @@ void HawkGUI::closeEvent(QCloseEvent *event){
 }
 
 void HawkGUI::loadStyleSheet(){
+#ifdef Q_WS_X11  
+  QFile qss(":stylesheet/style_x11.qss");
+#endif
+#ifdef Q_WS_MAC
+  QFile qss(":stylesheet/style_mac.qss");
+#endif
+#ifdef Q_WS_WIN
   QFile qss(":stylesheet/style.qss");
+#endif
+
+
   qss.open(QIODevice::ReadOnly);
   ((QApplication *)QApplication::instance())->setStyleSheet(qss.readAll());  
 }
