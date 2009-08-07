@@ -21,6 +21,7 @@ EditorWorkspace::EditorWorkspace(QWidget * parent)
 
 QTreeView * EditorWorkspace::createPropertiesTree(){
   /* need a real QTreeView with a model */
+  const QString tag("HawkImage_");
   QStandardItemModel * model = new QStandardItemModel;
   model->setHorizontalHeaderLabels(QStringList() << "Property" << "Value");
   const QMetaObject *metaobject = editorView->metaObject();
@@ -28,8 +29,19 @@ QTreeView * EditorWorkspace::createPropertiesTree(){
   for (int i=0; i<count; ++i) {
      QMetaProperty metaproperty = metaobject->property(i);
      const char *name = metaproperty.name();
+     /* 
+	This is a prefix to distinguish Hawk Image properties from the
+	normal widget properties 
+     */
+     if(!QString(name).startsWith(tag)){
+       continue;
+     }
      QVariant var =  editorView->property(name);
      QStandardItem *parentItem = model->invisibleRootItem();
+     Qt::ItemFlags itemValueFlags = Qt::ItemIsSelectable|Qt::ItemIsEnabled;
+     if(metaproperty.isWritable()){
+       itemValueFlags |= Qt::ItemIsEditable;
+     }
      if(var.type() == QVariant::PointF){
        QPointF value = var.toPointF();
        QStandardItem * itemName = new QStandardItem(editorView->propertyNameToDisplayName(name));
@@ -37,18 +49,52 @@ QTreeView * EditorWorkspace::createPropertiesTree(){
        itemName->setData(value,Qt::UserRole + 1);
        itemName->setData(QString(name),Qt::UserRole + 2);
        itemName->setFlags(itemName->flags() & ~Qt::ItemIsEditable);
-       itemValue->setFlags(itemValue->flags() & ~Qt::ItemIsEditable);
+       itemValue->setFlags(itemValueFlags & ~Qt::ItemIsEditable);
        parentItem->appendRow(QList<QStandardItem *>() << itemName << itemValue);
        parentItem = itemName;
        itemName = new QStandardItem("x");
        itemValue = new QStandardItem(QString("%0").arg(value.x()));
        itemName->setFlags(itemName->flags() & ~Qt::ItemIsEditable);
-       itemValue->setFlags(itemValue->flags() | Qt::ItemIsEditable);
+       itemValue->setFlags(itemValueFlags);
        parentItem->appendRow(QList<QStandardItem *>() << itemName << itemValue);
        itemName = new QStandardItem("y");
        itemValue = new QStandardItem(QString("%0").arg(value.y()));
        itemName->setFlags(itemName->flags() & ~Qt::ItemIsEditable);
-       itemValue->setFlags(itemValue->flags() | Qt::ItemIsEditable);
+       itemValue->setFlags(itemValueFlags);
+       parentItem->appendRow(QList<QStandardItem *>() << itemName << itemValue);
+     }else if(var.type() == QVariant::Size){
+       QSize value = var.toSize();
+       QStandardItem * itemName = new QStandardItem(editorView->propertyNameToDisplayName(name));
+       QStandardItem * itemValue = new QStandardItem(QString("%0 x %1").arg(value.width()).arg(value.height()));
+       itemName->setData(value,Qt::UserRole + 1);
+       itemName->setData(QString(name),Qt::UserRole + 2);
+       itemName->setFlags(itemName->flags() & ~Qt::ItemIsEditable);
+       itemValue->setFlags(itemValueFlags & ~Qt::ItemIsEditable);
+       parentItem->appendRow(QList<QStandardItem *>() << itemName << itemValue);
+       parentItem = itemName;
+       itemName = new QStandardItem("width");
+       itemValue = new QStandardItem(QString("%0").arg(value.width()));
+       itemName->setFlags(itemName->flags() & ~Qt::ItemIsEditable);
+       itemValue->setFlags(itemValueFlags);
+       parentItem->appendRow(QList<QStandardItem *>() << itemName << itemValue);
+       itemName = new QStandardItem("height");
+       itemValue = new QStandardItem(QString("%0").arg(value.height()));
+       itemName->setFlags(itemName->flags() & ~Qt::ItemIsEditable);
+       itemValue->setFlags(itemValueFlags);
+       parentItem->appendRow(QList<QStandardItem *>() << itemName << itemValue);
+     }else if(var.type() == QVariant::Bool){
+       bool value = var.toBool();
+       QStandardItem * itemName = new QStandardItem(editorView->propertyNameToDisplayName(name));
+       QStandardItem * itemValue = new QStandardItem();
+       itemValue->setData(value,Qt::UserRole + 1);
+       itemValue->setData(QString(name),Qt::UserRole + 2);
+       itemName->setFlags(itemName->flags() & ~Qt::ItemIsEditable);
+       itemValue->setFlags((itemValueFlags | Qt::ItemIsUserCheckable) & ~Qt::ItemIsEditable);
+       if(value){
+	 itemValue->setCheckState(Qt::Checked);
+       }else{
+	 itemValue->setCheckState(Qt::Unchecked);
+       }
        parentItem->appendRow(QList<QStandardItem *>() << itemName << itemValue);
      }
   }

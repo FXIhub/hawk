@@ -23,7 +23,39 @@ QPointF ImageEditorView::imageCenter() const{
   return ret;
 }
 
+QSize ImageEditorView::pixelDimensions() const{
+  QSize ret(0,0);
+  if(imageItem && imageItem->getImage()){
+    Image * a =  imageItem->getImage();
+    ret = QSize(sp_image_x(a),sp_image_y(a));
+  }
+  return ret;
+}
+
+
+bool ImageEditorView::phased() const{
+  bool phased = false;
+  if(imageItem && imageItem->getImage()){
+    Image * a =  imageItem->getImage();
+    phased = a->phased;
+  }
+  return phased;
+}
+
+void ImageEditorView::setPhased(bool phased){
+  if(imageItem && imageItem->getImage()){
+    Image * a =  imageItem->getImage();
+    a->phased = phased;
+  }
+}
+
 QString ImageEditorView::propertyNameToDisplayName(QString propertyName){
+  /* first remove the HawkImage tag */
+  QString tag = "HawkImage_";
+  if(!propertyName.startsWith(tag)){
+    return QString();
+  }
+  propertyName.remove(0,tag.length());
   propertyName[0] = propertyName[0].toUpper();
   for(int i = 1;i<propertyName.length();i++){
     QChar c = propertyName[i];
@@ -35,3 +67,5 @@ QString ImageEditorView::propertyNameToDisplayName(QString propertyName){
   }
   return propertyName;
 }
+
+
