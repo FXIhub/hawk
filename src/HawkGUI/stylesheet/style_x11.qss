@@ -58,6 +58,8 @@
      background-color: rgba(0,0,0,0);
 }
 
+
+
 #panelToolBar{
 /*    border: 2px solid #26466D;*/
 /*    border-radius: 6px;*/

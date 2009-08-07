@@ -41,6 +41,7 @@ class ImageView: public QGraphicsView
   void setDisplay(int display);
   bool logScale();
   ImageItem * imageItem() const;
+  ImageViewPanel * imageViewPanel() const;
  public slots:
   void shiftImage();
   void loadUserSelectedImage();

@@ -15,6 +15,7 @@ class ImageEditorView: public ImageView
   Q_PROPERTY(bool HawkImage_scaled READ scaled WRITE setScaled)
   Q_PROPERTY(bool HawkImage_shifted READ shifted WRITE setShifted)
   Q_PROPERTY(double HawkImage_detectorDistance READ detectorDistance WRITE setDetectorDistance)    
+  Q_PROPERTY(double HawkImage_wavelength READ wavelength WRITE setWavelength)
     public:
   ImageEditorView(QWidget * parent = 0);
   void setImageCenter(QPointF center);
@@ -27,6 +28,8 @@ class ImageEditorView: public ImageView
   void setScaled(bool p);
   bool shifted() const;
   void setShifted(bool p);
+  double wavelength() const;
+  void setWavelength(double w);
   double detectorDistance() const;
   void setDetectorDistance(double p);
 

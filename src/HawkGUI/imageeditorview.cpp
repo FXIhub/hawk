@@ -74,12 +74,29 @@ bool ImageEditorView::shifted() const{
   return shifted;
 }
 
+
 void ImageEditorView::setShifted(bool shifted){
   if(imageItem() && imageItem()->getImage()){
     Image * a =  imageItem()->getImage();
     a->shifted = shifted;
   }
 } 
+
+void ImageEditorView::setWavelength(double wavelength){
+  if(imageItem() && imageItem()->getImage()){
+    Image * a =  imageItem()->getImage();
+    a->detector->lambda = wavelength;
+  }
+} 
+
+double ImageEditorView::wavelength() const{
+  double wavelength = -1;
+  if(imageItem() && imageItem()->getImage()){
+    Image * a =  imageItem()->getImage();
+    wavelength = a->detector->lambda;
+  }
+  return wavelength;
+}
 
 
 double ImageEditorView::detectorDistance() const{

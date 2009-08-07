@@ -424,3 +424,7 @@ bool ImageView::logScale(){
   return false;
 }
 
+
+ImageViewPanel * ImageView::imageViewPanel() const{
+  return panel;
+}

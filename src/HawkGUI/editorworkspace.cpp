@@ -2,6 +2,7 @@
 
 #include "editorworkspace.h"
 #include "imageeditorview.h"
+#include "imageviewpanel.h"
 
 EditorWorkspace::EditorWorkspace(QWidget * parent)
   :QWidget(parent)
@@ -16,6 +17,7 @@ EditorWorkspace::EditorWorkspace(QWidget * parent)
   leftSplitter->addWidget(toolBox);
   leftSplitter->addWidget(createPropertiesTree());
   connect(editorView,SIGNAL(imageLoaded(QString)),this,SLOT(loadProperties()));
+  editorView->imageViewPanel()->setVisibility(true);
 }
 
 
@@ -99,6 +101,15 @@ void EditorWorkspace::loadProperties(){
        }else{
 	 itemValue->setCheckState(Qt::Unchecked);
        }
+       parentItem->appendRow(QList<QStandardItem *>() << itemName << itemValue);
+     }else if(var.type() == QVariant::Double){
+       double value = var.toDouble();
+       QStandardItem * itemName = new QStandardItem(editorView->propertyNameToDisplayName(name));
+       QStandardItem * itemValue = new QStandardItem(QString("%0").arg(value));
+       itemName->setData(value,Qt::UserRole + 1);
+       itemName->setData(QString(name),Qt::UserRole + 2);
+       itemName->setFlags(itemName->flags() & ~Qt::ItemIsEditable);
+       itemValue->setFlags(itemValueFlags);
        parentItem->appendRow(QList<QStandardItem *>() << itemName << itemValue);
      }
   }
