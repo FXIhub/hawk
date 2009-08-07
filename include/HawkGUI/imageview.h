@@ -24,7 +24,6 @@ class ImageView: public QGraphicsView
   ImageView(QWidget * parent = NULL);
   ~ImageView();
   void setImage(ImageItem * item);
-  void translateItems(QPointF mov);
   void setup();
   void setAutoUpdate(bool update);  
   bool getAutoUpdate();
@@ -55,6 +54,7 @@ class ImageView: public QGraphicsView
   void fourierTransform();
   void fourierTransformSquared();  
   void scaleItems(qreal scale);
+  void translateItems(QPointF mov);
  signals:
   void focusedIn(ImageView * focused);
   void scaleBy(qreal scale);

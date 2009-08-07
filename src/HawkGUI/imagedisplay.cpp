@@ -82,11 +82,10 @@ void ImageDisplay::scaleView(qreal scale){
 void ImageDisplay::translateView(QPointF t){
   if(locked){
     for(int i = 0;i<imageViewers.size();i++){
-      imageViewers[i]->translateItems(t);
-    }
-  }else{
-    if(selected){
-      selected->translateItems(t);
+      /* don't translate the view that originated the signal */
+      if((QObject *)imageViewers[i] != sender()){
+	imageViewers[i]->translateItems(t);
+      }
     }
   }
 }

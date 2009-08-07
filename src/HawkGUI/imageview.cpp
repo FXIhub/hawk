@@ -37,6 +37,7 @@ ImageView::ImageView(QWidget * parent)
   panel = new ImageViewPanel(this);
   vbox->addWidget(panel);
   connect(this,SIGNAL(scaleBy(qreal)),this,SLOT(scaleItems(qreal)));
+  connect(this,SIGNAL(translateBy(QPointF)),this,SLOT(translateItems(QPointF)));
 }
 
 ImageView::~ImageView()
