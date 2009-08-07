@@ -11,7 +11,7 @@ ImageView::ImageView(QWidget * parent)
 {
   dragged = 0;
   autoUpdate = 1;
-  imageItem = NULL;
+  myImageItem = NULL;
   setup();
   QWidgetList tlwidgets =  QApplication::topLevelWidgets();
   int size = tlwidgets.size();
@@ -36,6 +36,7 @@ ImageView::ImageView(QWidget * parent)
   vbox->addStretch();
   panel = new ImageViewPanel(this);
   vbox->addWidget(panel);
+  connect(this,SIGNAL(scaleBy(qreal)),this,SLOT(scaleItems(qreal)));
 }
 
 ImageView::~ImageView()
@@ -45,6 +46,7 @@ ImageView::~ImageView()
     loader->wait();
   }
 }
+
 
 void ImageView::mousePressEvent(QMouseEvent * event){
   if(event->buttons() & Qt::LeftButton){
@@ -126,15 +128,18 @@ void ImageView::wheelEvent( QWheelEvent * event ){
   emit scaleBy(scale);
 }
 
+ImageItem * ImageView::imageItem() const{
+  return myImageItem;
+}
 
 void ImageView::scaleItems(qreal scale){
   // Don't let the user zoom in or out too much 
   if((scale < 1 && scale > 0 && 
-      imageItem->getScale().x() > 0.01 &&
-      imageItem->getScale().y() > 0.01) ||
+      imageItem()->getScale().x() > 0.01 &&
+      imageItem()->getScale().y() > 0.01) ||
      (scale > 1 && 
-      imageItem->getScale().x() < 100 &&
-      imageItem->getScale().y() < 100)){
+      imageItem()->getScale().x() < 100 &&
+      imageItem()->getScale().y() < 100)){
     QPointF screen_center = sceneRect().center();
     QList<QGraphicsItem *> it = items();
     for(int i = 0; i < it.size(); i++){
@@ -148,24 +153,24 @@ void ImageView::scaleItems(qreal scale){
 }
 
 void ImageView::translateItems(QPointF mov){
-  imageItem->moveBy(mov.x(),mov.y());
+  imageItem()->moveBy(mov.x(),mov.y());
 }
 
 void ImageView::setImage(ImageItem * item){
   int display = -1;
   int color = -1;
   bool isShifted = false;
-  if(imageItem){
+  if(imageItem()){
     // If we already have an image loaded we're gonna preserve the location of the center
     // and the zoom
-    item->setTransform(imageItem->transform());
-    QSizeF center_correction = imageItem->boundingRect().size()/2-item->boundingRect().size()/2;
-    item->setPos(imageItem->pos()+QPointF(center_correction.width(),center_correction.height()));
+    item->setTransform(imageItem()->transform());
+    QSizeF center_correction = imageItem()->boundingRect().size()/2-item->boundingRect().size()/2;
+    item->setPos(imageItem()->pos()+QPointF(center_correction.width(),center_correction.height()));
 
     // and colormap and display
-    color = imageItem->colormap();
-    display = imageItem->display();
-    isShifted = imageItem->isShifted();
+    color = imageItem()->colormap();
+    display = imageItem()->display();
+    isShifted = imageItem()->isShifted();
   }else{
     // Set pixmap center in the middle of the screen
     QPointF center = sceneRect().center();
@@ -173,16 +178,16 @@ void ImageView::setImage(ImageItem * item){
     center.setY(center.y()-item->pixmap().height()*item->getScale().y()/2);
     item->setPos(center);
   }
-  delete imageItem;
-  imageItem = item;
-  if(isShifted != imageItem->isShifted()){
-    imageItem->shiftImage();
+  delete myImageItem;
+  myImageItem = item;
+  if(isShifted != imageItem()->isShifted()){
+    imageItem()->shiftImage();
   }
   if(color >= 0){
-    imageItem->setColormap(color);
+    imageItem()->setColormap(color);
   }
   if(display >= 0){
-    imageItem->setDisplay(display);
+    imageItem()->setDisplay(display);
   }
   graphicsScene->clear();
   graphicsScene->addItem(item);  
@@ -267,19 +272,19 @@ void ImageView::focusInEvent ( QFocusEvent * ){
 }
 
 QPointF ImageView::getPos(){
-  return imageItem->pos();
+  return imageItem()->pos();
 }
 
 void ImageView::setPos(QPointF pos){
-  imageItem->setPos(pos);
+  imageItem()->setPos(pos);
 }
 
 QTransform ImageView::getTransform(){
-  return imageItem->transform();
+  return imageItem()->transform();
 }
 
 void ImageView::setTransform(QTransform transform){
-  imageItem->setTransform(transform);
+  imageItem()->setTransform(transform);
 }
 
 bool ImageView::getAutoUpdate(){
@@ -296,46 +301,46 @@ QString ImageView::getFilename(){
 
 
 void ImageView::shiftImage(){
-  if(imageItem){
-    imageItem->shiftImage();
+  if(imageItem()){
+    imageItem()->shiftImage();
   }
 }
 
 void ImageView::fourierTransform(){
-  if(imageItem){
-    imageItem->fourierTransform((mapToScene(0,0,width(),height())).boundingRect(),false);
+  if(imageItem()){
+    imageItem()->fourierTransform((mapToScene(0,0,width(),height())).boundingRect(),false);
   }
 }
 
 void ImageView::fourierTransformSquared(){
-  if(imageItem){
-    imageItem->fourierTransform((mapToScene(0,0,width(),height())).boundingRect(),true);
+  if(imageItem()){
+    imageItem()->fourierTransform((mapToScene(0,0,width(),height())).boundingRect(),true);
   }
 }
 
 
 void ImageView::setColormap(int color){
-  if(imageItem){
-    imageItem->setColormap(color);
+  if(imageItem()){
+    imageItem()->setColormap(color);
   }
 }
 
 int ImageView::colormap(){
-  if(imageItem){
-    return imageItem->colormap();
+  if(imageItem()){
+    return imageItem()->colormap();
   }
   return 0;
 }
 
 void ImageView::setDisplay(int display){
-  if(imageItem){
-    imageItem->setDisplay(display);
+  if(imageItem()){
+    imageItem()->setDisplay(display);
   }
 }
 
 int ImageView::display(){
-  if(imageItem){
-    return imageItem->display();
+  if(imageItem()){
+    return imageItem()->display();
   }
   return 0;
 }
@@ -400,20 +405,21 @@ QString ImageView::getCurrentIteration(){
 }
 
 void ImageView::maxContrast(){
-  if(imageItem){
-    return imageItem->maxContrast((mapToScene(0,0,width(),height())).boundingRect());
+  if(imageItem()){
+    return imageItem()->maxContrast((mapToScene(0,0,width(),height())).boundingRect());
   }
 }
 
 void ImageView::setLogScale(bool on){
-  if(imageItem){
-    return imageItem->setLogScale(on);
+  if(imageItem()){
+    return imageItem()->setLogScale(on);
   }
 }
 
 bool ImageView::logScale(){
-  if(imageItem){
-    return imageItem->logScale();
+  if(imageItem()){
+    return imageItem()->logScale();
   }
   return false;
 }
+

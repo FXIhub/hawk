@@ -71,11 +71,10 @@ void ImageDisplay::setLockedTransformation(bool checked){
 void ImageDisplay::scaleView(qreal scale){
   if(locked){
     for(int i = 0;i<imageViewers.size();i++){
-      imageViewers[i]->scaleItems(scale);
-    }
-  }else{
-    if(selected){
-      selected->scaleItems(scale);
+      /* don't scale the view that originated the signal */
+      if((QObject *)imageViewers[i] != sender()){
+	imageViewers[i]->scaleItems(scale);
+      }
     }
   }
 }

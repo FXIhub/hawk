@@ -24,7 +24,6 @@ class ImageView: public QGraphicsView
   ImageView(QWidget * parent = NULL);
   ~ImageView();
   void setImage(ImageItem * item);
-  void scaleItems(qreal scale);
   void translateItems(QPointF mov);
   void setup();
   void setAutoUpdate(bool update);  
@@ -42,6 +41,7 @@ class ImageView: public QGraphicsView
   QString getCurrentIteration();  
   void setDisplay(int display);
   bool logScale();
+  ImageItem * imageItem() const;
  public slots:
   void shiftImage();
   void loadUserSelectedImage();
@@ -53,8 +53,8 @@ class ImageView: public QGraphicsView
   void setLogScale(bool on);
   void maxContrast();
   void fourierTransform();
-  void fourierTransformSquared();
-  
+  void fourierTransformSquared();  
+  void scaleItems(qreal scale);
  signals:
   void focusedIn(ImageView * focused);
   void scaleBy(qreal scale);
@@ -67,7 +67,6 @@ class ImageView: public QGraphicsView
   void mousePressEvent(QMouseEvent * event);
   void mouseReleaseEvent( QMouseEvent * mouseEvent );
   void keyPressEvent ( QKeyEvent * event );
-  ImageItem * imageItem;
   private slots:
   void finishLoadImage();
   void loadScheduledImage();
@@ -90,6 +89,7 @@ class ImageView: public QGraphicsView
   QString currentlyLoading;
   QString currentIteration;
   ImageViewPanel * panel;
+  ImageItem * myImageItem;
 };
 
 #else

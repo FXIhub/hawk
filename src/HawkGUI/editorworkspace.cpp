@@ -14,17 +14,17 @@ EditorWorkspace::EditorWorkspace(QWidget * parent)
   hbox->addWidget(editorView);
   QGroupBox * toolBox = new QGroupBox(tr("Tools"),this);
   leftSplitter->addWidget(toolBox);
-  propertiesTree = createPropertiesTree();
-  leftSplitter->addWidget(propertiesTree);
+  leftSplitter->addWidget(createPropertiesTree());
+  connect(editorView,SIGNAL(imageLoaded(QString)),this,SLOT(loadProperties()));
 }
 
 
-QTreeView * EditorWorkspace::createPropertiesTree(){
-  /* need a real QTreeView with a model */
+void EditorWorkspace::loadProperties(){
   const QString tag("HawkImage_");
-  QStandardItemModel * model = new QStandardItemModel;
-  model->setHorizontalHeaderLabels(QStringList() << "Property" << "Value");
   const QMetaObject *metaobject = editorView->metaObject();
+  QStandardItemModel * model = qobject_cast<QStandardItemModel *>(propertiesTree->model());
+  model->clear();
+  model->setHorizontalHeaderLabels(QStringList() << "Property" << "Value");
   int count = metaobject->propertyCount();
   for (int i=0; i<count; ++i) {
      QMetaProperty metaproperty = metaobject->property(i);
@@ -89,7 +89,11 @@ QTreeView * EditorWorkspace::createPropertiesTree(){
        itemValue->setData(value,Qt::UserRole + 1);
        itemValue->setData(QString(name),Qt::UserRole + 2);
        itemName->setFlags(itemName->flags() & ~Qt::ItemIsEditable);
-       itemValue->setFlags((itemValueFlags | Qt::ItemIsUserCheckable) & ~Qt::ItemIsEditable);
+       if(itemValueFlags & Qt::ItemIsEditable){
+	 itemValue->setFlags((itemValueFlags | Qt::ItemIsUserCheckable) & ~Qt::ItemIsEditable);
+       }else{
+	 itemValue->setFlags(itemValueFlags);
+       }
        if(value){
 	 itemValue->setCheckState(Qt::Checked);
        }else{
@@ -98,8 +102,15 @@ QTreeView * EditorWorkspace::createPropertiesTree(){
        parentItem->appendRow(QList<QStandardItem *>() << itemName << itemValue);
      }
   }
+}
+
+QTreeView * EditorWorkspace::createPropertiesTree(){
+  /* need a real QTreeView with a model */
+  QStandardItemModel * model = new QStandardItemModel;
   QTreeView *treeView = new QTreeView(this);
+  propertiesTree = treeView;
   treeView->setModel(model);
+  loadProperties();
   treeView->setAlternatingRowColors(true);
   treeView->setSelectionMode(QAbstractItemView::SingleSelection);
   treeView->setSelectionBehavior(QAbstractItemView::SelectRows);

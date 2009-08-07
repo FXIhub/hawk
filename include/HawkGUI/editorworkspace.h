@@ -22,5 +22,6 @@ class EditorWorkspace: public QWidget
   private slots:
   void clicked(QModelIndex index);
   void onItemChanged(QStandardItem * item);
+  void loadProperties();
 };
 #endif

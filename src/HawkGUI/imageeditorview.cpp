@@ -7,8 +7,8 @@ ImageEditorView::ImageEditorView(QWidget * parent)
 }
 
 void ImageEditorView::setImageCenter(QPointF center){
-  if(imageItem && imageItem->getImage()){
-    Image * a =  imageItem->getImage();
+  if(imageItem() && imageItem()->getImage()){
+    Image * a =  imageItem()->getImage();
     a->detector->image_center[0] = center.x();
     a->detector->image_center[1] = center.y();    
   }
@@ -16,8 +16,8 @@ void ImageEditorView::setImageCenter(QPointF center){
 
 QPointF ImageEditorView::imageCenter() const{
   QPointF ret(0,0);
-  if(imageItem && imageItem->getImage()){
-    Image * a =  imageItem->getImage();
+  if(imageItem() && imageItem()->getImage()){
+    Image * a =  imageItem()->getImage();
     ret = QPointF(a->detector->image_center[0],a->detector->image_center[1]);
   }
   return ret;
@@ -25,8 +25,8 @@ QPointF ImageEditorView::imageCenter() const{
 
 QSize ImageEditorView::pixelDimensions() const{
   QSize ret(0,0);
-  if(imageItem && imageItem->getImage()){
-    Image * a =  imageItem->getImage();
+  if(imageItem() && imageItem()->getImage()){
+    Image * a =  imageItem()->getImage();
     ret = QSize(sp_image_x(a),sp_image_y(a));
   }
   return ret;
@@ -35,19 +35,68 @@ QSize ImageEditorView::pixelDimensions() const{
 
 bool ImageEditorView::phased() const{
   bool phased = false;
-  if(imageItem && imageItem->getImage()){
-    Image * a =  imageItem->getImage();
+  if(imageItem() && imageItem()->getImage()){
+    Image * a =  imageItem()->getImage();
     phased = a->phased;
   }
   return phased;
 }
 
+bool ImageEditorView::scaled() const{
+  bool scaled = false;
+  if(imageItem() && imageItem()->getImage()){
+    Image * a =  imageItem()->getImage();
+    scaled = a->scaled;
+  }
+  return scaled;
+}
+
 void ImageEditorView::setPhased(bool phased){
-  if(imageItem && imageItem->getImage()){
-    Image * a =  imageItem->getImage();
+  if(imageItem() && imageItem()->getImage()){
+    Image * a =  imageItem()->getImage();
     a->phased = phased;
   }
 }
+
+void ImageEditorView::setScaled(bool scaled){
+  if(imageItem() && imageItem()->getImage()){
+    Image * a =  imageItem()->getImage();
+    a->scaled = scaled;
+  }
+}
+
+bool ImageEditorView::shifted() const{
+  bool shifted = false;
+  if(imageItem() && imageItem()->getImage()){
+    Image * a =  imageItem()->getImage();
+    shifted = a->shifted;
+  }
+  return shifted;
+}
+
+void ImageEditorView::setShifted(bool shifted){
+  if(imageItem() && imageItem()->getImage()){
+    Image * a =  imageItem()->getImage();
+    a->shifted = shifted;
+  }
+} 
+
+
+double ImageEditorView::detectorDistance() const{
+  double detectorDistance = -1;
+  if(imageItem() && imageItem()->getImage()){
+    Image * a =  imageItem()->getImage();
+    detectorDistance = a->detector->detector_distance;
+  }
+  return detectorDistance;
+}
+
+void ImageEditorView::setDetectorDistance(double detectorDistance){
+  if(imageItem() && imageItem()->getImage()){
+    Image * a =  imageItem()->getImage();
+    a->detector->detector_distance = detectorDistance;
+  }
+} 
 
 QString ImageEditorView::propertyNameToDisplayName(QString propertyName){
   /* first remove the HawkImage tag */
