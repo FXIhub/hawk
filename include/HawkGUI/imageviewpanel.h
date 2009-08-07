@@ -12,6 +12,7 @@ class ImageView;
 class QTimer;
 class QPushButton;
 class QComboBox;
+class QToolButton;
 
 class ImageViewPanel: public QWidget
 {
@@ -19,6 +20,10 @@ class ImageViewPanel: public QWidget
     public:
   ImageViewPanel(ImageView * parent = 0);
   bool eventFilter(QObject * w, QEvent * e);
+  bool sticky() const;
+  public slots:
+  void setVisibility(bool visible);
+  void setSticky(bool sticky);
 private slots:
     void changeVisibility();
     //    void setLinearScale();
@@ -33,8 +38,8 @@ private slots:
   QTimer visibilityTimer;
   QComboBox * colormapCombo;
   QComboBox * displayCombo;
-  QPushButton * logPush;
-
+  QToolButton * logPush;
+  bool mySticky;
 };
 
 #else

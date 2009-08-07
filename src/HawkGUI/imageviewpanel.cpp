@@ -82,9 +82,10 @@ ImageViewPanel::ImageViewPanel(ImageView * parent)
   colormapCombo->setCurrentIndex(colormapCombo->findData(imageView->colormap()));
   htop->addWidget(colormapCombo);
 
-  logPush = new QPushButton("",toolbar);
+  logPush = new QToolButton(toolbar);
   logPush->setIcon(QIcon(":images/log_scale.png"));
   logPush->setCheckable(true);
+  logPush->setChecked(false);
   logPush->setToolTip(tr("Toggle Logarythmic Scale"));
   logPush->setIconSize(iconSize);
   connect(logPush,SIGNAL(toggled(bool)),imageView,SLOT(setLogScale(bool)));
@@ -116,6 +117,15 @@ ImageViewPanel::ImageViewPanel(ImageView * parent)
   connect(fourierTransformSquaredImage,SIGNAL(clicked()),imageView,SLOT(fourierTransformSquared()));
   fourierTransformSquaredImage->setIconSize(iconSize);
 
+  QToolButton * stickyButton = new QToolButton(toolbar);
+  stickyButton->setIcon(QIcon(":images/push_pin.png"));
+  stickyButton->setToolTip(tr("Keeps the panel always visible."));
+  hbottom->addWidget(stickyButton);
+  stickyButton->setCheckable(true);
+  stickyButton->setChecked(false);
+  connect(stickyButton,SIGNAL(toggled(bool)),this,SLOT(setSticky(bool)));
+  stickyButton->setIconSize(iconSize);
+
   hbottom->addStretch();
   htop->addStretch();
 
@@ -139,6 +149,7 @@ ImageViewPanel::ImageViewPanel(ImageView * parent)
   }
 
   connect(imageView,SIGNAL(imageLoaded(QString)),this,SLOT(onImageLoaded()));
+  setSticky(false);
 }
 
 
@@ -160,10 +171,12 @@ bool ImageViewPanel::eventFilter(QObject * w,QEvent * e){
 void ImageViewPanel::changeVisibility(){
   QPoint mousePos = QCursor::pos();
   QWidget * widgetUnder = QApplication::widgetAt(mousePos);
-  if(underMouse.contains(widgetUnder)){
-    frame->show();
-  }else{
-    frame->hide();
+  if(!sticky()){
+    if(underMouse.contains(widgetUnder)){
+      frame->show();
+    }else{
+      frame->hide();
+    }
   }
 }
 
@@ -188,4 +201,21 @@ void ImageViewPanel::onImageLoaded(){
   colormapCombo->setCurrentIndex(colormapCombo->findData(imageView->colormap()));
   displayCombo->setCurrentIndex(displayCombo->findData(imageView->display()));
   logPush->setChecked(imageView->logScale());
+}
+
+
+void ImageViewPanel::setVisibility(bool visible){
+  if(visible){
+    frame->show();
+  }else{
+    frame->hide();
+  }
+}
+
+void ImageViewPanel::setSticky(bool sticky){
+  mySticky = sticky;
+}
+
+bool ImageViewPanel::sticky() const{
+ return mySticky;
 }

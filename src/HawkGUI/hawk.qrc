@@ -23,6 +23,7 @@
      <file>images/package_graphics.png</file>
      <file>images/star_trek_phaser.png</file>
      <file>images/theta.png</file>
+     <file>images/push_pin.png</file>
      <file>stylesheet/style.qss</file>
      <file>stylesheet/style_mac.qss</file>
      <file>stylesheet/style_x11.qss</file>
