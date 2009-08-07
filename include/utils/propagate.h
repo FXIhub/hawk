@@ -5,7 +5,7 @@ typedef struct {
   char input[1024];
   char output[1024];
   real distance;
-  real lambda;
+  real wavelength;
   real pixel_size;
   real delta_z;
 }Options;

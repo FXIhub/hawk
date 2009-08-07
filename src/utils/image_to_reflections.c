@@ -132,8 +132,8 @@ void image_fourier_coords(Image * in, sp_3matrix ** k_x, sp_3matrix ** k_y, sp_3
   real px,py,pz;
   /* reciprocal coordinates */
   real rx,ry,rz;
-  real real_to_reciprocal = 1.0/(in->detector->detector_distance*in->detector->lambda);
-  real ewald_radius = 1.0/in->detector->lambda;
+  real real_to_reciprocal = 1.0/(in->detector->detector_distance*in->detector->wavelength);
+  real ewald_radius = 1.0/in->detector->wavelength;
   real distance_to_ewald_sphere_center;
 
   real det_x = in->detector->pixel_size[0] * sp_image_x(in);
@@ -323,7 +323,7 @@ int main(int argc, char ** argv){
 
   /* Apply options */
   if(opts->wavelength > 0){
-    opts->intensity->detector->lambda = opts->wavelength;
+    opts->intensity->detector->wavelength = opts->wavelength;
   }
   if(opts->distance > 0){
     opts->intensity->detector->detector_distance = opts->distance;

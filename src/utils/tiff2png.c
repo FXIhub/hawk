@@ -11,7 +11,7 @@ void set_defaults(Options * opt){
   opt->y_center = 608;
   opt->detector_distance = 50;
   opt->pixel_size = 0.020;
-  opt->lambda = 32;
+  opt->wavelength = 32;
   opt->input[0] = 0;
   opt->output[0] = 0;
 }
@@ -63,7 +63,7 @@ Options * parse_options(int argc, char ** argv){
       res->pixel_size= atof(optarg);
       break;
     case 'l':
-      res->lambda = atof(optarg);
+      res->wavelength = atof(optarg);
       break;
     case 'i':
       strcpy(res->input,optarg);

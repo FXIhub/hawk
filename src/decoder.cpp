@@ -182,9 +182,9 @@ void Decoder::readData(QByteArray command_and_data){
       qreal detector_distance = a->detector->detector_distance;
       in >> detector_distance;
       a->detector->detector_distance = detector_distance;
-      qreal lambda;
-      in >> lambda;    
-      a->detector->lambda = lambda;
+      qreal wavelength;
+      in >> wavelength;    
+      a->detector->wavelength = wavelength;
       
       qint32 shifted;
       in >> shifted;

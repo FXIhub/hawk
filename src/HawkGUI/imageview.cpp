@@ -12,6 +12,7 @@ ImageView::ImageView(QWidget * parent)
   dragged = 0;
   autoUpdate = 1;
   myImageItem = NULL;
+  preserveShift = true;
   setup();
   QWidgetList tlwidgets =  QApplication::topLevelWidgets();
   int size = tlwidgets.size();
@@ -181,7 +182,7 @@ void ImageView::setImage(ImageItem * item){
   }
   delete myImageItem;
   myImageItem = item;
-  if(isShifted != imageItem()->isShifted()){
+  if(preserveShift && isShifted != imageItem()->isShifted()){
     imageItem()->shiftImage();
   }
   if(color >= 0){
@@ -427,4 +428,12 @@ bool ImageView::logScale(){
 
 ImageViewPanel * ImageView::imageViewPanel() const{
   return panel;
+}
+
+void ImageView::setPreserveShift(bool on){
+  preserveShift = on;
+}
+
+bool ImageView::preservesShift() const{
+  return preserveShift;
 }

@@ -532,7 +532,7 @@ void Look::exportImage()
       out = img;
     }
     if (propertiesSet) {
-      out->detector->lambda = wavelength;
+      out->detector->wavelength = wavelength;
       out->detector->detector_distance = detectorDistance;
       out->detector->pixel_size[0] = detectorX / (double) sp_image_x(out);
       out->detector->pixel_size[1] = detectorY / (double) sp_image_y(out);
@@ -568,7 +568,7 @@ void Look::exportBackground()
   if(background != NULL) {
     QString outFile = QFileDialog::getSaveFileName(this);
     if (propertiesSet) {
-      background->detector->lambda = wavelength;
+      background->detector->wavelength = wavelength;
       background->detector->detector_distance = detectorDistance;
       background->detector->pixel_size[0] = detectorX / (double) sp_image_x(background);
       background->detector->pixel_size[1] = detectorY / (double) sp_image_y(background);
@@ -605,7 +605,7 @@ void Look::exportToDir()
       tmp = sp_image_read(currentDir.absoluteFilePath(filesTable->item(i-1,3)->text()).toAscii(),0);
 
       if (propertiesSet) {
-	tmp->detector->lambda = wavelength;
+	tmp->detector->wavelength = wavelength;
 	tmp->detector->detector_distance = detectorDistance;
 	tmp->detector->pixel_size[0] = detectorX / (double) sp_image_x(tmp);
 	tmp->detector->pixel_size[1] = detectorY / (double) sp_image_y(tmp);

@@ -41,7 +41,7 @@ Options * parse_options(int argc, char ** argv){
       res->distance = atof(optarg);
       break;
     case 'w':
-      res->lambda = atof(optarg);
+      res->wavelength = atof(optarg);
       break;
     case 'p':
       res->pixel_size = atof(optarg);
@@ -68,7 +68,7 @@ Options * parse_options(int argc, char ** argv){
 
 void set_defaults(Options * opt){
   opt->distance = 0;
-  opt->lambda = 0;
+  opt->wavelength = 0;
   opt->pixel_size = 0;
   opt->input[0] = 0;
   opt->output[0] = 0;
@@ -86,7 +86,7 @@ Image * get_fresnel_propagator(Image * in, real delta_z){
   real px,py;
   nx = sp_image_x(in);
   ny = sp_image_y(in);
-  real lambda = in->detector->lambda;
+  real wavelength = in->detector->wavelength;
 
   real det_width = in->detector->pixel_size[0] * sp_image_x(in);
   real det_height = in->detector->pixel_size[1] * sp_image_y(in);
@@ -103,7 +103,7 @@ Image * get_fresnel_propagator(Image * in, real delta_z){
       */
       px = ((x-in->detector->image_center[0])/nx)*det_width;
       py = ((in->detector->image_center[1]-y)/ny)*det_height;
-      sp_image_set(res,x,y,0,sp_cinit(cos(-M_PI/(delta_z*lambda)*(px*px+py*py)),-sin(M_PI/(delta_z*lambda)*(px*px+py*py))));
+      sp_image_set(res,x,y,0,sp_cinit(cos(-M_PI/(delta_z*wavelength)*(px*px+py*py)),-sin(M_PI/(delta_z*wavelength)*(px*px+py*py))));
     }
   }
   return res;
@@ -117,7 +117,7 @@ Image * get_fourier_fresnel_propagator(Image * in,sp_3matrix * k_x, sp_3matrix *
   /* pixel index */
   int x,y;
   /* physical location of pixel*/
-  real lambda = in->detector->lambda;
+  real wavelength = in->detector->wavelength;
   real k_x2;
   real k_y2;
   nx = sp_image_x(in);
@@ -128,7 +128,7 @@ Image * get_fourier_fresnel_propagator(Image * in,sp_3matrix * k_x, sp_3matrix *
       k_x2 *= k_x2;
       k_y2 = sp_3matrix_get(k_y,x,y,0);
       k_y2 *= k_y2;
-      sp_image_set(res,x,y,0,sp_cinit(cos((delta_z*lambda/(4*M_PI))*(k_x2+k_y2)),sin((delta_z*lambda/(4*M_PI))*(k_x2+k_y2))));
+      sp_image_set(res,x,y,0,sp_cinit(cos((delta_z*wavelength/(4*M_PI))*(k_x2+k_y2)),sin((delta_z*wavelength/(4*M_PI))*(k_x2+k_y2))));
     }
   }
   tmp = sp_image_shift(res);
@@ -181,7 +181,7 @@ int main(int argc, char ** argv){
   /* convet all to meters */
   
   img->detector->detector_distance = opts->distance/1.0e3;
-  img->detector->lambda = opts->lambda/1.0e9;
+  img->detector->wavelength = opts->wavelength/1.0e9;
   img->detector->pixel_size[0] = opts->pixel_size/1.0e6;
   img->detector->pixel_size[1] = opts->pixel_size/1.0e6;
   img->detector->pixel_size[2] = opts->pixel_size/1.0e6;

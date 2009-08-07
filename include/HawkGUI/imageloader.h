@@ -3,7 +3,7 @@
 
 #include <QThread>
 #include <QMutex>
-#include "spimage.h"
+#include <spimage.h>
 
 
 class ImageLoader: public QThread

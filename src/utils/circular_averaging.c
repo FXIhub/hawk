@@ -84,7 +84,7 @@ double ball_intensity(double radius, double scale, double q){
 Image *  resolution_from_image(Image * image){
   Image * res = sp_image_duplicate(image,SP_COPY_DATA|SP_COPY_DETECTOR);
   real d = image->detector->detector_distance;
-  real w = image->detector->lambda;
+  real w = image->detector->wavelength;
   for(int i = 0;i<sp_image_size(image);i++){
     real h = sp_image_dist(image,i,SP_TO_CENTER);
     h *= image->detector->pixel_size[0];
@@ -373,7 +373,7 @@ int main(int argc, char ** argv){
   image->detector->pixel_size[0] = opts->pixel_size*1e-6;
   image->detector->pixel_size[1] = opts->pixel_size*1e-6;
   image->detector->pixel_size[2] = opts->pixel_size*1e-6;
-  image->detector->lambda = opts->wavelength*1e-9;
+  image->detector->wavelength = opts->wavelength*1e-9;
     
   if(opts->saturation){
     mask_overexposure(image,opts->saturation); 

@@ -4,7 +4,7 @@
 
 #include <QGraphicsPixmapItem>
 #include "imageview.h"
-#include "spimage.h"
+#include <spimage.h>
 
 class QGraphicsSceneMouseEvent;
 

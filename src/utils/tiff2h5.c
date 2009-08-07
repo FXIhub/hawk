@@ -11,7 +11,7 @@ void set_defaults(Options * opt){
   opt->y_center = -1;
   opt->detector_distance = -1;
   opt->pixel_size = -1;
-  opt->lambda = -1;
+  opt->wavelength = -1;
   opt->input[0] = 0;
   opt->output[0] = 0;
 }
@@ -54,7 +54,7 @@ Options * parse_options(int argc, char ** argv){
       res->pixel_size= atof(optarg);
       break;
     case 'l':
-      res->lambda = atof(optarg);
+      res->wavelength = atof(optarg);
       break;
     case 'i':
       strcpy(res->input,optarg);
@@ -78,7 +78,7 @@ Options * parse_options(int argc, char ** argv){
     fprintf(stderr,"You HAVE to specify pixel size!\n");    
     flag = 1;
   }
-  if(res->lambda < 0){
+  if(res->wavelength < 0){
     fprintf(stderr,"You HAVE to specify the wavelength used!\n");    
     flag = 1;
   }
@@ -118,7 +118,7 @@ int main(int argc, char ** argv){
   out->detector->pixel_size[1] = opts->pixel_size*1e-6;
   out->detector->pixel_size[2] = opts->pixel_size*1e-6;
   out->detector->detector_distance = opts->detector_distance*1e-3;
-  out->detector->lambda = opts->lambda*1e-9;
+  out->detector->wavelength = opts->wavelength*1e-9;
   out->num_dimensions = SP_2D;
   /* write HDF5 */
   sp_image_write(out,opts->output,sizeof(real));

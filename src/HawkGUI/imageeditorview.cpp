@@ -4,6 +4,7 @@
 ImageEditorView::ImageEditorView(QWidget * parent)
   :ImageView(parent)
 {
+  setPreserveShift(false);
 }
 
 void ImageEditorView::setImageCenter(QPointF center){
@@ -85,7 +86,7 @@ void ImageEditorView::setShifted(bool shifted){
 void ImageEditorView::setWavelength(double wavelength){
   if(imageItem() && imageItem()->getImage()){
     Image * a =  imageItem()->getImage();
-    a->detector->lambda = wavelength;
+    a->detector->wavelength = wavelength;
   }
 } 
 
@@ -93,7 +94,7 @@ double ImageEditorView::wavelength() const{
   double wavelength = -1;
   if(imageItem() && imageItem()->getImage()){
     Image * a =  imageItem()->getImage();
-    wavelength = a->detector->lambda;
+    wavelength = a->detector->wavelength;
   }
   return wavelength;
 }

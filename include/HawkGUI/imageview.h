@@ -56,6 +56,8 @@ class ImageView: public QGraphicsView
   void fourierTransformSquared();  
   void scaleItems(qreal scale);
   void translateItems(QPointF mov);
+  void setPreserveShift(bool on);
+  bool preservesShift() const;
  signals:
   void focusedIn(ImageView * focused);
   void scaleBy(qreal scale);
@@ -91,6 +93,7 @@ class ImageView: public QGraphicsView
   QString currentIteration;
   ImageViewPanel * panel;
   ImageItem * myImageItem;
+  bool preserveShift;
 };
 
 #else

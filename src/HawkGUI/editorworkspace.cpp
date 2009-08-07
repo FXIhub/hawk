@@ -106,8 +106,8 @@ void EditorWorkspace::loadProperties(){
        double value = var.toDouble();
        QStandardItem * itemName = new QStandardItem(editorView->propertyNameToDisplayName(name));
        QStandardItem * itemValue = new QStandardItem(QString("%0").arg(value));
-       itemName->setData(value,Qt::UserRole + 1);
-       itemName->setData(QString(name),Qt::UserRole + 2);
+       itemValue->setData(value,Qt::UserRole + 1);
+       itemValue->setData(QString(name),Qt::UserRole + 2);
        itemName->setFlags(itemName->flags() & ~Qt::ItemIsEditable);
        itemValue->setFlags(itemValueFlags);
        parentItem->appendRow(QList<QStandardItem *>() << itemName << itemValue);

@@ -153,7 +153,7 @@ ImageViewPanel::ImageViewPanel(ImageView * parent)
 }
 
 
-bool ImageViewPanel::eventFilter(QObject * w,QEvent * e){
+bool ImageViewPanel::eventFilter(QObject * ,QEvent * e){
     if(e->type() == QEvent::Enter){
       //        underMouse.append(w);
 	visibilityTimer.start();

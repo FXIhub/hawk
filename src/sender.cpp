@@ -254,8 +254,8 @@ void Sender::sendData(VariableMetadata * vm, int id){
       
       qreal detector_distance = a->detector->detector_distance;
       out << detector_distance;
-      qreal lambda = a->detector->lambda;
-      out << lambda;
+      qreal wavelength = a->detector->wavelength;
+      out << wavelength;
       
       qint32 shifted = a->shifted;
       out << shifted;
@@ -361,8 +361,8 @@ void Sender::sendData(VariableMetadata * vm, Image * a){
     
     qreal detector_distance = a->detector->detector_distance;
     out << detector_distance;
-    qreal lambda = a->detector->lambda;
-    out << lambda;
+    qreal wavelength = a->detector->wavelength;
+    out << wavelength;
 
     qint32 shifted = a->shifted;
     out << shifted;

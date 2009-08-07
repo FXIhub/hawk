@@ -218,7 +218,7 @@ int PlotDisplay::setCurveVisible(DatasetId id,bool visible){
   if ( curve == NULL ){
     return -1;
   }  
-  setCurveVisible(curve,visible);
+  return setCurveVisible(curve,visible);
 }
 
 int PlotDisplay::setCurveVisible(QwtPlotItem *plotItem, bool visible){

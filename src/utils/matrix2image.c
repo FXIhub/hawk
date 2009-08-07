@@ -22,7 +22,7 @@ Image * read_3matrix(char * filename, int x, int y, int z){
   res->detector->image_center[0] = 0;
   res->detector->image_center[1] = 0;
   res->detector->image_center[2] = 0;
-  res->detector->lambda = -1;
+  res->detector->wavelength = -1;
   res->detector->pixel_size[0] = -1;
   res->detector->pixel_size[1] = -1;
   res->detector->pixel_size[2] = -1;

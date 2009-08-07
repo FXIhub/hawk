@@ -8,7 +8,7 @@ typedef struct {
   char output[1024];
   double detector_distance;
   double pixel_size;
-  double lambda;
+  double wavelength;
 }Options;
 
 
