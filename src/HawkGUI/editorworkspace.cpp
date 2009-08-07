@@ -16,7 +16,7 @@ EditorWorkspace::EditorWorkspace(QWidget * parent)
   QGroupBox * toolBox = new QGroupBox(tr("Tools"),this);
   leftSplitter->addWidget(toolBox);
   leftSplitter->addWidget(createPropertiesTree());
-  connect(editorView,SIGNAL(imageLoaded(QString)),this,SLOT(loadProperties()));
+  connect(editorView,SIGNAL(imageItemChanged(ImageItem *)),this,SLOT(loadProperties()));
   editorView->imageViewPanel()->setVisibility(true);
 }
 

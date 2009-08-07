@@ -105,7 +105,8 @@ void ImageItem::fourierTransform(QRectF area,bool squared){
     int origin_y = sp_max(0,tl.y());
     int width = sp_min(sp_image_x(image),br.x()) - sp_max(0,tl.x());
     int height = sp_min(sp_image_y(image),br.y()) - sp_max(0,tl.y());
-    Image * tmp = sp_image_alloc(width,height,1);
+    Image * tmp = sp_image_duplicate(image,SP_COPY_DETECTOR);
+    sp_image_realloc(tmp,width,height,1);
     for(int x = (int)tl.x();x<=br.x();x++){
       if(x < 0 || x >= sp_image_x(tmp)){
 	continue;
@@ -117,8 +118,6 @@ void ImageItem::fourierTransform(QRectF area,bool squared){
 	sp_image_set(tmp,x-origin_x,y-origin_y,0,sp_image_get(image,x,y,0));
       }
     }
-    memcpy(tmp->detector,image->detector,sizeof(Detector));
-    //    Image * tmp = sp_image_duplicate(image,SP_COPY_ALL);
     if(squared){
       for(int i= 0;i<sp_image_size(tmp);i++){
 	tmp->image->data[i] = sp_cinit(sp_cabs2(tmp->image->data[i]),0);

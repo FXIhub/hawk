@@ -10,7 +10,7 @@ class ImageEditorView: public ImageView
 {
   Q_OBJECT
   Q_PROPERTY(QPointF HawkImage_imageCenter READ imageCenter WRITE setImageCenter)
-  Q_PROPERTY(QSize HawkImage_pixelDimensions READ pixelDimensions)
+  Q_PROPERTY(QSize HawkImage_imageSize READ imageSize)
   Q_PROPERTY(bool HawkImage_phased READ phased WRITE setPhased)
   Q_PROPERTY(bool HawkImage_scaled READ scaled WRITE setScaled)
   Q_PROPERTY(bool HawkImage_shifted READ shifted WRITE setShifted)
@@ -20,7 +20,7 @@ class ImageEditorView: public ImageView
   ImageEditorView(QWidget * parent = 0);
   void setImageCenter(QPointF center);
   QPointF imageCenter() const;
-  QSize pixelDimensions() const;
+  QSize imageSize() const;
   QString propertyNameToDisplayName(QString propertyName);
   bool phased() const;
   void setPhased(bool p);

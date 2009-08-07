@@ -24,7 +24,7 @@ QPointF ImageEditorView::imageCenter() const{
   return ret;
 }
 
-QSize ImageEditorView::pixelDimensions() const{
+QSize ImageEditorView::imageSize() const{
   QSize ret(0,0);
   if(imageItem() && imageItem()->getImage()){
     Image * a =  imageItem()->getImage();

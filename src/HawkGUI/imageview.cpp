@@ -193,6 +193,7 @@ void ImageView::setImage(ImageItem * item){
   }
   graphicsScene->clear();
   graphicsScene->addItem(item);  
+  emit imageItemChanged(imageItem());
 }
 
 void ImageView::keyPressEvent ( QKeyEvent * event ){
@@ -305,18 +306,21 @@ QString ImageView::getFilename(){
 void ImageView::shiftImage(){
   if(imageItem()){
     imageItem()->shiftImage();
+    emit imageItemChanged(imageItem());
   }
 }
 
 void ImageView::fourierTransform(){
   if(imageItem()){
     imageItem()->fourierTransform((mapToScene(0,0,width(),height())).boundingRect(),false);
+    emit imageItemChanged(imageItem());
   }
 }
 
 void ImageView::fourierTransformSquared(){
   if(imageItem()){
     imageItem()->fourierTransform((mapToScene(0,0,width(),height())).boundingRect(),true);
+    emit imageItemChanged(imageItem());
   }
 }
 
@@ -324,6 +328,7 @@ void ImageView::fourierTransformSquared(){
 void ImageView::setColormap(int color){
   if(imageItem()){
     imageItem()->setColormap(color);
+    emit imageItemChanged(imageItem());
   }
 }
 
@@ -337,6 +342,7 @@ int ImageView::colormap(){
 void ImageView::setDisplay(int display){
   if(imageItem()){
     imageItem()->setDisplay(display);
+    emit imageItemChanged(imageItem());
   }
 }
 
@@ -408,13 +414,15 @@ QString ImageView::getCurrentIteration(){
 
 void ImageView::maxContrast(){
   if(imageItem()){
-    return imageItem()->maxContrast((mapToScene(0,0,width(),height())).boundingRect());
+    imageItem()->maxContrast((mapToScene(0,0,width(),height())).boundingRect());
+    emit imageItemChanged(imageItem());
   }
 }
 
 void ImageView::setLogScale(bool on){
   if(imageItem()){
-    return imageItem()->setLogScale(on);
+    imageItem()->setLogScale(on);
+    emit imageItemChanged(imageItem());
   }
 }
 

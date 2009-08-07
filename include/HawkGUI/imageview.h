@@ -63,6 +63,7 @@ class ImageView: public QGraphicsView
   void scaleBy(qreal scale);
   void translateBy(QPointF r);
   void imageLoaded(QString file);
+  void imageItemChanged(ImageItem * item);
  protected:
   void focusInEvent ( QFocusEvent * event );
   void mouseMoveEvent(QMouseEvent * event);
