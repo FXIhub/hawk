@@ -242,3 +242,11 @@ bool ImageItem::logScale(){
   return false;
 }
 
+
+void ImageItem::reallocImage(QSize imageSize){
+  /* this might not be such a good idea */
+  if(image){
+    sp_image_realloc(image,imageSize.width(),imageSize.height(),1);
+  }
+  updateImage();
+}

@@ -42,6 +42,13 @@ ImageViewPanel::ImageViewPanel(ImageView * parent)
   QSize iconSize = QSize(22,22);
 
 
+  saveImage = new QToolButton(toolbar);
+  saveImage->setIcon(QIcon(":images/filesave.png"));
+  saveImage->setToolTip(tr("Save Image"));
+  htop->addWidget(saveImage);
+  saveImage->hide();
+  connect(saveImage,SIGNAL(clicked()),imageView,SLOT(saveImage()));
+  saveImage->setIconSize(iconSize);
   QToolButton *  loadImage= new QToolButton(toolbar);
   loadImage->setIcon(QIcon(":images/fileopen.png"));
   loadImage->setToolTip(tr("Load Image"));
@@ -218,4 +225,12 @@ void ImageViewPanel::setSticky(bool sticky){
 
 bool ImageViewPanel::sticky() const{
  return mySticky;
+}
+
+void ImageViewPanel::showSaveButton(bool show){
+  if(show){
+    saveImage->show();
+  }else{
+    saveImage->hide();
+  }
 }

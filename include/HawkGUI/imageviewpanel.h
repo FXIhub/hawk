@@ -24,6 +24,7 @@ class ImageViewPanel: public QWidget
   public slots:
   void setVisibility(bool visible);
   void setSticky(bool sticky);
+  void showSaveButton(bool show = true);
 private slots:
     void changeVisibility();
     //    void setLinearScale();
@@ -39,6 +40,7 @@ private slots:
   QComboBox * colormapCombo;
   QComboBox * displayCombo;
   QToolButton * logPush;
+  QToolButton * saveImage;
   bool mySticky;
 };
 

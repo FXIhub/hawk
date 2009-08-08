@@ -11,13 +11,14 @@ EditorWorkspace::EditorWorkspace(QWidget * parent)
   this->setLayout(hbox);
   QSplitter * leftSplitter = new QSplitter(Qt::Vertical,this);
   hbox->addWidget(leftSplitter);
-  editorView = new ImageEditorView(this);
+  editorView = new ImageEditorView(this);  
   hbox->addWidget(editorView);
   QGroupBox * toolBox = new QGroupBox(tr("Tools"),this);
   leftSplitter->addWidget(toolBox);
   leftSplitter->addWidget(createPropertiesTree());
   connect(editorView,SIGNAL(imageItemChanged(ImageItem *)),this,SLOT(loadProperties()));
   editorView->imageViewPanel()->setVisibility(true);
+  editorView->imageViewPanel()->showSaveButton(true);
 }
 
 
@@ -140,7 +141,7 @@ void EditorWorkspace::clicked(QModelIndex index){
 
 
 void EditorWorkspace::onItemChanged(QStandardItem * item){
-  if((item->flags() & Qt::ItemIsEditable) == 0){
+  if(((item->flags() & Qt::ItemIsEditable) || (item->flags() & Qt::ItemIsUserCheckable )) == 0){
     return;
   }
   qDebug("item changed");
@@ -166,6 +167,31 @@ void EditorWorkspace::onItemChanged(QStandardItem * item){
     }else{
       qFatal("Can't reach here");
     }
+  }else if(var.type() == QVariant::Size){
+    /* collect new value from the children */
+    if(item->hasChildren()){
+      QStandardItem * xItem = item->child(0,1);
+      QStandardItem * yItem = item->child(1,1);
+      QStandardItem * combined = item->model()->item(item->row(),item->column()+1);
+      QSize value = QSize(xItem->text().toInt(),yItem->text().toInt());
+      QString property = item->data(Qt::UserRole + 2).toString();
+      editorView->setProperty(property.toAscii().constData(),value);
+      combined->setText(QString("%0 x %1").arg(value.width()).arg(value.width()));
+      
+      qDebug("New value for %s = %d x %d",property.toAscii().data(),value.width(),value.height());
+    }else{
+      qFatal("Can't reach here");
+    }
+  }else if(var.type() == QVariant::Double){
+    double value = item->text().toDouble();
+    QString property = item->data(Qt::UserRole + 2).toString();
+    editorView->setProperty(property.toAscii().constData(),value);
+    item->setText(QString("%0").arg(value));		  
+    qDebug("New value for %s = %f",property.toAscii().data(),value);
+  }else if(var.type() == QVariant::Bool){
+    bool value = (item->checkState() == Qt::Checked);
+    QString property = item->data(Qt::UserRole + 2).toString();
+    editorView->setProperty(property.toAscii().constData(),value);
+    qDebug("New value for %s = %d",property.toAscii().data(),value);
   }
-
 }

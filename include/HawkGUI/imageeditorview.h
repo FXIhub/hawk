@@ -9,8 +9,9 @@
 class ImageEditorView: public ImageView
 {
   Q_OBJECT
-  Q_PROPERTY(QPointF HawkImage_imageCenter READ imageCenter WRITE setImageCenter)
-  Q_PROPERTY(QSize HawkImage_imageSize READ imageSize)
+    Q_PROPERTY(QPointF HawkImage_imageCenter READ imageCenter WRITE setImageCenter)
+  Q_PROPERTY(QSize HawkImage_imageSize READ imageSize WRITE setImageSize)
+    Q_PROPERTY(QSize HawkImage_pixelSize READ pixelSize WRITE setPixelSize)
   Q_PROPERTY(bool HawkImage_phased READ phased WRITE setPhased)
   Q_PROPERTY(bool HawkImage_scaled READ scaled WRITE setScaled)
   Q_PROPERTY(bool HawkImage_shifted READ shifted WRITE setShifted)
@@ -21,6 +22,7 @@ class ImageEditorView: public ImageView
   void setImageCenter(QPointF center);
   QPointF imageCenter() const;
   QSize imageSize() const;
+  void setImageSize(QSize imageSize);
   QString propertyNameToDisplayName(QString propertyName);
   bool phased() const;
   void setPhased(bool p);
@@ -32,7 +34,8 @@ class ImageEditorView: public ImageView
   void setWavelength(double w);
   double detectorDistance() const;
   void setDetectorDistance(double p);
-
+  QSize pixelSize() const;
+  void setPixelSize(QSize pixelSize);
 };
 
 #else

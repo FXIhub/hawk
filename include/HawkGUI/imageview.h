@@ -58,6 +58,7 @@ class ImageView: public QGraphicsView
   void translateItems(QPointF mov);
   void setPreserveShift(bool on);
   bool preservesShift() const;
+  void saveImage();
  signals:
   void focusedIn(ImageView * focused);
   void scaleBy(qreal scale);

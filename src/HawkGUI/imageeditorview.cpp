@@ -24,6 +24,24 @@ QPointF ImageEditorView::imageCenter() const{
   return ret;
 }
 
+QSize ImageEditorView::pixelSize() const{
+  QSize ret(0,0);
+  if(imageItem() && imageItem()->getImage()){
+    Image * a =  imageItem()->getImage();
+    ret = QSize(a->detector->pixel_size[0],a->detector->pixel_size[1]);
+  }
+  return ret;
+}
+
+void ImageEditorView::setPixelSize(QSize pixelSize){
+  QSize ret(0,0);
+  if(imageItem() && imageItem()->getImage()){
+    Image * a =  imageItem()->getImage();
+    a->detector->pixel_size[0] = pixelSize.width();
+    a->detector->pixel_size[1] = pixelSize.height();
+  }
+}
+
 QSize ImageEditorView::imageSize() const{
   QSize ret(0,0);
   if(imageItem() && imageItem()->getImage()){
@@ -31,6 +49,13 @@ QSize ImageEditorView::imageSize() const{
     ret = QSize(sp_image_x(a),sp_image_y(a));
   }
   return ret;
+}
+
+void ImageEditorView::setImageSize(QSize imageSize){
+  QSize ret(0,0);
+  if(imageItem() && imageItem()->getImage()){
+    imageItem()->reallocImage(imageSize);
+  }
 }
 
 

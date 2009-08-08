@@ -248,6 +248,18 @@ void ImageView::loadUserSelectedImage(){
    }
 }
 
+
+void ImageView::saveImage(){
+  if(imageItem() && imageItem()->getImage()){
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Save Image"),
+						    QString());
+    qDebug("Trying to save %s",filename.toAscii().data());
+    if(!fileName.isEmpty()){
+      sp_image_write(imageItem()->getImage(),filename.toAscii().data(),0);
+    }
+  }
+}
+
 bool ImageView::loadImage(QString file){
   if(loader == NULL){
     scheduledImage.clear();
