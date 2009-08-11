@@ -135,27 +135,31 @@ ImageItem * ImageView::imageItem() const{
 }
 
 void ImageView::scaleItems(qreal scale){
-  // Don't let the user zoom in or out too much 
-  if((scale < 1 && scale > 0 && 
-      imageItem()->getScale().x() > 0.01 &&
-      imageItem()->getScale().y() > 0.01) ||
-     (scale > 1 && 
-      imageItem()->getScale().x() < 100 &&
-      imageItem()->getScale().y() < 100)){
-    QPointF screen_center = sceneRect().center();
-    QList<QGraphicsItem *> it = items();
-    for(int i = 0; i < it.size(); i++){
-      QPointF item_sc = it[i]->mapFromScene(screen_center);
-      it[i]->scale(scale, scale);
-      QPointF item_a_sc = it[i]->mapFromScene(screen_center);
-      QPointF mov = item_a_sc-item_sc;
-      it[i]->translate(mov.x(),mov.y());
+  if(imageItem()){
+    // Don't let the user zoom in or out too much 
+    if((scale < 1 && scale > 0 && 
+	imageItem()->getScale().x() > 0.01 &&
+	imageItem()->getScale().y() > 0.01) ||
+       (scale > 1 && 
+	imageItem()->getScale().x() < 100 &&
+	imageItem()->getScale().y() < 100)){
+      QPointF screen_center = sceneRect().center();
+      QList<QGraphicsItem *> it = items();
+      for(int i = 0; i < it.size(); i++){
+	QPointF item_sc = it[i]->mapFromScene(screen_center);
+	it[i]->scale(scale, scale);
+	QPointF item_a_sc = it[i]->mapFromScene(screen_center);
+	QPointF mov = item_a_sc-item_sc;
+	it[i]->translate(mov.x(),mov.y());
+      }
     }
   }
 }
 
 void ImageView::translateItems(QPointF mov){
-  imageItem()->moveBy(mov.x(),mov.y());
+  if(imageItem()){
+    imageItem()->moveBy(mov.x(),mov.y());
+  }
 }
 
 void ImageView::setImage(ImageItem * item){
