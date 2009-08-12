@@ -74,20 +74,7 @@ void ImageView::mouseReleaseEvent( QMouseEvent *  ){
   }
 }
 
-void ImageView::mouseMoveEvent(QMouseEvent * event){
-  if(dragged && event->buttons() & Qt::LeftButton){
-    QPointF mov = mapToScene(event->pos())-mouseLastScenePos;
-    translateBy(mov);
-  }else if(event->buttons() & Qt::LeftButton){
-    QPointF mov = mapToScene(event->pos())-mouseLastScenePos;
-    emit translateBy(mov);
-  }else if(event->buttons() & Qt::RightButton){  
-    QPointF mouse_mov = mapToScene(event->pos())-mouseLastScenePos;
-    qreal speed = 0.005;
-    qreal scale = 1-mouse_mov.y()*speed;
-    emit scaleBy(scale);
-  }
-
+void ImageView::mouseOverValue(QMouseEvent * event){
   mouseInsideImage = false;
   QList<QGraphicsItem *> it = items(event->pos());
   for(int i = 0; i < it.size(); i++){
@@ -121,6 +108,24 @@ void ImageView::mouseMoveEvent(QMouseEvent * event){
     break;
   }
   mouseLastScenePos = mapToScene(event->pos());
+}
+
+void ImageView::mouseMoveEvent(QMouseEvent * event){
+  if(dragged && event->buttons() & Qt::LeftButton){
+    QPointF mov = mapToScene(event->pos())-mouseLastScenePos;
+    translateBy(mov);
+  }else if(event->buttons() & Qt::LeftButton){
+    QPointF mov = mapToScene(event->pos())-mouseLastScenePos;
+    emit translateBy(mov);
+  }else if(event->buttons() & Qt::RightButton){  
+    QPointF mouse_mov = mapToScene(event->pos())-mouseLastScenePos;
+    qreal speed = 0.005;
+    qreal scale = 1-mouse_mov.y()*speed;
+    emit scaleBy(scale);
+  }
+
+  mouseOverValue(event);
+
   event->accept();
 }
 

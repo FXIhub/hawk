@@ -46,8 +46,8 @@ class ImageItem: public QGraphicsPixmapItem
   bool logScale();
   bool isShifted();
   void reallocImage(QSize imageSize);
- private:
   void updateImage();
+ private:
   QGraphicsRectItem * selectRect;
   QString filename;
   Image * image;

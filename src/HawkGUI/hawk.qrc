@@ -25,6 +25,14 @@
      <file>images/theta.png</file>
      <file>images/filesave.png</file>
      <file>images/push_pin.png</file>
+     <file>images/simple_button_down.png</file>
+     <file>images/simple_button_up.png</file>
+     <file>images/border_image_32.png</file>
+     <file>images/formula_pi.png</file>
+     <file>images/bullseye.png</file>
+     <file>images/cursor_arrow.png</file>
+     <file>images/water_drop.png</file>
+     <file>images/optical_filter.png</file>
      <file>stylesheet/style.qss</file>
      <file>stylesheet/style_mac.qss</file>
      <file>stylesheet/style_x11.qss</file>

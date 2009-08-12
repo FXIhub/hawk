@@ -127,6 +127,13 @@ ImageViewPanel::ImageViewPanel(ImageView * parent)
   QToolButton * stickyButton = new QToolButton(toolbar);
   stickyButton->setIcon(QIcon(":images/push_pin.png"));
   stickyButton->setToolTip(tr("Keeps the panel always visible."));
+  QPalette p(stickyButton->palette());
+  p.setColor(QPalette::Window,Qt::transparent);
+  p.setColor(QPalette::Button,Qt::transparent);
+  p.setColor(QPalette::Foreground,Qt::transparent);
+  p.setColor(QPalette::Text,Qt::transparent);
+  stickyButton->setPalette(p);
+
   hbottom->addWidget(stickyButton);
   stickyButton->setCheckable(true);
   stickyButton->setChecked(false);

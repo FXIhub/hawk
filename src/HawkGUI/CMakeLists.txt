@@ -20,6 +20,7 @@ set(GUI_SRCS
   ../client_decoder.cpp
   ../sender.cpp
   ../decoder.cpp
+  ../math_parser.c
   ../saddle/minmaxL.c
   ../saddle/minmaxtau.c
   geometrycontrol.cpp

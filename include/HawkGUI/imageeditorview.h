@@ -3,8 +3,12 @@
 #if defined __cplusplus || defined Q_MOC_RUN
 
 #include "imageview.h"
+#include <spimage.h>
 
 #include <QPointF>
+class QMouseEvent;
+
+typedef enum{EditorDefaultMode = 0,EditorBlurMode = 1} EditorMode;
 
 class ImageEditorView: public ImageView
 {
@@ -36,6 +40,29 @@ class ImageEditorView: public ImageView
   void setDetectorDistance(double p);
   QSize pixelSize() const;
   void setPixelSize(QSize pixelSize);
+  EditorMode editorMode();
+  double getDropBrushRadius();
+  double getDropBlurRadius();
+
+ public slots:
+  void setBlurMode();
+  void setDefaultMode();
+  void setDropBrushRadius(double d);
+  void setDropBlurRadius(double d);
+ protected:
+  void mouseReleaseEvent(QMouseEvent * e);
+  void mousePressEvent(QMouseEvent * e);
+  void mouseMoveEvent(QMouseEvent * e);
+  void wheelEvent(QWheelEvent * e);
+ private:
+  Image * getBlurKernel();
+  void generateDropCursor();
+  void applyDrop(QPointF pos,Image * image,Image * kernel);
+  EditorMode mode;
+  double dropBrushRadius;
+  double dropBlurRadius;
+  QPixmap dropCursor;
+
 };
 
 #else

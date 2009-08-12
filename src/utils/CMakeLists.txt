@@ -64,7 +64,7 @@ if(GSL_FOUND)
 endif(GSL_FOUND)
 
 IF(MATHEVAL_FOUND)
-  ADD_EXECUTABLE(image_math image_math.c)
+  ADD_EXECUTABLE(image_math image_math.c ../math_parser.c)
   TARGET_LINK_LIBRARIES(image_math ${LIBRARY_LIST} ${MATHEVAL_LIBRARIES})
   INCLUDE_DIRECTORIES(${MATHEVAL_INCLUDE_DIR})
   LIST(APPEND BINS image_math)

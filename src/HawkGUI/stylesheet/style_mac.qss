@@ -24,16 +24,11 @@
 }
 
 #panelToolBar QComboBox {
-     border:  2px solid #26466D;
-
-     border-bottom-color: #26466D;
-     border-right-color: #26466D;
-     border-top-color: #46668D;
-     border-left-color: #46668D;
+     border-image: url(:/images/border_image_32.png)  3 3 3 3 stretch stretch;
+     border-width: 3 3 3 3;
      min-width: 36px; 
      background: rgba(0,0,0,0);
      color: white;
-     height: 25px;
      icon-size: 22px;
      selection-background-color: #B2DFEE;
      selection-color: white;
@@ -60,22 +55,38 @@
      icon-size: 22px;
 }
 
+
 #panelToolBar QToolButton{
+     background-image: url(:images/simple_button_up.png);
+     background-repeat: no-repeat;
+/*     background-clip: margin;
+     background-origin: margin;*/
+     border: none;
+     padding: 2px;
+/*
      background-color: rgba(0,0,0,0);
      border: 2px solid;
      border-bottom-color: #26466D;
      border-right-color: #26466D;
      border-top-color: #46668D;
      border-left-color: #46668D;
+*/
 }
 
-#panelToolBar QToolButton:pressed{
+#panelToolBar QToolButton:pressed, #panelToolBar QToolButton:checked{
+     background-image: url(:images/simple_button_down.png);
+     background-repeat: no-repeat;
+     border: none;
+     padding: 2px;
+
+/*
      background-color: rgba(0,0,0,0);
      border: 2px solid;
      border-top-color: #26466D;
      border-left-color: #26466D;
      border-bottom-color: #46668D;
      border-right-color: #46668D;
+*/
 }
 
 
@@ -109,6 +120,7 @@
      background-color: rgba(0,0,0,0);
 }
 
+
 #panelToolBar{
 /*    border: 2px solid #26466D;*/
 /*    border-radius: 6px;*/
@@ -121,8 +133,6 @@
     background-color: rgba(0,0,0,0);
 /*    padding: 5px;*/
 }
-
-
 
 
 QTreeView::item:last {
@@ -145,4 +155,7 @@ QTreeView {
     paint-alternating-row-colors-for-empty-area: 0;
 }
 
+QTreeView::item:selected {
+    background-color: #628cb2;
+}
 
