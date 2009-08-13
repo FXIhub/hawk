@@ -44,6 +44,7 @@ set(GUI_SRCS
   editorworkspace.cpp
   imageeditorview.cpp
   lineoutplot.cpp
+  editortools.cpp
 )
 
 set(GUI_MOC_HDRS
@@ -64,6 +65,7 @@ set(GUI_MOC_HDRS
   ${LOCAL_INCLUDE}/HawkGUI/editorworkspace.h
   ${LOCAL_INCLUDE}/HawkGUI/imageeditorview.h
   ${LOCAL_INCLUDE}/HawkGUI/lineoutplot.h
+  ${LOCAL_INCLUDE}/HawkGUI/editortools.h
   ${LOCAL_INCLUDE}/communicator.h
   ${LOCAL_INCLUDE}/client_decoder.h 
   ${LOCAL_INCLUDE}/decoder.h 

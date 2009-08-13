@@ -201,8 +201,8 @@ void ImageEditorView::mouseReleaseEvent( QMouseEvent *  event){
   }else if(mode == EditorSelectionMode){
     if(1){
       /*select region in image coordinates */
-      if(imageItem()){
-	selectedRegion += QRect(imageItem()->mapFromScene(mapToScene(rubberBandOrigin)).toPoint(),imageItem()->mapFromScene(mapToScene(event->pos())).toPoint()).normalized();
+      if(imageItem() && imageItem()->getImage()){
+	selectedRegion += QRect(0,0,sp_image_x(imageItem()->getImage()),sp_image_y(imageItem()->getImage())).intersected(QRect(imageItem()->mapFromScene(mapToScene(rubberBandOrigin)).toPoint(),imageItem()->mapFromScene(mapToScene(event->pos())).toPoint()).normalized());
 	scene()->update();
       }
     }
@@ -390,6 +390,7 @@ void ImageEditorView::paintEvent(QPaintEvent * event ){
   /* draw selected regions */
   QPainter p(viewport());
   p.setRenderHint(QPainter::Antialiasing);
+  qDebug("paint Event");
   if(!selectedRegion.isEmpty() && imageItem()){
     QPainterPath path;
     path.addRegion(selectedRegion);

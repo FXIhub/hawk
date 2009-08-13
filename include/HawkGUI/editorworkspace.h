@@ -16,26 +16,16 @@ class EditorWorkspace: public QWidget
   Q_OBJECT
     public:
   EditorWorkspace(QWidget * parent);
+ public:
+  ImageEditorView * editorView() const;
  private:
   QTreeView * createPropertiesTree();
   QWidget * createTools();
-  QWidget * dropToolOptions;
-  QWidget * filterToolOptions;
-  QWidget * selectionToolOptions;
   QTreeView * propertiesTree;
-  ImageEditorView * editorView;
-  QWidget * toolOptions;
-  QStackedLayout * toolOptionsLayout;
+  ImageEditorView * _editorView;
   private slots:
   void clicked(QModelIndex index);
   void onItemChanged(QStandardItem * item);
   void loadProperties();
-  void onMathEdit();
-  void onFilterClicked();
-  void onPointerClicked();
-  void onBullseyeClicked();
-  void onDropClicked();
-  void onSelectionClicked();
-  void onLineoutClicked();
 };
 #endif

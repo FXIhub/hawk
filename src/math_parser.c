@@ -19,7 +19,8 @@ typedef enum{LeftAssociative,RightAssociative,NonAssociative}OperatorAssociativi
 typedef enum{Operand=1,Comma,LeftParenthesis,RightParenthesis,Addition,UnaryPlus,Subtraction,
 	     UnaryMinus,Multiplication,Division,Exponentiation,AbsoluteValue,
 	     FourierTransform,InverseFourierTransform,Integrate,RealPart,ImaginaryPart,
-	     ImaginaryUnit,ComplexArgument,Exponential,Logarythm,Minimum,Maximum,ComplexConjugate}TokenName;
+	     ImaginaryUnit,ComplexArgument,Exponential,Logarythm,Minimum,Maximum,ComplexConjugate,
+	     SmallerThan,GreaterThan,LogicalAnd,LogicalOr,Equality,PositionX,PositionY,PositionZ,SquareRoot}TokenName;
 typedef enum{TokenImage,TokenScalar,TokenOperator,TokenComma,TokenError}TokenType;
 
 
@@ -414,6 +415,244 @@ static void token_stack_max(TokenStack * stack){
   }
 }
 
+static void token_stack_smaller_than(TokenStack * stack){
+  Token * b = token_stack_pop(stack);
+  Token * a = token_stack_pop(stack);
+  
+  if(a->type == TokenImage && b->type == TokenImage){
+    for(int i = 0;i<sp_image_size(a->image);i++){
+      sp_real(a->image->image->data[i]) = (sp_cabs(a->image->image->data[i]) < sp_cabs(b->image->image->data[i]));
+      sp_imag(a->image->image->data[i]) = 0;
+    }
+    token_stack_push(stack,a);  
+  }else if(a->type == TokenImage && b->type == TokenScalar){ 
+    for(int i = 0;i<sp_image_size(a->image);i++){
+      sp_real(a->image->image->data[i]) = (sp_cabs(a->image->image->data[i]) < sp_cabs(b->scalar));
+      sp_imag(a->image->image->data[i]) = 0;
+    }
+    token_stack_push(stack,a);  
+  }else if(b->type == TokenImage && a->type == TokenScalar){
+    for(int i = 0;i<sp_image_size(b->image);i++){
+      sp_real(b->image->image->data[i]) = (sp_cabs(a->scalar) < sp_cabs(b->image->image->data[i]));
+      sp_imag(b->image->image->data[i]) = 0;
+    }    
+    token_stack_push(stack,b);  
+  }else if(a->type == TokenScalar && b->type == TokenScalar){
+    sp_real(a->scalar) = (sp_cabs(a->scalar) < sp_cabs(b->scalar));
+    sp_imag(a->scalar) = 0;
+    token_stack_push(stack,a);
+  }else{
+    abort();
+  }
+}
+
+static void token_stack_greater_than(TokenStack * stack){
+  Token * b = token_stack_pop(stack);
+  Token * a = token_stack_pop(stack);
+  
+  if(a->type == TokenImage && b->type == TokenImage){
+    for(int i = 0;i<sp_image_size(a->image);i++){
+      sp_real(a->image->image->data[i]) = (sp_cabs(a->image->image->data[i]) > sp_cabs(b->image->image->data[i]));
+      sp_imag(a->image->image->data[i]) = 0;
+    }
+    token_stack_push(stack,a);  
+  }else if(a->type == TokenImage && b->type == TokenScalar){ 
+    for(int i = 0;i<sp_image_size(a->image);i++){
+      sp_real(a->image->image->data[i]) = (sp_cabs(a->image->image->data[i]) > sp_cabs(b->scalar));
+      sp_imag(a->image->image->data[i]) = 0;
+    }
+    token_stack_push(stack,a);  
+  }else if(b->type == TokenImage && a->type == TokenScalar){
+    for(int i = 0;i<sp_image_size(b->image);i++){
+      sp_real(b->image->image->data[i]) = (sp_cabs(a->scalar) > sp_cabs(b->image->image->data[i]));
+      sp_imag(b->image->image->data[i]) = 0;
+    }    
+    token_stack_push(stack,b);  
+  }else if(a->type == TokenScalar && b->type == TokenScalar){
+    sp_real(a->scalar) = (sp_cabs(a->scalar) > sp_cabs(b->scalar));
+    sp_imag(a->scalar) = 0;
+    token_stack_push(stack,a);
+  }else{
+    abort();
+  }
+}
+
+static void token_stack_logical_and(TokenStack * stack){
+  Token * b = token_stack_pop(stack);
+  Token * a = token_stack_pop(stack);
+  
+  if(a->type == TokenImage && b->type == TokenImage){
+    for(int i = 0;i<sp_image_size(a->image);i++){
+      sp_real(a->image->image->data[i]) = (sp_cabs(a->image->image->data[i]) && sp_cabs(b->image->image->data[i]));
+      sp_imag(a->image->image->data[i]) = 0;
+    }
+    token_stack_push(stack,a);  
+  }else if(a->type == TokenImage && b->type == TokenScalar){ 
+    for(int i = 0;i<sp_image_size(a->image);i++){
+      sp_real(a->image->image->data[i]) = (sp_cabs(a->image->image->data[i]) && sp_cabs(b->scalar));
+      sp_imag(a->image->image->data[i]) = 0;
+    }
+    token_stack_push(stack,a);  
+  }else if(b->type == TokenImage && a->type == TokenScalar){
+    for(int i = 0;i<sp_image_size(b->image);i++){
+      sp_real(b->image->image->data[i]) = (sp_cabs(a->scalar) && sp_cabs(b->image->image->data[i]));
+      sp_imag(b->image->image->data[i]) = 0;
+    }    
+    token_stack_push(stack,b);  
+  }else if(a->type == TokenScalar && b->type == TokenScalar){
+    sp_real(a->scalar) = (sp_cabs(a->scalar) && sp_cabs(b->scalar));
+    sp_imag(a->scalar) = 0;
+    token_stack_push(stack,a);
+  }else{
+    abort();
+  }
+}
+
+static void token_stack_logical_or(TokenStack * stack){
+  Token * b = token_stack_pop(stack);
+  Token * a = token_stack_pop(stack);
+  
+  if(a->type == TokenImage && b->type == TokenImage){
+    for(int i = 0;i<sp_image_size(a->image);i++){
+      sp_real(a->image->image->data[i]) = (sp_cabs(a->image->image->data[i]) || sp_cabs(b->image->image->data[i]));
+      sp_imag(a->image->image->data[i]) = 0;
+    }
+    token_stack_push(stack,a);  
+  }else if(a->type == TokenImage && b->type == TokenScalar){ 
+    for(int i = 0;i<sp_image_size(a->image);i++){
+      sp_real(a->image->image->data[i]) = (sp_cabs(a->image->image->data[i]) || sp_cabs(b->scalar));
+      sp_imag(a->image->image->data[i]) = 0;
+    }
+    token_stack_push(stack,a);  
+  }else if(b->type == TokenImage && a->type == TokenScalar){
+    for(int i = 0;i<sp_image_size(b->image);i++){
+      sp_real(b->image->image->data[i]) = (sp_cabs(a->scalar) || sp_cabs(b->image->image->data[i]));
+      sp_imag(b->image->image->data[i]) = 0;
+    }    
+    token_stack_push(stack,b);  
+  }else if(a->type == TokenScalar && b->type == TokenScalar){
+    sp_real(a->scalar) = (sp_cabs(a->scalar) || sp_cabs(b->scalar));
+    sp_imag(a->scalar) = 0;
+    token_stack_push(stack,a);
+  }else{
+    abort();
+  }
+}
+
+
+static void token_stack_equality(TokenStack * stack){
+  Token * b = token_stack_pop(stack);
+  Token * a = token_stack_pop(stack);
+  
+  if(a->type == TokenImage && b->type == TokenImage){
+    for(int i = 0;i<sp_image_size(a->image);i++){
+      sp_real(a->image->image->data[i]) = (sp_real(a->image->image->data[i]) == sp_real(b->image->image->data[i]))
+	&& (sp_imag(a->image->image->data[i]) == sp_imag(b->image->image->data[i]));
+      sp_imag(a->image->image->data[i]) = 0;
+    }
+    token_stack_push(stack,a);  
+  }else if(a->type == TokenImage && b->type == TokenScalar){ 
+    for(int i = 0;i<sp_image_size(a->image);i++){
+      sp_real(a->image->image->data[i]) = (sp_real(a->image->image->data[i]) == sp_real(b->scalar))
+	&& (sp_imag(a->image->image->data[i]) == sp_imag(b->scalar));
+      sp_imag(a->image->image->data[i]) = 0;
+    }
+    token_stack_push(stack,a);  
+  }else if(b->type == TokenImage && a->type == TokenScalar){
+    for(int i = 0;i<sp_image_size(b->image);i++){
+      sp_real(b->image->image->data[i]) = (sp_real(b->image->image->data[i]) == sp_real(a->scalar))
+	&& (sp_imag(b->image->image->data[i]) == sp_imag(a->scalar));
+      sp_imag(b->image->image->data[i]) = 0;
+    }    
+    token_stack_push(stack,b);  
+  }else if(a->type == TokenScalar && b->type == TokenScalar){
+    sp_real(a->scalar) = (sp_real(b->scalar) == sp_real(a->scalar))
+      && (sp_imag(b->scalar) == sp_imag(a->scalar));
+    sp_imag(a->scalar) = 0;
+    token_stack_push(stack,a);
+  }else{
+    abort();
+  }
+}
+
+
+static void token_stack_pos_x(TokenStack * stack){
+  Token * a = token_stack_pop(stack);
+  real x,y,z;
+  if(a->type != TokenImage){
+    a->type = TokenError;
+    a->error_msg = sp_strdup("Position operators only make sense for images!");
+    token_stack_push(stack,a);  
+    return;
+  }
+  if(a->type == TokenImage){
+    for(int i = 0;i<sp_image_size(a->image);i++){
+      sp_image_get_coords_from_index(a->image,i,&x,&y,&z,SpTopLeftCorner);
+      sp_real(a->image->image->data[i]) = x;
+      sp_imag(a->image->image->data[i]) = 0;
+    }
+    token_stack_push(stack,a);  
+  }else{
+    abort();
+  }
+}
+
+static void token_stack_pos_y(TokenStack * stack){
+  Token * a = token_stack_pop(stack);
+  real x,y,z;
+  if(a->type != TokenImage){
+    a->type = TokenError;
+    a->error_msg = sp_strdup("Position operators only make sense for images!");
+    token_stack_push(stack,a);  
+    return;
+  }
+  if(a->type == TokenImage){
+    for(int i = 0;i<sp_image_size(a->image);i++){
+      sp_image_get_coords_from_index(a->image,i,&x,&y,&z,SpTopLeftCorner);
+      sp_real(a->image->image->data[i]) = y;
+      sp_imag(a->image->image->data[i]) = 0;
+    }
+    token_stack_push(stack,a);  
+  }else{
+    abort();
+  }
+}
+
+static void token_stack_pos_z(TokenStack * stack){
+  Token * a = token_stack_pop(stack);
+  real x,y,z;
+  if(a->type != TokenImage){
+    a->type = TokenError;
+    a->error_msg = sp_strdup("Position operators only make sense for images!");
+    token_stack_push(stack,a);  
+    return;
+  }
+  if(a->type == TokenImage){
+    for(int i = 0;i<sp_image_size(a->image);i++){
+      sp_image_get_coords_from_index(a->image,i,&x,&y,&z,SpTopLeftCorner);
+      sp_real(a->image->image->data[i]) = z;
+      sp_imag(a->image->image->data[i]) = 0;
+    }
+    token_stack_push(stack,a);  
+  }else{
+    abort();
+  }
+}
+
+static void token_stack_sqrt(TokenStack * stack){
+  Token * a = token_stack_pop(stack);
+  if(a->type == TokenScalar){
+    a->scalar = sp_cpow(a->scalar,sp_cinit(0.5,0));
+    token_stack_push(stack,a);  
+  }else if(a->type == TokenImage){
+    for(int i = 0;i<sp_image_size(a->image);i++){
+      a->image->image->data[i] = sp_cpow(a->image->image->data[i],sp_cinit(0.5,0));
+    }
+    token_stack_push(stack,a);  
+  }else{
+    abort();
+  }
+}
 
 static Operator operator_table[100] = {
   {
@@ -471,6 +710,24 @@ static Operator operator_table[100] = {
     .name = Division
   },
   {
+    .op = token_stack_smaller_than,
+    .n_operands = 2,
+    .precedence = 0,
+    .associativity = LeftAssociative,
+    .position = Infix,
+    .identifier = {"<",NULL},
+    .name = SmallerThan
+  },
+  {
+    .op = token_stack_greater_than,
+    .n_operands = 2,
+    .precedence = 0,
+    .associativity = LeftAssociative,
+    .position = Infix,
+    .identifier = {">",NULL},
+    .name = GreaterThan
+  },
+  {
     .op = token_stack_conj,
     .n_operands = 1,
     .precedence = 5,
@@ -478,6 +735,15 @@ static Operator operator_table[100] = {
     .position = Prefix,
     .identifier = {"conj",NULL},
     .name = ComplexConjugate
+  },
+  {
+    .op = token_stack_sqrt,
+    .n_operands = 1,
+    .precedence = 5,
+    .associativity = NonAssociative,
+    .position = Prefix,
+    .identifier = {"sqrt",NULL},
+    .name = SquareRoot
   },
   {
     .op = token_stack_abs,
@@ -570,6 +836,33 @@ static Operator operator_table[100] = {
     .name = Maximum
   },
   {
+    .op = token_stack_pos_x,
+    .n_operands = 1,
+    .precedence = 5,
+    .associativity = NonAssociative,
+    .position = Prefix,
+    .identifier = {"posx",NULL},
+    .name = PositionX
+  },
+  {
+    .op = token_stack_pos_y,
+    .n_operands = 1,
+    .precedence = 5,
+    .associativity = NonAssociative,
+    .position = Prefix,
+    .identifier = {"posy",NULL},
+    .name = PositionY
+  },
+  {
+    .op = token_stack_pos_z,
+    .n_operands = 1,
+    .precedence = 5,
+    .associativity = NonAssociative,
+    .position = Prefix,
+    .identifier = {"posz",NULL},
+    .name = PositionZ
+  },
+  {
     .op = token_stack_real,
     .n_operands = 1,
     .precedence = 5,
@@ -588,6 +881,33 @@ static Operator operator_table[100] = {
     .name = ImaginaryPart
   },
   {
+    .op = token_stack_logical_and,
+    .n_operands = 2,
+    .precedence = 0,
+    .associativity = LeftAssociative,
+    .position = Infix,
+    .identifier = {"&&",NULL},
+    .name = LogicalAnd
+  },
+  {
+    .op = token_stack_logical_or,
+    .n_operands = 2,
+    .precedence = 0,
+    .associativity = LeftAssociative,
+    .position = Infix,
+    .identifier = {"||",NULL},
+    .name = LogicalOr
+  },
+  {
+    .op = token_stack_equality,
+    .n_operands = 2,
+    .precedence = 0,
+    .associativity = LeftAssociative,
+    .position = Infix,
+    .identifier = {"==",NULL},
+    .name = Equality
+  },
+  {
     .op = token_stack_imaginary_unit,
     .n_operands = 1,
     .precedence = 3,
@@ -599,7 +919,7 @@ static Operator operator_table[100] = {
   {
     .op = token_stack_comma,
     .n_operands = 2,
-    .precedence = 0,
+    .precedence = -1,
     .associativity = NonAssociative,
     .position = Infix,
     .identifier = {",",NULL},
