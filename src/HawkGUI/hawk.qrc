@@ -32,7 +32,11 @@
      <file>images/bullseye.png</file>
      <file>images/cursor_arrow.png</file>
      <file>images/water_drop.png</file>
+     <file>images/selection.png</file>
+     <file>images/selection_union.png</file>
+     <file>images/selection_subtract.png</file>
      <file>images/optical_filter.png</file>
+     <file>images/lineout_plot.png</file>
      <file>stylesheet/style.qss</file>
      <file>stylesheet/style_mac.qss</file>
      <file>stylesheet/style_x11.qss</file>

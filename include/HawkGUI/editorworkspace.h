@@ -21,6 +21,7 @@ class EditorWorkspace: public QWidget
   QWidget * createTools();
   QWidget * dropToolOptions;
   QWidget * filterToolOptions;
+  QWidget * selectionToolOptions;
   QTreeView * propertiesTree;
   ImageEditorView * editorView;
   QWidget * toolOptions;
@@ -34,5 +35,7 @@ class EditorWorkspace: public QWidget
   void onPointerClicked();
   void onBullseyeClicked();
   void onDropClicked();
+  void onSelectionClicked();
+  void onLineoutClicked();
 };
 #endif

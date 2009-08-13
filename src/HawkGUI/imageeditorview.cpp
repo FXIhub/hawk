@@ -1,5 +1,6 @@
 #include "imageeditorview.h"
 #include "imageitem.h"
+#include "lineoutplot.h"
 #include <QtGui>
 
 ImageEditorView::ImageEditorView(QWidget * parent)
@@ -10,6 +11,10 @@ ImageEditorView::ImageEditorView(QWidget * parent)
   dropBrushRadius = 3.0;
   dropBlurRadius = 3.0;
   generateDropCursor();
+  rubberBand = new QRubberBand(QRubberBand::Rectangle, this);
+  rubberBand->hide();
+  selectedRegion = QRegion();
+
 }
 
 void ImageEditorView::setImageCenter(QPointF center){
@@ -166,7 +171,7 @@ QString ImageEditorView::propertyNameToDisplayName(QString propertyName){
 }
 
 void ImageEditorView::mouseReleaseEvent( QMouseEvent *  event){
-  if(mode == EditorDefaultMode){
+  if(mode == EditorDefaultMode || (event->modifiers() & Qt::ShiftModifier)){
     ImageView::mouseReleaseEvent(event);
   }else if(mode == EditorBlurMode){
     /* Blur the area around the press */
@@ -187,16 +192,32 @@ void ImageEditorView::mouseReleaseEvent( QMouseEvent *  event){
 	      applyDrop(it.at(i)->mapFromScene(mapToScene(aroundPos)),image,kernel);
 	    }
 	  }
+	  sp_image_free(kernel);
 	  imageItem()->updateImage();
 	  emit imageItemChanged(imageItem());
 	}
       }
     }
+  }else if(mode == EditorSelectionMode){
+    if(1){
+      /*select region in image coordinates */
+      if(imageItem()){
+	selectedRegion += QRect(imageItem()->mapFromScene(mapToScene(rubberBandOrigin)).toPoint(),imageItem()->mapFromScene(mapToScene(event->pos())).toPoint()).normalized();
+	scene()->update();
+      }
+    }
+    rubberBand->hide();
+  }else if(mode == EditorLineoutMode){
+    if(imageItem() && imageItem()->getImage()){ 
+      QLineF line = QLineF(imageItem()->mapFromScene(mapToScene(lineOutOrigin)),imageItem()->mapFromScene(mapToScene(lineOutEnd)));
+      new LineOutPlot(imageItem()->getImage(),line);
+    }
+    scene()->update();
   }
 }
 
 void ImageEditorView::mouseMoveEvent(QMouseEvent *event){
-  if(mode == EditorDefaultMode){
+  if(mode == EditorDefaultMode || (event->modifiers() & Qt::ShiftModifier)){
     ImageView::mouseMoveEvent(event);
     return;
   }else if(mode == EditorBlurMode && (event->buttons() & Qt::LeftButton)){
@@ -218,24 +239,50 @@ void ImageEditorView::mouseMoveEvent(QMouseEvent *event){
 	      applyDrop(it.at(i)->mapFromScene(mapToScene(aroundPos)),image,kernel);
 	    }
 	  }
-	  imageItem()->updateImage();
-	  emit imageItemChanged(imageItem());
+	  sp_image_free(kernel);
+	  /* just update on the mouse release */
+	  /*
+	    imageItem()->updateImage();
+	    emit imageItemChanged(imageItem());
+	  */
 	}
       }
     }
+  }else if(mode == EditorSelectionMode){
+    rubberBand->setGeometry(QRect(rubberBandOrigin, event->pos()).normalized());
+  }else if(mode == EditorLineoutMode){
+    lineOutEnd = event->pos();
+    scene()->update();
   }
   mouseOverValue(event);
 }
 
-void ImageEditorView::mousePressEvent(QMouseEvent *e){
-  if(mode == EditorDefaultMode){
-    ImageView::mousePressEvent(e);
+void ImageEditorView::mousePressEvent(QMouseEvent *event){
+  if(mode == EditorDefaultMode || (event->modifiers() & Qt::ShiftModifier)){
+    ImageView::mousePressEvent(event);
+    return;
+  }else if(mode == EditorSelectionMode){
+    rubberBandOrigin = event->pos();
+    rubberBand->setGeometry(QRect(rubberBandOrigin, QSize()));
+    rubberBand->show();
+  }else if(mode == EditorLineoutMode){
+    lineOutOrigin = event->pos();
   }
 }
 
 void ImageEditorView::setBlurMode(){
   mode = EditorBlurMode;
   setCursor(QCursor(dropCursor));
+}
+
+void ImageEditorView::setSelectionMode(){
+  mode = EditorSelectionMode;
+  setCursor(QCursor(Qt::CrossCursor));
+}
+
+void ImageEditorView::setLineoutMode(){
+  mode = EditorLineoutMode;
+  setCursor(QCursor(Qt::CrossCursor));
 }
 
 void ImageEditorView::setDefaultMode(){
@@ -247,9 +294,9 @@ EditorMode ImageEditorView::editorMode(){
   return mode;
 }
 
-void ImageEditorView::wheelEvent( QWheelEvent * e){
-  if(mode == EditorDefaultMode){
-    ImageView::wheelEvent(e);
+void ImageEditorView::wheelEvent( QWheelEvent * event){
+  if(mode == EditorDefaultMode | (event->modifiers() & Qt::ShiftModifier)){
+    ImageView::wheelEvent(event);
   }
 }
 
@@ -327,9 +374,42 @@ void ImageEditorView::applyDrop(QPointF pos,Image * image, Image * kernel){
       if(yi < 0 || yi >= sp_image_y(image)){
 	continue;
       }
-      long long index = sp_image_get_index(image,x,y,0);
-      sp_image_set(image,x,y,0,sp_cinit(sp_point_convolute(image,kernel,index),0));
+      long long index = sp_image_get_index(image,x,y,0);      
+      /* only change the magnitude */
+      Complex value = sp_image_get(image,x,y,0);
+      value = sp_cscale(value,sp_point_convolute(image,kernel,index)/sp_cabs(value));
+      sp_image_set(image,x,y,0,value);
       qDebug("Doing convolute at %d %d",x,y);
     }
   }
+}
+
+
+void ImageEditorView::paintEvent(QPaintEvent * event ){
+  ImageView::paintEvent(event);
+  /* draw selected regions */
+  QPainter p(viewport());
+  p.setRenderHint(QPainter::Antialiasing);
+  if(!selectedRegion.isEmpty() && imageItem()){
+    QPainterPath path;
+    path.addRegion(selectedRegion);
+    QBrush brush = p.brush();
+    brush.setColor(QColor(0,0,0,50));
+    brush.setStyle(Qt::SolidPattern);
+    p.setBrush(brush);
+    QPen pen = p.pen();
+    pen.setColor(Qt::white);
+    pen.setWidthF(1.5);
+    pen.setStyle(Qt::DotLine);
+    p.setPen(pen);
+    p.drawPath(mapFromScene(imageItem()->mapToScene(path.simplified())));
+  }
+  if(mode == EditorLineoutMode && QApplication::mouseButtons() & Qt::LeftButton){
+    /* paint line out */
+    QPen pen = p.pen();
+    pen.setColor(Qt::white);
+    pen.setStyle(Qt::SolidLine);
+    p.setPen(pen);
+    p.drawLine(lineOutOrigin,lineOutEnd);
+  }  
 }

@@ -7,8 +7,9 @@
 
 #include <QPointF>
 class QMouseEvent;
+class QRubberBand;
 
-typedef enum{EditorDefaultMode = 0,EditorBlurMode = 1} EditorMode;
+typedef enum{EditorDefaultMode = 0,EditorBlurMode = 1,EditorSelectionMode,EditorLineoutMode} EditorMode;
 
 class ImageEditorView: public ImageView
 {
@@ -46,10 +47,13 @@ class ImageEditorView: public ImageView
 
  public slots:
   void setBlurMode();
+  void setSelectionMode();
+  void setLineoutMode();
   void setDefaultMode();
   void setDropBrushRadius(double d);
   void setDropBlurRadius(double d);
  protected:
+  void paintEvent(QPaintEvent * e);
   void mouseReleaseEvent(QMouseEvent * e);
   void mousePressEvent(QMouseEvent * e);
   void mouseMoveEvent(QMouseEvent * e);
@@ -62,7 +66,11 @@ class ImageEditorView: public ImageView
   double dropBrushRadius;
   double dropBlurRadius;
   QPixmap dropCursor;
-
+  QRubberBand * rubberBand;
+  QPoint rubberBandOrigin;  
+  QPoint lineOutOrigin;
+  QPoint lineOutEnd;
+  QRegion selectedRegion;
 };
 
 #else

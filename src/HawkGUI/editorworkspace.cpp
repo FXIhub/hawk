@@ -30,7 +30,7 @@ QWidget * EditorWorkspace::createTools(){
   QSize iconSize = QSize(22,22);
   QToolButton * pointer = new QToolButton(toolBox);
   pointer->setIcon(QIcon(":images/cursor_arrow.png"));
-  pointer->setToolTip(tr("Drag/Scale Image"));
+  pointer->setToolTip(tr("Drag/Scale Image\n(Shift to activate)"));
   pointer->setIconSize(iconSize);
   pointer->setCheckable(true);
   pointer->setAutoExclusive(true);
@@ -70,6 +70,24 @@ QWidget * EditorWorkspace::createTools(){
   filter->setIconSize(iconSize);
   connect(filter,SIGNAL(clicked(bool)),this,SLOT(onFilterClicked()));
   layout->addWidget(filter,0,4);
+  QToolButton * selection = new QToolButton(toolBox);
+  selection->setIcon(QIcon(":images/selection.png"));
+  selection->setToolTip(tr("Select image section"));
+  selection->setIconSize(iconSize);
+  selection->setCheckable(true);
+  selection->setAutoExclusive(true);
+  connect(selection,SIGNAL(clicked(bool)),this,SLOT(onSelectionClicked()));
+  layout->addWidget(selection,0,5);
+
+  QToolButton * lineout = new QToolButton(toolBox);
+  lineout->setIcon(QIcon(":images/lineout_plot.png"));
+  lineout->setToolTip(tr("Trace plot lineout"));
+  lineout->setIconSize(iconSize);
+  lineout->setCheckable(true);
+  lineout->setAutoExclusive(true);
+  connect(lineout,SIGNAL(clicked(bool)),this,SLOT(onLineoutClicked()));
+  layout->addWidget(lineout,0,6);
+
   //  connect(mathEdit,SIGNAL(clicked(bool)),this,SLOT(onMathEdit()));
   
   toolOptions = new QWidget(toolBox);
@@ -117,9 +135,37 @@ QWidget * EditorWorkspace::createTools(){
   grid->setColumnStretch(2,100);
   toolOptionsLayout->addWidget(filterToolOptions);
 
+  selectionToolOptions = new QWidget(toolOptions);
+  grid = new QGridLayout(selectionToolOptions);
+  selectionToolOptions->setLayout(grid);
+  grid->addWidget(new QLabel("Mode:",selectionToolOptions),0,0);
+  QToolButton *  button = new QToolButton(selectionToolOptions);
+  button->setIcon(QIcon(":images/selection.png"));
+  button->setToolTip("Set selection");
+  button->setCheckable(true);
+  button->setChecked(true);
+  button->setAutoExclusive(true);
+  grid->addWidget(button,0,1);
+  button = new QToolButton(selectionToolOptions);
+  button->setIcon(QIcon(":images/selection_union.png"));
+  button->setToolTip("Add to selection");
+  button->setCheckable(true);
+  button->setAutoExclusive(true);
+  grid->addWidget(button,0,2);
+  button = new QToolButton(selectionToolOptions);
+  button->setIcon(QIcon(":images/selection_subtract.png"));
+  button->setToolTip("Remove from selection");  
+  button->setCheckable(true);
+  button->setAutoExclusive(true);
+  grid->addWidget(button,0,3);
+  grid->setRowStretch(5,100);
+  grid->setColumnStretch(5,100);
+  toolOptionsLayout->addWidget(selectionToolOptions);
+
+
   toolOptions->hide();
-  layout->addWidget(toolOptions,1,0,1,6);
-  layout->setColumnStretch(5,100);
+  layout->addWidget(toolOptions,1,0,1,11);
+  layout->setColumnStretch(11,100);
   layout->setRowStretch(3,100);
   return toolBox;
 }
@@ -354,6 +400,17 @@ void EditorWorkspace::onDropClicked(){
 void EditorWorkspace::onFilterClicked(){
   toolOptionsLayout->setCurrentWidget(filterToolOptions);
   toolOptions->show();
+}
+
+void EditorWorkspace::onSelectionClicked(){
+  editorView->setSelectionMode();
+  toolOptionsLayout->setCurrentWidget(selectionToolOptions);
+  toolOptions->show();
+}
+
+void EditorWorkspace::onLineoutClicked(){
+  editorView->setLineoutMode();
+  toolOptions->hide();
 }
 
 
