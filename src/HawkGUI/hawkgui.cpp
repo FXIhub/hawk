@@ -10,6 +10,7 @@
 #include "imageview.h"
 #include "plotdisplay.h"
 #include "editorworkspace.h"
+#include "stitcherworkspace.h"
 
 HawkGUI::HawkGUI()
   :QMainWindow()
@@ -39,6 +40,8 @@ void HawkGUI::createGUI(){
   centralLayout->addWidget(phaserWorkspace);
   editorWorkspace = createEditorWorkspace();
   centralLayout->addWidget(editorWorkspace);
+  stitcherWorkspace = new StitcherWorkspace(this);
+  centralLayout->addWidget(stitcherWorkspace);
   createActions();
   createToolBars();
   createStatusBar();
@@ -104,8 +107,9 @@ QWidget * HawkGUI::createRightPanel(){
 void HawkGUI::createToolBars(){
   workspaceToolBar = addToolBar(tr("Workspace"));
   workspaceToolBar->setIconSize(QSize(32,32));
-  workspaceToolBar->addAction(phaserWorkspaceAction);
+  workspaceToolBar->addAction(stitcherWorkspaceAction);
   workspaceToolBar->addAction(editorWorkspaceAction);
+  workspaceToolBar->addAction(phaserWorkspaceAction);
   processToolBar = addToolBar(tr("Process"));
   processToolBar->addAction(runProcess);
   processToolBar->addAction(deleteOutput);
@@ -275,19 +279,27 @@ void HawkGUI::createActions(){
   workspaceGroup = new QActionGroup(this);
   phaserWorkspaceAction = new QAction(QIcon(":/images/theta.png"),tr("Phaser"),this);
   editorWorkspaceAction = new QAction(QIcon(":/images/package_graphics.png"),tr("Editor"),this);
+  stitcherWorkspaceAction = new QAction(QIcon(":/images/stitch.png"),tr("Stitcher"),this);
   workspaceGroup->addAction(phaserWorkspaceAction);
   workspaceGroup->addAction(editorWorkspaceAction);
+  workspaceGroup->addAction(stitcherWorkspaceAction);
   editorWorkspaceAction->setCheckable(true);
   phaserWorkspaceAction->setCheckable(true);
-  editorWorkspaceAction->setStatusTip(tr("Change to phasing workspace"));
+  stitcherWorkspaceAction->setCheckable(true);
+  phaserWorkspaceAction->setStatusTip(tr("Change to phasing workspace"));
   editorWorkspaceAction->setStatusTip(tr("Change to editor workspace"));
+  stitcherWorkspaceAction->setStatusTip(tr("Change to stitcher workspace"));
   connect(editorWorkspaceAction,SIGNAL(triggered()),this,SLOT(showEditorWorkspace()));
   connect(phaserWorkspaceAction,SIGNAL(triggered()),this,SLOT(showPhaserWorkspace()));
+  connect(stitcherWorkspaceAction,SIGNAL(triggered()),this,SLOT(showStitcherWorkspace()));
   if(centralLayout->currentWidget() == phaserWorkspace){
     phaserWorkspaceAction->setChecked(true);
   }
   if(centralLayout->currentWidget() == editorWorkspace){
     editorWorkspaceAction->setChecked(true);
+  }
+  if(centralLayout->currentWidget() == stitcherWorkspace){
+    stitcherWorkspaceAction->setChecked(true);
   }
 } 
 
@@ -468,4 +480,8 @@ void HawkGUI::showPhaserWorkspace(){
 
 void HawkGUI::showEditorWorkspace(){
   centralLayout->setCurrentWidget(editorWorkspace);
+}
+
+void HawkGUI::showStitcherWorkspace(){
+  centralLayout->setCurrentWidget(stitcherWorkspace);
 }

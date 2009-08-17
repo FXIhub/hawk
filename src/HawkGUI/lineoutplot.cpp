@@ -4,7 +4,7 @@
 #include <qwt_plot.h>
 #include <qwt_plot_curve.h>
 
-LineOutPlot::LineOutPlot(Image * a, QLineF line)
+LineOutPlot::LineOutPlot(const Image * a, QLineF line)
   :QWidget(0)
 {
   setLayout(new QGridLayout);

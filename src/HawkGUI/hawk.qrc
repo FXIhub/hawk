@@ -37,6 +37,16 @@
      <file>images/selection_subtract.png</file>
      <file>images/optical_filter.png</file>
      <file>images/lineout_plot.png</file>
+     <file>images/undo.png</file>
+     <file>images/redo.png</file>
+     <file>images/hardware.png</file>
+     <file>images/stitch.png</file>
+     <file>images/add_line.png</file>
+     <file>images/add_circle.png</file>
+     <file>images/clear.png</file>
+     <file>images/xcam.png</file>
+     <file>images/magic.png</file>
+     <file>images/crop.png</file>
      <file>stylesheet/style.qss</file>
      <file>stylesheet/style_mac.qss</file>
      <file>stylesheet/style_x11.qss</file>

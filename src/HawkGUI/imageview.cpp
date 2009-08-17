@@ -39,6 +39,8 @@ ImageView::ImageView(QWidget * parent)
   vbox->addWidget(panel);
   connect(this,SIGNAL(scaleBy(qreal)),this,SLOT(scaleItems(qreal)));
   connect(this,SIGNAL(translateBy(QPointF)),this,SLOT(translateItems(QPointF)));
+  setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+  setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 }
 
 ImageView::~ImageView()
@@ -78,42 +80,43 @@ void ImageView::mouseOverValue(QMouseEvent * event){
   mouseInsideImage = false;
   QList<QGraphicsItem *> it = items(event->pos());
   for(int i = 0; i < it.size(); i++){
-    mouseInsideImage = true;
-    ImageItem * ii = qgraphicsitem_cast<ImageItem *>(it.at(i));
-    if(ii){
-      Image * image = ii->getImage();
-      if(image){
-	QPointF pos = it.at(i)->mapFromScene(mapToScene(event->pos()));    
-	int x = (int)pos.x();
-	if(x < 0){
-	  x = 0;
+    if(QString("ImageItem") == it[i]->data(0)){
+      mouseInsideImage = true;
+      ImageItem * ii = qgraphicsitem_cast<ImageItem *>(it.at(i));
+      if(ii){
+	const Image * image = ii->getImage();
+	if(image){
+	  QPointF pos = it.at(i)->mapFromScene(mapToScene(event->pos()));    
+	  int x = (int)pos.x();
+	  if(x < 0){
+	    x = 0;
+	  }
+	  if(x >= sp_image_x(image)){
+	    x = sp_image_x(image)-1;
+	  }
+	  
+	  int y = (int)pos.y();
+	  if(y < 0){
+	    y = 0;
+	  }
+	  if(y >= sp_image_y(image)){
+	    y = sp_image_y(image)-1;
+	  }
+	  Complex v = sp_image_get(image,x,y,0);
+	  QString message = QString("Pixel %1,%2 Value=%3 + %4i Amp=%5 Phase=%6%7").arg(x).arg(y).arg(sp_real(v)).arg(sp_imag(v)).arg(sp_cabs(v)).arg(180/3.1415*sp_carg(v)).arg(QChar(0x00B0));
+	  mainWindow->statusBar()->showMessage(message);
+	  //	qDebug("Hovering over image at %dx%d",x,y);
 	}
-	if(x >= sp_image_x(image)){
-	  x = sp_image_x(image)-1;
-	}
-
-	int y = (int)pos.y();
-	if(y < 0){
-	  y = 0;
-	}
-	if(y >= sp_image_y(image)){
-	  y = sp_image_y(image)-1;
-	}
-	Complex v = sp_image_get(image,x,y,0);
-	QString message = QString("Pixel %1,%2 Value=%3 + %4i Amp=%5 Phase=%6%7").arg(x).arg(y).arg(sp_real(v)).arg(sp_imag(v)).arg(sp_cabs(v)).arg(180/3.1415*sp_carg(v)).arg(QChar(0x00B0));
-	mainWindow->statusBar()->showMessage(message);
-	//	qDebug("Hovering over image at %dx%d",x,y);
       }
+      break;
     }
-    break;
   }
-  mouseLastScenePos = mapToScene(event->pos());
 }
 
 void ImageView::mouseMoveEvent(QMouseEvent * event){
   if(dragged && event->buttons() & Qt::LeftButton){
     QPointF mov = mapToScene(event->pos())-mouseLastScenePos;
-    translateBy(mov);
+    dragged->moveBy(mov.x(),mov.y());
   }else if(event->buttons() & Qt::LeftButton){
     QPointF mov = mapToScene(event->pos())-mouseLastScenePos;
     emit translateBy(mov);
@@ -125,7 +128,7 @@ void ImageView::mouseMoveEvent(QMouseEvent * event){
   }
 
   mouseOverValue(event);
-
+  mouseLastScenePos = mapToScene(event->pos());
   event->accept();
 }
 
@@ -139,31 +142,26 @@ ImageItem * ImageView::imageItem() const{
   return myImageItem;
 }
 
-void ImageView::scaleItems(qreal scale){
+void ImageView::scaleItems(qreal new_scale){
   if(imageItem()){
+    if(transform().m11()*new_scale > 1e-2  && transform().m11()*new_scale < 1e2){
     // Don't let the user zoom in or out too much 
-    if((scale < 1 && scale > 0 && 
-	imageItem()->getScale().x() > 0.01 &&
-	imageItem()->getScale().y() > 0.01) ||
-       (scale > 1 && 
-	imageItem()->getScale().x() < 100 &&
-	imageItem()->getScale().y() < 100)){
-      QPointF screen_center = sceneRect().center();
-      QList<QGraphicsItem *> it = items();
-      for(int i = 0; i < it.size(); i++){
-	QPointF item_sc = it[i]->mapFromScene(screen_center);
-	it[i]->scale(scale, scale);
-	QPointF item_a_sc = it[i]->mapFromScene(screen_center);
-	QPointF mov = item_a_sc-item_sc;
-	it[i]->translate(mov.x(),mov.y());
-      }
+      scale(new_scale,new_scale);
+      QBrush b = backgroundBrush();
+      b.setTransform(transform().inverted());
+      setBackgroundBrush(b);
     }
   }
 }
 
 void ImageView::translateItems(QPointF mov){
-  if(imageItem()){
-    imageItem()->moveBy(mov.x(),mov.y());
+  QList<QGraphicsItem *> it = items();
+  for(int i = 0; i < it.size(); i++){
+    if(it[i]->parentItem() == NULL){
+      //    if(QString("ImageItem") == it[i]->data(0)){
+      // translate all top level items
+      it[i]->moveBy(mov.x(),mov.y());
+    }
   }
 }
 
@@ -190,6 +188,9 @@ void ImageView::setImage(ImageItem * item){
     item->setPos(center);
   }
   delete myImageItem;
+  if(dragged){
+    dragged = NULL;
+  }
   myImageItem = item;
   if(preserveShift && isShifted != imageItem()->isShifted()){
     imageItem()->shiftImage();
@@ -242,9 +243,14 @@ void ImageView::setup(){
   grad.setColorAt(1,QColor("#B2DFEE"));
   grad.setColorAt(0,QColor("#26466D"));
   QBrush grad_brush(grad);      
-  setSceneRect(QRect(0,0,width(),height()));
+  //  setSceneRect(QRect(0,0,width(),height()));
+  QPalette p = palette();
+  p.setBrush(QPalette::Window,grad_brush);
   setBackgroundBrush(grad_brush);
+  setCacheMode(QGraphicsView::CacheBackground);
   graphicsScene = new QGraphicsScene(this);
+  //  graphicsScene->setSceneRect(-10000,-10000,20000,20000);
+  graphicsScene->setBackgroundBrush(grad_brush);
   setScene(graphicsScene);    
 }
 
@@ -284,7 +290,7 @@ bool ImageView::loadImage(QString file){
 }
 
 void ImageView::loadImage(QPixmap pix){
-  ImageItem * item = new ImageItem(pix,NULL);
+  ImageItem * item = new ImageItem(pix,this,NULL);
   setImage(item);    
   item->update();
 
@@ -386,7 +392,7 @@ void ImageView::finishLoadImage(){
   qDebug(("Current iteration:" + currentIteration).toAscii());
   delete loader;
   loader = NULL;
-  ImageItem * item = new ImageItem(image,filename,NULL);
+  ImageItem * item = new ImageItem(image,filename,this,NULL);
   setImage(item);    
   item->update();
   emit imageLoaded(filename);
@@ -464,4 +470,8 @@ void ImageView::setPreserveShift(bool on){
 
 bool ImageView::preservesShift() const{
   return preserveShift;
+}
+
+void ImageView::emitImageItemChanged(ImageItem * item){
+  emit imageItemChanged(item);
 }

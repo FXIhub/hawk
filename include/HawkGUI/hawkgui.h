@@ -39,6 +39,7 @@ private slots:
   void onLockBrowseToggled(bool on);
   void showPhaserWorkspace();
   void showEditorWorkspace();
+  void showStitcherWorkspace();
 private:
   void createGUI();
   void createCategories();
@@ -59,6 +60,7 @@ private:
   QStackedLayout * centralLayout;
   QWidget * phaserWorkspace;
   QWidget * editorWorkspace;
+  QWidget * stitcherWorkspace;
   QGridLayout * topLayout;
   //  QLabel * optionsTree;
   OptionsTree * optionsTree;
@@ -105,7 +107,8 @@ private:
   QActionGroup * workspaceGroup;
   QAction * phaserWorkspaceAction;
   QAction * editorWorkspaceAction;
-
+  QAction * stitcherWorkspaceAction;
+  
 
   QComboBox * colorBox;
   QComboBox * displayBox;

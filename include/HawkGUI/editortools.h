@@ -6,27 +6,51 @@
 
 class EditorWorkspace;
 class QStackedLayout;
+class QLineEdit;
+class QDoubleSpinBox;
+class QSpinBox;
 
 class EditorTools: public QGroupBox
 {
   Q_OBJECT
     public:
   EditorTools(EditorWorkspace * parent);
+  enum SelectionMode{SelectionSet,SelectionUnite,SelectionSubtract};
+  SelectionMode selectionMode();
  private slots:
   void onMathEdit();
   void onFilterClicked();
   void onPointerClicked();
-  void onBullseyeClicked();
+  void onBullseyeToggled(bool checked);
   void onDropClicked();
   void onSelectionClicked();
   void onLineoutClicked();
+  void onUndoClicked();
+  void onRedoClicked();
+  void onRemoveElectronicsClicked();
+  void onRemoveVerticalLinesClicked();
+  void onRemoveHorizontalLinesClicked();
+  void setSelectionModeSet();
+  void setSelectionModeUnite();
+  void setSelectionModeSubtract();
+  void onSelectByExpression();
+  void onXcamMagicClicked();
+  void onFillEmptyClicked();
+  void onInterpolateEmptyClicked();
+  void onCropClicked();
  private:
   EditorWorkspace * editor;
   QWidget * dropToolOptions;
   QWidget * filterToolOptions;
   QWidget * selectionToolOptions;
+  QWidget * electronicsToolOptions;
+  QWidget * fillEmptyToolOptions;
   QWidget * toolOptions;
+  QLineEdit * selectExpression;
   QStackedLayout * toolOptionsLayout;
+  SelectionMode _selectionMode;
+  QDoubleSpinBox * fillBlurRadius;
+  QSpinBox * fillIterations;
 };
 
 #else

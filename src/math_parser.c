@@ -883,7 +883,7 @@ static Operator operator_table[100] = {
   {
     .op = token_stack_logical_and,
     .n_operands = 2,
-    .precedence = 0,
+    .precedence = -2,
     .associativity = LeftAssociative,
     .position = Infix,
     .identifier = {"&&",NULL},
@@ -892,7 +892,7 @@ static Operator operator_table[100] = {
   {
     .op = token_stack_logical_or,
     .n_operands = 2,
-    .precedence = 0,
+    .precedence = -2,
     .associativity = LeftAssociative,
     .position = Infix,
     .identifier = {"||",NULL},
@@ -901,7 +901,7 @@ static Operator operator_table[100] = {
   {
     .op = token_stack_equality,
     .n_operands = 2,
-    .precedence = 0,
+    .precedence = -1,
     .associativity = LeftAssociative,
     .position = Infix,
     .identifier = {"==",NULL},
@@ -919,7 +919,7 @@ static Operator operator_table[100] = {
   {
     .op = token_stack_comma,
     .n_operands = 2,
-    .precedence = -1,
+    .precedence = -3,
     .associativity = NonAssociative,
     .position = Infix,
     .identifier = {",",NULL},
@@ -935,7 +935,7 @@ static Operator operator_table[100] = {
 
 static Token ** parse_tokens(Token ** infix);
 
-static Token ** tokenize_string(char * input, Operator * op_table, Image ** image_list);
+static Token ** tokenize_string(char * input, Operator * op_table, const Image ** image_list);
 
 static Token * evaluate_postfix(Token ** postfix){
   TokenStack * stack = token_stack_init();
@@ -1016,7 +1016,7 @@ static int index_from_variable_name(char * name){
   return index;
 }
 
-static Token ** tokenize_string(char * input, Operator * op_table, Image ** image_list){
+static Token ** tokenize_string(char * input, Operator * op_table, const Image ** image_list){
   Token pe[1000];
   int pe_used = 0;
   char * token_start = NULL;
@@ -1159,7 +1159,7 @@ static Token ** tokenize_string(char * input, Operator * op_table, Image ** imag
 
 
 
-Math_Output * evaluate_math_expression(char * expression,Image ** image_list){
+Math_Output * evaluate_math_expression(char * expression,const Image ** image_list){
   Token ** tokens = tokenize_string(expression,operator_table,image_list);
   Token ** postfix = parse_tokens(tokens);
   Token * out = evaluate_postfix(postfix);

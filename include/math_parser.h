@@ -17,7 +17,7 @@ typedef struct{
   char * error_msg;
 }Math_Output;
 
-Math_Output * evaluate_math_expression(char * expression,Image ** image_list);
+Math_Output * evaluate_math_expression(char * expression,const Image ** image_list);
 
 #ifdef __cplusplus
 }  /* extern "C" */

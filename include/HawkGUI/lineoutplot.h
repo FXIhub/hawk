@@ -9,14 +9,14 @@ class LineOutPlot: public QWidget
 {
   Q_OBJECT
     public:
-  LineOutPlot(Image * a, QLineF line);
+  LineOutPlot(const Image * a, QLineF line);
  private:
   void sampleImage(QLineF line);
   void plotLineOut();
   double * xData;
   double * yData;
   int npoints;
-  Image * image;
+  const Image * image;
 };
 
 #else

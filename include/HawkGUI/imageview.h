@@ -46,7 +46,7 @@ class ImageView: public QGraphicsView
   void shiftImage();
   void loadUserSelectedImage();
   void scheduleImageLoad(QString file);
-  bool loadImage(QString file);
+  virtual bool loadImage(QString file);
   void loadImage(QPixmap pix);
   void setPos(QPointF pos);
   void setTransform(QTransform t);
@@ -58,7 +58,8 @@ class ImageView: public QGraphicsView
   void translateItems(QPointF mov);
   void setPreserveShift(bool on);
   bool preservesShift() const;
-  void saveImage();
+  virtual void saveImage();
+  void emitImageItemChanged(ImageItem * item);
  signals:
   void focusedIn(ImageView * focused);
   void scaleBy(qreal scale);
@@ -73,12 +74,13 @@ class ImageView: public QGraphicsView
   void mouseReleaseEvent( QMouseEvent * mouseEvent );
   void keyPressEvent ( QKeyEvent * event );
   void mouseOverValue(QMouseEvent * event);
+  QGraphicsScene * graphicsScene;
+  ImageItem * myImageItem;
   private slots:
   void finishLoadImage();
   void loadScheduledImage();
  private:
   QPointF mouseLastScenePos;
-  QGraphicsScene * graphicsScene;
   ImageItem * dragged;
   QPointF draggedInitialPos;
   QPointF itemsScale;
@@ -95,7 +97,6 @@ class ImageView: public QGraphicsView
   QString currentlyLoading;
   QString currentIteration;
   ImageViewPanel * panel;
-  ImageItem * myImageItem;
   bool preserveShift;
 };
 

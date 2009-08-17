@@ -5,14 +5,17 @@
 #include <QGraphicsPixmapItem>
 #include "imageview.h"
 #include <spimage.h>
+#include <QStack>
+#include <QRegion>
 
 class QGraphicsSceneMouseEvent;
+class ImageView;
 
 class ImageItem: public QGraphicsPixmapItem
 {
    public:
-  ImageItem(Image * data,QString filename,QGraphicsItem * parent = NULL);
-  ImageItem(QPixmap pix,QGraphicsItem * parent);
+  ImageItem(Image * data,QString filename,ImageView * view,QGraphicsItem * parent = NULL);
+  ImageItem(QPixmap pix,ImageView * view,QGraphicsItem * parent);
   ~ImageItem();
 
   enum { Type = UserType + 1 };
@@ -25,7 +28,7 @@ class ImageItem: public QGraphicsPixmapItem
   QPointF centeredScale(qreal scale,QPointF screenCenter);
   void paint(QPainter * painter, const QStyleOptionGraphicsItem * option,
 	     QWidget * widget);
-  Image * getImage();
+  const Image * getImage();
   QString getFilename(){
     return filename;
   }
@@ -45,9 +48,44 @@ class ImageItem: public QGraphicsPixmapItem
   void setLogScale(bool on);
   bool logScale();
   bool isShifted();
-  void reallocImage(QSize imageSize);
   void updateImage();
+  void setImageCenter(QPointF center);
+  QPointF imageCenter() const;
+  void setPixelSize(QSizeF size);
+  QSizeF pixelSize() const;
+  void pointConvolute(QPointF scenePos, const Image * kernel);
+  void setDetectorDistance(double distance);
+  double detectorDistance()const;
+  void setWavelength(double distance);
+  double wavelength()const;
+  bool shifted() const;
+  void setShifted(bool shifted);
+  bool scaled() const;
+  void setScaled(bool scaled);
+  bool phased() const;
+  void setPhased(bool phased);
+  QSize imageSize()const;
+  void setImageSize(QSize size);
+  void undoEditSteps(int numSteps = 1);
+  void redoEditSteps(int numSteps = 1);
+  void removeVerticalLines(QRect rect);
+  void removeHorizontalLines(QRect rect);
+  void setCenterIndicatorsVisible(bool show = true);
+  void setSelected(bool selelected = true);
+  void rotateImage();
+  void xcamPreprocess();
+  void interpolateEmpty(double radius,int iterations,QRegion selected);
+  void cropImage(QRegion selected);
  private:
+  enum EditType{ImageSize,Phased,Shifted,Wavelength,DetectorDistance,PointConvolute,Scaled,PixelSize,ImageCenter,CheckPoint};
+  struct EditStep{
+    EditType type;
+    QVector<QVariant> arguments;
+  };
+  void addToStack(EditType type,QVariant arg1,QVariant arg2 = QVariant());
+  void applyEditStep(EditStep step);
+  void repositionCenterIndicators();
+
   QGraphicsRectItem * selectRect;
   QString filename;
   Image * image;
@@ -57,6 +95,11 @@ class ImageItem: public QGraphicsPixmapItem
   real colormap_max;
   QImage data;
   bool selected;
+  QStack<EditStep> undoStack;
+  QStack<EditStep> redoStack;
+  ImageView * _view;
+  QGraphicsLineItem * centerVerticalIndicator;
+  QGraphicsLineItem * centerHorizontalIndicator;
 };
 
 #else

@@ -1,10 +1,16 @@
 #include "imageitem.h"
 #include <QtGui>
 #include <math.h>
+#include "xcam.h"
 
-ImageItem::ImageItem(Image * sp_image,QString file,QGraphicsItem * parent)
+Q_DECLARE_METATYPE(Image *);
+Q_DECLARE_METATYPE(const Image *);
+
+
+ImageItem::ImageItem(Image * sp_image,QString file, ImageView * view,QGraphicsItem * parent)
   :QGraphicsPixmapItem(parent)
 { 
+  _view = view;
   filename = file;
   colormap_flags = SpColormapJet;
   colormap_min = 0;
@@ -33,13 +39,26 @@ ImageItem::ImageItem(Image * sp_image,QString file,QGraphicsItem * parent)
   setData(0,QString("ImageItem"));
   setZValue(10);
   selectRect = new QGraphicsRectItem(0,0,pixmap().width(),pixmap().height(),this);
+  selectRect->setPen(QPen(Qt::white));
   selectRect->setVisible(false);
+  centerVerticalIndicator = new QGraphicsLineItem(0,-100000,0,100000,this);
+  centerHorizontalIndicator = new QGraphicsLineItem(-100000,0,100000,0,this);
+  centerVerticalIndicator->hide();
+  centerHorizontalIndicator->hide();
+  QPen pen = centerHorizontalIndicator->pen();
+  
+  pen.setColor(Qt::white);
+  pen.setStyle(Qt::SolidLine);
+  centerHorizontalIndicator->setPen(pen);
+  centerVerticalIndicator->setPen(pen);
+  repositionCenterIndicators();
 }
 
 
-ImageItem::ImageItem(QPixmap pix,QGraphicsItem * parent)
+ImageItem::ImageItem(QPixmap pix,ImageView * view, QGraphicsItem * parent)
   :QGraphicsPixmapItem(parent)
 { 
+  _view = view;
   colormap_flags = SpColormapJet;
   setPixmap(pix);
   colormap_data = NULL;
@@ -75,8 +94,9 @@ void ImageItem::paint(QPainter * painter, const QStyleOptionGraphicsItem * optio
     }*/
 };
 
-Image * ImageItem::getImage(){
-  return image;
+const Image * ImageItem::getImage(){
+  const Image * ret = image;
+  return ret;
 }
 
 QPointF ImageItem::getScale(){
@@ -120,7 +140,7 @@ void ImageItem::fourierTransform(QRectF area,bool squared){
     }
     if(squared){
       for(int i= 0;i<sp_image_size(tmp);i++){
-	tmp->image->data[i] = sp_cinit(sp_cabs2(tmp->image->data[i]),0);
+	sp_image_set_by_index(tmp,i,sp_cinit(sp_cabs2(tmp->image->data[i]),0));
       }
     }
     Image * tmp2 = sp_image_fft(tmp);
@@ -243,10 +263,368 @@ bool ImageItem::logScale(){
 }
 
 
-void ImageItem::reallocImage(QSize imageSize){
-  /* this might not be such a good idea */
+
+void ImageItem::setImageCenter(QPointF center){
   if(image){
-    sp_image_realloc(image,imageSize.width(),imageSize.height(),1);
+    addToStack(ImageCenter,center);
+    image->detector->image_center[0] = center.x();
+    image->detector->image_center[1] = center.y();    
+    repositionCenterIndicators();
+    _view->emitImageItemChanged(this);
   }
+}
+
+QPointF ImageItem::imageCenter() const{
+  if(image){
+    return QPointF(image->detector->image_center[0],image->detector->image_center[1]);
+  }
+  return QPointF();
+}
+
+QSizeF ImageItem::pixelSize() const{
+  if(image){
+    return QSizeF(image->detector->pixel_size[0],image->detector->pixel_size[1]);
+  }
+  return QSizeF();
+}
+
+void ImageItem::setPixelSize(QSizeF pixelSize){
+  if(image){
+    addToStack(PixelSize,pixelSize);
+    image->detector->pixel_size[0] = pixelSize.width();
+    image->detector->pixel_size[1] = pixelSize.height();
+  }
+}
+
+void ImageItem::pointConvolute(QPointF scenePos,const Image * kernel){
+  if(!image){
+    return;
+  }
+  QVariant img_var;
+  qVariantSetValue(img_var,kernel);
+  addToStack(PointConvolute,scenePos,img_var);
+  QPointF pos = mapFromScene(scenePos);
+  int x = (int)pos.x();
+  int y = (int)pos.y();
+  Complex value = sp_image_get(image,x,y,0);
+  long long  index = sp_image_get_index(image,x,y,0);
+  value = sp_cscale(value,sp_point_convolute(image,kernel,index)/sp_cabs(value));
+  sp_image_set(image,x,y,0,value);
+}
+
+void ImageItem::setDetectorDistance(double distance){
+  if(image){
+    addToStack(DetectorDistance,distance);
+    image->detector->detector_distance = distance;
+  }
+}
+
+double ImageItem::detectorDistance() const{
+  if(image){
+    return image->detector->detector_distance;
+  }
+  return -1;
+}
+
+void ImageItem::setWavelength(double wavelength){
+  if(image){
+    addToStack(Wavelength,wavelength);
+    image->detector->wavelength = wavelength;
+  }
+}
+
+double ImageItem::wavelength() const{
+  if(image){    
+    return image->detector->wavelength;
+  }
+  return -1;
+}
+
+void ImageItem::setShifted(bool shifted){
+  if(image){
+    addToStack(Shifted,shifted);
+    image->shifted = shifted;
+  }
+}
+
+bool ImageItem::shifted()const{
+  if(image){
+    return image->shifted;
+  }
+  return false;
+}
+
+void ImageItem::setScaled(bool scaled){
+  if(image){
+    addToStack(Scaled,scaled);
+    image->scaled = scaled;
+  }
+}
+
+bool ImageItem::scaled()const{
+  if(image){
+    return image->scaled;
+  }
+  return false;
+}
+
+void ImageItem::setPhased(bool phased){
+  if(image){
+    addToStack(Phased,phased);
+    image->phased = phased;
+  }
+}
+
+bool ImageItem::phased()const{
+  if(image){
+    return image->phased;
+  }
+  return false;
+}
+
+void ImageItem::setImageSize(QSize size){
+  if(image){
+    addToStack(ImageSize,size);
+    sp_image_realloc(image,size.width(),size.height(),1);
+    updateImage();
+  }
+}
+
+QSize ImageItem::imageSize() const{
+  if(image){
+    return QSize(sp_image_x(image),sp_image_y(image));
+  }
+  return QSize();
+}
+
+void ImageItem::addToStack(EditType type, QVariant arg1, QVariant arg2){
+  if(undoStack.size() % 10 == 0){
+    /* add checkpoints every 10 edits */
+    QVariant var;
+    Image * copy_img = sp_image_duplicate(image,SP_COPY_ALL);
+    qVariantSetValue(var,copy_img);
+    QVector<QVariant> args;
+    args << var;
+    EditStep step = {CheckPoint,args};
+    undoStack.push(step);
+  }
+  if(type == ImageSize || type == Phased || type == Shifted ||
+     type == Wavelength || type == DetectorDistance ||
+     type == DetectorDistance | type == Scaled || type == PixelSize ||
+     type == ImageCenter){
+    QVector<QVariant> args;
+    args << arg1;
+    EditStep step = {type,args};
+    undoStack.push(step);
+  }else if(type == PointConvolute){
+    QVector<QVariant> args;
+    args << arg1;
+    const Image * a = qVariantValue<const Image *>(arg2);
+    if(!a){
+      abort();
+    }
+    QVariant copy_arg;
+    Image * copy_img = sp_image_duplicate(a,SP_COPY_ALL);
+    qVariantSetValue(copy_arg,copy_img);
+    args << copy_arg;
+    EditStep step = {type,args};
+    undoStack.push(step);
+  }
+}
+
+void ImageItem::applyEditStep(EditStep step){
+  if(step.type == ImageSize){
+    setImageSize(step.arguments[0].toSize());
+  }
+  if(step.type == Phased){
+    setPhased(step.arguments[0].toBool());
+  }
+  if(step.type == Shifted){
+    setShifted(step.arguments[0].toBool());
+  }
+  if(step.type == Wavelength){
+    setWavelength(step.arguments[0].toDouble());
+  }
+  if(step.type == DetectorDistance){
+    setDetectorDistance(step.arguments[0].toDouble());
+  }
+  if(step.type == Scaled){
+    setScaled(step.arguments[0].toBool());
+  }
+  if(step.type == PixelSize){
+    setPixelSize(step.arguments[0].toSizeF());
+  }
+  if(step.type == ImageCenter){
+    setImageCenter(step.arguments[0].toPointF());
+  }
+
+  if(step.type == CheckPoint){
+    sp_image_free(image);
+    image = sp_image_duplicate(qVariantValue<Image *>(step.arguments[0]),SP_COPY_ALL);
+  }
+}
+
+void ImageItem::redoEditSteps(int numSteps){
+  if(numSteps > redoStack.size()){
+    return;
+  }
+  for(int i = 0;i<numSteps;i++){
+    EditStep step = redoStack.pop();
+    applyEditStep(step);
+    /* this is not really necessary because the apply will also push to the undo stack */
+    /* Checkpoint is the only one that needs to be put again by hand */
+    if(step.type == CheckPoint){
+      numSteps++;
+      undoStack.push(step); 
+    }
+  }
+  updateImage();    
+  _view->emitImageItemChanged(this);
+}
+
+void ImageItem::undoEditSteps(int numSteps){
+  if(numSteps > undoStack.size()){
+    return;
+  }
+  int finalStackSize = undoStack.size()-numSteps;
+  while(1){
+    redoStack.push(undoStack.pop());
+    if(redoStack.top().type == CheckPoint){
+      if(undoStack.size() <= finalStackSize){
+	break;
+      }else{
+	/* CheckPoints don't really count as edit steps */	
+	finalStackSize--;
+      }
+    }
+    if(undoStack.isEmpty()){
+      abort();
+    }
+  }
+  while(undoStack.size() < finalStackSize){
+    EditStep step = redoStack.pop();
+    applyEditStep(step);
+    /* this is not really necessary because the apply will also push to the undo stack */
+    /* Checkpoint is the only one that needs to be put again by hand */
+    if(step.type == CheckPoint){
+        undoStack.push(step); 
+    }
+  }
+  updateImage();    
+  _view->emitImageItemChanged(this);
+}
+
+void ImageItem::removeVerticalLines(QRect rect){
+  if(!getImage()){
+    return;
+  }
+  Image * a = image;
+  QVector<double> noise(rect.width());
+  noise.fill(0);
+  for(int x = 0;x< rect.width();x++){
+    for(int y = 0;y< rect.height();y++){
+      noise[x] += sp_real(sp_image_get(a,rect.x()+x,rect.y()+y,0));
+    }
+  }
+  for(int x = 0;x< rect.width();x++){
+    noise[x] /= rect.height();
+  }
+  for(int x = 0;x< rect.width();x++){
+    for(int y = 0;y<sp_image_y(a);y++){
+      Complex v = sp_image_get(a,rect.x()+x,y,0);
+      sp_real(v) -= noise[x];
+      sp_image_set(a,rect.x()+x,y,0,v);
+    }
+  }
+  updateImage();    
+  _view->emitImageItemChanged(this);
+}
+
+
+void ImageItem::removeHorizontalLines(QRect rect){
+  if(!getImage()){
+    return;
+  }
+  Image * a = image;
+  QVector<double> noise(rect.height());
+  noise.fill(0);
+  for(int y = 0;y< rect.height();y++){
+    for(int x = 0;x< rect.width();x++){
+      noise[y] += sp_real(sp_image_get(a,rect.x()+x,rect.y()+y,0));
+    }
+  }
+  for(int y = 0;y< rect.height();y++){
+    noise[y] /= rect.width();
+  }
+  for(int y = 0;y<rect.height();y++){
+    for(int x = 0;x< sp_image_x(a);x++){
+      Complex v = sp_image_get(a,x,rect.y()+y,0);
+      sp_real(v) -= noise[y];
+      sp_image_set(a,x,rect.y()+y,0,v);
+    }
+  }
+  updateImage();    
+  _view->emitImageItemChanged(this);
+}
+
+
+void ImageItem::repositionCenterIndicators(){
+  centerVerticalIndicator->setLine(imageCenter().x(),-100000,imageCenter().x(),100000);
+  centerHorizontalIndicator->setLine(-100000,imageCenter().y(),100000,imageCenter().y());
+}
+
+void ImageItem::setCenterIndicatorsVisible(bool show){
+  centerVerticalIndicator->setVisible(show);
+  centerHorizontalIndicator->setVisible(show);
+}
+
+void ImageItem::setSelected(bool selected){
+  selectRect->setVisible(selected);
+}
+
+void ImageItem::rotateImage(){
+  sp_image_reflect(image,1,SP_AXIS_XY);
+  updateImage();
+}
+
+void ImageItem::xcamPreprocess(){
+  Image * a = xcam_preprocess(image);
+  sp_image_free(image);
+  image = a;  
+  updateImage();
+}
+
+void ImageItem::interpolateEmpty(double radius,int iterations, QRegion selected){
+  if(!image || radius <= 0 || iterations < 1){
+    return;
+  }
+  if(selected.isEmpty()){
+    qDebug("No selection radius %f",radius);
+    selected = QRect(0,0,sp_image_x(image),sp_image_y(image));
+  }else{
+    qDebug("Selection radius %f",radius);
+  }
+  for(int i = 0;i<iterations;i++){
+    Image * after = gaussian_blur(image,radius);
+    for(int x = 0;x<sp_image_x(image);x++){
+      for(int y = 0;y<sp_image_y(image);y++){
+	if(sp_image_mask_get(image,x,y,0) == 0 && selected.contains(QPoint(x,y))){
+	  sp_image_set(image,x,y,0,sp_image_get(after,x,y,0));
+	}
+      }
+    }
+    sp_image_free(after);
+  }
+  updateImage();
+}
+
+void ImageItem::cropImage(QRegion selected){
+  if(selected.isEmpty() || !image){
+    return;
+  }
+  QRect r = selected.boundingRect();
+  Image * tmp = rectangle_crop(image,r.x(),r.y(),r.x()+r.width(),r.y()+r.height());
+  sp_image_free(image);
+  image = tmp;
   updateImage();
 }

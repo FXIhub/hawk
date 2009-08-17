@@ -23,6 +23,7 @@ set(GUI_SRCS
   ../math_parser.c
   ../saddle/minmaxL.c
   ../saddle/minmaxtau.c
+  ../xcam.c
   geometrycontrol.cpp
   hawkgui.cpp
   imagecategory.cpp
@@ -45,6 +46,8 @@ set(GUI_SRCS
   imageeditorview.cpp
   lineoutplot.cpp
   editortools.cpp
+  stitcherworkspace.cpp
+  stitcherview.cpp
 )
 
 set(GUI_MOC_HDRS
@@ -66,6 +69,8 @@ set(GUI_MOC_HDRS
   ${LOCAL_INCLUDE}/HawkGUI/imageeditorview.h
   ${LOCAL_INCLUDE}/HawkGUI/lineoutplot.h
   ${LOCAL_INCLUDE}/HawkGUI/editortools.h
+  ${LOCAL_INCLUDE}/HawkGUI/stitcherworkspace.h
+  ${LOCAL_INCLUDE}/HawkGUI/stitcherview.h
   ${LOCAL_INCLUDE}/communicator.h
   ${LOCAL_INCLUDE}/client_decoder.h 
   ${LOCAL_INCLUDE}/decoder.h 

@@ -8,22 +8,23 @@
 #include <QPointF>
 class QMouseEvent;
 class QRubberBand;
+class EditorWorkspace;
 
-typedef enum{EditorDefaultMode = 0,EditorBlurMode = 1,EditorSelectionMode,EditorLineoutMode} EditorMode;
+typedef enum{EditorDefaultMode = 0,EditorBlurMode = 1,EditorSelectionMode,EditorLineoutMode,EditorBullseyeMode} EditorMode;
 
 class ImageEditorView: public ImageView
 {
   Q_OBJECT
     Q_PROPERTY(QPointF HawkImage_imageCenter READ imageCenter WRITE setImageCenter)
   Q_PROPERTY(QSize HawkImage_imageSize READ imageSize WRITE setImageSize)
-    Q_PROPERTY(QSize HawkImage_pixelSize READ pixelSize WRITE setPixelSize)
+    Q_PROPERTY(QSizeF HawkImage_pixelSize READ pixelSize WRITE setPixelSize)
   Q_PROPERTY(bool HawkImage_phased READ phased WRITE setPhased)
   Q_PROPERTY(bool HawkImage_scaled READ scaled WRITE setScaled)
   Q_PROPERTY(bool HawkImage_shifted READ shifted WRITE setShifted)
   Q_PROPERTY(double HawkImage_detectorDistance READ detectorDistance WRITE setDetectorDistance)    
   Q_PROPERTY(double HawkImage_wavelength READ wavelength WRITE setWavelength)
     public:
-  ImageEditorView(QWidget * parent = 0);
+  ImageEditorView(QWidget * parent,EditorWorkspace * workspace);
   void setImageCenter(QPointF center);
   QPointF imageCenter() const;
   QSize imageSize() const;
@@ -39,12 +40,14 @@ class ImageEditorView: public ImageView
   void setWavelength(double w);
   double detectorDistance() const;
   void setDetectorDistance(double p);
-  QSize pixelSize() const;
-  void setPixelSize(QSize pixelSize);
+  QSizeF pixelSize() const;
+  void setPixelSize(QSizeF pixelSize);
   EditorMode editorMode();
   double getDropBrushRadius();
   double getDropBlurRadius();
-
+  QRegion selectedRegion();
+  void setBullseyeMode(bool on);
+  void selectRegion(QRegion region);
  public slots:
   void setBlurMode();
   void setSelectionMode();
@@ -61,7 +64,6 @@ class ImageEditorView: public ImageView
  private:
   Image * getBlurKernel();
   void generateDropCursor();
-  void applyDrop(QPointF pos,Image * image,Image * kernel);
   EditorMode mode;
   double dropBrushRadius;
   double dropBlurRadius;
@@ -70,7 +72,8 @@ class ImageEditorView: public ImageView
   QPoint rubberBandOrigin;  
   QPoint lineOutOrigin;
   QPoint lineOutEnd;
-  QRegion selectedRegion;
+  QRegion _selectedRegion;
+  EditorWorkspace * editorWorkspace;
 };
 
 #else

@@ -13,7 +13,7 @@ EditorWorkspace::EditorWorkspace(QWidget * parent)
   this->setLayout(hbox);
   QSplitter * leftSplitter = new QSplitter(Qt::Vertical,this);
   hbox->addWidget(leftSplitter);
-  _editorView = new ImageEditorView(this);  
+  _editorView = new ImageEditorView(this,this);  
   hbox->addWidget(editorView());
   leftSplitter->addWidget(createTools());
   leftSplitter->addWidget(createPropertiesTree());
@@ -24,7 +24,8 @@ EditorWorkspace::EditorWorkspace(QWidget * parent)
 
 
 QWidget * EditorWorkspace::createTools(){
-  return new EditorTools(this);
+  _editorTools =  new EditorTools(this);
+  return _editorTools;
 }
 
 void EditorWorkspace::loadProperties(){
@@ -70,8 +71,8 @@ void EditorWorkspace::loadProperties(){
        itemName->setFlags(itemName->flags() & ~Qt::ItemIsEditable);
        itemValue->setFlags(itemValueFlags);
        parentItem->appendRow(QList<QStandardItem *>() << itemName << itemValue);
-     }else if(var.type() == QVariant::Size){
-       QSize value = var.toSize();
+     }else if(var.type() == QVariant::Size || var.type() == QVariant::SizeF){
+       QSizeF value = var.toSize();
        QStandardItem * itemName = new QStandardItem(editorView()->propertyNameToDisplayName(name));
        QStandardItem * itemValue = new QStandardItem(QString("%0 x %1").arg(value.width()).arg(value.height()));
        itemName->setData(value,Qt::UserRole + 1);
@@ -165,14 +166,17 @@ void EditorWorkspace::onItemChanged(QStandardItem * item){
       QStandardItem * combined = item->model()->item(item->row(),item->column()+1);
       QPointF value = QPointF(xItem->text().toDouble(),yItem->text().toDouble());
       QString property = item->data(Qt::UserRole + 2).toString();
-      editorView()->setProperty(property.toAscii().constData(),value);
+      /* changing the text on the parent is done by the signal emited when the property is changed 
+       so this is should not be really necessary */
       combined->setText(QString("%0 x %1").arg(value.x()).arg(value.y()));
+      editorView()->setProperty(property.toAscii().constData(),value);
+     
       
       qDebug("New value for %s = %f %f",property.toAscii().data(),value.x(),value.y());
     }else{
       qFatal("Can't reach here");
     }
-  }else if(var.type() == QVariant::Size){
+  }else if(var.type() == QVariant::SizeF){
     /* collect new value from the children */
     if(item->hasChildren()){
       QStandardItem * xItem = item->child(0,1);
@@ -180,8 +184,8 @@ void EditorWorkspace::onItemChanged(QStandardItem * item){
       QStandardItem * combined = item->model()->item(item->row(),item->column()+1);
       QSize value = QSize(xItem->text().toInt(),yItem->text().toInt());
       QString property = item->data(Qt::UserRole + 2).toString();
+      combined->setText(QString("%0 x %1").arg(value.width()).arg(value.height()));
       editorView()->setProperty(property.toAscii().constData(),value);
-      combined->setText(QString("%0 x %1").arg(value.width()).arg(value.width()));
       
       qDebug("New value for %s = %d x %d",property.toAscii().data(),value.width(),value.height());
     }else{
@@ -190,8 +194,8 @@ void EditorWorkspace::onItemChanged(QStandardItem * item){
   }else if(var.type() == QVariant::Double){
     double value = item->text().toDouble();
     QString property = item->data(Qt::UserRole + 2).toString();
-    editorView()->setProperty(property.toAscii().constData(),value);
     item->setText(QString("%0").arg(value));		  
+    editorView()->setProperty(property.toAscii().constData(),value);
     qDebug("New value for %s = %f",property.toAscii().data(),value);
   }else if(var.type() == QVariant::Bool){
     bool value = (item->checkState() == Qt::Checked);
@@ -205,4 +209,8 @@ void EditorWorkspace::onItemChanged(QStandardItem * item){
 
 ImageEditorView * EditorWorkspace::editorView() const{
   return _editorView;
+}
+
+EditorTools * EditorWorkspace::editorTools() const{
+  return _editorTools;
 }

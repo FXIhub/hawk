@@ -1,11 +1,14 @@
 #include "imageeditorview.h"
 #include "imageitem.h"
 #include "lineoutplot.h"
+#include "editorworkspace.h"
+#include "editortools.h"
 #include <QtGui>
 
-ImageEditorView::ImageEditorView(QWidget * parent)
+ImageEditorView::ImageEditorView(QWidget * parent,EditorWorkspace * workspace)
   :ImageView(parent)
 {
+  editorWorkspace = workspace;
   setPreserveShift(false);
   mode = EditorDefaultMode;
   dropBrushRadius = 3.0;
@@ -13,141 +16,116 @@ ImageEditorView::ImageEditorView(QWidget * parent)
   generateDropCursor();
   rubberBand = new QRubberBand(QRubberBand::Rectangle, this);
   rubberBand->hide();
-  selectedRegion = QRegion();
+  _selectedRegion = QRegion();
 
 }
 
 void ImageEditorView::setImageCenter(QPointF center){
-  if(imageItem() && imageItem()->getImage()){
-    Image * a =  imageItem()->getImage();
-    a->detector->image_center[0] = center.x();
-    a->detector->image_center[1] = center.y();    
+  if(imageItem()){
+    imageItem()->setImageCenter(center);
   }
 }
 
 QPointF ImageEditorView::imageCenter() const{
-  QPointF ret(0,0);
-  if(imageItem() && imageItem()->getImage()){
-    Image * a =  imageItem()->getImage();
-    ret = QPointF(a->detector->image_center[0],a->detector->image_center[1]);
+  if(imageItem()){
+    return imageItem()->imageCenter();
+  }
+  return QPointF();
+}
+
+QSizeF ImageEditorView::pixelSize() const{
+  QSizeF ret;
+  if(imageItem()){
+    ret = imageItem()->pixelSize();
   }
   return ret;
 }
 
-QSize ImageEditorView::pixelSize() const{
-  QSize ret(0,0);
-  if(imageItem() && imageItem()->getImage()){
-    Image * a =  imageItem()->getImage();
-    ret = QSize(a->detector->pixel_size[0],a->detector->pixel_size[1]);
-  }
-  return ret;
-}
-
-void ImageEditorView::setPixelSize(QSize pixelSize){
-  QSize ret(0,0);
-  if(imageItem() && imageItem()->getImage()){
-    Image * a =  imageItem()->getImage();
-    a->detector->pixel_size[0] = pixelSize.width();
-    a->detector->pixel_size[1] = pixelSize.height();
+void ImageEditorView::setPixelSize(QSizeF pixelSize){
+  if(imageItem()){
+    imageItem()->setPixelSize(pixelSize);
   }
 }
 
 QSize ImageEditorView::imageSize() const{
   QSize ret(0,0);
-  if(imageItem() && imageItem()->getImage()){
-    Image * a =  imageItem()->getImage();
-    ret = QSize(sp_image_x(a),sp_image_y(a));
+  if(imageItem()){
+    return imageItem()->imageSize();
   }
   return ret;
 }
 
 void ImageEditorView::setImageSize(QSize imageSize){
-  QSize ret(0,0);
-  if(imageItem() && imageItem()->getImage()){
-    imageItem()->reallocImage(imageSize);
+  if(imageItem()){
+    imageItem()->setImageSize(imageSize);
   }
 }
 
 
 bool ImageEditorView::phased() const{
-  bool phased = false;
-  if(imageItem() && imageItem()->getImage()){
-    Image * a =  imageItem()->getImage();
-    phased = a->phased;
+  if(imageItem()){
+    return imageItem()->phased();
   }
-  return phased;
+  return false;
 }
 
 bool ImageEditorView::scaled() const{
-  bool scaled = false;
-  if(imageItem() && imageItem()->getImage()){
-    Image * a =  imageItem()->getImage();
-    scaled = a->scaled;
+  if(imageItem()){
+    return imageItem()->scaled();
   }
-  return scaled;
+  return false;
 }
 
 void ImageEditorView::setPhased(bool phased){
-  if(imageItem() && imageItem()->getImage()){
-    Image * a =  imageItem()->getImage();
-    a->phased = phased;
+  if(imageItem()){
+    imageItem()->setPhased(phased);
   }
 }
 
 void ImageEditorView::setScaled(bool scaled){
-  if(imageItem() && imageItem()->getImage()){
-    Image * a =  imageItem()->getImage();
-    a->scaled = scaled;
+  if(imageItem()){
+    imageItem()->setScaled(scaled);
   }
 }
 
 bool ImageEditorView::shifted() const{
-  bool shifted = false;
-  if(imageItem() && imageItem()->getImage()){
-    Image * a =  imageItem()->getImage();
-    shifted = a->shifted;
+  if(imageItem()){
+    return imageItem()->shifted();
   }
-  return shifted;
+  return false;
 }
 
 
 void ImageEditorView::setShifted(bool shifted){
-  if(imageItem() && imageItem()->getImage()){
-    Image * a =  imageItem()->getImage();
-    a->shifted = shifted;
+  if(imageItem()){
+    imageItem()->setShifted(shifted);
   }
 } 
 
 void ImageEditorView::setWavelength(double wavelength){
-  if(imageItem() && imageItem()->getImage()){
-    Image * a =  imageItem()->getImage();
-    a->detector->wavelength = wavelength;
+  if(imageItem()){
+    imageItem()->setWavelength(wavelength);
   }
 } 
 
 double ImageEditorView::wavelength() const{
-  double wavelength = -1;
-  if(imageItem() && imageItem()->getImage()){
-    Image * a =  imageItem()->getImage();
-    wavelength = a->detector->wavelength;
+  if(imageItem()){
+    imageItem()->wavelength();
   }
-  return wavelength;
+  return -1;
 }
 
 
 double ImageEditorView::detectorDistance() const{
-  double detectorDistance = -1;
-  if(imageItem() && imageItem()->getImage()){
-    Image * a =  imageItem()->getImage();
-    detectorDistance = a->detector->detector_distance;
+  if(imageItem()){
+    return imageItem()->detectorDistance();
   }
-  return detectorDistance;
+  return -1;
 }
 
 void ImageEditorView::setDetectorDistance(double detectorDistance){
-  if(imageItem() && imageItem()->getImage()){
-    Image * a =  imageItem()->getImage();
-    a->detector->detector_distance = detectorDistance;
+  if(imageItem()){
+    imageItem()->setDetectorDistance(detectorDistance);
   }
 } 
 
@@ -179,7 +157,7 @@ void ImageEditorView::mouseReleaseEvent( QMouseEvent *  event){
     for(int i = 0; i < it.size(); i++){
       ImageItem * ii = qgraphicsitem_cast<ImageItem *>(it.at(i));
       if(ii){
-	Image * image = ii->getImage();
+	const Image * image = ii->getImage();
 	if(image){
 	  Image * kernel = getBlurKernel();
 	  for(real xi = event->pos().x()-getDropBrushRadius();xi<=event->pos().x()+getDropBrushRadius();xi++){
@@ -189,7 +167,7 @@ void ImageEditorView::mouseReleaseEvent( QMouseEvent *  event){
 	      if(diff.x()*diff.x() + diff.y()*diff.y() > getDropBrushRadius()*getDropBrushRadius()){
 		continue;
 	      }
-	      applyDrop(it.at(i)->mapFromScene(mapToScene(aroundPos)),image,kernel);
+	      ii->pointConvolute(mapToScene(aroundPos),kernel);
 	    }
 	  }
 	  sp_image_free(kernel);
@@ -199,10 +177,28 @@ void ImageEditorView::mouseReleaseEvent( QMouseEvent *  event){
       }
     }
   }else if(mode == EditorSelectionMode){
-    if(1){
+    EditorTools * tools = editorWorkspace->editorTools();
+    if(tools->selectionMode() == EditorTools::SelectionUnite){
       /*select region in image coordinates */
       if(imageItem() && imageItem()->getImage()){
-	selectedRegion += QRect(0,0,sp_image_x(imageItem()->getImage()),sp_image_y(imageItem()->getImage())).intersected(QRect(imageItem()->mapFromScene(mapToScene(rubberBandOrigin)).toPoint(),imageItem()->mapFromScene(mapToScene(event->pos())).toPoint()).normalized());
+	_selectedRegion += QRect(0,0,sp_image_x(imageItem()->getImage()),sp_image_y(imageItem()->getImage())).intersected(QRect(imageItem()->mapFromScene(mapToScene(rubberBandOrigin)).toPoint(),imageItem()->mapFromScene(mapToScene(event->pos())).toPoint()).normalized());
+	scene()->update();
+      }
+    }else if(tools->selectionMode() == EditorTools::SelectionSet){
+      /*select region in image coordinates */
+      if(imageItem() && imageItem()->getImage()){
+	QRect newRect = QRect(0,0,sp_image_x(imageItem()->getImage()),sp_image_y(imageItem()->getImage())).intersected(QRect(imageItem()->mapFromScene(mapToScene(rubberBandOrigin)).toPoint(),imageItem()->mapFromScene(mapToScene(event->pos())).toPoint()).normalized());
+	if(newRect.width() > 1 || newRect.height() > 1) {
+	  _selectedRegion = newRect;
+	}else{
+	  _selectedRegion = QRect();
+	}
+	scene()->update();
+      }
+    }else if(tools->selectionMode() == EditorTools::SelectionSubtract){
+      /*select region in image coordinates */
+      if(imageItem() && imageItem()->getImage()){
+	_selectedRegion -= QRect(0,0,sp_image_x(imageItem()->getImage()),sp_image_y(imageItem()->getImage())).intersected(QRect(imageItem()->mapFromScene(mapToScene(rubberBandOrigin)).toPoint(),imageItem()->mapFromScene(mapToScene(event->pos())).toPoint()).normalized());
 	scene()->update();
       }
     }
@@ -219,6 +215,10 @@ void ImageEditorView::mouseReleaseEvent( QMouseEvent *  event){
 void ImageEditorView::mouseMoveEvent(QMouseEvent *event){
   if(mode == EditorDefaultMode || (event->modifiers() & Qt::ShiftModifier)){
     ImageView::mouseMoveEvent(event);
+    if(mode == EditorBullseyeMode){
+      /* we need to redraw the two lines */
+      scene()->update();
+    }
     return;
   }else if(mode == EditorBlurMode && (event->buttons() & Qt::LeftButton)){
     /* Blur the area around the press */
@@ -226,7 +226,7 @@ void ImageEditorView::mouseMoveEvent(QMouseEvent *event){
     for(int i = 0; i < it.size(); i++){
       ImageItem * ii = qgraphicsitem_cast<ImageItem *>(it.at(i));
       if(ii){
-	Image * image = ii->getImage();
+	const Image * image = ii->getImage();
 	if(image){
 	  Image * kernel = getBlurKernel();
 	  for(real xi = event->pos().x()-getDropBrushRadius();xi<=event->pos().x()+getDropBrushRadius();xi++){
@@ -236,7 +236,7 @@ void ImageEditorView::mouseMoveEvent(QMouseEvent *event){
 	      if(diff.x()*diff.x() + diff.y()*diff.y() > getDropBrushRadius()*getDropBrushRadius()){
 		continue;
 	      }
-	      applyDrop(it.at(i)->mapFromScene(mapToScene(aroundPos)),image,kernel);
+	      ii->pointConvolute(mapToScene(aroundPos),kernel);
 	    }
 	  }
 	  sp_image_free(kernel);
@@ -267,12 +267,29 @@ void ImageEditorView::mousePressEvent(QMouseEvent *event){
     rubberBand->show();
   }else if(mode == EditorLineoutMode){
     lineOutOrigin = event->pos();
+  }else if(mode == EditorBullseyeMode){
+    if(imageItem()){
+      imageItem()->setImageCenter(imageItem()->mapFromScene(mapToScene(event->pos())));
+      scene()->update();
+    }
   }
 }
 
 void ImageEditorView::setBlurMode(){
   mode = EditorBlurMode;
   setCursor(QCursor(dropCursor));
+}
+
+void ImageEditorView::setBullseyeMode(bool on){
+  if(on){
+    mode = EditorBullseyeMode;
+    setCursor(QCursor(Qt::CrossCursor));
+    if(imageItem()){
+      imageItem()->setCenterIndicatorsVisible(true);
+    }
+  }else{
+    imageItem()->setCenterIndicatorsVisible(false);
+  }
 }
 
 void ImageEditorView::setSelectionMode(){
@@ -310,8 +327,7 @@ Image * ImageEditorView::getBlurKernel(){
   kernel->detector->image_center[2] = 0;
   for(int i = 0;i<sp_image_size(kernel);i++){
     if(sp_image_dist(kernel,i,SP_TO_CENTER) <= getDropBlurRadius()){
-      sp_real(kernel->image->data[i]) = 1.0;
-      sp_imag(kernel->image->data[i]) = 0;
+      sp_image_set_by_index(kernel,i,sp_cinit(1,0));
     }
   }
   /* normalize */
@@ -350,50 +366,15 @@ double ImageEditorView::getDropBlurRadius(){
   return dropBlurRadius;
 }
 
-void ImageEditorView::applyDrop(QPointF pos,Image * image, Image * kernel){
-  int x = (int)pos.x();
-  if(x < 0){
-    x = 0;
-  }
-  if(x >= sp_image_x(image)){
-    x = sp_image_x(image)-1;
-  }
-	  
-  int y = (int)pos.y();
-  if(y < 0){
-    y = 0;
-  }
-  if(y >= sp_image_y(image)){
-    y = sp_image_y(image)-1;
-  }
-  for(int xi = x-getDropBrushRadius();xi<=x-getDropBrushRadius();xi++){
-    if(xi < 0 || xi >= sp_image_x(image)){
-      continue;
-    }
-    for(int yi = y-getDropBrushRadius();yi<=y-getDropBrushRadius();yi++){
-      if(yi < 0 || yi >= sp_image_y(image)){
-	continue;
-      }
-      long long index = sp_image_get_index(image,x,y,0);      
-      /* only change the magnitude */
-      Complex value = sp_image_get(image,x,y,0);
-      value = sp_cscale(value,sp_point_convolute(image,kernel,index)/sp_cabs(value));
-      sp_image_set(image,x,y,0,value);
-      qDebug("Doing convolute at %d %d",x,y);
-    }
-  }
-}
-
 
 void ImageEditorView::paintEvent(QPaintEvent * event ){
   ImageView::paintEvent(event);
   /* draw selected regions */
   QPainter p(viewport());
   p.setRenderHint(QPainter::Antialiasing);
-  qDebug("paint Event");
-  if(!selectedRegion.isEmpty() && imageItem()){
+  if(!selectedRegion().isEmpty() && imageItem()){
     QPainterPath path;
-    path.addRegion(selectedRegion);
+    path.addRegion(selectedRegion());
     QBrush brush = p.brush();
     brush.setColor(QColor(0,0,0,50));
     brush.setStyle(Qt::SolidPattern);
@@ -413,4 +394,34 @@ void ImageEditorView::paintEvent(QPaintEvent * event ){
     p.setPen(pen);
     p.drawLine(lineOutOrigin,lineOutEnd);
   }  
+    if(mode == EditorBullseyeMode && 0){
+    if(imageItem() && !imageItem()->imageCenter().isNull()){
+      QPointF center = mapFromScene(imageItem()->mapToScene(imageItem()->imageCenter()));
+      /* paint line out */
+      QPen pen = p.pen();
+      pen.setColor(Qt::white);
+      pen.setStyle(Qt::SolidLine);
+      p.setPen(pen);
+      p.drawLine(center.x(),0,center.x(),height());
+      p.drawLine(0,center.y(),width(),center.y());
+      //      scene()->update();
+    }
+  }  
+}
+
+QRegion ImageEditorView::selectedRegion(){
+  return _selectedRegion;
+}
+
+void ImageEditorView::selectRegion(QRegion region){
+  EditorTools * tools = editorWorkspace->editorTools();
+  if(tools->selectionMode() == EditorTools::SelectionUnite){
+    _selectedRegion += region;
+  }
+  if(tools->selectionMode() == EditorTools::SelectionSet){
+    _selectedRegion = region;
+  }
+  if(tools->selectionMode() == EditorTools::SelectionSubtract){
+    _selectedRegion -= region;
+  }
 }
