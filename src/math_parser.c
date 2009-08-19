@@ -20,7 +20,7 @@ typedef enum{Operand=1,Comma,LeftParenthesis,RightParenthesis,Addition,UnaryPlus
 	     UnaryMinus,Multiplication,Division,Exponentiation,AbsoluteValue,
 	     FourierTransform,InverseFourierTransform,Integrate,RealPart,ImaginaryPart,
 	     ImaginaryUnit,ComplexArgument,Exponential,Logarythm,Minimum,Maximum,ComplexConjugate,
-	     SmallerThan,GreaterThan,LogicalAnd,LogicalOr,Equality,PositionX,PositionY,PositionZ,SquareRoot,ConditionalIf}TokenName;
+	     SmallerThan,GreaterThan,LogicalAnd,LogicalOr,Equality,PositionX,PositionY,PositionZ,SquareRoot,ConditionalIf,Mask}TokenName;
 typedef enum{TokenImage,TokenScalar,TokenOperator,TokenComma,TokenError}TokenType;
 
 
@@ -258,6 +258,20 @@ static void token_stack_log(TokenStack * stack){
   }else if(a->type == TokenScalar){
     a->scalar = sp_clog(a->scalar);
   }
+  token_stack_push(stack,a);  
+}
+
+static void token_stack_mask(TokenStack * stack){
+  Token * a = token_stack_pop(stack);
+  if(a->type != TokenImage){
+    a->type = TokenError;
+    a->error_msg = sp_strdup("Can only do mask on images!");
+    token_stack_push(stack,a);  
+    return;
+  }
+  Image * b = sp_image_get_mask(a->image);
+  sp_image_free(a->image);
+  a->image = b;
   token_stack_push(stack,a);  
 }
 
@@ -788,6 +802,15 @@ static Operator operator_table[100] = {
     .position = Prefix,
     .identifier = {"conj",NULL},
     .name = ComplexConjugate
+  },
+  {
+    .op = token_stack_mask,
+    .n_operands = 1,
+    .precedence = 5,
+    .associativity = NonAssociative,
+    .position = Prefix,
+    .identifier = {"mask",NULL},
+    .name = Mask
   },
   {
     .op = token_stack_sqrt,
