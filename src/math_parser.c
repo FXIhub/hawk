@@ -20,7 +20,7 @@ typedef enum{Operand=1,Comma,LeftParenthesis,RightParenthesis,Addition,UnaryPlus
 	     UnaryMinus,Multiplication,Division,Exponentiation,AbsoluteValue,
 	     FourierTransform,InverseFourierTransform,Integrate,RealPart,ImaginaryPart,
 	     ImaginaryUnit,ComplexArgument,Exponential,Logarythm,Minimum,Maximum,ComplexConjugate,
-	     SmallerThan,GreaterThan,LogicalAnd,LogicalOr,Equality,PositionX,PositionY,PositionZ,SquareRoot}TokenName;
+	     SmallerThan,GreaterThan,LogicalAnd,LogicalOr,Equality,PositionX,PositionY,PositionZ,SquareRoot,ConditionalIf}TokenName;
 typedef enum{TokenImage,TokenScalar,TokenOperator,TokenComma,TokenError}TokenType;
 
 
@@ -654,6 +654,59 @@ static void token_stack_sqrt(TokenStack * stack){
   }
 }
 
+static void token_stack_if(TokenStack * stack){
+  Token * c = token_stack_pop(stack);
+  Token * b = token_stack_pop(stack);
+  Token * a = token_stack_pop(stack);
+  if(a->type == TokenScalar){
+    if(sp_cabs(a->scalar)){
+      token_stack_push(stack,b);  
+    }else{
+      token_stack_push(stack,c);  
+    }
+  }else if(a->type == TokenImage){
+    if(b->type == TokenImage && c->type == TokenImage){
+      for(int i = 0;i<sp_image_size(a->image);i++){
+	if(sp_cabs(sp_image_get_by_index(a->image,i))){
+	  /* keep b as is */;
+	}else{
+	  sp_image_set_by_index(b->image,i,sp_image_get_by_index(c->image,i));
+	}	
+      }
+      token_stack_push(stack,b);  
+    }else if(b->type == TokenImage && c->type == TokenScalar){
+      for(int i = 0;i<sp_image_size(a->image);i++){
+	if(sp_cabs(sp_image_get_by_index(a->image,i))){
+	  /* keep b as is */;
+	}else{
+	  sp_image_set_by_index(b->image,i,c->scalar);
+	}	
+      }
+      token_stack_push(stack,b);  
+    }else if(b->type == TokenScalar && c->type == TokenImage){
+      for(int i = 0;i<sp_image_size(a->image);i++){
+	if(sp_cabs(sp_image_get_by_index(a->image,i))){
+	  sp_image_set_by_index(c->image,i,b->scalar);
+	}else{
+	  /* keep c as is */;
+	}	
+      }
+      token_stack_push(stack,c);  
+    }else if(b->type == TokenScalar && c->type == TokenScalar){
+      for(int i = 0;i<sp_image_size(a->image);i++){
+	if(sp_cabs(sp_image_get_by_index(a->image,i))){
+	  sp_image_set_by_index(a->image,i,b->scalar);
+	}else{
+	  sp_image_set_by_index(a->image,i,c->scalar);
+	}	
+      }
+      token_stack_push(stack,a);  
+    }
+  }else{
+    abort();
+  }
+}
+
 static Operator operator_table[100] = {
   {
     .op = token_stack_add,
@@ -870,6 +923,15 @@ static Operator operator_table[100] = {
     .position = Prefix,
     .identifier = {"re",NULL},
     .name = RealPart
+  },
+  {
+    .op = token_stack_if,
+    .n_operands = 3,
+    .precedence = 5,
+    .associativity = NonAssociative,
+    .position = Prefix,
+    .identifier = {"if",NULL},
+    .name = ConditionalIf
   },
   {
     .op = token_stack_imag,
