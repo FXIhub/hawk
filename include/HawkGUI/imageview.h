@@ -40,7 +40,7 @@ class ImageView: public QGraphicsView
   QString getCurrentIteration();  
   void setDisplay(int display);
   bool logScale();
-  ImageItem * imageItem() const;
+  ImageItem * selectedImage() const;
   ImageViewPanel * imageViewPanel() const;
  public slots:
   void shiftImage();
@@ -75,7 +75,7 @@ class ImageView: public QGraphicsView
   void keyPressEvent ( QKeyEvent * event );
   void mouseOverValue(QMouseEvent * event);
   QGraphicsScene * graphicsScene;
-  ImageItem * myImageItem;
+  ImageItem * _selected;
   private slots:
   void finishLoadImage();
   void loadScheduledImage();

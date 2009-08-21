@@ -74,13 +74,13 @@ void StitcherWorkspace::onStitchClicked(){
     }
   }
   /* we're gonna assume they all have the same scaling */
-  combined =  _stitcherView->imageItem()->mapRectFromScene(combined);
+  combined =  _stitcherView->selectedImage()->mapRectFromScene(combined);
   qDebug("Combined with relative positions:");
   Image * a = sp_image_alloc(combined.width(),combined.height(),1);
   for(int i = 0; i < it.size();i++){
     if(QString("ImageItem") == it[i]->data(0)){
       QPointF p =  it[i]->mapToScene(0,0);
-      QPointF local_p = _stitcherView->imageItem()->mapFromScene(p);
+      QPointF local_p = _stitcherView->selectedImage()->mapFromScene(p);
       qDebug("x = %f y = %f",local_p.x()-combined.x(),local_p.y()-combined.y());
     }
   }
@@ -88,7 +88,7 @@ void StitcherWorkspace::onStitchClicked(){
     for(int y = 0;y<sp_image_y(a);y++){
       int mask = 0;
       Complex value = sp_cinit(0,0);
-      QPointF p =  _stitcherView->imageItem()->mapToScene(QPointF(combined.x()+x,combined.y()+y));
+      QPointF p =  _stitcherView->selectedImage()->mapToScene(QPointF(combined.x()+x,combined.y()+y));
       for(int i = 0; i < it.size();i++){
 	if(QString("ImageItem") == it[i]->data(0)){
 	  /* we have an image item */
@@ -125,8 +125,8 @@ void StitcherWorkspace::onCircleClicked(){
 }
 
 void StitcherWorkspace::onRotateClicked(){
-  if(_stitcherView->selected()){
-    _stitcherView->selected()->rotateImage();
+  if(_stitcherView->selectedImage()){
+    _stitcherView->selectedImage()->rotateImage();
   }
 }
 

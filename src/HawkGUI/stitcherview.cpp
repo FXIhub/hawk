@@ -8,7 +8,6 @@ StitcherView::StitcherView(QWidget * parent)
 {
   imageViewPanel()->showSaveButton(true);
   setRenderHints(QPainter::Antialiasing);
-  selectedItem = NULL;
   QGraphicsLineItem * centerVerticalIndicator = new QGraphicsLineItem(0,-100000,0,100000);
   QGraphicsLineItem * centerHorizontalIndicator = new QGraphicsLineItem(-100000,0,100000,0);
   centerVerticalIndicator->setZValue(11);
@@ -36,19 +35,19 @@ void StitcherView::addImage(ImageItem * item){
   int display = -1;
   int color = -1;
   bool isShifted = false;
-  if(imageItem()){
+  if(selectedImage()){
     // and the zoom
-    item->setTransform(imageItem()->transform());
+    item->setTransform(selectedImage()->transform());
     /* make sure the center is in the center */
-    //    QSizeF center_correction = imageItem()->boundingRect().size()/2-item->boundingRect().size()/2;
+    //    QSizeF center_correction = selectedImage()->boundingRect().size()/2-item->boundingRect().size()/2;
     item->setPos(-item->imageCenter()/2);
 
     // and colormap and display
-    color = imageItem()->colormap();
-    display = imageItem()->display();
-    isShifted = imageItem()->isShifted();
+    color = selectedImage()->colormap();
+    display = selectedImage()->display();
+    isShifted = selectedImage()->isShifted();
   }else{
-    myImageItem = item;
+    _selected = item;
     // Set pixmap center in the middle of the screen
     QPointF center = sceneRect().center();
     center.setX(center.x()-item->pixmap().width()*item->getScale().x()/2);
@@ -99,11 +98,11 @@ void StitcherView::mouseReleaseEvent( QMouseEvent *  event){
     QList<QGraphicsItem *> it = items(event->pos());
     for(int i = 0; i < it.size(); i++){
       if(QString("ImageItem") == it[i]->data(0)){
-	if(selectedItem){
-	  selectedItem->setSelected(false);
+	if(selectedImage()){
+	  selectedImage()->setSelected(false);
 	}
-	selectedItem = qgraphicsitem_cast<ImageItem *>(it[i]);
-	selectedItem->setSelected(true);	
+	_selected = qgraphicsitem_cast<ImageItem *>(it[i]);
+	selectedImage()->setSelected(true);	
       }
     }
   }
@@ -112,11 +111,11 @@ void StitcherView::mouseReleaseEvent( QMouseEvent *  event){
 
 
 void StitcherView::saveImage(){
-  if(selectedItem && selectedItem->getImage()){
+  if(selectedImage() && selectedImage()->getImage()){
     QString fileName = QFileDialog::getSaveFileName(this, tr("Save Image"));
     qDebug("Trying to save %s",fileName.toAscii().data());
     if(!fileName.isEmpty()){
-      sp_image_write(selectedItem->getImage(),fileName.toAscii().data(),0);
+      sp_image_write(selectedImage()->getImage(),fileName.toAscii().data(),0);
     }
   }
 }
@@ -169,10 +168,6 @@ void StitcherView::mousePressEvent( QMouseEvent *  event){
   }else{
     ImageView::mousePressEvent(event);
   }
-}
-
-ImageItem * StitcherView::selected(){
-  return selectedItem;
 }
 
 void StitcherView::clearHelpers(){

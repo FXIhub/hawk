@@ -15,7 +15,6 @@ class StitcherView: public ImageView
     void saveImage();
     enum Mode{Default,Line,Circle};
     void setMode(Mode m);
-    ImageItem * selected();
  public slots:
     void clearHelpers();
  protected:
@@ -24,7 +23,6 @@ class StitcherView: public ImageView
   void mouseMoveEvent(QMouseEvent * e);
   void paintEvent(QPaintEvent * e);
  private:
-  ImageItem * selectedItem;
   Mode mode;
   QPoint lineOrigin;
   QPoint lineEnd;

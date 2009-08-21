@@ -289,8 +289,8 @@ void EditorTools::onMathEdit(){
 				       "A + 0", &ok);
   if (ok && !text.isEmpty()){
     const Image * image_list[2] = {0,0};
-    if(editor->editorView()->imageItem() && editor->editorView()->imageItem()->getImage()){
-      image_list[0] = editor->editorView()->imageItem()->getImage();
+    if(editor->editorView()->selectedImage() && editor->editorView()->selectedImage()->getImage()){
+      image_list[0] = editor->editorView()->selectedImage()->getImage();
     }
     qDebug("Got formula %s\n",text.toAscii().data());
     Math_Output * out = evaluate_math_expression(text.toAscii().data(),image_list);
@@ -312,34 +312,34 @@ void EditorTools::onMathEdit(){
 }
 
 void EditorTools::onUndoClicked(){
-  if(editor->editorView()->imageItem()){
-    editor->editorView()->imageItem()->undoEditSteps();
+  if(editor->editorView()->selectedImage()){
+    editor->editorView()->selectedImage()->undoEditSteps();
   }
 }
 
 void EditorTools::onRedoClicked(){
-  if(editor->editorView()->imageItem()){
-    editor->editorView()->imageItem()->redoEditSteps();
+  if(editor->editorView()->selectedImage()){
+    editor->editorView()->selectedImage()->redoEditSteps();
   }
 }
 
 void EditorTools::onRemoveVerticalLinesClicked(){
-  if(editor->editorView()->imageItem()){
+  if(editor->editorView()->selectedImage()){
     QRegion selected = editor->editorView()->selectedRegion();
     /* Do vertical averaging */
     /* simplify selection */
     QRect rect = selected.boundingRect();
-    editor->editorView()->imageItem()->removeVerticalLines(rect);
+    editor->editorView()->selectedImage()->removeVerticalLines(rect);
   }
 }
 
 void EditorTools::onRemoveHorizontalLinesClicked(){
-  if(editor->editorView()->imageItem()){
+  if(editor->editorView()->selectedImage()){
     QRegion selected = editor->editorView()->selectedRegion();
     /* Do vertical averaging */
     /* simplify selection */
     QRect rect = selected.boundingRect();
-    editor->editorView()->imageItem()->removeHorizontalLines(rect);
+    editor->editorView()->selectedImage()->removeHorizontalLines(rect);
   }
 }
 
@@ -368,8 +368,8 @@ void EditorTools::setSelectionModeSubtract(){
 
 void EditorTools::onSelectByExpression(){
   QString exp = selectExpression->text();
-  if(editor->editorView()->imageItem()){
-    const Image * list[2] = {editor->editorView()->imageItem()->getImage(),0};
+  if(editor->editorView()->selectedImage()){
+    const Image * list[2] = {editor->editorView()->selectedImage()->getImage(),0};
     Math_Output * out = evaluate_math_expression(exp.toAscii().data(),list);
     if(out->type == MathOutputImage){
       uchar * bitData = (uchar *)malloc(sizeof(uchar)*ceil(sp_image_size(out->image)/8.0));
@@ -388,8 +388,8 @@ void EditorTools::onSelectByExpression(){
 }
 
 void EditorTools::onXcamMagicClicked(){
-  if(editor->editorView()->imageItem()){
-    editor->editorView()->imageItem()->xcamPreprocess();
+  if(editor->editorView()->selectedImage()){
+    editor->editorView()->selectedImage()->xcamPreprocess();
   }
 }
 
@@ -402,15 +402,15 @@ void EditorTools::onInterpolateEmptyClicked(){
   double radius = fillBlurRadius->value();
   int iter = fillIterations->value();
   qDebug("interpolate blur radius %f",radius);
-  if(editor->editorView()->imageItem()){
+  if(editor->editorView()->selectedImage()){
     qApp->setOverrideCursor(Qt::WaitCursor);
-    editor->editorView()->imageItem()->interpolateEmpty(radius,iter,editor->editorView()->selectedRegion());
+    editor->editorView()->selectedImage()->interpolateEmpty(radius,iter,editor->editorView()->selectedRegion());
     qApp->setOverrideCursor(Qt::ArrowCursor);
   }
 }
 
 void EditorTools::onCropClicked(){
-  if(editor->editorView()->imageItem()){
-    editor->editorView()->imageItem()->cropImage(editor->editorView()->selectedRegion());
+  if(editor->editorView()->selectedImage()){
+    editor->editorView()->selectedImage()->cropImage(editor->editorView()->selectedRegion());
   }  
 }

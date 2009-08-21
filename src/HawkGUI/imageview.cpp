@@ -11,7 +11,7 @@ ImageView::ImageView(QWidget * parent)
 {
   dragged = 0;
   autoUpdate = 1;
-  myImageItem = NULL;
+  _selected = NULL;
   preserveShift = true;
   setup();
   QWidgetList tlwidgets =  QApplication::topLevelWidgets();
@@ -138,12 +138,12 @@ void ImageView::wheelEvent( QWheelEvent * event ){
   emit scaleBy(scale);
 }
 
-ImageItem * ImageView::imageItem() const{
-  return myImageItem;
+ImageItem * ImageView::selectedImage() const{
+  return _selected;
 }
 
 void ImageView::scaleItems(qreal new_scale){
-  if(imageItem()){
+  if(selectedImage()){
     if(transform().m11()*new_scale > 1e-2  && transform().m11()*new_scale < 1e2){
     // Don't let the user zoom in or out too much 
       scale(new_scale,new_scale);
@@ -169,17 +169,17 @@ void ImageView::setImage(ImageItem * item){
   int display = -1;
   int color = -1;
   bool isShifted = false;
-  if(imageItem()){
+  if(selectedImage()){
     // If we already have an image loaded we're gonna preserve the location of the center
     // and the zoom
-    item->setTransform(imageItem()->transform());
-    QSizeF center_correction = imageItem()->boundingRect().size()/2-item->boundingRect().size()/2;
-    item->setPos(imageItem()->pos()+QPointF(center_correction.width(),center_correction.height()));
+    item->setTransform(selectedImage()->transform());
+    QSizeF center_correction = selectedImage()->boundingRect().size()/2-item->boundingRect().size()/2;
+    item->setPos(selectedImage()->pos()+QPointF(center_correction.width(),center_correction.height()));
 
     // and colormap and display
-    color = imageItem()->colormap();
-    display = imageItem()->display();
-    isShifted = imageItem()->isShifted();
+    color = selectedImage()->colormap();
+    display = selectedImage()->display();
+    isShifted = selectedImage()->isShifted();
   }else{
     // Set pixmap center in the middle of the screen
     QPointF center = sceneRect().center();
@@ -187,23 +187,23 @@ void ImageView::setImage(ImageItem * item){
     center.setY(center.y()-item->pixmap().height()*item->getScale().y()/2);
     item->setPos(center);
   }
-  delete myImageItem;
+  delete _selected;
   if(dragged){
     dragged = NULL;
   }
-  myImageItem = item;
-  if(preserveShift && isShifted != imageItem()->isShifted()){
-    imageItem()->shiftImage();
+  _selected = item;
+  if(preserveShift && isShifted != selectedImage()->isShifted()){
+    selectedImage()->shiftImage();
   }
   if(color >= 0){
-    imageItem()->setColormap(color);
+    selectedImage()->setColormap(color);
   }
   if(display >= 0){
-    imageItem()->setDisplay(display);
+    selectedImage()->setDisplay(display);
   }
   graphicsScene->clear();
   graphicsScene->addItem(item);  
-  emit imageItemChanged(imageItem());
+  emit imageItemChanged(selectedImage());
 }
 
 void ImageView::keyPressEvent ( QKeyEvent * event ){
@@ -265,11 +265,11 @@ void ImageView::loadUserSelectedImage(){
 
 
 void ImageView::saveImage(){
-  if(imageItem() && imageItem()->getImage()){
+  if(selectedImage() && selectedImage()->getImage()){
     QString fileName = QFileDialog::getSaveFileName(this, tr("Save Image"));
     qDebug("Trying to save %s",fileName.toAscii().data());
     if(!fileName.isEmpty()){
-      sp_image_write(imageItem()->getImage(),fileName.toAscii().data(),0);
+      sp_image_write(selectedImage()->getImage(),fileName.toAscii().data(),0);
     }
   }
 }
@@ -301,19 +301,19 @@ void ImageView::focusInEvent ( QFocusEvent * ){
 }
 
 QPointF ImageView::getPos(){
-  return imageItem()->pos();
+  return selectedImage()->pos();
 }
 
 void ImageView::setPos(QPointF pos){
-  imageItem()->setPos(pos);
+  selectedImage()->setPos(pos);
 }
 
 QTransform ImageView::getTransform(){
-  return imageItem()->transform();
+  return selectedImage()->transform();
 }
 
 void ImageView::setTransform(QTransform transform){
-  imageItem()->setTransform(transform);
+  selectedImage()->setTransform(transform);
 }
 
 bool ImageView::getAutoUpdate(){
@@ -330,51 +330,51 @@ QString ImageView::getFilename(){
 
 
 void ImageView::shiftImage(){
-  if(imageItem()){
-    imageItem()->shiftImage();
-    emit imageItemChanged(imageItem());
+  if(selectedImage()){
+    selectedImage()->shiftImage();
+    emit imageItemChanged(selectedImage());
   }
 }
 
 void ImageView::fourierTransform(){
-  if(imageItem()){
-    imageItem()->fourierTransform((mapToScene(0,0,width(),height())).boundingRect(),false);
-    emit imageItemChanged(imageItem());
+  if(selectedImage()){
+    selectedImage()->fourierTransform((mapToScene(0,0,width(),height())).boundingRect(),false);
+    emit imageItemChanged(selectedImage());
   }
 }
 
 void ImageView::fourierTransformSquared(){
-  if(imageItem()){
-    imageItem()->fourierTransform((mapToScene(0,0,width(),height())).boundingRect(),true);
-    emit imageItemChanged(imageItem());
+  if(selectedImage()){
+    selectedImage()->fourierTransform((mapToScene(0,0,width(),height())).boundingRect(),true);
+    emit imageItemChanged(selectedImage());
   }
 }
 
 
 void ImageView::setColormap(int color){
-  if(imageItem()){
-    imageItem()->setColormap(color);
-    emit imageItemChanged(imageItem());
+  if(selectedImage()){
+    selectedImage()->setColormap(color);
+    emit imageItemChanged(selectedImage());
   }
 }
 
 int ImageView::colormap(){
-  if(imageItem()){
-    return imageItem()->colormap();
+  if(selectedImage()){
+    return selectedImage()->colormap();
   }
   return 0;
 }
 
 void ImageView::setDisplay(int display){
-  if(imageItem()){
-    imageItem()->setDisplay(display);
-    emit imageItemChanged(imageItem());
+  if(selectedImage()){
+    selectedImage()->setDisplay(display);
+    emit imageItemChanged(selectedImage());
   }
 }
 
 int ImageView::display(){
-  if(imageItem()){
-    return imageItem()->display();
+  if(selectedImage()){
+    return selectedImage()->display();
   }
   return 0;
 }
@@ -439,22 +439,22 @@ QString ImageView::getCurrentIteration(){
 }
 
 void ImageView::maxContrast(){
-  if(imageItem()){
-    imageItem()->maxContrast((mapToScene(0,0,width(),height())).boundingRect());
-    emit imageItemChanged(imageItem());
+  if(selectedImage()){
+    selectedImage()->maxContrast((mapToScene(0,0,width(),height())).boundingRect());
+    emit imageItemChanged(selectedImage());
   }
 }
 
 void ImageView::setLogScale(bool on){
-  if(imageItem()){
-    imageItem()->setLogScale(on);
-    emit imageItemChanged(imageItem());
+  if(selectedImage()){
+    selectedImage()->setLogScale(on);
+    emit imageItemChanged(selectedImage());
   }
 }
 
 bool ImageView::logScale(){
-  if(imageItem()){
-    return imageItem()->logScale();
+  if(selectedImage()){
+    return selectedImage()->logScale();
   }
   return false;
 }
