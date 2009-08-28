@@ -153,11 +153,14 @@ void ImageView::scaleItems(qreal scale){
     QPointF screen_center = sceneRect().center();
     QList<QGraphicsItem *> it = items();
     for(int i = 0; i < it.size(); i++){
-      QPointF item_sc = it[i]->mapFromScene(screen_center);
-      it[i]->scale(scale, scale);
-      QPointF item_a_sc = it[i]->mapFromScene(screen_center);
-      QPointF mov = item_a_sc-item_sc;
-      it[i]->translate(mov.x(),mov.y());
+      if(it[i]->parentItem() == NULL){
+	// scale all top level items
+	QPointF item_sc = it[i]->mapFromScene(screen_center);
+	it[i]->scale(scale, scale);
+	QPointF item_a_sc = it[i]->mapFromScene(screen_center);
+	QPointF mov = item_a_sc-item_sc;
+	it[i]->translate(mov.x(),mov.y());
+      }
     }
   }
 }
@@ -252,14 +255,9 @@ void ImageView::setup(){
   grad.setColorAt(1,QColor("#B2DFEE"));
   grad.setColorAt(0,QColor("#26466D"));
   QBrush grad_brush(grad);      
-  //  setSceneRect(QRect(0,0,width(),height()));
-  QPalette p = palette();
-  p.setBrush(QPalette::Window,grad_brush);
+  setSceneRect(QRect(0,0,width(),height()));
   setBackgroundBrush(grad_brush);
-  setCacheMode(QGraphicsView::CacheBackground);
   graphicsScene = new QGraphicsScene(this);
-  //  graphicsScene->setSceneRect(-10000,-10000,20000,20000);
-  graphicsScene->setBackgroundBrush(grad_brush);
   setScene(graphicsScene);    
 }
 
