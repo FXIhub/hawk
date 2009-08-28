@@ -42,6 +42,8 @@ class ImageView: public QGraphicsView
   bool logScale();
   ImageItem * selectedImage() const;
   ImageViewPanel * imageViewPanel() const;
+  QString imageItemIdentifier(ImageItem * item);
+  void showIdentifiers(bool show = true);
  public slots:
   void shiftImage();
   void loadUserSelectedImage();
@@ -76,10 +78,12 @@ class ImageView: public QGraphicsView
   void mouseOverValue(QMouseEvent * event);
   QGraphicsScene * graphicsScene;
   ImageItem * _selected;
+  bool _showIdentifiers;
   private slots:
   void finishLoadImage();
   void loadScheduledImage();
  private:
+  QString positionToIdentifier(int p);
   QPointF mouseLastScenePos;
   ImageItem * dragged;
   QPointF draggedInitialPos;

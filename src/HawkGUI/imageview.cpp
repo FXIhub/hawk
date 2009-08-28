@@ -41,6 +41,7 @@ ImageView::ImageView(QWidget * parent)
   connect(this,SIGNAL(translateBy(QPointF)),this,SLOT(translateItems(QPointF)));
   setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+  _showIdentifiers = false;
 }
 
 ImageView::~ImageView()
@@ -142,14 +143,21 @@ ImageItem * ImageView::selectedImage() const{
   return _selected;
 }
 
-void ImageView::scaleItems(qreal new_scale){
-  if(selectedImage()){
-    if(transform().m11()*new_scale > 1e-2  && transform().m11()*new_scale < 1e2){
-    // Don't let the user zoom in or out too much 
-      scale(new_scale,new_scale);
-      QBrush b = backgroundBrush();
-      b.setTransform(transform().inverted());
-      setBackgroundBrush(b);
+void ImageView::scaleItems(qreal scale){
+  if((scale < 1 && scale > 0 && 
+      selectedImage()->getScale().x() > 0.01 &&
+      selectedImage()->getScale().y() > 0.01) ||
+     (scale > 1 && 
+      selectedImage()->getScale().x() < 100 &&
+      selectedImage()->getScale().y() < 100)){
+    QPointF screen_center = sceneRect().center();
+    QList<QGraphicsItem *> it = items();
+    for(int i = 0; i < it.size(); i++){
+      QPointF item_sc = it[i]->mapFromScene(screen_center);
+      it[i]->scale(scale, scale);
+      QPointF item_a_sc = it[i]->mapFromScene(screen_center);
+      QPointF mov = item_a_sc-item_sc;
+      it[i]->translate(mov.x(),mov.y());
     }
   }
 }
@@ -203,6 +211,7 @@ void ImageView::setImage(ImageItem * item){
   }
   graphicsScene->clear();
   graphicsScene->addItem(item);  
+  item->showIdentifier(_showIdentifiers);
   emit imageItemChanged(selectedImage());
 }
 
@@ -474,4 +483,50 @@ bool ImageView::preservesShift() const{
 
 void ImageView::emitImageItemChanged(ImageItem * item){
   emit imageItemChanged(item);
+}
+
+QString ImageView::imageItemIdentifier(ImageItem * item){
+  if(!item){
+    return QString();
+  }
+  int pos = -1;
+  bool found = false;
+  QList<QGraphicsItem *> ii  = items();
+  for(int i = 0;i<ii.size();i++){
+    if(qgraphicsitem_cast<ImageItem *>(ii[i])){
+      /* it's a graphicsItem*/
+      pos++;
+    }
+    if(ii[i] == item){
+      found = true;
+      break;
+    }    
+  }
+  if(!found){
+    return QString();
+  }
+  return positionToIdentifier(pos);
+}
+
+QString ImageView::positionToIdentifier(int p){
+  int base = 'Z'-'A'+1;
+  QString ret;
+  do{
+    ret = ('A'+(p%base))+ret;    
+    p /= base;
+  }while(p);
+  return ret;
+}
+
+
+void ImageView::showIdentifiers(bool show){
+  _showIdentifiers = show;
+  if(show){
+    QList<QGraphicsItem *> ii  = items();
+    for(int i = 0;i<ii.size();i++){
+      if(ImageItem * item = qgraphicsitem_cast<ImageItem *>(ii[i])){
+	item->showIdentifier(show);
+      }
+    }
+  }
 }

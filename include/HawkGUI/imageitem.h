@@ -76,6 +76,7 @@ class ImageItem: public QGraphicsPixmapItem
   void xcamPreprocess();
   void interpolateEmpty(double radius,int iterations,QRegion selected);
   void cropImage(QRegion selected);
+  void showIdentifier(bool show = true);
  private:
   enum EditType{ImageSize,Phased,Shifted,Wavelength,DetectorDistance,PointConvolute,Scaled,PixelSize,ImageCenter,CheckPoint};
   struct EditStep{
@@ -100,6 +101,7 @@ class ImageItem: public QGraphicsPixmapItem
   ImageView * _view;
   QGraphicsLineItem * centerVerticalIndicator;
   QGraphicsLineItem * centerHorizontalIndicator;
+  QGraphicsTextItem * identifierItem;
 };
 
 #else

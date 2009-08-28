@@ -52,6 +52,7 @@ ImageItem::ImageItem(Image * sp_image,QString file, ImageView * view,QGraphicsIt
   centerHorizontalIndicator->setPen(pen);
   centerVerticalIndicator->setPen(pen);
   repositionCenterIndicators();
+  identifierItem = NULL;
 }
 
 
@@ -64,6 +65,7 @@ ImageItem::ImageItem(QPixmap pix,ImageView * view, QGraphicsItem * parent)
   colormap_data = NULL;
   image = NULL;
   setFlags(QGraphicsItem::ItemIsMovable|QGraphicsItem::ItemIsFocusable);
+  identifierItem = NULL;
 }
 
 QPointF ImageItem::centeredScale(qreal s,QPointF screenCenter){
@@ -410,7 +412,7 @@ void ImageItem::addToStack(EditType type, QVariant arg1, QVariant arg2){
   }
   if(type == ImageSize || type == Phased || type == Shifted ||
      type == Wavelength || type == DetectorDistance ||
-     type == DetectorDistance | type == Scaled || type == PixelSize ||
+     type == DetectorDistance || type == Scaled || type == PixelSize ||
      type == ImageCenter){
     QVector<QVariant> args;
     args << arg1;
@@ -627,4 +629,21 @@ void ImageItem::cropImage(QRegion selected){
   sp_image_free(image);
   image = tmp;
   updateImage();
+}
+
+
+void ImageItem::showIdentifier(bool show){
+  if(identifierItem){
+    identifierItem->setPlainText(_view->imageItemIdentifier(this));
+  }else{
+    identifierItem = new QGraphicsTextItem(_view->imageItemIdentifier(this),this);
+    identifierItem->setDefaultTextColor(Qt::white);
+    qreal posy = -(identifierItem->boundingRect()).height();
+    identifierItem->setPos(boundingRect().width()/2-(identifierItem->boundingRect()).width()/2,posy);
+  }
+  if(show){
+    identifierItem->show();
+  }else{
+    identifierItem->hide();
+  }
 }

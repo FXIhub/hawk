@@ -20,7 +20,7 @@ typedef enum{Operand=1,Comma,LeftParenthesis,RightParenthesis,Addition,UnaryPlus
 	     UnaryMinus,Multiplication,Division,Exponentiation,AbsoluteValue,
 	     FourierTransform,InverseFourierTransform,Integrate,RealPart,ImaginaryPart,
 	     ImaginaryUnit,ComplexArgument,Exponential,Logarythm,Minimum,Maximum,ComplexConjugate,
-	     SmallerThan,GreaterThan,LogicalAnd,LogicalOr,Equality,PositionX,PositionY,PositionZ,SquareRoot,ConditionalIf,Mask}TokenName;
+	     SmallerThan,GreaterThan,LogicalAnd,LogicalOr,Equality,PositionX,PositionY,PositionZ,SquareRoot,ConditionalIf,Mask,SetMask}TokenName;
 typedef enum{TokenImage,TokenScalar,TokenOperator,TokenComma,TokenError}TokenType;
 
 
@@ -275,6 +275,7 @@ static void token_stack_mask(TokenStack * stack){
   token_stack_push(stack,a);  
 }
 
+
 static void token_stack_fft(TokenStack * stack){
   Token * a = token_stack_pop(stack);
   if(a->type != TokenImage){
@@ -353,6 +354,28 @@ static void token_stack_imaginary_unit(TokenStack * stack){
   }
   token_stack_push(stack,a);  
 }
+
+static void token_stack_set_mask(TokenStack * stack){
+  Token * b = token_stack_pop(stack);
+  Token * a = token_stack_pop(stack);
+  if(a->type != TokenImage){
+    a->type = TokenError;
+    a->error_msg = sp_strdup("Can only set mask on images!");
+    token_stack_push(stack,a);  
+    return;
+  }
+  for(int i = 0;i<sp_image_size(a->image);i++){
+    if(b->type == TokenImage){
+      a->image->mask->data[i] = sp_cabs(b->image->image->data[i]);
+    }else if(b->type == TokenScalar){
+      a->image->mask->data[i] = sp_cabs(b->scalar);
+    }else{
+      abort();
+    }
+  }  
+  token_stack_push(stack,a);  
+}
+
 
 static void token_stack_integrate(TokenStack * stack){
   Token * a = token_stack_pop(stack);
@@ -793,6 +816,15 @@ static Operator operator_table[100] = {
     .position = Infix,
     .identifier = {">",NULL},
     .name = GreaterThan
+  },
+  {
+    .op = token_stack_set_mask,
+    .n_operands = 1,
+    .precedence = 5,
+    .associativity = NonAssociative,
+    .position = Prefix,
+    .identifier = {"set_mask",NULL},
+    .name = SetMask
   },
   {
     .op = token_stack_conj,

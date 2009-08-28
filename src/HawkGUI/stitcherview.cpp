@@ -19,7 +19,7 @@ StitcherView::StitcherView(QWidget * parent)
   pen.setStyle(Qt::SolidLine);
   centerHorizontalIndicator->setPen(pen);
   centerVerticalIndicator->setPen(pen);
-
+  _showIdentifiers = true;
 }
 
 bool StitcherView::loadImage(QString s){
@@ -64,6 +64,7 @@ void StitcherView::addImage(ImageItem * item){
     item->setDisplay(display);
   }
   graphicsScene->addItem(item);  
+  item->showIdentifier(_showIdentifiers);
   emit imageItemChanged(item);
 }
 
