@@ -38,7 +38,7 @@ void StitcherView::addImage(ImageItem * item){
   bool isShifted = false;
   /* Always add in the same position */
   _selected = item;
-  item->setPos(-item->boundingRect().width()/2,-item->boundingRect().height()/2);
+  item->setPos(-item->pixmap().width()/2,-item->pixmap().height()/2);
   if(preservesShift() && isShifted != item->isShifted()){
     item->shiftImage();
   }
@@ -155,9 +155,12 @@ void StitcherView::mouseMoveEvent(QMouseEvent * event){
     lineEnd = event->pos();
     scene()->update();
   } else if(dragged && event->buttons() & Qt::LeftButton){
-    QPointF mov = dragged->mapFromScene(mapToScene(event->pos()))-dragged->mapFromScene(mouseLastScenePos);
-    dragged->translate(mov.x(),mov.y());
+    QPointF mov = mapToScene(event->pos())-mouseLastScenePos;
+    dragged->moveBy(mov.x(),mov.y());
     emit imageItemGeometryChanged(dragged);
+  }else if(event->buttons() & Qt::LeftButton){
+    QPointF mov = mapToScene(event->pos())-mouseLastScenePos;
+    emit translateBy(mov);
   }else if(event->buttons() & Qt::RightButton){  
     QPointF mouse_mov = mapToScene(event->pos())-mouseLastScenePos;
     qreal speed = 0.005;
@@ -179,7 +182,11 @@ void StitcherView::clearHelpers(){
 }
 
 void StitcherView::scaleItems(qreal new_scale){
-  if(matrix().m11()*new_scale < 100 && matrix().m11()*new_scale > 0.01){ 
-    scale(new_scale,new_scale);
-  }
+  QList<QGraphicsItem *> it = items();
+  for(int i = 0; i < it.size(); i++){
+    if(ImageItem * item = qgraphicsitem_cast<ImageItem *>(it[i])){
+      item->setDz(item->dz()*new_scale);
+      emit imageItemGeometryChanged(item);
+    }
+  }  
 }

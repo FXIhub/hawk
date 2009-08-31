@@ -229,5 +229,6 @@ void StitcherWorkspace::onItemChanged(QStandardItem * item){
     item->setText(QString("%0").arg(value));		  
     imageItem->setProperty(property.toAscii().constData(),value);
     qDebug("New value for %s = %f",property.toAscii().data(),value);
+    loadGeometry();
   }
 }

@@ -656,20 +656,19 @@ QString ImageItem::identifier() const{
 }
 
 double ImageItem::dx() const{
-  return transform().dx();
+  return pos().x()+pixmap().width()/(2.0)*transform().m11();
 }
 
 void ImageItem::setDx(double new_dx){
-  translate(new_dx-dx(),0);
+  setPos(new_dx-pixmap().width()/(2.0)*transform().m11(),pos().y());
 }
 
 double ImageItem::dy() const{
-  return transform().dy();
-  return 0;
+  return pos().y()+pixmap().height()/(2.0)*transform().m11();
 }
 
 void ImageItem::setDy(double new_dy){
-  translate(new_dy-dy(),0);
+  setPos(pos().x(),new_dy-pixmap().height()/(2.0)*transform().m11());
 }
 
 double ImageItem::dz() const{
@@ -680,7 +679,21 @@ double ImageItem::dz() const{
 void ImageItem::setDz(double new_dz){
   const double  defaultDistance = 50.0;
   double new_scale = defaultDistance/new_dz;
+  /* keep the distance to the scene origin constant in the item coordinate system */
+  QPointF centerScene = mapToScene(pixmap().width()/(2.0),pixmap().height()/(2.0));
+  /* bring image to center */
+  //  setPos(pos()-centerScene);
+  setPos(0,0);
+  QPointF centerImage = mapFromScene(centerScene);
+  //  centerImage.rx() -= pixmap().width()/(2.0);
+  //  centerImage.ry() -= pixmap().height()/(2.0);
+  /* do the scaling */
   scale(new_scale/transform().m11(),new_scale/transform().m11());
+  /* move image back */
+  QPointF newCenterScene = mapToScene(centerImage);
+  //  setPos(newCenterScene);
+  setDx(newCenterScene.x());
+  setDy(newCenterScene.y());
 }
 
 
