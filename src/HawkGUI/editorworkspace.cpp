@@ -53,7 +53,7 @@ void EditorWorkspace::loadProperties(){
      }
      if(var.type() == QVariant::PointF){
        QPointF value = var.toPointF();
-       QStandardItem * itemName = new QStandardItem(editorView()->propertyNameToDisplayName(name));
+       QStandardItem * itemName = new QStandardItem(editorView()->propertyNameToDisplayName(name,tag));
        QStandardItem * itemValue = new QStandardItem(QString("%0 x %1").arg(value.x()).arg(value.y()));
        itemName->setData(value,Qt::UserRole + 1);
        itemName->setData(QString(name),Qt::UserRole + 2);
@@ -73,7 +73,7 @@ void EditorWorkspace::loadProperties(){
        parentItem->appendRow(QList<QStandardItem *>() << itemName << itemValue);
      }else if(var.type() == QVariant::Size || var.type() == QVariant::SizeF){
        QSizeF value = var.toSize();
-       QStandardItem * itemName = new QStandardItem(editorView()->propertyNameToDisplayName(name));
+       QStandardItem * itemName = new QStandardItem(editorView()->propertyNameToDisplayName(name,tag));
        QStandardItem * itemValue = new QStandardItem(QString("%0 x %1").arg(value.width()).arg(value.height()));
        itemName->setData(value,Qt::UserRole + 1);
        itemName->setData(QString(name),Qt::UserRole + 2);
@@ -93,7 +93,7 @@ void EditorWorkspace::loadProperties(){
        parentItem->appendRow(QList<QStandardItem *>() << itemName << itemValue);
      }else if(var.type() == QVariant::Bool){
        bool value = var.toBool();
-       QStandardItem * itemName = new QStandardItem(editorView()->propertyNameToDisplayName(name));
+       QStandardItem * itemName = new QStandardItem(editorView()->propertyNameToDisplayName(name,tag));
        QStandardItem * itemValue = new QStandardItem();
        itemValue->setData(value,Qt::UserRole + 1);
        itemValue->setData(QString(name),Qt::UserRole + 2);
@@ -111,7 +111,7 @@ void EditorWorkspace::loadProperties(){
        parentItem->appendRow(QList<QStandardItem *>() << itemName << itemValue);
      }else if(var.type() == QVariant::Double){
        double value = var.toDouble();
-       QStandardItem * itemName = new QStandardItem(editorView()->propertyNameToDisplayName(name));
+       QStandardItem * itemName = new QStandardItem(editorView()->propertyNameToDisplayName(name,tag));
        QStandardItem * itemValue = new QStandardItem(QString("%0").arg(value));
        itemValue->setData(value,Qt::UserRole + 1);
        itemValue->setData(QString(name),Qt::UserRole + 2);

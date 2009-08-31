@@ -3,6 +3,7 @@
 #if defined __cplusplus || defined Q_MOC_RUN
 
 #include <QGraphicsPixmapItem>
+#include <QObject>
 #include "imageview.h"
 #include <spimage.h>
 #include <QStack>
@@ -11,8 +12,12 @@
 class QGraphicsSceneMouseEvent;
 class ImageView;
 
-class ImageItem: public QGraphicsPixmapItem
+class ImageItem: public QObject, public QGraphicsPixmapItem
 {
+  Q_OBJECT
+    Q_PROPERTY(double HawkGeometry_dx READ dx WRITE setDx)
+    Q_PROPERTY(double HawkGeometry_dy READ dy WRITE setDy)
+    Q_PROPERTY(double HawkGeometry_dz READ dz WRITE setDz)
    public:
   ImageItem(Image * data,QString filename,ImageView * view,QGraphicsItem * parent = NULL);
   ImageItem(QPixmap pix,ImageView * view,QGraphicsItem * parent);
@@ -77,6 +82,13 @@ class ImageItem: public QGraphicsPixmapItem
   void interpolateEmpty(double radius,int iterations,QRegion selected);
   void cropImage(QRegion selected);
   void showIdentifier(bool show = true);
+  double dx() const;
+  void setDx(double);
+  double dy() const;
+  void setDy(double);
+  double dz() const;
+  void setDz(double);
+  QString identifier() const;
  private:
   enum EditType{ImageSize,Phased,Shifted,Wavelength,DetectorDistance,PointConvolute,Scaled,PixelSize,ImageCenter,CheckPoint};
   struct EditStep{
@@ -102,6 +114,7 @@ class ImageItem: public QGraphicsPixmapItem
   QGraphicsLineItem * centerVerticalIndicator;
   QGraphicsLineItem * centerHorizontalIndicator;
   QGraphicsTextItem * identifierItem;
+  QString identifierString;
 };
 
 #else

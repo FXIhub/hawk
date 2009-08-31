@@ -44,6 +44,8 @@ class ImageView: public QGraphicsView
   ImageViewPanel * imageViewPanel() const;
   QString imageItemIdentifier(ImageItem * item);
   void showIdentifiers(bool show = true);
+  QString propertyNameToDisplayName(QString propertyName,QString tag);
+  void setBackgroundDraggable(bool draggable);
  public slots:
   void shiftImage();
   void loadUserSelectedImage();
@@ -56,7 +58,7 @@ class ImageView: public QGraphicsView
   void maxContrast();
   void fourierTransform();
   void fourierTransformSquared();  
-  void scaleItems(qreal scale);
+  virtual void scaleItems(qreal scale);
   void translateItems(QPointF mov);
   void setPreserveShift(bool on);
   bool preservesShift() const;
@@ -68,6 +70,7 @@ class ImageView: public QGraphicsView
   void translateBy(QPointF r);
   void imageLoaded(QString file);
   void imageItemChanged(ImageItem * item);
+  void imageItemGeometryChanged(ImageItem * item);
  protected:
   void focusInEvent ( QFocusEvent * event );
   void mouseMoveEvent(QMouseEvent * event);
@@ -79,13 +82,14 @@ class ImageView: public QGraphicsView
   QGraphicsScene * graphicsScene;
   ImageItem * _selected;
   bool _showIdentifiers;
+  ImageItem * dragged;
+  QPointF mouseLastScenePos;
+
   private slots:
   void finishLoadImage();
   void loadScheduledImage();
  private:
-  QString positionToIdentifier(int p);
-  QPointF mouseLastScenePos;
-  ImageItem * dragged;
+  QString nextId(QString id);
   QPointF draggedInitialPos;
   QPointF itemsScale;
   bool mouseInsideImage;
@@ -102,6 +106,7 @@ class ImageView: public QGraphicsView
   QString currentIteration;
   ImageViewPanel * panel;
   bool preserveShift;
+  bool _backgroundDraggable;
 };
 
 #else

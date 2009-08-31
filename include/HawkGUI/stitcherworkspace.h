@@ -5,6 +5,9 @@
 class StitcherView;
 class QMouseEvent;
 class ImageItem;
+class QTreeView;
+class QStandardItem;
+
 class StitcherWorkspace: public QWidget
 {
   Q_OBJECT
@@ -15,7 +18,11 @@ class StitcherWorkspace: public QWidget
   void onLineClicked();
   void onCircleClicked();
   void onRotateClicked();
+  void onItemChanged(QStandardItem * item);
+  void loadGeometry();
  private:
+  QTreeView * createGeometryTree();
+  QTreeView * geometryTree;
   QWidget * createToolBar();
   StitcherView * _stitcherView;
 };

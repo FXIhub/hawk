@@ -8,7 +8,7 @@ StitcherView::StitcherView(QWidget * parent)
 {
   imageViewPanel()->showSaveButton(true);
   setRenderHints(QPainter::Antialiasing);
-  QGraphicsLineItem * centerVerticalIndicator = new QGraphicsLineItem(0,-100000,0,100000);
+  /*  QGraphicsLineItem * centerVerticalIndicator = new QGraphicsLineItem(0,-100000,0,100000);
   QGraphicsLineItem * centerHorizontalIndicator = new QGraphicsLineItem(-100000,0,100000,0);
   centerVerticalIndicator->setZValue(11);
   centerHorizontalIndicator->setZValue(11);
@@ -18,8 +18,9 @@ StitcherView::StitcherView(QWidget * parent)
   pen.setColor(Qt::white);
   pen.setStyle(Qt::SolidLine);
   centerHorizontalIndicator->setPen(pen);
-  centerVerticalIndicator->setPen(pen);
+  centerVerticalIndicator->setPen(pen);*/
   _showIdentifiers = true;
+  setBackgroundDraggable(false);
 }
 
 bool StitcherView::loadImage(QString s){
@@ -35,25 +36,9 @@ void StitcherView::addImage(ImageItem * item){
   int display = -1;
   int color = -1;
   bool isShifted = false;
-  if(selectedImage()){
-    // and the zoom
-    item->setTransform(selectedImage()->transform());
-    /* make sure the center is in the center */
-    //    QSizeF center_correction = selectedImage()->boundingRect().size()/2-item->boundingRect().size()/2;
-    item->setPos(-item->imageCenter()/2);
-
-    // and colormap and display
-    color = selectedImage()->colormap();
-    display = selectedImage()->display();
-    isShifted = selectedImage()->isShifted();
-  }else{
-    _selected = item;
-    // Set pixmap center in the middle of the screen
-    QPointF center = sceneRect().center();
-    center.setX(center.x()-item->pixmap().width()*item->getScale().x()/2);
-    center.setY(center.y()-item->pixmap().height()*item->getScale().y()/2);
-    item->setPos(center);
-  }
+  /* Always add in the same position */
+  _selected = item;
+  item->setPos(-item->boundingRect().width()/2,-item->boundingRect().height()/2);
   if(preservesShift() && isShifted != item->isShifted()){
     item->shiftImage();
   }
@@ -66,6 +51,7 @@ void StitcherView::addImage(ImageItem * item){
   graphicsScene->addItem(item);  
   item->showIdentifier(_showIdentifiers);
   emit imageItemChanged(item);
+  emit imageItemGeometryChanged(item);
 }
 
 void StitcherView::mouseReleaseEvent( QMouseEvent *  event){
@@ -95,17 +81,6 @@ void StitcherView::mouseReleaseEvent( QMouseEvent *  event){
     pen.setStyle(Qt::SolidLine);
     circle->setPen(pen);
     graphicsScene->addItem(circle);    
-  }else if(event->button() & Qt::LeftButton){
-    QList<QGraphicsItem *> it = items(event->pos());
-    for(int i = 0; i < it.size(); i++){
-      if(QString("ImageItem") == it[i]->data(0)){
-	if(selectedImage()){
-	  selectedImage()->setSelected(false);
-	}
-	_selected = qgraphicsitem_cast<ImageItem *>(it[i]);
-	selectedImage()->setSelected(true);	
-      }
-    }
   }
 }
 
@@ -154,21 +129,44 @@ void StitcherView::paintEvent(QPaintEvent *event){
 
 }
 
-void StitcherView::mouseMoveEvent(QMouseEvent * event){
-  if(mode == Line || mode == Circle){
-    lineEnd = event->pos();
-    scene()->update();
-  }else{
-    ImageView::mouseMoveEvent(event);  
-  }
-}
-
 void StitcherView::mousePressEvent( QMouseEvent *  event){
   if(mode == Line || mode == Circle){
     lineOrigin = event->pos();
   }else{
+    if(event->button() & Qt::LeftButton){
+      QList<QGraphicsItem *> it = items(event->pos());
+      for(int i = 0; i < it.size(); i++){
+	if(QString("ImageItem") == it[i]->data(0)){
+	  if(selectedImage()){
+	    selectedImage()->setSelected(false);
+	  }
+	  _selected = qgraphicsitem_cast<ImageItem *>(it[i]);
+	  selectedImage()->setSelected(true);	
+	  break;
+	}
+      }
+    }
     ImageView::mousePressEvent(event);
   }
+}
+
+void StitcherView::mouseMoveEvent(QMouseEvent * event){
+  if(mode == Line || mode == Circle){
+    lineEnd = event->pos();
+    scene()->update();
+  } else if(dragged && event->buttons() & Qt::LeftButton){
+    QPointF mov = dragged->mapFromScene(mapToScene(event->pos()))-dragged->mapFromScene(mouseLastScenePos);
+    dragged->translate(mov.x(),mov.y());
+    emit imageItemGeometryChanged(dragged);
+  }else if(event->buttons() & Qt::RightButton){  
+    QPointF mouse_mov = mapToScene(event->pos())-mouseLastScenePos;
+    qreal speed = 0.005;
+    qreal scale = 1-mouse_mov.y()*speed;
+    emit scaleBy(scale);
+  }
+  mouseOverValue(event);
+  mouseLastScenePos = mapToScene(event->pos());
+  event->accept();
 }
 
 void StitcherView::clearHelpers(){
@@ -177,5 +175,11 @@ void StitcherView::clearHelpers(){
     if(QString("Helper") == it[i]->data(0)){
       graphicsScene->removeItem(it[i]);
     }  
+  }
+}
+
+void StitcherView::scaleItems(qreal new_scale){
+  if(matrix().m11()*new_scale < 100 && matrix().m11()*new_scale > 0.01){ 
+    scale(new_scale,new_scale);
   }
 }

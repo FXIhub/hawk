@@ -29,7 +29,6 @@ class ImageEditorView: public ImageView
   QPointF imageCenter() const;
   QSize imageSize() const;
   void setImageSize(QSize imageSize);
-  QString propertyNameToDisplayName(QString propertyName);
   bool phased() const;
   void setPhased(bool p);
   bool scaled() const;

@@ -129,24 +129,6 @@ void ImageEditorView::setDetectorDistance(double detectorDistance){
   }
 } 
 
-QString ImageEditorView::propertyNameToDisplayName(QString propertyName){
-  /* first remove the HawkImage tag */
-  QString tag = "HawkImage_";
-  if(!propertyName.startsWith(tag)){
-    return QString();
-  }
-  propertyName.remove(0,tag.length());
-  propertyName[0] = propertyName[0].toUpper();
-  for(int i = 1;i<propertyName.length();i++){
-    QChar c = propertyName[i];
-    if(c.isUpper()){
-      /* insert space before upper case letters */
-      propertyName.insert(i," ");
-      i++;
-    }    
-  }
-  return propertyName;
-}
 
 void ImageEditorView::mouseReleaseEvent( QMouseEvent *  event){
   if(mode == EditorDefaultMode || (event->modifiers() & Qt::ShiftModifier)){
@@ -312,7 +294,7 @@ EditorMode ImageEditorView::editorMode(){
 }
 
 void ImageEditorView::wheelEvent( QWheelEvent * event){
-  if(mode == EditorDefaultMode | (event->modifiers() & Qt::ShiftModifier)){
+  if(mode == EditorDefaultMode || (event->modifiers() & Qt::ShiftModifier)){
     ImageView::wheelEvent(event);
   }
 }

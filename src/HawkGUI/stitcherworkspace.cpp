@@ -3,13 +3,21 @@
 #include "stitcherview.h"
 #include "imageitem.h"
 
+
+Q_DECLARE_METATYPE(ImageItem *);
+
 StitcherWorkspace::StitcherWorkspace(QWidget * parent)
   :QWidget(parent)
 {
   QHBoxLayout * hbox = new QHBoxLayout(this);
   this->setLayout(hbox);
   _stitcherView = new StitcherView(this);    
-  hbox->addWidget(createToolBar());
+  QSplitter * leftSplitter = new QSplitter(Qt::Vertical,this);
+  hbox->addWidget(leftSplitter);
+  leftSplitter->addWidget(createToolBar());
+  leftSplitter->addWidget(createGeometryTree());
+  connect(_stitcherView,SIGNAL(imageItemGeometryChanged(ImageItem *)),this,SLOT(loadGeometry()));
+  //  QHBoxLayout * hbox = new QHBoxLayout(this);
   hbox->addWidget(_stitcherView); 
 }
 
@@ -31,28 +39,28 @@ QWidget * StitcherWorkspace::createToolBar(){
   line->setToolTip(tr("Draw guide line"));
   line->setIconSize(iconSize);
   connect(line,SIGNAL(clicked(bool)),this,SLOT(onLineClicked()));
-  layout->addWidget(line,1,0);
+  layout->addWidget(line,0,1);
 
   QToolButton * circle = new QToolButton(this);
   circle->setIcon(QIcon(":images/add_circle.png"));
   circle->setToolTip(tr("Draw guide circle"));
   circle->setIconSize(iconSize);
   connect(circle,SIGNAL(clicked(bool)),this,SLOT(onCircleClicked()));
-  layout->addWidget(circle,2,0);
+  layout->addWidget(circle,0,2);
 
   QToolButton * rotate = new QToolButton(this);
   rotate->setIcon(QIcon(":images/undo.png"));
   rotate->setToolTip(tr("Rotate image 180 degrees"));
   rotate->setIconSize(iconSize);
   connect(rotate,SIGNAL(clicked(bool)),this,SLOT(onRotateClicked()));
-  layout->addWidget(rotate,3,0);
+  layout->addWidget(rotate,0,3);
 
   QToolButton * clear = new QToolButton(this);
   clear->setIcon(QIcon(":images/clear.png"));
   clear->setToolTip(tr("Remove helper lines"));
   clear->setIconSize(iconSize);
   connect(clear,SIGNAL(clicked(bool)),_stitcherView,SLOT(clearHelpers()));
-  layout->addWidget(clear,4,0);
+  layout->addWidget(clear,0,4);
  
  
 
@@ -130,3 +138,96 @@ void StitcherWorkspace::onRotateClicked(){
   }
 }
 
+
+QTreeView * StitcherWorkspace::createGeometryTree(){
+  /* need a real QTreeView with a model */
+  QStandardItemModel * model = new QStandardItemModel;
+  QTreeView *treeView = new QTreeView(this);
+  geometryTree = treeView;
+  treeView->setModel(model);
+  loadGeometry();
+  treeView->setAlternatingRowColors(true);
+  treeView->setSelectionMode(QAbstractItemView::SingleSelection);
+  treeView->setSelectionBehavior(QAbstractItemView::SelectRows);
+  treeView->resizeColumnToContents(0);
+  treeView->resizeColumnToContents(1);
+  connect(model,SIGNAL(itemChanged(QStandardItem * )),this,SLOT(onItemChanged(QStandardItem *)));
+  return treeView;  
+}
+
+void StitcherWorkspace::loadGeometry(){
+  /* 
+     This is a prefix to distinguish Hawk Geometry properties from the
+     normal widget properties 
+  */
+  const QString tag("HawkGeometry_");
+  QList<QGraphicsItem *> ii  = _stitcherView->items();
+  QMap<QString,ImageItem *> sortMap;
+  for(int i = 0;i<ii.size();i++){
+    if(ImageItem * imageItem = qgraphicsitem_cast<ImageItem *>(ii[i])){
+      sortMap.insert(imageItem->identifier(),imageItem);
+    }
+  }
+  QList<ImageItem *>sortedItems = sortMap.values();
+  QStandardItemModel * model = qobject_cast<QStandardItemModel *>(geometryTree->model());
+  model->clear();
+  model->setHorizontalHeaderLabels(QStringList() << "Parameter" << "Value");
+  
+  for(int i = 0;i<sortedItems.size();i++){
+    ImageItem * imageItem = sortedItems[i];
+    const QMetaObject *metaobject =  imageItem->metaObject();
+    int count = metaobject->propertyCount();
+    QStandardItem * itemName = new QStandardItem(imageItem->identifier());
+    QStandardItem *parentItem = model->invisibleRootItem();
+    parentItem->appendRow(QList<QStandardItem *>() << itemName);
+    parentItem = itemName;
+    for (int j=0; j<count; ++j) {
+      QMetaProperty metaproperty = metaobject->property(j);
+      const char *name = metaproperty.name();
+      if(!QString(name).startsWith(tag)){
+	continue;
+      }
+      QVariant var =  imageItem->property(name);
+      Qt::ItemFlags itemValueFlags = Qt::ItemIsSelectable|Qt::ItemIsEnabled;
+      if(metaproperty.isWritable()){
+	itemValueFlags |= Qt::ItemIsEditable;
+      }
+      if(var.type() == QVariant::Double){
+	double value = var.toDouble();
+	QStandardItem * itemName = new QStandardItem(_stitcherView->propertyNameToDisplayName(name,tag));
+	QStandardItem * itemValue = new QStandardItem(QString("%0").arg(value));
+	itemValue->setData(value,Qt::UserRole + 1);
+	itemValue->setData(QString(name),Qt::UserRole + 2);
+	itemValue->setData(QVariant::fromValue(imageItem),Qt::UserRole + 3);
+	itemName->setFlags(itemName->flags() & ~Qt::ItemIsEditable);
+	itemValue->setFlags(itemValueFlags);
+	parentItem->appendRow(QList<QStandardItem *>() << itemName << itemValue);
+      }
+    }
+  }
+  geometryTree->expandAll();
+  geometryTree->sortByColumn(0,Qt::AscendingOrder);
+}
+
+
+void StitcherWorkspace::onItemChanged(QStandardItem * item){
+  if(((item->flags() & Qt::ItemIsEditable) || (item->flags() & Qt::ItemIsUserCheckable )) == 0){
+    return;
+  }
+  qDebug("item changed");
+  if(!item->data().isValid()){
+    item = item->parent();
+  }
+  if(!item->data().isValid()){
+    qFatal("Can't reach here");
+  }
+  QVariant var = item->data();
+  if(var.type() == QVariant::Double){
+    double value = item->text().toDouble();
+    QString property = item->data(Qt::UserRole + 2).toString();
+    ImageItem * imageItem = item->data(Qt::UserRole + 3).value<ImageItem *>();
+    item->setText(QString("%0").arg(value));		  
+    imageItem->setProperty(property.toAscii().constData(),value);
+    qDebug("New value for %s = %f",property.toAscii().data(),value);
+  }
+}

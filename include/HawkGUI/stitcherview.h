@@ -9,14 +9,15 @@ class StitcherView: public ImageView
 {
   Q_OBJECT
     public:
-    StitcherView(QWidget * parent);
-    void addImage(ImageItem * item);
-    bool loadImage(QString file);
-    void saveImage();
-    enum Mode{Default,Line,Circle};
-    void setMode(Mode m);
+  StitcherView(QWidget * parent);
+  void addImage(ImageItem * item);
+  bool loadImage(QString file);
+  void saveImage();
+  enum Mode{Default,Line,Circle};
+  void setMode(Mode m);
  public slots:
-    void clearHelpers();
+  void clearHelpers();
+  void scaleItems(qreal new_scale);
  protected:
   void mouseReleaseEvent(QMouseEvent * e);
   void mousePressEvent(QMouseEvent * e);

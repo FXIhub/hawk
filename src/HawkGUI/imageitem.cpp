@@ -8,7 +8,7 @@ Q_DECLARE_METATYPE(const Image *);
 
 
 ImageItem::ImageItem(Image * sp_image,QString file, ImageView * view,QGraphicsItem * parent)
-  :QGraphicsPixmapItem(parent)
+  :QObject(view),QGraphicsPixmapItem(parent)
 { 
   _view = view;
   filename = file;
@@ -52,7 +52,11 @@ ImageItem::ImageItem(Image * sp_image,QString file, ImageView * view,QGraphicsIt
   centerHorizontalIndicator->setPen(pen);
   centerVerticalIndicator->setPen(pen);
   repositionCenterIndicators();
-  identifierItem = NULL;
+  identifierString = _view->imageItemIdentifier(this);
+  identifierItem = new QGraphicsTextItem(identifierString,this);
+  identifierItem->setDefaultTextColor(Qt::white);
+  qreal posy = -(identifierItem->boundingRect()).height();
+  identifierItem->setPos(boundingRect().width()/2-(identifierItem->boundingRect()).width()/2,posy);
 }
 
 
@@ -66,6 +70,7 @@ ImageItem::ImageItem(QPixmap pix,ImageView * view, QGraphicsItem * parent)
   image = NULL;
   setFlags(QGraphicsItem::ItemIsMovable|QGraphicsItem::ItemIsFocusable);
   identifierItem = NULL;
+  identifierString = QString();
 }
 
 QPointF ImageItem::centeredScale(qreal s,QPointF screenCenter){
@@ -633,10 +638,8 @@ void ImageItem::cropImage(QRegion selected){
 
 
 void ImageItem::showIdentifier(bool show){
-  if(identifierItem){
-    identifierItem->setPlainText(_view->imageItemIdentifier(this));
-  }else{
-    identifierItem = new QGraphicsTextItem(_view->imageItemIdentifier(this),this);
+  if(!identifierItem){
+    identifierItem = new QGraphicsTextItem(identifierString);
     identifierItem->setDefaultTextColor(Qt::white);
     qreal posy = -(identifierItem->boundingRect()).height();
     identifierItem->setPos(boundingRect().width()/2-(identifierItem->boundingRect()).width()/2,posy);
@@ -647,3 +650,37 @@ void ImageItem::showIdentifier(bool show){
     identifierItem->hide();
   }
 }
+
+QString ImageItem::identifier() const{
+  return identifierString;
+}
+
+double ImageItem::dx() const{
+  return transform().dx();
+}
+
+void ImageItem::setDx(double new_dx){
+  translate(new_dx-dx(),0);
+}
+
+double ImageItem::dy() const{
+  return transform().dy();
+  return 0;
+}
+
+void ImageItem::setDy(double new_dy){
+  translate(new_dy-dy(),0);
+}
+
+double ImageItem::dz() const{
+  const double  defaultDistance = 50.0;
+  return defaultDistance/transform().m11();
+}
+
+void ImageItem::setDz(double new_dz){
+  const double  defaultDistance = 50.0;
+  double new_scale = defaultDistance/new_dz;
+  scale(new_scale/transform().m11(),new_scale/transform().m11());
+}
+
+

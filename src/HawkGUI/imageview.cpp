@@ -42,6 +42,7 @@ ImageView::ImageView(QWidget * parent)
   setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   _showIdentifiers = false;
+  _backgroundDraggable = true;
 }
 
 ImageView::~ImageView()
@@ -52,6 +53,23 @@ ImageView::~ImageView()
   }
 }
 
+
+QString ImageView::propertyNameToDisplayName(QString propertyName,QString tag){
+  if(!propertyName.startsWith(tag)){
+    return QString();
+  }
+  propertyName.remove(0,tag.length());
+  propertyName[0] = propertyName[0].toUpper();
+  for(int i = 1;i<propertyName.length();i++){
+    QChar c = propertyName[i];
+    if(c.isUpper()){
+      /* insert space before upper case letters */
+      propertyName.insert(i," ");
+      i++;
+    }    
+  }
+  return propertyName;
+}
 
 void ImageView::mousePressEvent(QMouseEvent * event){
   if(event->buttons() & Qt::LeftButton){
@@ -118,7 +136,8 @@ void ImageView::mouseMoveEvent(QMouseEvent * event){
   if(dragged && event->buttons() & Qt::LeftButton){
     QPointF mov = mapToScene(event->pos())-mouseLastScenePos;
     dragged->moveBy(mov.x(),mov.y());
-  }else if(event->buttons() & Qt::LeftButton){
+    emit imageItemGeometryChanged(dragged);
+  }else if(event->buttons() & Qt::LeftButton && _backgroundDraggable){
     QPointF mov = mapToScene(event->pos())-mouseLastScenePos;
     emit translateBy(mov);
   }else if(event->buttons() & Qt::RightButton){  
@@ -144,12 +163,12 @@ ImageItem * ImageView::selectedImage() const{
 }
 
 void ImageView::scaleItems(qreal scale){
-  if((scale < 1 && scale > 0 && 
+  if(selectedImage() && ((scale < 1 && scale > 0 && 
       selectedImage()->getScale().x() > 0.01 &&
       selectedImage()->getScale().y() > 0.01) ||
      (scale > 1 && 
       selectedImage()->getScale().x() < 100 &&
-      selectedImage()->getScale().y() < 100)){
+      selectedImage()->getScale().y() < 100))){
     QPointF screen_center = sceneRect().center();
     QList<QGraphicsItem *> it = items();
     for(int i = 0; i < it.size(); i++){
@@ -160,6 +179,9 @@ void ImageView::scaleItems(qreal scale){
 	QPointF item_a_sc = it[i]->mapFromScene(screen_center);
 	QPointF mov = item_a_sc-item_sc;
 	it[i]->translate(mov.x(),mov.y());
+	if(qgraphicsitem_cast<ImageItem *>(it.at(i))){
+	  emit imageItemGeometryChanged(qgraphicsitem_cast<ImageItem *>(it.at(i)));
+	}
       }
     }
   }
@@ -172,6 +194,9 @@ void ImageView::translateItems(QPointF mov){
       //    if(QString("ImageItem") == it[i]->data(0)){
       // translate all top level items
       it[i]->moveBy(mov.x(),mov.y());
+      if(qgraphicsitem_cast<ImageItem *>(it.at(i))){
+	emit imageItemGeometryChanged(qgraphicsitem_cast<ImageItem *>(it.at(i)));
+      }
     }
   }
 }
@@ -487,32 +512,32 @@ QString ImageView::imageItemIdentifier(ImageItem * item){
   if(!item){
     return QString();
   }
-  int pos = -1;
-  bool found = false;
+  QString id = "A";
   QList<QGraphicsItem *> ii  = items();
   for(int i = 0;i<ii.size();i++){
-    if(qgraphicsitem_cast<ImageItem *>(ii[i])){
-      /* it's a graphicsItem*/
-      pos++;
+    if(ImageItem * item = qgraphicsitem_cast<ImageItem *>(ii[i])){
+      if(item->identifier() == id){
+	id = nextId(id);
+      }
     }
-    if(ii[i] == item){
-      found = true;
-      break;
-    }    
   }
-  if(!found){
-    return QString();
-  }
-  return positionToIdentifier(pos);
+  return id;
 }
 
-QString ImageView::positionToIdentifier(int p){
+QString ImageView::nextId(QString s){
+  QString ret = QString();
   int base = 'Z'-'A'+1;
-  QString ret;
+  int from = 0;
+  int exp = 1;
+  for(int i = s.length()-1;i>=0;i--){
+    from += (s[i].toAscii() - 'A')*exp;
+    exp*= base;
+  }
+  int to = from + 1;
   do{
-    ret = ('A'+(p%base))+ret;    
-    p /= base;
-  }while(p);
+    ret = ('A'+(to%base))+ret;    
+    to /= base;
+  }while(to);
   return ret;
 }
 
@@ -527,4 +552,8 @@ void ImageView::showIdentifiers(bool show){
       }
     }
   }
+}
+
+void ImageView::setBackgroundDraggable(bool draggable){
+  _backgroundDraggable = draggable;
 }
