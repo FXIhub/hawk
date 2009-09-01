@@ -36,9 +36,12 @@ void StitcherView::addImage(ImageItem * item){
   int display = -1;
   int color = -1;
   bool isShifted = false;
-  /* Always add in the same position */
   _selected = item;
-  item->setPos(-item->pixmap().width()/2,-item->pixmap().height()/2);
+  //  item->setPos(-item->pixmap().width()/2,-item->pixmap().height()/2);
+  /* Always add in the same position */
+  item->setPos(0,0);
+  /* translate so that the item origin corresponds to the image center */
+  item->translate(-item->pixmap().width()/2,-item->pixmap().height()/2);
   if(preservesShift() && isShifted != item->isShifted()){
     item->shiftImage();
   }
@@ -160,7 +163,8 @@ void StitcherView::mouseMoveEvent(QMouseEvent * event){
     emit imageItemGeometryChanged(dragged);
   }else if(event->buttons() & Qt::LeftButton){
     QPointF mov = mapToScene(event->pos())-mouseLastScenePos;
-    emit translateBy(mov);
+    //    emit translateBy(mov);
+    setSceneRect(sceneRect().translated(-mov));
   }else if(event->buttons() & Qt::RightButton){  
     QPointF mouse_mov = mapToScene(event->pos())-mouseLastScenePos;
     qreal speed = 0.005;

@@ -656,19 +656,19 @@ QString ImageItem::identifier() const{
 }
 
 double ImageItem::dx() const{
-  return pos().x()+pixmap().width()/(2.0)*transform().m11();
+  return pos().x();
 }
 
 void ImageItem::setDx(double new_dx){
-  setPos(new_dx-pixmap().width()/(2.0)*transform().m11(),pos().y());
+  setPos(new_dx,pos().y());
 }
 
 double ImageItem::dy() const{
-  return pos().y()+pixmap().height()/(2.0)*transform().m11();
+  return pos().y();
 }
 
 void ImageItem::setDy(double new_dy){
-  setPos(pos().x(),new_dy-pixmap().height()/(2.0)*transform().m11());
+  setPos(pos().x(),new_dy);
 }
 
 double ImageItem::dz() const{
@@ -679,21 +679,15 @@ double ImageItem::dz() const{
 void ImageItem::setDz(double new_dz){
   const double  defaultDistance = 50.0;
   double new_scale = defaultDistance/new_dz;
-  /* keep the distance to the scene origin constant in the item coordinate system */
-  QPointF centerScene = mapToScene(pixmap().width()/(2.0),pixmap().height()/(2.0));
-  /* bring image to center */
-  //  setPos(pos()-centerScene);
-  setPos(0,0);
-  QPointF centerImage = mapFromScene(centerScene);
-  //  centerImage.rx() -= pixmap().width()/(2.0);
-  //  centerImage.ry() -= pixmap().height()/(2.0);
+
+  /* Important to keep in mind that translate is *NOT* the same as changing dx and dy directly
+   but is affected by m11() and m22() */
+  setTransform(transform().translate(pixmap().width()/2,pixmap().height()/2));
+
   /* do the scaling */
-  scale(new_scale/transform().m11(),new_scale/transform().m11());
-  /* move image back */
-  QPointF newCenterScene = mapToScene(centerImage);
-  //  setPos(newCenterScene);
-  setDx(newCenterScene.x());
-  setDy(newCenterScene.y());
+  double toScale = new_scale/transform().m11();
+  scale(toScale,toScale);
+  setTransform(transform().translate(-pixmap().width()/2,-pixmap().height()/2));
 }
 
 
