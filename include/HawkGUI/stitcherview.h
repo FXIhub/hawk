@@ -13,16 +13,19 @@ class StitcherView: public ImageView
   void addImage(ImageItem * item);
   bool loadImage(QString file);
   void saveImage();
-  enum Mode{Default,Line,Circle};
+  enum Mode{Default,Line,Circle,AddPoint,DeletePoint};
   void setMode(Mode m);
  public slots:
   void clearHelpers();
+  void clearAll();
   void scaleItems(qreal new_scale);
+  void scaleScene(qreal new_scale);
  protected:
   void mouseReleaseEvent(QMouseEvent * e);
   void mousePressEvent(QMouseEvent * e);
   void mouseMoveEvent(QMouseEvent * e);
   void paintEvent(QPaintEvent * e);
+  void keyPressEvent ( QKeyEvent * event );
  private:
   Mode mode;
   QPoint lineOrigin;

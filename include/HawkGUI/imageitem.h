@@ -11,6 +11,7 @@
 
 class QGraphicsSceneMouseEvent;
 class ImageView;
+class QGraphicsEllipseItem;
 
 class ImageItem: public QObject, public QGraphicsPixmapItem
 {
@@ -18,6 +19,7 @@ class ImageItem: public QObject, public QGraphicsPixmapItem
     Q_PROPERTY(double HawkGeometry_dx READ dx WRITE setDx)
     Q_PROPERTY(double HawkGeometry_dy READ dy WRITE setDy)
     Q_PROPERTY(double HawkGeometry_dz READ dz WRITE setDz)
+    Q_PROPERTY(double HawkGeometry_theta READ theta WRITE setTheta)
    public:
   ImageItem(Image * data,QString filename,ImageView * view,QGraphicsItem * parent = NULL);
   ImageItem(QPixmap pix,ImageView * view,QGraphicsItem * parent);
@@ -88,7 +90,11 @@ class ImageItem: public QObject, public QGraphicsPixmapItem
   void setDy(double);
   double dz() const;
   void setDz(double);
+  double theta() const;
+  void setTheta(double);
   QString identifier() const;
+  void addControlPoint(QPointF pos);
+  void deleteControlPoint(QPointF pos);
  private:
   enum EditType{ImageSize,Phased,Shifted,Wavelength,DetectorDistance,PointConvolute,Scaled,PixelSize,ImageCenter,CheckPoint};
   struct EditStep{
@@ -98,6 +104,7 @@ class ImageItem: public QObject, public QGraphicsPixmapItem
   void addToStack(EditType type,QVariant arg1,QVariant arg2 = QVariant());
   void applyEditStep(EditStep step);
   void repositionCenterIndicators();
+  double overallScale() const;
 
   QGraphicsRectItem * selectRect;
   QString filename;
@@ -115,6 +122,7 @@ class ImageItem: public QObject, public QGraphicsPixmapItem
   QGraphicsLineItem * centerHorizontalIndicator;
   QGraphicsTextItem * identifierItem;
   QString identifierString;
+  QList<QGraphicsEllipseItem *> controlPoints;
 };
 
 #else

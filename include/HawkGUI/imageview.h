@@ -64,6 +64,7 @@ class ImageView: public QGraphicsView
   bool preservesShift() const;
   virtual void saveImage();
   void emitImageItemChanged(ImageItem * item);
+  void setSelectedImage(ImageItem * item);
  signals:
   void focusedIn(ImageView * focused);
   void scaleBy(qreal scale);

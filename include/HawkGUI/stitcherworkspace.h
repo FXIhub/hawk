@@ -15,11 +15,14 @@ class StitcherWorkspace: public QWidget
   StitcherWorkspace(QWidget * parent);
  private slots:
   void onStitchClicked();
+  void onArrowClicked();
   void onLineClicked();
   void onCircleClicked();
   void onRotateClicked();
   void onItemChanged(QStandardItem * item);
   void loadGeometry();
+  void onAddControlPointClicked();
+  void onDeleteControlPointClicked();
  private:
   QTreeView * createGeometryTree();
   QTreeView * geometryTree;

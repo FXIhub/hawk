@@ -253,7 +253,7 @@ void ImageView::keyPressEvent ( QKeyEvent * event ){
     emit scaleBy(0.75);
     event->accept();
   }
-  if(event->modifiers() & Qt::ControlModifier){
+  if(event->modifiers() & Qt::ShiftModifier){
     if(event->key() == Qt::Key_Up){
       emit translateBy(QPointF(0,-10));
       event->accept();
@@ -283,6 +283,7 @@ void ImageView::setup(){
   setSceneRect(QRect(0,0,width(),height()));
   setBackgroundBrush(grad_brush);
   graphicsScene = new QGraphicsScene(this);
+  
   setScene(graphicsScene);    
 }
 
@@ -556,4 +557,15 @@ void ImageView::showIdentifiers(bool show){
 
 void ImageView::setBackgroundDraggable(bool draggable){
   _backgroundDraggable = draggable;
+}
+
+
+void ImageView::setSelectedImage(ImageItem * item){
+  if(item){
+    if(selectedImage()){
+      selectedImage()->setSelected(false);
+    }
+    _selected = item;
+    selectedImage()->setSelected(true);
+  }
 }

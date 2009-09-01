@@ -27,12 +27,20 @@ QWidget * StitcherWorkspace::createToolBar(){
   QGridLayout * layout = new QGridLayout(ret);
   ret->setLayout(layout);
   QSize iconSize = QSize(22,22);
+
+  QToolButton * arrow = new QToolButton(this);
+  arrow->setIcon(QIcon(":images/cursor_arrow.png"));
+  arrow->setToolTip(tr("Drag images around"));
+  arrow->setIconSize(iconSize);
+  connect(arrow,SIGNAL(clicked(bool)),this,SLOT(onArrowClicked()));
+  layout->addWidget(arrow,0,0);
+
   QToolButton * stitch = new QToolButton(this);
   stitch->setIcon(QIcon(":images/stitch.png"));
   stitch->setToolTip(tr("Combine images in a single one mantaining relative position"));
   stitch->setIconSize(iconSize);
   connect(stitch,SIGNAL(clicked(bool)),this,SLOT(onStitchClicked()));
-  layout->addWidget(stitch,0,0);
+  layout->addWidget(stitch,0,5);
 
   QToolButton * line = new QToolButton(this);
   line->setIcon(QIcon(":images/add_line.png"));
@@ -61,9 +69,31 @@ QWidget * StitcherWorkspace::createToolBar(){
   clear->setIconSize(iconSize);
   connect(clear,SIGNAL(clicked(bool)),_stitcherView,SLOT(clearHelpers()));
   layout->addWidget(clear,0,4);
- 
- 
 
+  QToolButton * clearAll = new QToolButton(this);
+  clearAll->setIcon(QIcon(":images/edit-delete.png"));
+  clearAll->setToolTip(tr("Clear workspace"));
+  clearAll->setIconSize(iconSize);
+  connect(clearAll,SIGNAL(clicked(bool)),_stitcherView,SLOT(clearAll()));
+  layout->addWidget(clearAll,0,5);
+
+
+  QToolButton * addPoint = new QToolButton(this);
+  addPoint->setIcon(QIcon(":images/add_point.png"));
+  addPoint->setToolTip(tr("Add control point to image"));
+  addPoint->setIconSize(iconSize);
+  connect(addPoint,SIGNAL(clicked(bool)),this,SLOT(onAddControlPointClicked()));
+  layout->addWidget(addPoint,1,0);
+
+  QToolButton * deletePoint = new QToolButton(this);
+  deletePoint->setIcon(QIcon(":images/delete_point.png"));
+  deletePoint->setToolTip(tr("Delete control point from image"));
+  deletePoint->setIconSize(iconSize);
+  connect(deletePoint,SIGNAL(clicked(bool)),this,SLOT(onDeleteControlPointClicked()));
+  layout->addWidget(deletePoint,1,1);
+ 
+ 
+  layout->setColumnStretch(11,100);
   layout->setRowStretch(10,100);
   return ret;
 }
@@ -123,13 +153,25 @@ void StitcherWorkspace::onStitchClicked(){
 }
 
 
-void StitcherWorkspace::onLineClicked(){
-  _stitcherView->setMode(StitcherView::Line);
+void StitcherWorkspace::onAddControlPointClicked(){
+  _stitcherView->setMode(StitcherView::AddPoint);
+}
+
+void StitcherWorkspace::onDeleteControlPointClicked(){
+  _stitcherView->setMode(StitcherView::DeletePoint);
 }
 
 
 void StitcherWorkspace::onCircleClicked(){
   _stitcherView->setMode(StitcherView::Circle);
+}
+
+void StitcherWorkspace::onLineClicked(){
+  _stitcherView->setMode(StitcherView::Line);
+}
+
+void StitcherWorkspace::onArrowClicked(){
+  _stitcherView->setMode(StitcherView::Default);
 }
 
 void StitcherWorkspace::onRotateClicked(){
@@ -165,7 +207,9 @@ void StitcherWorkspace::loadGeometry(){
   QMap<QString,ImageItem *> sortMap;
   for(int i = 0;i<ii.size();i++){
     if(ImageItem * imageItem = qgraphicsitem_cast<ImageItem *>(ii[i])){
-      sortMap.insert(imageItem->identifier(),imageItem);
+      if(imageItem->isVisible()){
+	sortMap.insert(imageItem->identifier(),imageItem);
+      }
     }
   }
   QList<ImageItem *>sortedItems = sortMap.values();
@@ -178,8 +222,11 @@ void StitcherWorkspace::loadGeometry(){
     const QMetaObject *metaobject =  imageItem->metaObject();
     int count = metaobject->propertyCount();
     QStandardItem * itemName = new QStandardItem(imageItem->identifier());
+    QStandardItem * itemValue = new QStandardItem();
     QStandardItem *parentItem = model->invisibleRootItem();
-    parentItem->appendRow(QList<QStandardItem *>() << itemName);
+    itemName->setFlags(itemName->flags() & ~Qt::ItemIsEditable);
+    itemValue->setFlags(itemValue->flags() & ~Qt::ItemIsEditable);
+    parentItem->appendRow(QList<QStandardItem *>() << itemName <<  itemValue);
     parentItem = itemName;
     for (int j=0; j<count; ++j) {
       QMetaProperty metaproperty = metaobject->property(j);
@@ -232,3 +279,4 @@ void StitcherWorkspace::onItemChanged(QStandardItem * item){
     loadGeometry();
   }
 }
+

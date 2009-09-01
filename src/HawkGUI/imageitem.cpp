@@ -673,7 +673,7 @@ void ImageItem::setDy(double new_dy){
 
 double ImageItem::dz() const{
   const double  defaultDistance = 50.0;
-  return defaultDistance/transform().m11();
+  return defaultDistance/overallScale();
 }
 
 void ImageItem::setDz(double new_dz){
@@ -682,12 +682,75 @@ void ImageItem::setDz(double new_dz){
 
   /* Important to keep in mind that translate is *NOT* the same as changing dx and dy directly
    but is affected by m11() and m22() */
-  setTransform(transform().translate(pixmap().width()/2,pixmap().height()/2));
 
+  /* remove translation */
+  setTransform(transform().translate(pixmap().width()/2,pixmap().height()/2));
+  
   /* do the scaling */
-  double toScale = new_scale/transform().m11();
+  double toScale = new_scale/overallScale();
   scale(toScale,toScale);
+
+  /* add translation. This is not useless! */
   setTransform(transform().translate(-pixmap().width()/2,-pixmap().height()/2));
 }
 
 
+void ImageItem::setTheta(double new_theta){
+  double delta_theta = (new_theta-theta());
+  /* remove translation */
+  setTransform(transform().translate(pixmap().width()/2,pixmap().height()/2));
+
+  rotate(-delta_theta);
+
+  /* add translation. This is not useless! */
+  setTransform(transform().translate(-pixmap().width()/2,-pixmap().height()/2));
+
+}
+
+double ImageItem::theta() const{
+  QPointF a = transform().map(QPointF(pixmap().width()/2+1.0,pixmap().height()/2));
+  /* we have to negate y because in 2D graphics positive y points down */
+  return atan2(-a.y(),a.x())*180.0/M_PI;
+}
+
+double ImageItem::overallScale() const{
+  return sqrt(transform().determinant());
+  //  return sqrt(transform().m11()*transform().m22());
+}
+
+void ImageItem::addControlPoint(QPointF pos){
+  QGraphicsEllipseItem * point = new QGraphicsEllipseItem(-0.2,-0.2,0.4,0.4,this);
+  point->setPos(pos);
+  point->setBrush(Qt::white);
+  QPen p = point->pen();
+  p.setCosmetic(true);
+  p.setWidth(0);
+  p.setColor(Qt::white);
+  point->setPen(p);
+  controlPoints.append(point);
+  QGraphicsTextItem * label = new QGraphicsTextItem(QString::number(controlPoints.size()),point);
+  label->setDefaultTextColor(Qt::white);
+  label->setPos(-(label->boundingRect()).width()/2,-(label->boundingRect()).height()*0.8);
+  //  scene()->addItem(point);
+  qDebug("Add point at %f %f",pos.x(),pos.y());
+}
+
+void ImageItem::deleteControlPoint(QPointF pos){
+  /* 10 px tolerance radius, delete the closest */
+  double tolerance2 = 10*10;
+  int toDelete = -1;
+  double toDeleteDistance2 = tolerance2;
+  for(int i = 0;i<controlPoints.size();i++){
+    if(controlPoints[i]){
+      QPointF d = controlPoints[i]->pos()-pos;
+      if(d.x()*d.x()+d.y()*d.y() < tolerance2 && d.x()*d.x()+d.y()*d.y() < toDeleteDistance2){
+	toDelete = i;
+	toDeleteDistance2 = d.x()*d.x()+d.y()*d.y();      
+      }
+    }
+  }
+  if(toDelete >= 0){
+    delete controlPoints[toDelete];
+    controlPoints[toDelete] = NULL;
+  }
+}
