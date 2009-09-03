@@ -1,5 +1,6 @@
 #include "geometry_constraints.h"
 #include <gsl/gsl_multifit_nlin.h>
+#include <gsl/gsl_blas.h>
 
 void geometry_constraints_free(geometry_constraints * gc){
   /* the image themselves are not considered to be own by the constraints so they are not freed */
@@ -40,8 +41,8 @@ affine_transform * affine_transfrom_from_parameters(real dx,real dy,real zoom, r
   */
   /* Calculate rotation first */
   sp_matrix_set(ret->A,0,0,cos(theta));
-  sp_matrix_set(ret->A,0,1,sin(theta));
-  sp_matrix_set(ret->A,1,0,-sin(theta));
+  sp_matrix_set(ret->A,0,1,-sin(theta));
+  sp_matrix_set(ret->A,1,0,sin(theta));
   sp_matrix_set(ret->A,1,1,cos(theta));
   /* Apply scaling now */
   sp_matrix_scale(ret->A,zoom);
@@ -143,10 +144,11 @@ int evaluate_radial_line(const gsl_vector * x, void * params, gsl_vector * f){
     for(int j = 0;j<gc->n_control_points[i];j++){
       sp_vector * proj = project_point_on_line_through_origin(cp[i][j],angle);
       sp_vector_sub(proj,cp[i][j]);
-      gsl_vector_set(f,i,sp_vector_norm(proj));
+      gsl_vector_set(f,index,sp_vector_norm(proj));
+      index++;
     }
   }
-  return 0;
+  return GSL_SUCCESS;
 }
 
 
@@ -158,8 +160,8 @@ int evaluate_radial_line_df(const gsl_vector * x, void * params, gsl_matrix * J)
   gsl_vector * x2 = gsl_vector_alloc(x->size);
   gsl_vector_memcpy(x1,x);
   gsl_vector_memcpy(x2,x);
-  double delta = 1e-8;
-  for(int i = 0;i<x->size;i++){
+  double delta = 1e-4;
+  for(unsigned int i = 0;i<x->size;i++){
     gsl_vector_set(x1,i,gsl_vector_get(x1,i)-delta);
     evaluate_radial_line(x1,params,f1);
     gsl_vector_set(x2,i,gsl_vector_get(x2,i)+delta);
@@ -168,17 +170,26 @@ int evaluate_radial_line_df(const gsl_vector * x, void * params, gsl_matrix * J)
     gsl_vector_scale(f2,1.0/(2*delta));
     gsl_matrix_set_col(J,i,f2);
   }
-  return 0;
+  return GSL_SUCCESS;
 }
 
 int evaluate_radial_line_fdf(const gsl_vector * x, void * params,gsl_vector * f, gsl_matrix * J){
   evaluate_radial_line(x,params,f);
   evaluate_radial_line_df(x,params,J);
-  return 0;
+  return GSL_SUCCESS;
 }
 
+void
+print_state (int iter, gsl_multifit_fdfsolver * s)
+     {
+       printf ("iter: %3d\nx = ",iter);
+       for(unsigned int i = 0;i<s->x->size;i++){
+	 printf("%g ",gsl_vector_get (s->x, i));
+       }
+       printf("\n|f(x)| = %g\n",gsl_blas_dnrm2 (s->f));
+     }
 
-real minimize_geometry_contraint_error(geometry_constraints * gc){
+real minimize_geometry_contraint_error(geometry_constraints * gc, real angle){
   const gsl_multifit_fdfsolver_type * T = gsl_multifit_fdfsolver_lmder;
   
   int total_control_points = 0;
@@ -187,13 +198,47 @@ real minimize_geometry_contraint_error(geometry_constraints * gc){
     total_control_points += gc->n_control_points[i];
     total_variables += gc->n_variables[i];
   }
-  gsl_multifit_fdfsolver * s = gsl_multifit_fdfsolver_alloc (T, total_control_points,1+total_variables);
-  //  gsl_vector * x = gsl_vector_alloc(1+total_variables);
-  gsl_vector * x = gsl_vector_alloc(total_control_points);
-  gsl_vector_set(x,0,0);
-  if(gc->type == RadialLineConstraint){
-    gsl_multifit_fdfsolver_set(s,evaluate_radial_line_fdf,x);
+  gsl_multifit_function_fdf my_func;
+  my_func.n = total_control_points;
+  my_func.p = 1+total_variables;
+  my_func.f = &evaluate_radial_line;
+  my_func.df = &evaluate_radial_line_df;
+  my_func.fdf = &evaluate_radial_line_fdf;
+  my_func.params = gc;
 
+  gsl_multifit_fdfsolver * s = gsl_multifit_fdfsolver_alloc (T, total_control_points,1+total_variables);
+  gsl_vector * x = gsl_vector_alloc(1+total_variables);
+  gsl_vector_set(x,total_variables,angle);
+  if(gc->type == RadialLineConstraint){
+    gsl_multifit_fdfsolver_set(s,&my_func,x);    
   }
-  return 0;
+  int iter = 0;
+  int status;
+  do
+    {
+      iter++;
+      status = gsl_multifit_fdfsolver_iterate (s);     
+      printf ("status = %s\n", gsl_strerror (status));     
+      print_state (iter, s);      
+      if (status)
+	break;     
+      status = gsl_multifit_test_delta (s->dx, s->x,
+					1e-4, 1e-4);
+    }
+  while (status == GSL_CONTINUE && iter < 500);
+  return gsl_vector_get (s->x, total_variables);
+}
+
+real geometry_contraint_minimizer(geometry_constraints * gc){
+  int *  n_variables_dummy = malloc(sizeof(int)*gc->n_images);
+  for(int i = 0;i<gc->n_images;i++){
+    n_variables_dummy[i] = 0;
+  }
+  int * tmp = gc->n_variables;
+  gc->n_variables = n_variables_dummy;
+  /* first try to find a decent starting angle */
+  real angle = minimize_geometry_contraint_error(gc, 0);
+  gc->n_variables = tmp;
+  /* now run the real thing */
+  return minimize_geometry_contraint_error(gc, angle);
 }

@@ -59,7 +59,9 @@ extern "C"
   /* transform control points from image coordinates to global coordinates */
   sp_vector *** control_points_to_global(geometry_constraints * gc, affine_transform ** t);
 
-  real minimize_geometry_contraint_error(geometry_constraints * gc);
+  real minimize_geometry_contraint_error(geometry_constraints * gc, real starting_angle);
+
+  real geometry_contraint_minimizer(geometry_constraints * gc);
 
   sp_vector * project_point_on_line_through_origin(sp_vector * p,real theta);
 #ifdef __cplusplus

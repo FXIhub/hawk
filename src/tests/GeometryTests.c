@@ -75,14 +75,20 @@ geometry_constraints * create_constraints(){
   gc->images[0] = a;
   gc->images[1] = b;
   gc->n_control_points = sp_malloc(sizeof(int * )*gc->n_images);
-  gc->n_control_points[0] = 1;
+  gc->n_control_points[0] = 2;
   gc->n_control_points[1] = 1;
   gc->control_points = sp_malloc(sizeof(sp_vector ** )*gc->n_images);
   gc->control_points[0] = sp_malloc(sizeof(sp_vector * )*gc->n_control_points[0]);
-  gc->control_points[0][0] = sp_vector_alloc(2);
+  for(int i = 0;i<gc->n_control_points[0];i++){
+    gc->control_points[0][i] = sp_vector_alloc(2);
+  }
   /* control at 1,1 of image a */
   sp_vector_set(gc->control_points[0][0],0,1);
   sp_vector_set(gc->control_points[0][0],1,1);
+
+  /* control at 0,1 of image a */
+  sp_vector_set(gc->control_points[0][1],0,0);
+  sp_vector_set(gc->control_points[0][1],1,1);
 
   gc->control_points[1] = sp_malloc(sizeof(sp_vector * )*gc->n_control_points[1]);
   gc->control_points[1][0] = sp_vector_alloc(2);
@@ -91,10 +97,14 @@ geometry_constraints * create_constraints(){
   sp_vector_set(gc->control_points[1][0],1,3);
 
   gc->n_variables = sp_malloc(sizeof(int * )*gc->n_images);
-  gc->n_variables[0] = 0;
+  gc->n_variables[0] = 2;
   gc->n_variables[1] = 0;
   gc->variable_type = sp_malloc(sizeof(GeometryVariable * )*gc->n_images);
-  gc->variable_type[0] = NULL;
+  for(int i = 0;i<gc->n_images;i++){
+    gc->variable_type[i] = sp_malloc(sizeof(GeometryVariable)*gc->n_variables[i]);
+  }
+  gc->variable_type[0][0] = DeltaX;
+  gc->variable_type[0][0] = Theta;
   gc->variable_type[1] = NULL;
   
   /* No transformation on the images */
@@ -132,7 +142,8 @@ void test_control_points_to_global(CuTest* tc){
 void test_basic_minimization(CuTest* tc){
   real tol = sqrt(REAL_EPSILON);
   geometry_constraints * gc = create_constraints();
-  minimize_geometry_contraint_error(gc);
+  real angle = geometry_contraint_minimizer(gc);
+  CuAssertDblEquals(tc,angle,M_PI/4.0,tol);
   geometry_constraints_free(gc);
 }
 
