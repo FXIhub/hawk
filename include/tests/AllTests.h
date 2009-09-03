@@ -23,5 +23,6 @@
 
 
 CuSuite* algorithms_get_suite();
+CuSuite* geometry_get_suite();
 
 #endif

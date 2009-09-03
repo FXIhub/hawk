@@ -24,6 +24,7 @@ set(GUI_SRCS
   ../saddle/minmaxL.c
   ../saddle/minmaxtau.c
   ../xcam.c
+  ../geometry_constraints.c
   geometrycontrol.cpp
   hawkgui.cpp
   imagecategory.cpp
@@ -89,7 +90,7 @@ ADD_EXECUTABLE(HawkGUI ${GUI_OBJ})
 
 LIST(APPEND LIBRARY_LIST ${QWT_LIBRARIES})
 
-TARGET_LINK_LIBRARIES(HawkGUI ${LIBRARY_LIST})
+TARGET_LINK_LIBRARIES(HawkGUI ${LIBRARY_LIST} ${GSL_LIBRARIES})
 
 #INSTALL(TARGETS HawkGUI 
 #	       RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin

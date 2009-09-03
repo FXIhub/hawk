@@ -9,9 +9,11 @@ IF(WIN32)
 ENDIF(WIN32)
 
 
-ADD_EXECUTABLE(tests ${OBJECTS} CuTest.c AllTests.c AlgorithmsTests.c ../algorithms.c ../configuration.c ../log.c ../saddle/minmaxtau.c ../saddle/minmaxL.c ../libconfig/libconfig.c ../libconfig/scanner.c ../libconfig/grammar.c ../metadata.c ../support.c)
+ADD_EXECUTABLE(tests ${OBJECTS} CuTest.c AllTests.c AlgorithmsTests.c GeometryTests.c ../algorithms.c ../configuration.c ../log.c ../saddle/minmaxtau.c ../saddle/minmaxL.c ../libconfig/libconfig.c ../libconfig/scanner.c ../libconfig/grammar.c ../metadata.c ../support.c ../geometry_constraints.c)
+ADD_EXECUTABLE(geometry_tests CuTest.c GeometryTests.c ../geometry_constraints.c geometry_tests)
 INCLUDE_DIRECTORIES(GSL_INCLUDES)
 TARGET_LINK_LIBRARIES(tests ${LIBRARY_LIST} ${GSL_LIBRARIES})
+TARGET_LINK_LIBRARIES(geometry_tests ${LIBRARY_LIST} ${GSL_LIBRARIES})
 
 endif(GSL_FOUND)
 

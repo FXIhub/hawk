@@ -280,3 +280,79 @@ void StitcherWorkspace::onItemChanged(QStandardItem * item){
   }
 }
 
+
+QTreeView * StitcherWorkspace::createConstraintsTree(){
+  /* need a real QTreeView with a model */
+  QStandardItemModel * model = new QStandardItemModel;
+  QTreeView *treeView = new QTreeView(this);
+  constraintsTree = treeView;
+  treeView->setModel(model);
+  loadConstraints();
+  treeView->setAlternatingRowColors(true);
+  treeView->setSelectionMode(QAbstractItemView::SingleSelection);
+  treeView->setSelectionBehavior(QAbstractItemView::SelectRows);
+  treeView->resizeColumnToContents(0);
+  treeView->resizeColumnToContents(1);
+  connect(model,SIGNAL(itemChanged(QStandardItem * )),this,SLOT(onItemChanged(QStandardItem *)));
+  return treeView;  
+}
+
+
+void StitcherWorkspace::loadConstraints(){
+  /* 
+     This is a prefix to distinguish Hawk Geometry properties from the
+     normal widget properties 
+  */
+  const QString tag("HawkGeometry_");
+  QList<QGraphicsItem *> ii  = _stitcherView->items();
+  QMap<QString,ImageItem *> sortMap;
+  for(int i = 0;i<ii.size();i++){
+    if(ImageItem * imageItem = qgraphicsitem_cast<ImageItem *>(ii[i])){
+      if(imageItem->isVisible()){
+	sortMap.insert(imageItem->identifier(),imageItem);
+      }
+    }
+  }
+  QList<ImageItem *>sortedItems = sortMap.values();
+  QStandardItemModel * model = qobject_cast<QStandardItemModel *>(geometryTree->model());
+  model->clear();
+  model->setHorizontalHeaderLabels(QStringList() << "Parameter" << "Value");
+  
+  for(int i = 0;i<sortedItems.size();i++){
+    ImageItem * imageItem = sortedItems[i];
+    const QMetaObject *metaobject =  imageItem->metaObject();
+    int count = metaobject->propertyCount();
+    QStandardItem * itemName = new QStandardItem(imageItem->identifier());
+    QStandardItem * itemValue = new QStandardItem();
+    QStandardItem *parentItem = model->invisibleRootItem();
+    itemName->setFlags(itemName->flags() & ~Qt::ItemIsEditable);
+    itemValue->setFlags(itemValue->flags() & ~Qt::ItemIsEditable);
+    parentItem->appendRow(QList<QStandardItem *>() << itemName <<  itemValue);
+    parentItem = itemName;
+    for (int j=0; j<count; ++j) {
+      QMetaProperty metaproperty = metaobject->property(j);
+      const char *name = metaproperty.name();
+      if(!QString(name).startsWith(tag)){
+	continue;
+      }
+      QVariant var =  imageItem->property(name);
+      Qt::ItemFlags itemValueFlags = Qt::ItemIsSelectable|Qt::ItemIsEnabled;
+      if(metaproperty.isWritable()){
+	itemValueFlags |= Qt::ItemIsEditable;
+      }
+      if(var.type() == QVariant::Double){
+	double value = var.toDouble();
+	QStandardItem * itemName = new QStandardItem(_stitcherView->propertyNameToDisplayName(name,tag));
+	QStandardItem * itemValue = new QStandardItem(QString("%0").arg(value));
+	itemValue->setData(value,Qt::UserRole + 1);
+	itemValue->setData(QString(name),Qt::UserRole + 2);
+	itemValue->setData(QVariant::fromValue(imageItem),Qt::UserRole + 3);
+	itemName->setFlags(itemName->flags() & ~Qt::ItemIsEditable);
+	itemValue->setFlags(itemValueFlags);
+	parentItem->appendRow(QList<QStandardItem *>() << itemName << itemValue);
+      }
+    }
+  }
+  geometryTree->expandAll();
+  geometryTree->sortByColumn(0,Qt::AscendingOrder);
+}
