@@ -49,6 +49,8 @@ set(GUI_SRCS
   editortools.cpp
   stitcherworkspace.cpp
   stitcherview.cpp
+  addconstraintdialog.cpp
+  addvariabledialog.cpp
 )
 
 set(GUI_MOC_HDRS
@@ -73,6 +75,8 @@ set(GUI_MOC_HDRS
   ${LOCAL_INCLUDE}/HawkGUI/stitcherworkspace.h
   ${LOCAL_INCLUDE}/HawkGUI/stitcherview.h
   ${LOCAL_INCLUDE}/HawkGUI/imageitem.h
+  ${LOCAL_INCLUDE}/HawkGUI/addconstraintdialog.h
+  ${LOCAL_INCLUDE}/HawkGUI/addvariabledialog.h
   ${LOCAL_INCLUDE}/communicator.h
   ${LOCAL_INCLUDE}/client_decoder.h 
   ${LOCAL_INCLUDE}/decoder.h 

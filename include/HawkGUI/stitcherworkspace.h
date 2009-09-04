@@ -21,12 +21,15 @@ class StitcherWorkspace: public QWidget
   void onRotateClicked();
   void onItemChanged(QStandardItem * item);
   void loadGeometry();
-  void loadConstraints();
+  void initConstraintsTree();
   void onAddControlPointClicked();
   void onDeleteControlPointClicked();
+  void onAddConstraintClicked();
+  void onAddVariableClicked();
+  void onOptimizeGeometryClicked();
  private:
   QTreeView * createGeometryTree();
-  QTreeView * createConstraintsTree();
+  QWidget * createConstraintsTree();
   QTreeView * geometryTree;
   QTreeView * constraintsTree;
   QWidget * createToolBar();

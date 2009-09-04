@@ -95,6 +95,7 @@ class ImageItem: public QObject, public QGraphicsPixmapItem
   QString identifier() const;
   void addControlPoint(QPointF pos);
   void deleteControlPoint(QPointF pos);
+  QList<QPointF> getControlPoints();
  private:
   enum EditType{ImageSize,Phased,Shifted,Wavelength,DetectorDistance,PointConvolute,Scaled,PixelSize,ImageCenter,CheckPoint};
   struct EditStep{

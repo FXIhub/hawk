@@ -66,85 +66,132 @@ void test_affine_transforms(CuTest* tc){
 
 }
 
-geometry_constraints * create_constraints(){
-  Image * a = sp_image_alloc(4,4,1);
-  Image * b = sp_image_alloc(4,4,1);
-  geometry_constraints * gc = sp_malloc(sizeof(geometry_constraints));
-  gc->n_images = 2;
-  gc->images = sp_malloc(sizeof(Image * )*gc->n_images);
-  gc->images[0] = a;
-  gc->images[1] = b;
-  gc->n_control_points = sp_malloc(sizeof(int * )*gc->n_images);
-  gc->n_control_points[0] = 2;
-  gc->n_control_points[1] = 1;
-  gc->control_points = sp_malloc(sizeof(sp_vector ** )*gc->n_images);
-  gc->control_points[0] = sp_malloc(sizeof(sp_vector * )*gc->n_control_points[0]);
-  for(int i = 0;i<gc->n_control_points[0];i++){
-    gc->control_points[0][i] = sp_vector_alloc(2);
-  }
-  /* control at 1,1 of image a */
-  sp_vector_set(gc->control_points[0][0],0,1);
-  sp_vector_set(gc->control_points[0][0],1,1);
-
-  /* control at 0,1 of image a */
-  sp_vector_set(gc->control_points[0][1],0,0);
-  sp_vector_set(gc->control_points[0][1],1,1);
-
-  gc->control_points[1] = sp_malloc(sizeof(sp_vector * )*gc->n_control_points[1]);
-  gc->control_points[1][0] = sp_vector_alloc(2);
-  /* control at 3,3 of image a */
-  sp_vector_set(gc->control_points[1][0],0,3);
-  sp_vector_set(gc->control_points[1][0],1,3);
-
-  gc->n_variables = sp_malloc(sizeof(int * )*gc->n_images);
-  gc->n_variables[0] = 2;
-  gc->n_variables[1] = 0;
-  gc->variable_type = sp_malloc(sizeof(GeometryVariable * )*gc->n_images);
-  for(int i = 0;i<gc->n_images;i++){
-    gc->variable_type[i] = sp_malloc(sizeof(GeometryVariable)*gc->n_variables[i]);
-  }
-  gc->variable_type[0][0] = DeltaX;
-  gc->variable_type[0][0] = Theta;
-  gc->variable_type[1] = NULL;
-  
-  /* No transformation on the images */
-  gc->dx = sp_malloc(sizeof(real )*gc->n_images);
-  gc->dx[0] = 0;
-  gc->dx[1] = 0;
-  gc->dy = sp_malloc(sizeof(real )*gc->n_images);
-  gc->dy[0] = 0;
-  gc->dy[1] = 0;
-  gc->zoom = sp_malloc(sizeof(real )*gc->n_images);
-  gc->zoom[0] = 1;
-  gc->zoom[1] = 1;
-  gc->theta = sp_malloc(sizeof(real )*gc->n_images);
-  gc->theta[0] = 0;
-  gc->theta[1] = 0;
-  gc->type = RadialLineConstraint;
-  return gc;
-}
 
 void test_control_points_to_global(CuTest* tc){
   real tol = sqrt(REAL_EPSILON);
-  geometry_constraints * gc = create_constraints();
-  affine_transform **t = affine_transforms_from_constraints(gc);
-  sp_vector *** global = control_points_to_global(gc,t);
+
+  Image * a = sp_image_alloc(4,4,1);
+  Image * b = sp_image_alloc(4,4,1);
+  positioned_image * p_a =  create_positioned_image(a);
+  positioned_image * p_b =  create_positioned_image(b);
+  geometrically_constrained_system * gc = geometrically_constrained_system_alloc();
+  geometric_constraint c = geometric_constraint_init(RadialLineConstraint,0);
+  /* control at 1,1 of image a */  
+  geometric_constraint_add_point(&c,create_control_point(p_a,1,1)); 
+  /* control at 3,3 of image b */
+  geometric_constraint_add_point(&c,create_control_point(p_b,3,3)); 
+
+  geometrically_constrained_system_add_constraint(gc,c);
+
+
+  sp_vector ** global = control_point_list_to_global(gc->constraints[0].points,gc->constraints[0].n_points);
   /* the 1,1 control point should now be at -1,-1 */
-  CuAssertDblEquals(tc,sp_vector_get(global[0][0],0),-1,tol);
-  CuAssertDblEquals(tc,sp_vector_get(global[0][0],1),-1,tol);
-  for(int i =0 ;i<gc->n_images;i++){
-    affine_transform_free(t[i]);
+  CuAssertDblEquals(tc,sp_vector_get(global[0],0),-1,tol);
+  CuAssertDblEquals(tc,sp_vector_get(global[0],1),-1,tol);
+  for(int i = 0;i<gc->constraints[0].n_points;i++){
+    sp_vector_free(global[i]);
   }
-  sp_free(t);
-  geometry_constraints_free(gc);
 }
 
 void test_basic_minimization(CuTest* tc){
   real tol = sqrt(REAL_EPSILON);
-  geometry_constraints * gc = create_constraints();
-  real angle = geometry_contraint_minimizer(gc);
-  CuAssertDblEquals(tc,angle,M_PI/4.0,tol);
-  geometry_constraints_free(gc);
+
+  Image * a = sp_image_alloc(4,4,1);
+  Image * b = sp_image_alloc(4,4,1);
+  positioned_image * p_a =  create_positioned_image(a);
+  positioned_image * p_b =  create_positioned_image(b);
+  geometrically_constrained_system * gc = geometrically_constrained_system_alloc();
+  geometric_constraint c = geometric_constraint_init(RadialLineConstraint,0);
+  /* control at 1,1 of image a */  
+  geometric_constraint_add_point(&c,create_control_point(p_a,1,1)); 
+  /* control at 3,3 of image b */
+  geometric_constraint_add_point(&c,create_control_point(p_b,3,3)); 
+
+  geometrically_constrained_system_add_constraint(gc,c);
+  geometry_contraint_minimizer(gc);
+  real angle = gc->constraints[0].best_fit;
+  CuAssertDblEquals(tc,tan(angle),tan(M_PI/4.0),tol);
+}
+
+void test_medium1_minimization(CuTest* tc){
+  real tol = sqrt(REAL_EPSILON);
+
+  Image * a = sp_image_alloc(4,4,1);
+  Image * b = sp_image_alloc(4,4,1);
+  positioned_image * p_a =  create_positioned_image(a);
+  positioned_image * p_b =  create_positioned_image(b);
+  geometrically_constrained_system * gc = geometrically_constrained_system_alloc();
+  geometric_constraint c = geometric_constraint_init(RadialLineConstraint,0);
+  /* control at 0,2 of image a */  
+  geometric_constraint_add_point(&c,create_control_point(p_a,0,2)); 
+  geometric_constraint_add_point(&c,create_control_point(p_a,1,2)); 
+  geometric_constraint_add_point(&c,create_control_point(p_b,3,3)); 
+
+  geometrically_constrained_system_add_variable(gc,create_geometry_variable(p_a,Theta));
+  geometrically_constrained_system_add_constraint(gc,c);
+
+  
+  geometry_contraint_minimizer(gc);
+  real angle = gc->constraints[0].best_fit;
+  CuAssertDblEquals(tc,tan(angle),tan(M_PI/4.0),tol);
+}
+
+
+void test_medium2_minimization(CuTest* tc){
+  real tol = sqrt(REAL_EPSILON);
+
+  Image * a = sp_image_alloc(4,4,1);
+  Image * b = sp_image_alloc(4,4,1);
+  positioned_image * p_a =  create_positioned_image(a);
+  positioned_image * p_b =  create_positioned_image(b);
+  geometrically_constrained_system * gc = geometrically_constrained_system_alloc();
+  geometric_constraint c = geometric_constraint_init(RadialLineConstraint,0);
+
+  geometric_constraint_add_point(&c,create_control_point(p_a,0,1)); 
+  geometric_constraint_add_point(&c,create_control_point(p_a,1,1)); 
+  geometric_constraint_add_point(&c,create_control_point(p_b,3,3)); 
+
+  geometrically_constrained_system_add_variable(gc,create_geometry_variable(p_a,Theta));
+  geometrically_constrained_system_add_variable(gc,create_geometry_variable(p_a,DeltaX));
+  geometrically_constrained_system_add_constraint(gc,c);
+
+  
+  geometry_contraint_minimizer(gc);
+  real angle = gc->constraints[0].best_fit;
+  CuAssertDblEquals(tc,tan(angle),tan(M_PI/4.0),tol);
+}
+
+
+void test_hard1_minimization(CuTest* tc){
+  real tol = sqrt(REAL_EPSILON);
+
+  Image * a = sp_image_alloc(4,4,1);
+  Image * b = sp_image_alloc(4,4,1);
+  positioned_image * p_a =  create_positioned_image(a);
+  positioned_image * p_b =  create_positioned_image(b);
+  geometrically_constrained_system * gc = geometrically_constrained_system_alloc();
+  geometric_constraint c = geometric_constraint_init(RadialLineConstraint,0);
+
+  geometric_constraint_add_point(&c,create_control_point(p_a,1,0)); 
+  geometric_constraint_add_point(&c,create_control_point(p_a,2,1)); 
+  geometric_constraint_add_point(&c,create_control_point(p_b,3,3)); 
+  geometrically_constrained_system_add_constraint(gc,c);
+
+
+  c = geometric_constraint_init(RadialLineConstraint,0);
+
+  geometric_constraint_add_point(&c,create_control_point(p_a,1,4)); 
+  geometric_constraint_add_point(&c,create_control_point(p_a,2,3)); 
+  geometric_constraint_add_point(&c,create_control_point(p_b,3,1)); 
+  geometrically_constrained_system_add_constraint(gc,c);
+
+  //  geometrically_constrained_system_add_variable(gc,create_geometry_variable(p_a,Theta));
+  geometrically_constrained_system_add_variable(gc,create_geometry_variable(p_a,DeltaX));
+
+  
+  geometry_contraint_minimizer(gc);
+  real angle = gc->constraints[0].best_fit;
+  CuAssertDblEquals(tc,tan(angle),tan(M_PI/4.0),tol);
 }
 
 CuSuite* geometry_get_suite(void)
@@ -155,6 +202,9 @@ CuSuite* geometry_get_suite(void)
   SUITE_ADD_TEST(suite, test_affine_transforms);
   SUITE_ADD_TEST(suite, test_control_points_to_global);
   SUITE_ADD_TEST(suite, test_basic_minimization);
+  SUITE_ADD_TEST(suite, test_medium1_minimization);
+  SUITE_ADD_TEST(suite, test_medium2_minimization);
+  SUITE_ADD_TEST(suite, test_hard1_minimization);
   return suite;
 
 }

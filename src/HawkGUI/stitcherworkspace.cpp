@@ -2,10 +2,12 @@
 #include "stitcherworkspace.h"
 #include "stitcherview.h"
 #include "imageitem.h"
+#include "addconstraintdialog.h"
+#include "addvariabledialog.h"
 
 
 Q_DECLARE_METATYPE(ImageItem *);
-
+Q_DECLARE_METATYPE(AddConstraintDialog *);
 StitcherWorkspace::StitcherWorkspace(QWidget * parent)
   :QWidget(parent)
 {
@@ -16,6 +18,7 @@ StitcherWorkspace::StitcherWorkspace(QWidget * parent)
   hbox->addWidget(leftSplitter);
   leftSplitter->addWidget(createToolBar());
   leftSplitter->addWidget(createGeometryTree());
+  leftSplitter->addWidget(createConstraintsTree());
   connect(_stitcherView,SIGNAL(imageItemGeometryChanged(ImageItem *)),this,SLOT(loadGeometry()));
   //  QHBoxLayout * hbox = new QHBoxLayout(this);
   hbox->addWidget(_stitcherView); 
@@ -178,7 +181,7 @@ void StitcherWorkspace::onRotateClicked(){
   if(_stitcherView->selectedImage()){
     _stitcherView->selectedImage()->rotateImage();
   }
-}
+ }
 
 
 QTreeView * StitcherWorkspace::createGeometryTree(){
@@ -281,78 +284,124 @@ void StitcherWorkspace::onItemChanged(QStandardItem * item){
 }
 
 
-QTreeView * StitcherWorkspace::createConstraintsTree(){
+QWidget * StitcherWorkspace::createConstraintsTree(){
+  QWidget * top = new QWidget(this);
+  QVBoxLayout * vbox = new QVBoxLayout(top);
   /* need a real QTreeView with a model */
   QStandardItemModel * model = new QStandardItemModel;
-  QTreeView *treeView = new QTreeView(this);
+  QTreeView *treeView = new QTreeView(top);
+  vbox->addWidget(treeView);
   constraintsTree = treeView;
   treeView->setModel(model);
-  loadConstraints();
+  initConstraintsTree();
   treeView->setAlternatingRowColors(true);
   treeView->setSelectionMode(QAbstractItemView::SingleSelection);
   treeView->setSelectionBehavior(QAbstractItemView::SelectRows);
   treeView->resizeColumnToContents(0);
   treeView->resizeColumnToContents(1);
-  connect(model,SIGNAL(itemChanged(QStandardItem * )),this,SLOT(onItemChanged(QStandardItem *)));
-  return treeView;  
+  QHBoxLayout * hbox = new QHBoxLayout();
+  QPushButton * addConstraint = new QPushButton("Add Constraint",top);
+  connect(addConstraint,SIGNAL(clicked()),this,SLOT(onAddConstraintClicked()));
+  hbox->addWidget(addConstraint);
+  QPushButton * optimizeGeometry = new QPushButton("Optimize Geometry",top);
+  connect(optimizeGeometry,SIGNAL(clicked()),this,SLOT(onOptimizeGeometryClicked()));
+  hbox->addWidget(optimizeGeometry);
+  vbox->addLayout(hbox);
+  return top;
 }
 
 
-void StitcherWorkspace::loadConstraints(){
+void StitcherWorkspace::initConstraintsTree(){
   /* 
      This is a prefix to distinguish Hawk Geometry properties from the
      normal widget properties 
   */
-  const QString tag("HawkGeometry_");
-  QList<QGraphicsItem *> ii  = _stitcherView->items();
-  QMap<QString,ImageItem *> sortMap;
-  for(int i = 0;i<ii.size();i++){
-    if(ImageItem * imageItem = qgraphicsitem_cast<ImageItem *>(ii[i])){
-      if(imageItem->isVisible()){
-	sortMap.insert(imageItem->identifier(),imageItem);
-      }
-    }
-  }
-  QList<ImageItem *>sortedItems = sortMap.values();
-  QStandardItemModel * model = qobject_cast<QStandardItemModel *>(geometryTree->model());
+  QStandardItemModel * model = qobject_cast<QStandardItemModel *>(constraintsTree->model());
   model->clear();
-  model->setHorizontalHeaderLabels(QStringList() << "Parameter" << "Value");
-  
-  for(int i = 0;i<sortedItems.size();i++){
-    ImageItem * imageItem = sortedItems[i];
-    const QMetaObject *metaobject =  imageItem->metaObject();
-    int count = metaobject->propertyCount();
-    QStandardItem * itemName = new QStandardItem(imageItem->identifier());
-    QStandardItem * itemValue = new QStandardItem();
+  model->setHorizontalHeaderLabels(QStringList() << "Constraint" << "Error");
+}
+
+
+void StitcherWorkspace::onAddConstraintClicked(){
+  /* 
+     This is a prefix to distinguish Hawk Geometry properties from the
+     normal widget properties 
+  */
+  QStandardItemModel * model = qobject_cast<QStandardItemModel *>(constraintsTree->model());
+  AddConstraintDialog * d = new AddConstraintDialog(_stitcherView);
+  if(d->exec()){
+    QList<QPair<int,ImageItem *> > points = d->selectedPoints();
     QStandardItem *parentItem = model->invisibleRootItem();
-    itemName->setFlags(itemName->flags() & ~Qt::ItemIsEditable);
-    itemValue->setFlags(itemValue->flags() & ~Qt::ItemIsEditable);
+    QStandardItem * itemName = new QStandardItem("Type");
+    itemName->setData(QVariant::fromValue(d));
+    QStandardItem * itemValue;
+    if(d->constraintType() == RadialLineConstraint){
+      itemValue = new QStandardItem("Radial Line");
+    }else{
+      itemValue = new QStandardItem("Centered Circle");
+    }
     parentItem->appendRow(QList<QStandardItem *>() << itemName <<  itemValue);
     parentItem = itemName;
-    for (int j=0; j<count; ++j) {
-      QMetaProperty metaproperty = metaobject->property(j);
-      const char *name = metaproperty.name();
-      if(!QString(name).startsWith(tag)){
-	continue;
-      }
-      QVariant var =  imageItem->property(name);
-      Qt::ItemFlags itemValueFlags = Qt::ItemIsSelectable|Qt::ItemIsEnabled;
-      if(metaproperty.isWritable()){
-	itemValueFlags |= Qt::ItemIsEditable;
-      }
-      if(var.type() == QVariant::Double){
-	double value = var.toDouble();
-	QStandardItem * itemName = new QStandardItem(_stitcherView->propertyNameToDisplayName(name,tag));
-	QStandardItem * itemValue = new QStandardItem(QString("%0").arg(value));
-	itemValue->setData(value,Qt::UserRole + 1);
-	itemValue->setData(QString(name),Qt::UserRole + 2);
-	itemValue->setData(QVariant::fromValue(imageItem),Qt::UserRole + 3);
-	itemName->setFlags(itemName->flags() & ~Qt::ItemIsEditable);
-	itemValue->setFlags(itemValueFlags);
-	parentItem->appendRow(QList<QStandardItem *>() << itemName << itemValue);
-      }
+    for(int i = 0;i<points.size();i++){
+
+      itemName = new QStandardItem(points[i].second->identifier() + "." + QString::number(points[i].first));
+      itemValue = new QStandardItem("");
+      parentItem->appendRow(QList<QStandardItem *>() << itemName <<  itemValue);
+    }
+    itemName = new QStandardItem("Best Fit");
+    itemValue = new QStandardItem("");
+    parentItem->appendRow(QList<QStandardItem *>() << itemName <<  itemValue);
+
+    
+  }
+  
+}
+
+void StitcherWorkspace::onAddVariableClicked(){
+  /* 
+     This is a prefix to distinguish Hawk Geometry properties from the
+     normal widget properties 
+  */
+  QStandardItemModel * model = qobject_cast<QStandardItemModel *>(constraintsTree->model());
+  AddVariableDialog * d = new AddVariableDialog;
+  
+}
+
+void StitcherWorkspace::onOptimizeGeometryClicked(){
+  geometrically_constrained_system * gc = geometrically_constrained_system_alloc();
+  
+  /* create positioned images */
+  QMap<ImageItem *, positioned_image *> pos_image_map;
+  QList<QGraphicsItem *> graphicsItems = _stitcherView->items();
+  for(int i = 0; i < graphicsItems.size(); i++){
+    if(ImageItem * item = qgraphicsitem_cast<ImageItem *>(graphicsItems[i])){
+      positioned_image * p = create_positioned_image(item->getImage());
+      set_image_position(p,DeltaX,item->dx());
+      set_image_position(p,DeltaY,item->dy());
+      set_image_position(p,Zoom,item->dz());
+      set_image_position(p,Theta,item->theta());
+      pos_image_map.insert(item,p);
     }
   }
-  geometryTree->expandAll();
-  geometryTree->sortByColumn(0,Qt::AscendingOrder);
+
+
+  QStandardItemModel * model = qobject_cast<QStandardItemModel *>(constraintsTree->model());
+  for(int i = 0;i<model->rowCount();i++){
+    QStandardItem * it = model->item(i,0);
+    AddConstraintDialog * d = it->data().value<AddConstraintDialog *>();
+    geometric_constraint c =  geometric_constraint_init(d->constraintType(),0);
+    
+
+    QList<QPair<int,ImageItem *> > points = d->selectedPoints();
+    for(int i = 0;i<points.size();i++){
+      ImageItem * item = points[i].second;
+      QPointF pos  = item->getControlPoints()[points[i].first];
+      control_point cp = create_control_point(pos_image_map.value(item),pos.x(),pos.y());
+      geometric_constraint_add_point(&c,cp);            
+    }
+    geometrically_constrained_system_add_constraint(gc,c);
+  }
+  if(model->rowCount()){
+    geometry_contraint_minimizer(gc);  
+  }
 }

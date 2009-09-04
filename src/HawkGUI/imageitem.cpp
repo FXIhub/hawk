@@ -754,3 +754,11 @@ void ImageItem::deleteControlPoint(QPointF pos){
     controlPoints[toDelete] = NULL;
   }
 }
+
+QList<QPointF> ImageItem::getControlPoints(){
+  QList<QPointF> ret;
+  for(int i = 0;i<controlPoints.size();i++){
+    ret.append(controlPoints[i]->pos());
+  }
+  return ret;
+}
