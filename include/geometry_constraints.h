@@ -51,6 +51,8 @@ extern "C"
      for the CircleConstraint
     */
     real best_fit;
+    /* error for each control point */
+    real * error;
   }geometric_constraint;
 
   typedef struct{

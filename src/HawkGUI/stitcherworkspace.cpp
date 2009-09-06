@@ -12,16 +12,21 @@ StitcherWorkspace::StitcherWorkspace(QWidget * parent)
   :QWidget(parent)
 {
   QHBoxLayout * hbox = new QHBoxLayout(this);
+  QSplitter * centerSplitter = new QSplitter(Qt::Horizontal,this);
   this->setLayout(hbox);
-  _stitcherView = new StitcherView(this);    
+  hbox->addWidget(centerSplitter);
+  _stitcherView = new StitcherView(this);  
+  _stitcherView->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
   QSplitter * leftSplitter = new QSplitter(Qt::Vertical,this);
-  hbox->addWidget(leftSplitter);
+  centerSplitter->addWidget(leftSplitter);
   leftSplitter->addWidget(createToolBar());
   leftSplitter->addWidget(createGeometryTree());
   leftSplitter->addWidget(createConstraintsTree());
   connect(_stitcherView,SIGNAL(imageItemGeometryChanged(ImageItem *)),this,SLOT(loadGeometry()));
-  //  QHBoxLayout * hbox = new QHBoxLayout(this);
-  hbox->addWidget(_stitcherView); 
+  centerSplitter->addWidget(_stitcherView); 
+  centerSplitter->setStretchFactor(0,0);
+  centerSplitter->setStretchFactor(1,2);
+  //  centerSplitter->setSizes(QList<int>() << 1 << 1000);
 }
 
 QWidget * StitcherWorkspace::createToolBar(){
@@ -43,7 +48,7 @@ QWidget * StitcherWorkspace::createToolBar(){
   stitch->setToolTip(tr("Combine images in a single one mantaining relative position"));
   stitch->setIconSize(iconSize);
   connect(stitch,SIGNAL(clicked(bool)),this,SLOT(onStitchClicked()));
-  layout->addWidget(stitch,0,5);
+  layout->addWidget(stitch,0,3);
 
   QToolButton * line = new QToolButton(this);
   line->setIcon(QIcon(":images/add_line.png"));
@@ -59,26 +64,19 @@ QWidget * StitcherWorkspace::createToolBar(){
   connect(circle,SIGNAL(clicked(bool)),this,SLOT(onCircleClicked()));
   layout->addWidget(circle,0,2);
 
-  QToolButton * rotate = new QToolButton(this);
-  rotate->setIcon(QIcon(":images/undo.png"));
-  rotate->setToolTip(tr("Rotate image 180 degrees"));
-  rotate->setIconSize(iconSize);
-  connect(rotate,SIGNAL(clicked(bool)),this,SLOT(onRotateClicked()));
-  layout->addWidget(rotate,0,3);
-
   QToolButton * clear = new QToolButton(this);
   clear->setIcon(QIcon(":images/clear.png"));
   clear->setToolTip(tr("Remove helper lines"));
   clear->setIconSize(iconSize);
   connect(clear,SIGNAL(clicked(bool)),_stitcherView,SLOT(clearHelpers()));
-  layout->addWidget(clear,0,4);
+  layout->addWidget(clear,1,2);
 
   QToolButton * clearAll = new QToolButton(this);
   clearAll->setIcon(QIcon(":images/edit-delete.png"));
   clearAll->setToolTip(tr("Clear workspace"));
   clearAll->setIconSize(iconSize);
   connect(clearAll,SIGNAL(clicked(bool)),_stitcherView,SLOT(clearAll()));
-  layout->addWidget(clearAll,0,5);
+  layout->addWidget(clearAll,1,3);
 
 
   QToolButton * addPoint = new QToolButton(this);
@@ -218,7 +216,7 @@ void StitcherWorkspace::loadGeometry(){
   QList<ImageItem *>sortedItems = sortMap.values();
   QStandardItemModel * model = qobject_cast<QStandardItemModel *>(geometryTree->model());
   model->clear();
-  model->setHorizontalHeaderLabels(QStringList() << "Parameter" << "Value");
+  model->setHorizontalHeaderLabels(QStringList() << "Parameter" << "Value" << "Locked");
   
   for(int i = 0;i<sortedItems.size();i++){
     ImageItem * imageItem = sortedItems[i];
@@ -226,12 +224,18 @@ void StitcherWorkspace::loadGeometry(){
     int count = metaobject->propertyCount();
     QStandardItem * itemName = new QStandardItem(imageItem->identifier());
     QStandardItem * itemValue = new QStandardItem();
+    QStandardItem * itemLocked = new QStandardItem();
+    itemLocked->setFlags(itemLocked->flags() & ~Qt::ItemIsEditable);
     QStandardItem *parentItem = model->invisibleRootItem();
     itemName->setFlags(itemName->flags() & ~Qt::ItemIsEditable);
     itemValue->setFlags(itemValue->flags() & ~Qt::ItemIsEditable);
-    parentItem->appendRow(QList<QStandardItem *>() << itemName <<  itemValue);
-    parentItem = itemName;
-    for (int j=0; j<count; ++j) {
+    if(model->findItems(itemName->text()).empty()){
+      parentItem->appendRow(QList<QStandardItem *>() << itemName <<  itemValue << itemLocked);
+      parentItem = itemName;
+    }else{
+      parentItem = model->findItems(itemName->text()).first();
+    }
+    for (int j=0; j<count; ++j){
       QMetaProperty metaproperty = metaobject->property(j);
       const char *name = metaproperty.name();
       if(!QString(name).startsWith(tag)){
@@ -251,35 +255,53 @@ void StitcherWorkspace::loadGeometry(){
 	itemValue->setData(QVariant::fromValue(imageItem),Qt::UserRole + 3);
 	itemName->setFlags(itemName->flags() & ~Qt::ItemIsEditable);
 	itemValue->setFlags(itemValueFlags);
-	parentItem->appendRow(QList<QStandardItem *>() << itemName << itemValue);
+	QStandardItem * itemLocked = new QStandardItem();
+	itemLocked->setFlags(itemLocked->flags() & ~Qt::ItemIsEditable);
+	/* check for lock property */
+	QString lockedPropertyName = name + QString("_locked");
+	if(imageItem->property(lockedPropertyName.toAscii().data()).isValid()){
+	  bool locked = imageItem->property(lockedPropertyName.toAscii().data()).toBool();
+	  itemLocked->setCheckable(true);	
+	  itemValue->setData(locked,Qt::UserRole + 1);
+	  itemLocked->setData(QString(lockedPropertyName),Qt::UserRole + 2);
+	  itemLocked->setData(QVariant::fromValue(imageItem),Qt::UserRole + 3);
+	  if(locked){
+	    itemLocked->setCheckState(Qt::Checked);
+	    itemValue->setEnabled(false);
+	  }
+	}
+	parentItem->appendRow(QList<QStandardItem *>() << itemName << itemValue << itemLocked);
       }
     }
   }
   geometryTree->expandAll();
+  geometryTree->resizeColumnToContents(0);
   geometryTree->sortByColumn(0,Qt::AscendingOrder);
 }
 
 
 void StitcherWorkspace::onItemChanged(QStandardItem * item){
-  if(((item->flags() & Qt::ItemIsEditable) || (item->flags() & Qt::ItemIsUserCheckable )) == 0){
+  if(item->isEnabled() == false){
     return;
   }
-  qDebug("item changed");
-  if(!item->data().isValid()){
-    item = item->parent();
-  }
-  if(!item->data().isValid()){
-    qFatal("Can't reach here");
-  }
-  QVariant var = item->data();
-  if(var.type() == QVariant::Double){
-    double value = item->text().toDouble();
+  if(item->flags() & Qt::ItemIsUserCheckable){
+    bool value = (item->checkState() == Qt::Checked);
     QString property = item->data(Qt::UserRole + 2).toString();
     ImageItem * imageItem = item->data(Qt::UserRole + 3).value<ImageItem *>();
-    item->setText(QString("%0").arg(value));		  
     imageItem->setProperty(property.toAscii().constData(),value);
-    qDebug("New value for %s = %f",property.toAscii().data(),value);
     loadGeometry();
+  }else if(item->flags() & Qt::ItemIsEditable){
+    qDebug("item changed");
+    QVariant var = item->data();
+    if(var.type() == QVariant::Double){
+      double value = item->text().toDouble();
+      QString property = item->data(Qt::UserRole + 2).toString();
+      ImageItem * imageItem = item->data(Qt::UserRole + 3).value<ImageItem *>();
+      //      item->setText(QString("%0").arg(value));		  
+      imageItem->setProperty(property.toAscii().constData(),value);
+      qDebug("New value for %s = %f",property.toAscii().data(),value);
+      loadGeometry();
+    }
   }
 }
 
@@ -287,6 +309,8 @@ void StitcherWorkspace::onItemChanged(QStandardItem * item){
 QWidget * StitcherWorkspace::createConstraintsTree(){
   QWidget * top = new QWidget(this);
   QVBoxLayout * vbox = new QVBoxLayout(top);
+  top->setContentsMargins(0,0,0,0);
+  vbox->setContentsMargins(0,0,0,0);
   /* need a real QTreeView with a model */
   QStandardItemModel * model = new QStandardItemModel;
   QTreeView *treeView = new QTreeView(top);
@@ -299,14 +323,12 @@ QWidget * StitcherWorkspace::createConstraintsTree(){
   treeView->setSelectionBehavior(QAbstractItemView::SelectRows);
   treeView->resizeColumnToContents(0);
   treeView->resizeColumnToContents(1);
-  QHBoxLayout * hbox = new QHBoxLayout();
   QPushButton * addConstraint = new QPushButton("Add Constraint",top);
   connect(addConstraint,SIGNAL(clicked()),this,SLOT(onAddConstraintClicked()));
-  hbox->addWidget(addConstraint);
+  vbox->addWidget(addConstraint);
   QPushButton * optimizeGeometry = new QPushButton("Optimize Geometry",top);
   connect(optimizeGeometry,SIGNAL(clicked()),this,SLOT(onOptimizeGeometryClicked()));
-  hbox->addWidget(optimizeGeometry);
-  vbox->addLayout(hbox);
+  vbox->addWidget(optimizeGeometry);
   return top;
 }
 
@@ -319,6 +341,7 @@ void StitcherWorkspace::initConstraintsTree(){
   QStandardItemModel * model = qobject_cast<QStandardItemModel *>(constraintsTree->model());
   model->clear();
   model->setHorizontalHeaderLabels(QStringList() << "Constraint" << "Error");
+  constraintsTree->setColumnWidth(0,20);
 }
 
 
@@ -354,7 +377,9 @@ void StitcherWorkspace::onAddConstraintClicked(){
 
     
   }
-  
+  constraintsTree->expandAll();
+  constraintsTree->resizeColumnToContents(0);
+  constraintsTree->resizeColumnToContents(1);
 }
 
 void StitcherWorkspace::onAddVariableClicked(){
@@ -377,9 +402,23 @@ void StitcherWorkspace::onOptimizeGeometryClicked(){
     if(ImageItem * item = qgraphicsitem_cast<ImageItem *>(graphicsItems[i])){
       positioned_image * p = create_positioned_image(item->getImage());
       set_image_position(p,DeltaX,item->dx());
+      if(!item->dxLocked()){
+	geometrically_constrained_system_add_variable(gc,create_geometry_variable(p,DeltaX));
+      }
       set_image_position(p,DeltaY,item->dy());
-      set_image_position(p,Zoom,item->dz());
+      if(!item->dyLocked()){
+	geometrically_constrained_system_add_variable(gc,create_geometry_variable(p,DeltaY));
+      }
+      set_image_position(p,Zoom,50.0/item->dz());
+      if(!item->dzLocked()){
+	geometrically_constrained_system_add_variable(gc,create_geometry_variable(p,Zoom));
+      }
+
       set_image_position(p,Theta,item->theta());
+      if(!item->thetaLocked()){
+	geometrically_constrained_system_add_variable(gc,create_geometry_variable(p,Theta));
+      }
+
       pos_image_map.insert(item,p);
     }
   }
@@ -396,7 +435,8 @@ void StitcherWorkspace::onOptimizeGeometryClicked(){
     for(int i = 0;i<points.size();i++){
       ImageItem * item = points[i].second;
       QPointF pos  = item->getControlPoints()[points[i].first];
-      control_point cp = create_control_point(pos_image_map.value(item),pos.x(),pos.y());
+      positioned_image * a = pos_image_map.value(item);
+      control_point cp = create_control_point(a,pos.x()-sp_image_x(a->image)/2,sp_image_y(a->image)/2-pos.y());
       geometric_constraint_add_point(&c,cp);            
     }
     geometrically_constrained_system_add_constraint(gc,c);
@@ -404,4 +444,29 @@ void StitcherWorkspace::onOptimizeGeometryClicked(){
   if(model->rowCount()){
     geometry_contraint_minimizer(gc);  
   }
+  _stitcherView->clearConstraintFits();
+  for(int i = 0;i<model->rowCount();i++){
+    QStandardItem * it = model->item(i,0);
+    for(int j = 0;j<it->rowCount()-1;j++){
+      it->child(j,1)->setText(QString("%0").arg(gc->constraints[i].error[j]));      
+    }
+    it->child(it->rowCount()-1,1)->setText(QString("%0").arg(gc->constraints[i].best_fit*180.0/M_PI));      	
+    _stitcherView->drawConstraintFit(gc->constraints[i].best_fit,gc->constraints[i].type);
+  }  
+  for(int i = 0;i<gc->n_variables;i++){
+    ImageItem * item = pos_image_map.keys(gc->variables[i].parent).first();
+    if(gc->variables[i].type == DeltaX){
+      item->setDx(gc->variables[i].parent->pos[DeltaX]);      
+    }
+    if(gc->variables[i].type == DeltaY){
+      item->setDy(gc->variables[i].parent->pos[DeltaY]);      
+    }
+    if(gc->variables[i].type == Zoom){
+      item->setDz(50.0/gc->variables[i].parent->pos[Zoom]);      
+    }
+    if(gc->variables[i].type == Theta){
+      item->setTheta(50.0/gc->variables[i].parent->pos[Theta]);      
+    }    
+  }
+  loadGeometry();
 }

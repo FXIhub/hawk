@@ -57,6 +57,7 @@ geometric_constraint geometric_constraint_init(GeometryConstraintType type, real
   ret.points = 0;
   ret.best_fit = best_guess;
   ret.type = type;
+  ret.error = NULL;
   return ret;
 }
 
@@ -156,7 +157,7 @@ sp_vector *** control_points_to_global(geometry_constraints * gc, affine_transfo
     ret[i] = sp_malloc(sizeof(sp_vector *)*gc->n_control_points[i]);
     for(int j = 0;j<gc->n_control_points[i];j++){
       sp_vector_set(tmp,0,sp_vector_get(gc->control_points[i][j],0)-sp_image_x(gc->images[i])/2);
-      sp_vector_set(tmp,1,sp_vector_get(gc->control_points[i][j],1)-sp_image_y(gc->images[i])/2);
+      sp_vector_set(tmp,1,sp_image_y(gc->images[i])/2-sp_vector_get(gc->control_points[i][j],1));
       ret[i][j] = apply_affine_transform(t[i],tmp);      
     }
   }
@@ -169,8 +170,8 @@ sp_vector ** control_point_list_to_global(control_point * points, int n){
   sp_vector * tmp = sp_vector_alloc(2);
   for(int i = 0;i<n;i++){
     affine_transform * t = affine_transfrom_from_positioned_image(points[i].parent);
-    sp_vector_set(tmp,0,points[i].pos[0]-sp_image_x(points[i].parent->image)/2);
-    sp_vector_set(tmp,1,points[i].pos[1]-sp_image_y(points[i].parent->image)/2);
+    sp_vector_set(tmp,0,points[i].pos[0]);
+    sp_vector_set(tmp,1,points[i].pos[1]);
     ret[i] = apply_affine_transform(t,tmp);      
     affine_transform_free(t);
   }
@@ -304,6 +305,15 @@ int minimize_geometry_contraint_error(geometrically_constrained_system * gc){
 					1e-4, 1e-4);
     }
   while (status == GSL_CONTINUE && iter < 500);
+  int index = 0;
+  /* copy errors */
+  for(int i = 0;i<gc->n_constraints;i++){
+    gc->constraints[i].error = sp_malloc(sizeof(real)*gc->constraints[i].n_points);
+    for(int j = 0;j<gc->constraints[i].n_points;j++){
+      gc->constraints[i].error[j] = gsl_vector_get(s->f, index);
+      index++;
+    }
+  }
   return 0;
 }
 

@@ -20,6 +20,10 @@ class ImageItem: public QObject, public QGraphicsPixmapItem
     Q_PROPERTY(double HawkGeometry_dy READ dy WRITE setDy)
     Q_PROPERTY(double HawkGeometry_dz READ dz WRITE setDz)
     Q_PROPERTY(double HawkGeometry_theta READ theta WRITE setTheta)
+    Q_PROPERTY(bool HawkGeometry_dx_locked READ dxLocked WRITE setDxLocked)
+    Q_PROPERTY(bool HawkGeometry_dy_locked READ dyLocked WRITE setDyLocked)
+    Q_PROPERTY(bool HawkGeometry_dz_locked READ dzLocked WRITE setDzLocked)
+    Q_PROPERTY(bool HawkGeometry_theta_locked READ thetaLocked WRITE setThetaLocked)
    public:
   ImageItem(Image * data,QString filename,ImageView * view,QGraphicsItem * parent = NULL);
   ImageItem(QPixmap pix,ImageView * view,QGraphicsItem * parent);
@@ -92,10 +96,19 @@ class ImageItem: public QObject, public QGraphicsPixmapItem
   void setDz(double);
   double theta() const;
   void setTheta(double);
+  bool dxLocked() const;
+  void setDxLocked(bool);
+  bool dyLocked() const;
+  void setDyLocked(bool);
+  bool dzLocked() const;
+  void setDzLocked(bool);
+  bool thetaLocked() const;
+  void setThetaLocked(bool);
   QString identifier() const;
   void addControlPoint(QPointF pos);
   void deleteControlPoint(QPointF pos);
   QList<QPointF> getControlPoints();
+  void moveBy(qreal dx, qreal dy);
  private:
   enum EditType{ImageSize,Phased,Shifted,Wavelength,DetectorDistance,PointConvolute,Scaled,PixelSize,ImageCenter,CheckPoint};
   struct EditStep{
@@ -124,6 +137,10 @@ class ImageItem: public QObject, public QGraphicsPixmapItem
   QGraphicsTextItem * identifierItem;
   QString identifierString;
   QList<QGraphicsEllipseItem *> controlPoints;
+  bool _dxLocked;
+  bool _dyLocked;
+  bool _dzLocked;
+  bool _thetaLocked;
 };
 
 #else

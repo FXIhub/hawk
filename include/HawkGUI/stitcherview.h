@@ -3,6 +3,7 @@
 #if defined __cplusplus || defined Q_MOC_RUN
 
 #include "imageview.h"
+#include "geometry_constraints.h"
 class ImageItem;
 
 class StitcherView: public ImageView
@@ -15,12 +16,15 @@ class StitcherView: public ImageView
   void saveImage();
   enum Mode{Default,Line,Circle,AddPoint,DeletePoint};
   void setMode(Mode m);
+  void clearConstraintFits();
+  void drawConstraintFit(real fit, GeometryConstraintType type);
  public slots:
   void clearHelpers();
   void clearAll();
   void scaleItems(qreal new_scale);
   void scaleScene(qreal new_scale);
  protected:
+  void wheelEvent(QWheelEvent * event);
   void mouseReleaseEvent(QMouseEvent * e);
   void mousePressEvent(QMouseEvent * e);
   void mouseMoveEvent(QMouseEvent * e);
@@ -30,6 +34,7 @@ class StitcherView: public ImageView
   Mode mode;
   QPoint lineOrigin;
   QPoint lineEnd;
+  QList<QGraphicsItem *>constraintFit;
 };
 
 #else

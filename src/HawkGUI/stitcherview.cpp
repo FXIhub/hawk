@@ -209,6 +209,12 @@ void StitcherView::mouseMoveEvent(QMouseEvent * event){
   event->accept();
 }
 
+void StitcherView::wheelEvent( QWheelEvent * event ){
+  qreal speed = 0.0005;
+  qreal scale = 1+event->delta()*speed;
+  scaleScene(scale);
+}
+
 void StitcherView::keyPressEvent ( QKeyEvent * event ){
   ImageView::keyPressEvent(event);
 }
@@ -236,4 +242,35 @@ void StitcherView::scaleItems(qreal new_scale){
       emit imageItemGeometryChanged(item);
     }
   }    
+}
+
+
+
+void StitcherView::clearConstraintFits(){
+  while(!constraintFit.isEmpty()){
+    delete constraintFit.takeLast();
+  }
+}
+
+void StitcherView::drawConstraintFit(real fit, GeometryConstraintType type){
+  if(type == RadialLineConstraint){
+    qreal x1,x2,y1,y2;
+    qreal scale = 10000;
+    x1 = cos(fit)*scale;
+    /* we have to negate because of the swaped y axis */
+    y1 = -sin(fit)*scale;
+    x2 = -x1;
+    y2 = -y1;
+    QGraphicsLineItem * item = new QGraphicsLineItem(x1,y1,x2,y2);
+    QPen p = item->pen();
+    p.setStyle(Qt::DashLine);
+    QVector<qreal> dashes;
+    dashes << 25 << 15;
+    p.setDashPattern(dashes);
+    p.setColor(Qt::white);
+    item->setPen(p);
+    item->setZValue(10000);
+    scene()->addItem(item);
+    constraintFit.append(item);
+  }
 }

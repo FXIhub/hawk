@@ -57,6 +57,10 @@ ImageItem::ImageItem(Image * sp_image,QString file, ImageView * view,QGraphicsIt
   identifierItem->setDefaultTextColor(Qt::white);
   qreal posy = -(identifierItem->boundingRect()).height();
   identifierItem->setPos(boundingRect().width()/2-(identifierItem->boundingRect()).width()/2,posy);
+  _dxLocked = false;
+  _dyLocked = false;
+  _dzLocked = false;
+  _thetaLocked = false;
 }
 
 
@@ -660,23 +664,31 @@ double ImageItem::dx() const{
 }
 
 void ImageItem::setDx(double new_dx){
-  setPos(new_dx,pos().y());
+  if(_dxLocked == false){
+    setPos(new_dx,pos().y());
+  }
 }
 
 double ImageItem::dy() const{
-  return pos().y();
+  return -pos().y();
 }
 
 void ImageItem::setDy(double new_dy){
-  setPos(pos().x(),new_dy);
+  if(_dyLocked == false){
+    setPos(pos().x(),-new_dy);
+  }
 }
 
 double ImageItem::dz() const{
-  const double  defaultDistance = 50.0;
-  return defaultDistance/overallScale();
+    const double  defaultDistance = 50.0;
+    return defaultDistance/overallScale();
 }
 
 void ImageItem::setDz(double new_dz){
+  if(_dzLocked == true){
+    return;
+  }
+
   const double  defaultDistance = 50.0;
   double new_scale = defaultDistance/new_dz;
 
@@ -694,8 +706,10 @@ void ImageItem::setDz(double new_dz){
   setTransform(transform().translate(-pixmap().width()/2,-pixmap().height()/2));
 }
 
-
 void ImageItem::setTheta(double new_theta){
+  if(_thetaLocked){
+    return;
+  }
   double delta_theta = (new_theta-theta());
   /* remove translation */
   setTransform(transform().translate(pixmap().width()/2,pixmap().height()/2));
@@ -712,6 +726,40 @@ double ImageItem::theta() const{
   /* we have to negate y because in 2D graphics positive y points down */
   return atan2(-a.y(),a.x())*180.0/M_PI;
 }
+
+
+bool ImageItem::dxLocked() const{
+  return _dxLocked;
+}
+
+void ImageItem::setDxLocked(bool locked){
+  _dxLocked = locked;
+}
+
+bool ImageItem::dyLocked() const{
+  return _dyLocked;
+}
+
+void ImageItem::setDyLocked(bool locked){
+  _dyLocked = locked;
+}
+
+bool ImageItem::dzLocked() const{
+  return _dzLocked;
+}
+
+void ImageItem::setDzLocked(bool locked){
+  _dzLocked = locked;
+}
+
+bool ImageItem::thetaLocked() const{
+  return _thetaLocked;
+}
+
+void ImageItem::setThetaLocked(bool locked){
+  _thetaLocked = locked;
+}
+
 
 double ImageItem::overallScale() const{
   return sqrt(transform().determinant());
@@ -761,4 +809,16 @@ QList<QPointF> ImageItem::getControlPoints(){
     ret.append(controlPoints[i]->pos());
   }
   return ret;
+}
+
+
+void ImageItem::moveBy(qreal dx, qreal dy){
+  qDebug("here 2");
+  if(dxLocked()){
+    dx = 0;
+  }
+  if(dyLocked()){
+    dy = 0;
+  }
+  QGraphicsItem::moveBy(dx,dy);
 }
