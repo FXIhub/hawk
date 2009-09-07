@@ -24,7 +24,7 @@ extern "C"
   
   typedef enum{RadialLineConstraint, CircleConstraint}GeometryConstraintType;
   /* NumberOfGeometryVariablesTypes should always come last in the enum! */ 
-  typedef enum{DeltaX=0,DeltaY,Zoom,Theta,NumberOfGeometryVariablesTypes}GeometryVariableType;
+  typedef enum{DeltaX=0,DeltaY,Zoom,Alpha,Theta,NumberOfGeometryVariablesTypes}GeometryVariableType;
 
   typedef struct{
     const Image * image;
@@ -81,7 +81,7 @@ extern "C"
   void geometric_constraint_add_point(geometric_constraint * c,control_point p);
 
   /* create an affine transform from the given parameters */
-  affine_transform * affine_transfrom_from_parameters(real dx,real dy,real zoom, real theta);
+  affine_transform * affine_transfrom_from_parameters(real dx,real dy,real zoom, real alpha, real theta);
   /* free given affine transform */
   void affine_transform_free(affine_transform * t);
   /* apply affine transform to the input vector */

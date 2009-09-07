@@ -64,6 +64,10 @@ ImageItem::ImageItem(Image * sp_image,QString file, ImageView * view,QGraphicsIt
   _dyLocked = false;
   _dzLocked = false;
   _thetaLocked = false;
+  _alphaLocked = false;
+  _alpha = 0;
+  _theta = 0;
+  _dz = 50;
 }
 
 
@@ -683,51 +687,54 @@ void ImageItem::setDy(double new_dy){
 }
 
 double ImageItem::dz() const{
-    const double  defaultDistance = 50.0;
-    return defaultDistance/overallScale();
+  return _dz;
 }
 
 void ImageItem::setDz(double new_dz){
   if(_dzLocked == true){
     return;
   }
+  _dz = new_dz;
 
-  const double  defaultDistance = 50.0;
-  double new_scale = defaultDistance/new_dz;
-
-  /* Important to keep in mind that translate is *NOT* the same as changing dx and dy directly
-   but is affected by m11() and m22() */
-
-  /* remove translation */
-  setTransform(transform().translate(pixmap().width()/2,pixmap().height()/2));
-  
-  /* do the scaling */
-  double toScale = new_scale/overallScale();
-  scale(toScale,toScale);
+  setTransform(transformFromParameters(dz(),alpha(),theta()));
 
   /* add translation. This is not useless! */
   setTransform(transform().translate(-pixmap().width()/2,-pixmap().height()/2));
+
 }
 
 void ImageItem::setTheta(double new_theta){
   if(_thetaLocked){
     return;
   }
-  double delta_theta = (new_theta-theta());
-  /* remove translation */
-  setTransform(transform().translate(pixmap().width()/2,pixmap().height()/2));
+  _theta = new_theta;
 
-  rotate(-delta_theta);
+  setTransform(transformFromParameters(dz(),alpha(),theta()));
+
+  /* add translation. This is not useless! */
+  setTransform(transform().translate(-pixmap().width()/2,-pixmap().height()/2));
+}
+
+double ImageItem::theta() const{
+  return _theta;
+}
+
+
+void ImageItem::setAlpha(double new_alpha){
+  if(_alphaLocked){
+    return;
+  }
+  _alpha = new_alpha;
+
+  setTransform(transformFromParameters(dz(),alpha(),theta()));
 
   /* add translation. This is not useless! */
   setTransform(transform().translate(-pixmap().width()/2,-pixmap().height()/2));
 
 }
 
-double ImageItem::theta() const{
-  QPointF a = transform().map(QPointF(pixmap().width()/2+1.0,pixmap().height()/2));
-  /* we have to negate y because in 2D graphics positive y points down */
-  return atan2(-a.y(),a.x())*180.0/M_PI;
+double ImageItem::alpha() const{
+  return _alpha;
 }
 
 
@@ -761,6 +768,15 @@ bool ImageItem::thetaLocked() const{
 
 void ImageItem::setThetaLocked(bool locked){
   _thetaLocked = locked;
+}
+
+
+bool ImageItem::alphaLocked() const{
+  return _alphaLocked;
+}
+
+void ImageItem::setAlphaLocked(bool locked){
+  _alphaLocked = locked;
 }
 
 
@@ -828,4 +844,10 @@ void ImageItem::moveBy(qreal dx, qreal dy){
     dy = 0;
   }
   QGraphicsItem::moveBy(dx,dy);
+}
+
+
+QTransform ImageItem::transformFromParameters(qreal dz,qreal alpha, qreal theta){
+  real zoom = 50/dz;
+  return QTransform(cos(theta)*cos(alpha),-sin(theta)*cos(alpha),0,sin(theta),cos(theta),0,0,0).scale(zoom,zoom);
 }

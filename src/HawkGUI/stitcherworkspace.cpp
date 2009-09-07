@@ -262,6 +262,10 @@ void StitcherWorkspace::loadGeometry(){
       }
       if(var.type() == QVariant::Double){
 	double value = var.toDouble();
+	if(QString(name).endsWith("_theta") || QString(name).endsWith("_alpha")){
+	  /* convert to degrees */
+	  value *= 180/M_PI;
+	}
 	QStandardItem * itemName = new QStandardItem(_stitcherView->propertyNameToDisplayName(name,tag));
 	QStandardItem * itemValue = new QStandardItem(QString("%0").arg(value));
 	itemValue->setData(value,Qt::UserRole + 1);
@@ -316,6 +320,10 @@ void StitcherWorkspace::onItemChanged(QStandardItem * item){
     if(var.type() == QVariant::Double){
       double value = item->text().toDouble();
       QString property = item->data(Qt::UserRole + 2).toString();
+      if(property.endsWith("_theta") || property.endsWith("_alpha")){
+	/* convert from degrees */
+	value /= 180/M_PI;
+      }
       ImageItem * imageItem = item->data(Qt::UserRole + 3).value<ImageItem *>();
       //      item->setText(QString("%0").arg(value));		  
       imageItem->setProperty(property.toAscii().constData(),value);
@@ -449,9 +457,13 @@ void StitcherWorkspace::onOptimizeGeometryClicked(){
 	geometrically_constrained_system_add_variable(gc,create_geometry_variable(p,Zoom));
       }
 
-      set_image_position(p,Theta,item->theta()*M_PI/180.0);
+      set_image_position(p,Theta,item->theta());
       if(!item->thetaLocked()){
 	geometrically_constrained_system_add_variable(gc,create_geometry_variable(p,Theta));
+      }
+      set_image_position(p,Alpha,item->alpha());
+      if(!item->alphaLocked()){
+	geometrically_constrained_system_add_variable(gc,create_geometry_variable(p,Alpha));
       }
 
       pos_image_map.insert(item,p);
@@ -477,7 +489,7 @@ void StitcherWorkspace::onOptimizeGeometryClicked(){
     }
     geometrically_constrained_system_add_constraint(gc,c);
   }
-  if(total_points+gc->n_constraints < gc->n_variables){
+  if(total_points < gc->n_variables+gc->n_constraints){
     QMessageBox::warning(this,"Geometry Optimization","<p>Too few control points."
 			 " The number of control points must be equal or greater to the degrees of freedom.</p>"
 			 "<p>Optimization aborted!</p>");
@@ -507,7 +519,10 @@ void StitcherWorkspace::onOptimizeGeometryClicked(){
       item->setDz(50.0/gc->variables[i].parent->pos[Zoom]);      
     }
     if(gc->variables[i].type == Theta){
-      item->setTheta(gc->variables[i].parent->pos[Theta]*180.0/M_PI);      
+      item->setTheta(gc->variables[i].parent->pos[Theta]);      
+    }    
+    if(gc->variables[i].type == Alpha){
+      item->setAlpha(gc->variables[i].parent->pos[Alpha]);      
     }    
   }
   loadGeometry();

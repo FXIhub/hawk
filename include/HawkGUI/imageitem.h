@@ -20,10 +20,12 @@ class ImageItem: public QObject, public QGraphicsPixmapItem
     Q_PROPERTY(double HawkGeometry_dy READ dy WRITE setDy)
     Q_PROPERTY(double HawkGeometry_dz READ dz WRITE setDz)
     Q_PROPERTY(double HawkGeometry_theta READ theta WRITE setTheta)
+    Q_PROPERTY(double HawkGeometry_alpha READ alpha WRITE setAlpha)
     Q_PROPERTY(bool HawkGeometry_dx_locked READ dxLocked WRITE setDxLocked)
     Q_PROPERTY(bool HawkGeometry_dy_locked READ dyLocked WRITE setDyLocked)
     Q_PROPERTY(bool HawkGeometry_dz_locked READ dzLocked WRITE setDzLocked)
     Q_PROPERTY(bool HawkGeometry_theta_locked READ thetaLocked WRITE setThetaLocked)
+    Q_PROPERTY(bool HawkGeometry_alpha_locked READ alphaLocked WRITE setAlphaLocked)
    public:
   ImageItem(Image * data,QString filename,ImageView * view,QGraphicsItem * parent = NULL);
   ImageItem(QPixmap pix,ImageView * view,QGraphicsItem * parent);
@@ -96,6 +98,8 @@ class ImageItem: public QObject, public QGraphicsPixmapItem
   void setDz(double);
   double theta() const;
   void setTheta(double);
+  double alpha() const;
+  void setAlpha(double);
   bool dxLocked() const;
   void setDxLocked(bool);
   bool dyLocked() const;
@@ -104,6 +108,8 @@ class ImageItem: public QObject, public QGraphicsPixmapItem
   void setDzLocked(bool);
   bool thetaLocked() const;
   void setThetaLocked(bool);
+  bool alphaLocked() const;
+  void setAlphaLocked(bool);
   QString identifier() const;
   void addControlPoint(QPointF pos);
   void deleteControlPoint(QPointF pos);
@@ -119,7 +125,7 @@ class ImageItem: public QObject, public QGraphicsPixmapItem
   void applyEditStep(EditStep step);
   void repositionCenterIndicators();
   double overallScale() const;
-
+  QTransform transformFromParameters(qreal dz, qreal alpha, qreal theta);
   QGraphicsRectItem * selectRect;
   QString filename;
   Image * image;
@@ -141,6 +147,10 @@ class ImageItem: public QObject, public QGraphicsPixmapItem
   bool _dyLocked;
   bool _dzLocked;
   bool _thetaLocked;
+  qreal _dz;
+  qreal _theta;
+  qreal _alpha;
+  bool _alphaLocked;
 };
 
 #else

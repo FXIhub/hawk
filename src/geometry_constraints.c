@@ -80,7 +80,7 @@ void affine_transform_free(affine_transform * t){
 }
 
 /* Calculates an affine transform from a gives displacement (dx,dy) plus a scaling zoom and an anti-clockwise angle theta in radians */
-affine_transform * affine_transfrom_from_parameters(real dx,real dy,real zoom, real theta){
+affine_transform * affine_transfrom_from_parameters(real dx,real dy,real zoom, real alpha, real theta){
   affine_transform * ret = sp_malloc(sizeof(affine_transform));
   ret->A = sp_matrix_alloc(2,2);
   ret->b = sp_vector_alloc(2);
@@ -89,10 +89,14 @@ affine_transform * affine_transfrom_from_parameters(real dx,real dy,real zoom, r
      -sin cos
   */
   /* Calculate rotation first */
-  sp_matrix_set(ret->A,0,0,cos(theta));
-  sp_matrix_set(ret->A,0,1,-sin(theta));
+  /* Alpha is a rotation around x.
+   It will cause a scaling on the y direction */
+  sp_matrix_set(ret->A,0,0,cos(theta)*cos(alpha));
+  sp_matrix_set(ret->A,0,1,-sin(theta)*cos(alpha));
   sp_matrix_set(ret->A,1,0,sin(theta));
   sp_matrix_set(ret->A,1,1,cos(theta));
+
+  
 
   /* Apply scaling now */
   sp_matrix_scale(ret->A,zoom);
@@ -105,7 +109,7 @@ affine_transform * affine_transfrom_from_parameters(real dx,real dy,real zoom, r
 
 /* Calculates an affine transform from a gives displacement (dx,dy) plus a scaling zoom and an anti-clockwise angle theta in radians */
 affine_transform * affine_transfrom_from_positioned_image(positioned_image * image){
-  return affine_transfrom_from_parameters(image->pos[0],image->pos[1],image->pos[2],image->pos[3]);
+  return affine_transfrom_from_parameters(image->pos[0],image->pos[1],image->pos[2],image->pos[3],image->pos[4]);
 }
 
 sp_vector * apply_affine_transform(affine_transform * t, sp_vector * p){
