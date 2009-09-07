@@ -17,55 +17,72 @@ AddConstraintDialog::AddConstraintDialog(StitcherView * v,QWidget * parent,Qt::W
   QWidget * bottom = new QWidget(this);
   vbox->addWidget(bottom);
   QHBoxLayout * hbox = new QHBoxLayout(top);
+  hbox->setContentsMargins(0,0,0,0);
   QWidget * left = new QWidget(top);
   hbox->addWidget(left);
   QVBoxLayout * leftVbox = new QVBoxLayout(left);
+  leftVbox->setContentsMargins(0,0,0,0);
   QLabel * l = new QLabel("All Control Points",left);
   leftVbox->addWidget(l);
   l->setAlignment(Qt::AlignHCenter);
   leftList = new QListWidget(left);
+  QPalette p = leftList->palette();
+  p.setColor(QPalette::Base,QColor("#f0f6f8"));
+  p.setColor(QPalette::AlternateBase,QColor("#bbddee"));  
+  leftList->setPalette(p);
   leftList->setAlternatingRowColors(true);
   leftList->setSelectionMode(QAbstractItemView::SingleSelection);
   connect(leftList,SIGNAL(itemDoubleClicked(QListWidgetItem * )),this,SLOT(onAddClicked()));
   fillAllPointsList();
   leftVbox->addWidget(leftList);
+  leftList->viewport()->resize(100,100);
+
   QWidget * center = new QWidget(top);
   hbox->addWidget(center);
   QVBoxLayout * centerVbox = new QVBoxLayout(center);
+  centerVbox->setContentsMargins(0,0,0,0);
+  centerVbox->addStretch(1.5);
   QPushButton * add = new QPushButton("Add",center);
   connect(add,SIGNAL(clicked()),this,SLOT(onAddClicked()));
   centerVbox->addWidget(add);
   QPushButton * del = new QPushButton("Delete",center);
   connect(del,SIGNAL(clicked()),this,SLOT(onDeleteClicked()));
   centerVbox->addWidget(del);
+  centerVbox->addStretch(1);
   QWidget * right = new QWidget(top);
   hbox->addWidget(right);
   QVBoxLayout * rightVbox = new QVBoxLayout(right);
+  rightVbox->setContentsMargins(0,0,0,0);
   l = new QLabel("Constraining Points",right);
   l->setAlignment(Qt::AlignHCenter);
   rightVbox->addWidget(l);
   rightList = new QListWidget(right);
   rightList->setAlternatingRowColors(true);
   rightList->setSelectionMode(QAbstractItemView::SingleSelection);
+  rightList->setPalette(p);
   connect(rightList,SIGNAL(itemDoubleClicked(QListWidgetItem * )),this,SLOT(onDeleteClicked()));
   rightVbox->addWidget(rightList);
   
   QHBoxLayout * bottomHbox = new QHBoxLayout(bottom);
+  bottomHbox->setContentsMargins(0,0,0,0);
   QGroupBox * typeBox = new QGroupBox("Constraint Type",bottom);
   bottomHbox->addWidget(typeBox);
   
-  QVBoxLayout * typeVBox = new QVBoxLayout(typeBox);
+  QHBoxLayout * typeHBox = new QHBoxLayout(typeBox);
   line = new QRadioButton("Radial Line",typeBox);
   line->setChecked(true);
-  typeVBox->addWidget(line);
+  typeHBox->addWidget(line);
   circle = new QRadioButton("Centered Circle",typeBox);
-  typeVBox->addWidget(circle);
+  typeHBox->addWidget(circle);
 
+  QVBoxLayout * bottomRightVBox = new QVBoxLayout();
+  bottomHbox->addLayout(bottomRightVBox);
+  bottomRightVBox->addStretch();
   QDialogButtonBox * buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel);
-  bottomHbox->addWidget(buttonBox);
+  bottomRightVBox->addWidget(buttonBox);
   connect(buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
   connect(buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
-  
+  this->resize(400,250);
 }
 
 

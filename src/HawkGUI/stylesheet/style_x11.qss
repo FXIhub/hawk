@@ -105,11 +105,6 @@ QTreeView::item {
     background-color: #f0f6f8;
 }
 
-
-QTreeView::item:selected {
-    background-color: #628cb2;
-}
-
 /*
 QTreeView::branch {
     border-bottom: 1px solid #d9d9d9;

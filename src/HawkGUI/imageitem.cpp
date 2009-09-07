@@ -59,6 +59,7 @@ ImageItem::ImageItem(Image * sp_image,QString file, ImageView * view,QGraphicsIt
   identifierItem->translate(-identifierItem->boundingRect().width()/2,posy);
   identifierItem->setPos(boundingRect().width()/2,0);
   identifierItem->setFlags(identifierItem->flags() | QGraphicsItem::ItemIgnoresTransformations);
+  identifierItem->setZValue(zValue()+1);
   _dxLocked = false;
   _dyLocked = false;
   _dzLocked = false;
@@ -769,7 +770,7 @@ double ImageItem::overallScale() const{
 }
 
 void ImageItem::addControlPoint(QPointF pos){
-  QGraphicsEllipseItem * point = new QGraphicsEllipseItem(-0.2,-0.2,0.4,0.4,this);
+  QGraphicsEllipseItem * point = new QGraphicsEllipseItem(-1,-1,2,2,this);
   point->setPos(pos);
   point->setBrush(Qt::white);
   QPen p = point->pen();
@@ -777,14 +778,14 @@ void ImageItem::addControlPoint(QPointF pos){
   p.setWidth(0);
   p.setColor(Qt::white);
   point->setPen(p);
+  point->setFlags(point->flags() | QGraphicsItem::ItemIgnoresTransformations);
+  point->setZValue(zValue()+1);
   controlPoints.append(point);
   QGraphicsTextItem * label = new QGraphicsTextItem(QString::number(controlPoints.size()),point);
   label->setDefaultTextColor(Qt::white);
-  //  label->setPos(-(label->boundingRect()).width()/2,-(label->boundingRect()).height()*0.8);
-  QRectF labelSize = QFontMetricsF(label->font()).boundingRect(label->toPlainText());
-  label->translate(-(labelSize.x()+labelSize.width())/2,-(labelSize.y()+labelSize.height())/2);
-  label->setFlags(identifierItem->flags() | QGraphicsItem::ItemIgnoresTransformations);
-
+  //  label->translate(-(label->boundingRect()).width()/2,-(label->boundingRect()).height()*0.8);
+  label->setFlags(label->flags() | QGraphicsItem::ItemIgnoresTransformations);
+  label->setZValue(zValue()+1);
   //  scene()->addItem(point);
   qDebug("Add point at %f %f",pos.x(),pos.y());
 }

@@ -50,6 +50,20 @@ QWidget * StitcherWorkspace::createToolBar(){
   connect(stitch,SIGNAL(clicked(bool)),this,SLOT(onStitchClicked()));
   layout->addWidget(stitch,0,3);
 
+  QToolButton * saveGeometry = new QToolButton(this);
+  saveGeometry->setIcon(QIcon(":images/filesave.png"));
+  saveGeometry->setToolTip(tr("Save current geometry to a file"));
+  saveGeometry->setIconSize(iconSize);
+  connect(saveGeometry,SIGNAL(clicked(bool)),this,SLOT(onSaveGeometryClicked()));
+  layout->addWidget(saveGeometry,0,4);
+
+  QToolButton * loadGeometry = new QToolButton(this);
+  loadGeometry->setIcon(QIcon(":images/fileopen.png"));
+  loadGeometry->setToolTip(tr("Load geometry from a file"));
+  loadGeometry->setIconSize(iconSize);
+  connect(loadGeometry,SIGNAL(clicked(bool)),this,SLOT(onLoadGeometryClicked()));
+  layout->addWidget(loadGeometry,0,5);
+
   QToolButton * line = new QToolButton(this);
   line->setIcon(QIcon(":images/add_line.png"));
   line->setToolTip(tr("Draw guide line"));
@@ -365,6 +379,10 @@ void StitcherWorkspace::onAddConstraintClicked(){
   AddConstraintDialog * d = new AddConstraintDialog(_stitcherView);
   if(d->exec()){
     QList<QPair<int,ImageItem *> > points = d->selectedPoints();
+    if(points.isEmpty()){
+      delete d;
+      return;
+    }
     QStandardItem *parentItem = model->invisibleRootItem();
     QStandardItem * itemName = new QStandardItem("Type");
     itemName->setData(QVariant::fromValue(d));
@@ -493,4 +511,83 @@ void StitcherWorkspace::onOptimizeGeometryClicked(){
     }    
   }
   loadGeometry();
+}
+
+
+void StitcherWorkspace::onLoadGeometryClicked(){
+  QString file = QFileDialog::getOpenFileName(0,tr("Load Geometry from File"), QString(),  tr("Image Geometry (*.hig)"));
+  if(file.isEmpty()){
+    return;
+  }
+  QFile fp(file);
+  if(!fp.open(QIODevice::ReadOnly)){
+    return;
+  }
+  QList<QGraphicsItem *> graphicsItems = _stitcherView->items();
+  QTextStream in(&fp);
+  QString dumb;
+  int nImages;
+  in >> dumb >> dumb  >> nImages;
+  for(int i = 0;i<nImages;i++){
+    QString id;
+    double dx,dy,dz,theta;
+    in >> dumb >> id;
+    ImageItem * item = NULL;
+    for(int j = 0; j < graphicsItems.size(); j++){      
+      item = qgraphicsitem_cast<ImageItem *>(graphicsItems[j]);
+      if(item && item->identifier() == id){
+	break;
+      }else{
+	item = NULL;
+      }
+    }
+    in >> dumb >> dx;
+    in >> dumb >> dy;
+    in >> dumb >> dz;
+    in >> dumb >> theta;    
+    if(item){
+      item->setDx(dx);
+      item->setDy(dy);
+      item->setDz(dz);
+      item->setTheta(theta);
+    }
+  }
+  fp.close();
+  loadGeometry();
+}
+
+void StitcherWorkspace::onSaveGeometryClicked(){
+  QString file = QFileDialog::getSaveFileName(0,tr("Save Geometry to File"), QString(),  tr("Image Geometry (*.hig)"));
+  if(file.isEmpty()){
+    return;
+  }
+  if(!file.endsWith(".hig")){
+    file = file + ".hig";
+  }
+  QFile fp(file);
+  if(!fp.open(QIODevice::WriteOnly|QIODevice::Truncate)){
+    return;
+  }
+  QTextStream out(&fp);
+
+  QList<QGraphicsItem *> graphicsItems = _stitcherView->items();
+  QMap<QString,ImageItem *> sortMap;
+
+  for(int i = 0; i < graphicsItems.size(); i++){
+    if(ImageItem * item = qgraphicsitem_cast<ImageItem *>(graphicsItems[i])){
+      if(item->isVisible()){
+	sortMap.insert(item->identifier(),item);
+      }
+    }
+  }
+  QList<ImageItem *>sortedItems = sortMap.values();
+  out << "Total Images: " << sortedItems.size() << endl;
+  for(int i = 0;i<sortedItems.size();i++){
+    out << "Identifier: " << sortedItems[i]->identifier() << endl;
+    out << "dx: " << sortedItems[i]->dx() << endl;
+    out << "dy: " << sortedItems[i]->dy() << endl;
+    out << "dz: " << sortedItems[i]->dz() << endl;
+    out << "theta: " << sortedItems[i]->theta() << endl;
+  }
+  fp.close();
 }
