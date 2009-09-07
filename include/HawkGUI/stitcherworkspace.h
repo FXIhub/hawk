@@ -25,6 +25,7 @@ class StitcherWorkspace: public QWidget
   void onAddControlPointClicked();
   void onDeleteControlPointClicked();
   void onAddConstraintClicked();
+  void onDelConstraintClicked();
   void onOptimizeGeometryClicked();
  private:
   QTreeView * createGeometryTree();

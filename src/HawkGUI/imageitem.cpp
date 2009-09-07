@@ -56,7 +56,9 @@ ImageItem::ImageItem(Image * sp_image,QString file, ImageView * view,QGraphicsIt
   identifierItem = new QGraphicsTextItem(identifierString,this);
   identifierItem->setDefaultTextColor(Qt::white);
   qreal posy = -(identifierItem->boundingRect()).height();
-  identifierItem->setPos(boundingRect().width()/2-(identifierItem->boundingRect()).width()/2,posy);
+  identifierItem->translate(-identifierItem->boundingRect().width()/2,posy);
+  identifierItem->setPos(boundingRect().width()/2,0);
+  identifierItem->setFlags(identifierItem->flags() | QGraphicsItem::ItemIgnoresTransformations);
   _dxLocked = false;
   _dyLocked = false;
   _dzLocked = false;
@@ -778,7 +780,11 @@ void ImageItem::addControlPoint(QPointF pos){
   controlPoints.append(point);
   QGraphicsTextItem * label = new QGraphicsTextItem(QString::number(controlPoints.size()),point);
   label->setDefaultTextColor(Qt::white);
-  label->setPos(-(label->boundingRect()).width()/2,-(label->boundingRect()).height()*0.8);
+  //  label->setPos(-(label->boundingRect()).width()/2,-(label->boundingRect()).height()*0.8);
+  QRectF labelSize = QFontMetricsF(label->font()).boundingRect(label->toPlainText());
+  label->translate(-(labelSize.x()+labelSize.width())/2,-(labelSize.y()+labelSize.height())/2);
+  label->setFlags(identifierItem->flags() | QGraphicsItem::ItemIgnoresTransformations);
+
   //  scene()->addItem(point);
   qDebug("Add point at %f %f",pos.x(),pos.y());
 }

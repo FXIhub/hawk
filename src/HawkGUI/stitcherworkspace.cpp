@@ -329,9 +329,14 @@ QWidget * StitcherWorkspace::createConstraintsTree(){
   treeView->setSelectionBehavior(QAbstractItemView::SelectRows);
   treeView->resizeColumnToContents(0);
   treeView->resizeColumnToContents(1);
+  QHBoxLayout * hbox = new QHBoxLayout();
   QPushButton * addConstraint = new QPushButton("Add Constraint",top);
+  QPushButton * delConstraint = new QPushButton("Del Constraint",top);
   connect(addConstraint,SIGNAL(clicked()),this,SLOT(onAddConstraintClicked()));
-  vbox->addWidget(addConstraint);
+  connect(delConstraint,SIGNAL(clicked()),this,SLOT(onDelConstraintClicked()));
+  hbox->addWidget(addConstraint);
+  hbox->addWidget(delConstraint);
+  vbox->addLayout(hbox);
   QPushButton * optimizeGeometry = new QPushButton("Optimize Geometry",top);
   connect(optimizeGeometry,SIGNAL(clicked()),this,SLOT(onOptimizeGeometryClicked()));
   vbox->addWidget(optimizeGeometry);
@@ -388,6 +393,22 @@ void StitcherWorkspace::onAddConstraintClicked(){
   constraintsTree->resizeColumnToContents(1);
 }
 
+void StitcherWorkspace::onDelConstraintClicked(){
+  QModelIndex index =  constraintsTree->currentIndex();
+  while(index.parent() != QModelIndex()){
+    index = index.parent();
+  }
+  QStandardItemModel * model = qobject_cast<QStandardItemModel *>(constraintsTree->model());
+  QStandardItem * item = model->item(index.row());
+  if(item){
+    QList<QStandardItem *> items = model->takeRow(item->row());        
+    for(int i = 0;i<items.size();i++){
+      delete items[i];
+    }    
+  }
+  
+}
+
 void StitcherWorkspace::onOptimizeGeometryClicked(){
   geometrically_constrained_system * gc = geometrically_constrained_system_alloc();
   
@@ -439,9 +460,9 @@ void StitcherWorkspace::onOptimizeGeometryClicked(){
     geometrically_constrained_system_add_constraint(gc,c);
   }
   if(total_points+gc->n_constraints < gc->n_variables){
-    QMessageBox::warning(this,"Geometry Optimization","Too few control points."
-			 " The number of control points must be equal or greater to the degrees of freedom.\n\n"
-			 "Optimization aborted!");
+    QMessageBox::warning(this,"Geometry Optimization","<p>Too few control points."
+			 " The number of control points must be equal or greater to the degrees of freedom.</p>"
+			 "<p>Optimization aborted!</p>");
     return ;
   }
   if(model->rowCount()){
