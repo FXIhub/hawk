@@ -67,29 +67,6 @@ extern "C"
     geometry_variable * variables;
   }geometrically_constrained_system;
 
-  
-  typedef struct{
-    /* number of images in the system */
-    int n_images;
-    /* pointer to the images in the system */
-    Image ** images;
-    /* number of control points in each image */
-    int * n_control_points;
-    /* position of the control points in each image */
-    sp_vector *** control_points;
-    /* number of degrees of freedom for each image */
-    int * n_variables;
-    /* degrees of freedom for each image */
-    GeometryVariableType ** variable_type;
-    /* current value for each variable including the ones that are not free */
-    real * dx;
-    real * dy;
-    real * zoom;
-    real * theta;
-    GeometryConstraintType type;
-  }geometry_constraints;
-  
-
 
   geometrically_constrained_system * geometrically_constrained_system_alloc();
   void geometrically_constrained_system_add_constraint(geometrically_constrained_system * gc, geometric_constraint c);
@@ -103,17 +80,12 @@ extern "C"
   geometric_constraint geometric_constraint_init(GeometryConstraintType type, real best_guess);
   void geometric_constraint_add_point(geometric_constraint * c,control_point p);
 
-  void geometry_constraints_free(geometry_constraints * gc);
   /* create an affine transform from the given parameters */
   affine_transform * affine_transfrom_from_parameters(real dx,real dy,real zoom, real theta);
   /* free given affine transform */
   void affine_transform_free(affine_transform * t);
   /* apply affine transform to the input vector */
   sp_vector * apply_affine_transform(affine_transform * t, sp_vector * p);
-  /* calculates the affine transform list for the given constraints */
-  affine_transform ** affine_transforms_from_constraints(geometry_constraints * gc);
-  /* transform control points from image coordinates to global coordinates */
-  sp_vector *** control_points_to_global(geometry_constraints * gc, affine_transform ** t);
 
   int minimize_geometry_contraint_error(geometrically_constrained_system * gc);
 

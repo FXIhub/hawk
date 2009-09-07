@@ -26,6 +26,7 @@ AddConstraintDialog::AddConstraintDialog(StitcherView * v,QWidget * parent,Qt::W
   leftList = new QListWidget(left);
   leftList->setAlternatingRowColors(true);
   leftList->setSelectionMode(QAbstractItemView::SingleSelection);
+  connect(leftList,SIGNAL(itemDoubleClicked(QListWidgetItem * )),this,SLOT(onAddClicked()));
   fillAllPointsList();
   leftVbox->addWidget(leftList);
   QWidget * center = new QWidget(top);
@@ -46,7 +47,7 @@ AddConstraintDialog::AddConstraintDialog(StitcherView * v,QWidget * parent,Qt::W
   rightList = new QListWidget(right);
   rightList->setAlternatingRowColors(true);
   rightList->setSelectionMode(QAbstractItemView::SingleSelection);
-
+  connect(rightList,SIGNAL(itemDoubleClicked(QListWidgetItem * )),this,SLOT(onDeleteClicked()));
   rightVbox->addWidget(rightList);
   
   QHBoxLayout * bottomHbox = new QHBoxLayout(bottom);

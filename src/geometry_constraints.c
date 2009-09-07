@@ -73,28 +73,6 @@ void set_image_position(positioned_image *  image ,GeometryVariableType t, real 
 }
 
 
-void geometry_constraints_free(geometry_constraints * gc){
-  /* the image themselves are not considered to be own by the constraints so they are not freed */
-  sp_free(gc->images);
-  for(int i = 0;i<gc->n_images;i++){
-    for(int j = 0;j<gc->n_control_points[i];j++){
-      sp_vector_free(gc->control_points[i][j]);      
-    }
-    sp_free(gc->control_points[i]);
-  }
-  sp_free(gc->control_points);
-  sp_free(gc->n_control_points);
-  for(int i = 0;i<gc->n_images;i++){
-    sp_free(gc->variable_type[i]);
-  }
-  sp_free(gc->n_variables);
-  sp_free(gc->dx);
-  sp_free(gc->dy);
-  sp_free(gc->zoom);
-  sp_free(gc->theta);
-  sp_free(gc); 
-}
-
 void affine_transform_free(affine_transform * t){
   sp_matrix_free(t->A);
   sp_vector_free(t->b);
@@ -115,6 +93,7 @@ affine_transform * affine_transfrom_from_parameters(real dx,real dy,real zoom, r
   sp_matrix_set(ret->A,0,1,-sin(theta));
   sp_matrix_set(ret->A,1,0,sin(theta));
   sp_matrix_set(ret->A,1,1,cos(theta));
+
   /* Apply scaling now */
   sp_matrix_scale(ret->A,zoom);
   
@@ -141,29 +120,6 @@ sp_vector * apply_affine_transform(affine_transform * t, sp_vector * p){
   return ret;  
 }
 
-affine_transform ** affine_transforms_from_constraints(geometry_constraints * gc){
-  affine_transform ** ret = sp_malloc(sizeof(affine_transform *) * gc->n_images);
-  for(int i = 0;i<gc->n_images;i++){
-    /* the theta parameter is given in degrees but we want it in radians */
-    ret[i] = affine_transfrom_from_parameters(gc->dx[i],gc->dy[i],gc->zoom[i],M_PI*gc->theta[i]/180.0);
-  }
-  return ret;
-}
-
-sp_vector *** control_points_to_global(geometry_constraints * gc, affine_transform ** t){
-  sp_vector *** ret = sp_malloc(sizeof(sp_vector **)*gc->n_images);
-  sp_vector * tmp = sp_vector_alloc(2);
-  for(int i = 0;i<gc->n_images;i++){
-    ret[i] = sp_malloc(sizeof(sp_vector *)*gc->n_control_points[i]);
-    for(int j = 0;j<gc->n_control_points[i];j++){
-      sp_vector_set(tmp,0,sp_vector_get(gc->control_points[i][j],0)-sp_image_x(gc->images[i])/2);
-      sp_vector_set(tmp,1,sp_image_y(gc->images[i])/2-sp_vector_get(gc->control_points[i][j],1));
-      ret[i][j] = apply_affine_transform(t[i],tmp);      
-    }
-  }
-  sp_vector_free(tmp);
-  return ret;
-}
 
 sp_vector ** control_point_list_to_global(control_point * points, int n){
   sp_vector ** ret = sp_malloc(sizeof(sp_vector *)*n);
@@ -207,7 +163,17 @@ int evaluate_radial_line(const gsl_vector * x, void * params, gsl_vector * f){
   /* apply the current best parameters to the geometry constraints */  
   for(int i = 0;i<gc->n_variables;i++){
     GeometryVariableType type = gc->variables[i].type;
-    gc->variables[i].parent->pos[type] = gsl_vector_get(x,i);
+    if(type == Zoom){
+      /* zoom always has to be positive */
+      real zoom = gsl_vector_get(x,i);
+      if(zoom <= 0.01){
+	zoom = 0.01;
+      }
+      gc->variables[i].parent->pos[type] = zoom;
+
+    }else{
+      gc->variables[i].parent->pos[type] = gsl_vector_get(x,i);
+    }
   }
   int index = 0;
   for(int i = 0;i<gc->n_constraints;i++){

@@ -262,7 +262,7 @@ void StitcherWorkspace::loadGeometry(){
 	if(imageItem->property(lockedPropertyName.toAscii().data()).isValid()){
 	  bool locked = imageItem->property(lockedPropertyName.toAscii().data()).toBool();
 	  itemLocked->setCheckable(true);	
-	  itemValue->setData(locked,Qt::UserRole + 1);
+	  itemLocked->setData(locked,Qt::UserRole + 1);
 	  itemLocked->setData(QString(lockedPropertyName),Qt::UserRole + 2);
 	  itemLocked->setData(QVariant::fromValue(imageItem),Qt::UserRole + 3);
 	  if(locked){
@@ -292,6 +292,12 @@ void StitcherWorkspace::onItemChanged(QStandardItem * item){
     loadGeometry();
   }else if(item->flags() & Qt::ItemIsEditable){
     qDebug("item changed");
+    if(!item->data().isValid()){
+      item = item->parent();
+    }
+    if(!item->data().isValid()){
+      qFatal("Can't reach here");
+    }
     QVariant var = item->data();
     if(var.type() == QVariant::Double){
       double value = item->text().toDouble();
@@ -367,29 +373,19 @@ void StitcherWorkspace::onAddConstraintClicked(){
     parentItem = itemName;
     for(int i = 0;i<points.size();i++){
 
-      itemName = new QStandardItem(points[i].second->identifier() + "." + QString::number(points[i].first));
+      itemName = new QStandardItem(points[i].second->identifier() + "." + QString::number(points[i].first+1));
       itemValue = new QStandardItem("");
       parentItem->appendRow(QList<QStandardItem *>() << itemName <<  itemValue);
     }
-    itemName = new QStandardItem("Best Fit");
+    /*    itemName = new QStandardItem("Best Fit");
     itemValue = new QStandardItem("");
-    parentItem->appendRow(QList<QStandardItem *>() << itemName <<  itemValue);
+    parentItem->appendRow(QList<QStandardItem *>() << itemName <<  itemValue);*/
 
     
   }
   constraintsTree->expandAll();
   constraintsTree->resizeColumnToContents(0);
   constraintsTree->resizeColumnToContents(1);
-}
-
-void StitcherWorkspace::onAddVariableClicked(){
-  /* 
-     This is a prefix to distinguish Hawk Geometry properties from the
-     normal widget properties 
-  */
-  QStandardItemModel * model = qobject_cast<QStandardItemModel *>(constraintsTree->model());
-  AddVariableDialog * d = new AddVariableDialog;
-  
 }
 
 void StitcherWorkspace::onOptimizeGeometryClicked(){
@@ -414,7 +410,7 @@ void StitcherWorkspace::onOptimizeGeometryClicked(){
 	geometrically_constrained_system_add_variable(gc,create_geometry_variable(p,Zoom));
       }
 
-      set_image_position(p,Theta,item->theta());
+      set_image_position(p,Theta,item->theta()*M_PI/180.0);
       if(!item->thetaLocked()){
 	geometrically_constrained_system_add_variable(gc,create_geometry_variable(p,Theta));
       }
@@ -425,13 +421,14 @@ void StitcherWorkspace::onOptimizeGeometryClicked(){
 
 
   QStandardItemModel * model = qobject_cast<QStandardItemModel *>(constraintsTree->model());
+  int total_points = 0;
   for(int i = 0;i<model->rowCount();i++){
+
     QStandardItem * it = model->item(i,0);
     AddConstraintDialog * d = it->data().value<AddConstraintDialog *>();
-    geometric_constraint c =  geometric_constraint_init(d->constraintType(),0);
-    
-
-    QList<QPair<int,ImageItem *> > points = d->selectedPoints();
+    geometric_constraint c =  geometric_constraint_init(d->constraintType(),0);    
+    QList<QPair<int,ImageItem *> > points = d->selectedPoints();    
+    total_points += points.size();
     for(int i = 0;i<points.size();i++){
       ImageItem * item = points[i].second;
       QPointF pos  = item->getControlPoints()[points[i].first];
@@ -441,16 +438,22 @@ void StitcherWorkspace::onOptimizeGeometryClicked(){
     }
     geometrically_constrained_system_add_constraint(gc,c);
   }
+  if(total_points+gc->n_constraints < gc->n_variables){
+    QMessageBox::warning(this,"Geometry Optimization","Too few control points."
+			 " The number of control points must be equal or greater to the degrees of freedom.\n\n"
+			 "Optimization aborted!");
+    return ;
+  }
   if(model->rowCount()){
     geometry_contraint_minimizer(gc);  
   }
   _stitcherView->clearConstraintFits();
   for(int i = 0;i<model->rowCount();i++){
     QStandardItem * it = model->item(i,0);
-    for(int j = 0;j<it->rowCount()-1;j++){
+    for(int j = 0;j<it->rowCount();j++){
       it->child(j,1)->setText(QString("%0").arg(gc->constraints[i].error[j]));      
     }
-    it->child(it->rowCount()-1,1)->setText(QString("%0").arg(gc->constraints[i].best_fit*180.0/M_PI));      	
+    /*    it->child(it->rowCount()-1,1)->setText(QString("%0").arg(gc->constraints[i].best_fit*180.0/M_PI));      	*/
     _stitcherView->drawConstraintFit(gc->constraints[i].best_fit,gc->constraints[i].type);
   }  
   for(int i = 0;i<gc->n_variables;i++){
@@ -465,7 +468,7 @@ void StitcherWorkspace::onOptimizeGeometryClicked(){
       item->setDz(50.0/gc->variables[i].parent->pos[Zoom]);      
     }
     if(gc->variables[i].type == Theta){
-      item->setTheta(50.0/gc->variables[i].parent->pos[Theta]);      
+      item->setTheta(gc->variables[i].parent->pos[Theta]*180.0/M_PI);      
     }    
   }
   loadGeometry();

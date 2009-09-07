@@ -76,10 +76,8 @@ void test_control_points_to_global(CuTest* tc){
   positioned_image * p_b =  create_positioned_image(b);
   geometrically_constrained_system * gc = geometrically_constrained_system_alloc();
   geometric_constraint c = geometric_constraint_init(RadialLineConstraint,0);
-  /* control at 1,1 of image a */  
-  geometric_constraint_add_point(&c,create_control_point(p_a,1,1)); 
-  /* control at 3,3 of image b */
-  geometric_constraint_add_point(&c,create_control_point(p_b,3,3)); 
+  geometric_constraint_add_point(&c,create_control_point(p_a,-1,-1)); 
+  geometric_constraint_add_point(&c,create_control_point(p_b,1,1)); 
 
   geometrically_constrained_system_add_constraint(gc,c);
 
@@ -123,9 +121,9 @@ void test_medium1_minimization(CuTest* tc){
   geometrically_constrained_system * gc = geometrically_constrained_system_alloc();
   geometric_constraint c = geometric_constraint_init(RadialLineConstraint,0);
   /* control at 0,2 of image a */  
-  geometric_constraint_add_point(&c,create_control_point(p_a,0,2)); 
-  geometric_constraint_add_point(&c,create_control_point(p_a,1,2)); 
-  geometric_constraint_add_point(&c,create_control_point(p_b,3,3)); 
+  geometric_constraint_add_point(&c,create_control_point(p_a,-2,0)); 
+  geometric_constraint_add_point(&c,create_control_point(p_a,-1,0)); 
+  geometric_constraint_add_point(&c,create_control_point(p_b,1,1)); 
 
   geometrically_constrained_system_add_variable(gc,create_geometry_variable(p_a,Theta));
   geometrically_constrained_system_add_constraint(gc,c);
@@ -138,8 +136,7 @@ void test_medium1_minimization(CuTest* tc){
 
 
 void test_medium2_minimization(CuTest* tc){
-  real tol = sqrt(REAL_EPSILON);
-
+  real tol = 1e-3;
   Image * a = sp_image_alloc(4,4,1);
   Image * b = sp_image_alloc(4,4,1);
   positioned_image * p_a =  create_positioned_image(a);
@@ -147,9 +144,9 @@ void test_medium2_minimization(CuTest* tc){
   geometrically_constrained_system * gc = geometrically_constrained_system_alloc();
   geometric_constraint c = geometric_constraint_init(RadialLineConstraint,0);
 
-  geometric_constraint_add_point(&c,create_control_point(p_a,0,1)); 
-  geometric_constraint_add_point(&c,create_control_point(p_a,1,1)); 
-  geometric_constraint_add_point(&c,create_control_point(p_b,3,3)); 
+  geometric_constraint_add_point(&c,create_control_point(p_a,-2,-1)); 
+  geometric_constraint_add_point(&c,create_control_point(p_a,-1,-1)); 
+  geometric_constraint_add_point(&c,create_control_point(p_b,1,1)); 
 
   geometrically_constrained_system_add_variable(gc,create_geometry_variable(p_a,Theta));
   geometrically_constrained_system_add_variable(gc,create_geometry_variable(p_a,DeltaX));
@@ -172,17 +169,17 @@ void test_hard1_minimization(CuTest* tc){
   geometrically_constrained_system * gc = geometrically_constrained_system_alloc();
   geometric_constraint c = geometric_constraint_init(RadialLineConstraint,0);
 
-  geometric_constraint_add_point(&c,create_control_point(p_a,1,0)); 
-  geometric_constraint_add_point(&c,create_control_point(p_a,2,1)); 
-  geometric_constraint_add_point(&c,create_control_point(p_b,3,3)); 
+  geometric_constraint_add_point(&c,create_control_point(p_a,-1,-2)); 
+  geometric_constraint_add_point(&c,create_control_point(p_a,0,-1)); 
+  geometric_constraint_add_point(&c,create_control_point(p_b,1,1)); 
   geometrically_constrained_system_add_constraint(gc,c);
 
 
   c = geometric_constraint_init(RadialLineConstraint,0);
 
-  geometric_constraint_add_point(&c,create_control_point(p_a,1,4)); 
-  geometric_constraint_add_point(&c,create_control_point(p_a,2,3)); 
-  geometric_constraint_add_point(&c,create_control_point(p_b,3,1)); 
+  geometric_constraint_add_point(&c,create_control_point(p_a,-1,2)); 
+  geometric_constraint_add_point(&c,create_control_point(p_a,0,1)); 
+  geometric_constraint_add_point(&c,create_control_point(p_b,1,-1)); 
   geometrically_constrained_system_add_constraint(gc,c);
 
   //  geometrically_constrained_system_add_variable(gc,create_geometry_variable(p_a,Theta));
