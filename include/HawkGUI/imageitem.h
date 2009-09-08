@@ -125,7 +125,7 @@ class ImageItem: public QObject, public QGraphicsPixmapItem
   void applyEditStep(EditStep step);
   void repositionCenterIndicators();
   double overallScale() const;
-  QTransform transformFromParameters(qreal dz, qreal alpha, qreal theta);
+  QTransform transformFromParameters();
   QGraphicsRectItem * selectRect;
   QString filename;
   Image * image;
@@ -147,6 +147,8 @@ class ImageItem: public QObject, public QGraphicsPixmapItem
   bool _dyLocked;
   bool _dzLocked;
   bool _thetaLocked;
+  qreal _dx;
+  qreal _dy;
   qreal _dz;
   qreal _theta;
   qreal _alpha;

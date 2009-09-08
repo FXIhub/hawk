@@ -67,7 +67,9 @@ ImageItem::ImageItem(Image * sp_image,QString file, ImageView * view,QGraphicsIt
   _alphaLocked = false;
   _alpha = 0;
   _theta = 0;
-  _dz = 50;
+  _dx = 0;
+  _dy = 0;
+  _dz = 1;
 }
 
 
@@ -667,23 +669,27 @@ QString ImageItem::identifier() const{
 }
 
 double ImageItem::dx() const{
-  return pos().x();
+  return _dx;
 }
 
 void ImageItem::setDx(double new_dx){
-  if(_dxLocked == false){
-    setPos(new_dx,pos().y());
+  if(_dxLocked == true){
+    return;
   }
+  _dx = new_dx;
+  setTransform(transformFromParameters());
 }
 
 double ImageItem::dy() const{
-  return -pos().y();
+  return _dy;
 }
 
 void ImageItem::setDy(double new_dy){
-  if(_dyLocked == false){
-    setPos(pos().x(),-new_dy);
+  if(_dyLocked == true){
+    return;
   }
+  _dy = new_dy;
+  setTransform(transformFromParameters());
 }
 
 double ImageItem::dz() const{
@@ -695,11 +701,8 @@ void ImageItem::setDz(double new_dz){
     return;
   }
   _dz = new_dz;
-
-  setTransform(transformFromParameters(dz(),alpha(),theta()));
-
-  /* add translation. This is not useless! */
-  setTransform(transform().translate(-pixmap().width()/2,-pixmap().height()/2));
+  setZValue(1.0/dz());
+  setTransform(transformFromParameters());
 
 }
 
@@ -709,10 +712,7 @@ void ImageItem::setTheta(double new_theta){
   }
   _theta = new_theta;
 
-  setTransform(transformFromParameters(dz(),alpha(),theta()));
-
-  /* add translation. This is not useless! */
-  setTransform(transform().translate(-pixmap().width()/2,-pixmap().height()/2));
+  setTransform(transformFromParameters());
 }
 
 double ImageItem::theta() const{
@@ -725,12 +725,7 @@ void ImageItem::setAlpha(double new_alpha){
     return;
   }
   _alpha = new_alpha;
-
-  setTransform(transformFromParameters(dz(),alpha(),theta()));
-
-  /* add translation. This is not useless! */
-  setTransform(transform().translate(-pixmap().width()/2,-pixmap().height()/2));
-
+  setTransform(transformFromParameters());
 }
 
 double ImageItem::alpha() const{
@@ -847,7 +842,14 @@ void ImageItem::moveBy(qreal dx, qreal dy){
 }
 
 
-QTransform ImageItem::transformFromParameters(qreal dz,qreal alpha, qreal theta){
-  real zoom = 50/dz;
-  return QTransform(cos(theta)*cos(alpha),-sin(theta)*cos(alpha),0,sin(theta),cos(theta),0,0,0).scale(zoom,zoom);
+QTransform ImageItem::transformFromParameters(){
+  QTransform t;
+  t.rotateRadians(theta(),Qt::ZAxis);
+  t.rotateRadians(alpha(),Qt::YAxis);
+  t.scale(1.0/dz(),1.0/dz());
+  t.translate(dx(),-dy());
+  /* add translation. This is not useless! */
+  //  t = QTransform(t.m11(), t.m12(), t.m13()+dz()/1024, t.m21(), t.m22(), t.m23()+dz()/1024, t.m31(), t.m32(),1);
+  t.translate(-pixmap().width()/2,-pixmap().height()/2);  
+  return t;
 }

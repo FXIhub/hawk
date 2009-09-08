@@ -452,7 +452,7 @@ void StitcherWorkspace::onOptimizeGeometryClicked(){
       if(!item->dyLocked()){
 	geometrically_constrained_system_add_variable(gc,create_geometry_variable(p,DeltaY));
       }
-      set_image_position(p,Zoom,50.0/item->dz());
+      set_image_position(p,Zoom,1.0/item->dz());
       if(!item->dzLocked()){
 	geometrically_constrained_system_add_variable(gc,create_geometry_variable(p,Zoom));
       }
@@ -498,7 +498,16 @@ void StitcherWorkspace::onOptimizeGeometryClicked(){
   if(model->rowCount()){
     geometry_contraint_minimizer(gc);  
   }
+  /*double check control points */
+  sp_vector ** cp_v = control_point_list_to_global(gc->constraints[0].points,gc->constraints[0].n_points);
   _stitcherView->clearConstraintFits();
+  for(int i =0 ;i<gc->constraints[0].n_points;i++){
+    QGraphicsEllipseItem * point = new QGraphicsEllipseItem(-2,-2,4,4);
+    point->setZValue(1000);
+    point->setPos(sp_vector_get(cp_v[i],0),-sp_vector_get(cp_v[i],1));
+    point->setPen(QPen(Qt::green, 2));
+    _stitcherView->scene()->addItem(point);
+  }
   for(int i = 0;i<model->rowCount();i++){
     QStandardItem * it = model->item(i,0);
     for(int j = 0;j<it->rowCount();j++){
@@ -516,7 +525,7 @@ void StitcherWorkspace::onOptimizeGeometryClicked(){
       item->setDy(gc->variables[i].parent->pos[DeltaY]);      
     }
     if(gc->variables[i].type == Zoom){
-      item->setDz(50.0/gc->variables[i].parent->pos[Zoom]);      
+      item->setDz(1.0/gc->variables[i].parent->pos[Zoom]);      
     }
     if(gc->variables[i].type == Theta){
       item->setTheta(gc->variables[i].parent->pos[Theta]);      

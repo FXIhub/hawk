@@ -25,7 +25,7 @@ void test_difference_project_point(CuTest* tc){
 }
 
 void test_affine_transforms(CuTest* tc){
-  affine_transform * t =  affine_transfrom_from_parameters(0,0,1,0);
+  affine_transform * t =  affine_transfrom_from_parameters(0,0,1,0,0);
   sp_vector * p = sp_vector_alloc(2);
   sp_vector_set(p,0,0);
   sp_vector_set(p,1,1);
@@ -36,28 +36,28 @@ void test_affine_transforms(CuTest* tc){
   sp_vector_free(trans);
   affine_transform_free(t);
 
-  t =  affine_transfrom_from_parameters(0,0,1,M_PI);
+  t =  affine_transfrom_from_parameters(0,0,1,0,M_PI);
   trans = apply_affine_transform(t,p);
   CuAssertDblEquals(tc,sp_vector_get(trans,0),0,REAL_EPSILON);
   CuAssertDblEquals(tc,sp_vector_get(trans,1),-1,REAL_EPSILON);
   sp_vector_free(trans);
   affine_transform_free(t);
 
-  t =  affine_transfrom_from_parameters(0,0,2,M_PI);
+  t =  affine_transfrom_from_parameters(0,0,2,0,M_PI);
   trans = apply_affine_transform(t,p);
   CuAssertDblEquals(tc,sp_vector_get(trans,0),0,sqrt(REAL_EPSILON));
   CuAssertDblEquals(tc,sp_vector_get(trans,1),-2,sqrt(REAL_EPSILON));
   sp_vector_free(trans);
   affine_transform_free(t);
 
-  t =  affine_transfrom_from_parameters(1,0,2,M_PI);
+  t =  affine_transfrom_from_parameters(1,0,2,0,M_PI);
   trans = apply_affine_transform(t,p);
   CuAssertDblEquals(tc,sp_vector_get(trans,0),1,sqrt(REAL_EPSILON));
   CuAssertDblEquals(tc,sp_vector_get(trans,1),-2,sqrt(REAL_EPSILON));
   sp_vector_free(trans);
   affine_transform_free(t);
 
-  t =  affine_transfrom_from_parameters(1,1,2,M_PI);
+  t =  affine_transfrom_from_parameters(1,1,2,0,M_PI);
   trans = apply_affine_transform(t,p);
   CuAssertDblEquals(tc,sp_vector_get(trans,0),1,sqrt(REAL_EPSILON));
   CuAssertDblEquals(tc,sp_vector_get(trans,1),-1,sqrt(REAL_EPSILON));

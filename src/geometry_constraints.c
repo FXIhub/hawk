@@ -75,15 +75,65 @@ void set_image_position(positioned_image *  image ,GeometryVariableType t, real 
 
 void affine_transform_free(affine_transform * t){
   sp_matrix_free(t->A);
-  sp_vector_free(t->b);
   sp_free(t);
 }
 
+
+void affine_transfrom_z_rotate(affine_transform * t, real angle){
+}
+
+void affine_transfrom_multiply(affine_transform * t,affine_transform * o){
+  real m11 =sp_matrix_get(t->A,0,0)*sp_matrix_get(o->A,0,0) +sp_matrix_get(t->A,0,1)*sp_matrix_get(o->A,1,0) +sp_matrix_get(t->A,0,2)*sp_matrix_get(o->A,0,2);
+  real m12 =sp_matrix_get(t->A,0,0)*sp_matrix_get(o->A,0,1) +sp_matrix_get(t->A,0,1)*sp_matrix_get(o->A,1,1) +sp_matrix_get(t->A,0,2)*sp_matrix_get(o->A,1,2);
+  real m13 =sp_matrix_get(t->A,0,0)*sp_matrix_get(o->A,0,2) +sp_matrix_get(t->A,0,1)*sp_matrix_get(o->A,1,2) +sp_matrix_get(t->A,0,2)*sp_matrix_get(o->A,2,2);
+  
+  real m21 =sp_matrix_get(t->A,1,0)*sp_matrix_get(o->A,0,0) +sp_matrix_get(t->A,1,1)*sp_matrix_get(o->A,1,0) +sp_matrix_get(t->A,1,2)*sp_matrix_get(o->A,0,2);
+  real m22 =sp_matrix_get(t->A,1,0)*sp_matrix_get(o->A,0,1) +sp_matrix_get(t->A,1,1)*sp_matrix_get(o->A,1,1) +sp_matrix_get(t->A,1,2)*sp_matrix_get(o->A,1,2);
+  real m23 =sp_matrix_get(t->A,1,0)*sp_matrix_get(o->A,0,2) +sp_matrix_get(t->A,1,1)*sp_matrix_get(o->A,1,2) +sp_matrix_get(t->A,1,2)*sp_matrix_get(o->A,2,2);
+ 
+  real m31 = sp_matrix_get(t->A,0,2)*sp_matrix_get(o->A,0,0) + sp_matrix_get(t->A,1,2)*sp_matrix_get(o->A,1,0) +sp_matrix_get(t->A,2,2)*sp_matrix_get(o->A,0,2);
+  real m32 = sp_matrix_get(t->A,0,2)*sp_matrix_get(o->A,0,1) + sp_matrix_get(t->A,1,2)*sp_matrix_get(o->A,1,1) +sp_matrix_get(t->A,2,2)*sp_matrix_get(o->A,1,2);
+  real m33 = sp_matrix_get(t->A,0,2)*sp_matrix_get(o->A,0,2) + sp_matrix_get(t->A,1,2)*sp_matrix_get(o->A,1,2) +sp_matrix_get(t->A,2,2)*sp_matrix_get(o->A,2,2);
+  sp_matrix_set(t->A,0,0,m11);
+  sp_matrix_set(t->A,0,1,m12);
+  sp_matrix_set(t->A,0,2,m13);
+  sp_matrix_set(t->A,1,0,m21);
+  sp_matrix_set(t->A,1,1,m22);
+  sp_matrix_set(t->A,1,2,m23);
+  sp_matrix_set(t->A,2,0,m31);
+  sp_matrix_set(t->A,2,1,m32);
+  sp_matrix_set(t->A,2,1,m33);
+}
+
+void affine_transfrom_y_rotate(affine_transform * t, real angle){
+  affine_transform * o = sp_malloc(sizeof(affine_transform));
+  o->A = sp_matrix_alloc(3,3);
+  sp_matrix_set_identity(o->A);
+  sp_matrix_set(t->A,0,0,cos(angle));
+  sp_matrix_set(t->A,0,2,-sin(angle)/1024);
+  affine_transfrom_multiply(o,t);
+  t->A = o->A;  
+}
+
+void affine_transfrom_scale(affine_transform * t, real scale){
+  sp_matrix_set(t->A,0,2,sp_matrix_get(t->A,0,2)*scale);
+  sp_matrix_set(t->A,1,2,sp_matrix_get(t->A,1,2)*scale);
+  sp_matrix_set(t->A,0,1,sp_matrix_get(t->A,0,1)*scale);
+  sp_matrix_set(t->A,1,0,sp_matrix_get(t->A,1,0)*scale);
+  sp_matrix_set(t->A,0,0,sp_matrix_get(t->A,0,0)*scale);
+  sp_matrix_set(t->A,1,1,sp_matrix_get(t->A,1,1)*scale);
+}
+
+void affine_transfrom_translate(affine_transform * t, real dx, real dy){
+  sp_matrix_set(t->A,2,2,sp_matrix_get(t->A,2,2)+dx*sp_matrix_get(t->A,0,2)+dy*sp_matrix_get(t->A,1,2));
+  sp_matrix_set(t->A,2,0,sp_matrix_get(t->A,0,2)+dx*sp_matrix_get(t->A,0,0)+dy*sp_matrix_get(t->A,1,0));
+  sp_matrix_set(t->A,2,1,sp_matrix_get(t->A,1,2)+dy*sp_matrix_get(t->A,1,1)+dx*sp_matrix_get(t->A,0,1));
+}
+
 /* Calculates an affine transform from a gives displacement (dx,dy) plus a scaling zoom and an anti-clockwise angle theta in radians */
-affine_transform * affine_transfrom_from_parameters(real dx,real dy,real zoom, real alpha, real theta){
+affine_transform * affine_transfrom_from_parameters(real dx,real dy,real dz, real alpha, real theta){
   affine_transform * ret = sp_malloc(sizeof(affine_transform));
-  ret->A = sp_matrix_alloc(2,2);
-  ret->b = sp_vector_alloc(2);
+  ret->A = sp_matrix_alloc(3,3);
   /* Rotation matrix is given by 
      cos  sin 
      -sin cos
@@ -91,19 +141,12 @@ affine_transform * affine_transfrom_from_parameters(real dx,real dy,real zoom, r
   /* Calculate rotation first */
   /* Alpha is a rotation around x.
    It will cause a scaling on the y direction */
-  sp_matrix_set(ret->A,0,0,cos(theta)*cos(alpha));
-  sp_matrix_set(ret->A,0,1,-sin(theta)*cos(alpha));
-  sp_matrix_set(ret->A,1,0,sin(theta));
-  sp_matrix_set(ret->A,1,1,cos(theta));
+  sp_matrix_set_identity(ret->A);
+  affine_transfrom_z_rotate(ret,theta);
+  affine_transfrom_y_rotate(ret,alpha);
+  affine_transfrom_scale(ret,1/dz);
+  affine_transfrom_translate(ret,dx,dy);
 
-  
-
-  /* Apply scaling now */
-  sp_matrix_scale(ret->A,zoom);
-  
-  /* Set translation */
-  sp_vector_set(ret->b,0,dx);
-  sp_vector_set(ret->b,1,dy);
   return ret;
 }
 
@@ -116,11 +159,16 @@ sp_vector * apply_affine_transform(affine_transform * t, sp_vector * p){
   if(sp_vector_size(p) != 2){
     return NULL;
   }
-  if(sp_vector_size(p) != sp_vector_size(t->b)){
-    return NULL;
-  }
-  sp_vector * ret = sp_matrix_vector_prod(t->A,p);
-  sp_vector_add(ret,t->b);
+  real x = sp_vector_get(p,0);
+  real y = sp_vector_get(p,1);
+  x = sp_matrix_get(t->A,0,0)*x + sp_matrix_get(t->A,0,1)*y + sp_matrix_get(t->A,2,0);
+  y = sp_matrix_get(t->A,1,0)*x + sp_matrix_get(t->A,1,1)*y + sp_matrix_get(t->A,2,1);
+  real w = sp_matrix_get(t->A,0,2)*x+sp_matrix_get(t->A,1,2)*y+sp_matrix_get(t->A,2,2);
+  x /= w;
+  y /= w;
+  sp_vector * ret = sp_vector_alloc(2);
+  sp_vector_set(ret,0,x);
+  sp_vector_set(ret,1,y);
   return ret;  
 }
 

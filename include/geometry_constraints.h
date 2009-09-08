@@ -16,10 +16,8 @@ extern "C"
   */
 
   typedef struct{
-    /* transforms point x -> Ax + b */
-    /* A shold be symmetric */
+    /* A behaves like a QTransform */
     sp_matrix * A;
-    sp_vector * b;
   }affine_transform;
   
   typedef enum{RadialLineConstraint, CircleConstraint}GeometryConstraintType;

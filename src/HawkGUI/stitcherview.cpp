@@ -180,8 +180,9 @@ void StitcherView::mouseMoveEvent(QMouseEvent * event){
     lineEnd = event->pos();
     scene()->update();
   } else if(dragged && event->buttons() & Qt::LeftButton && (event->modifiers() & Qt::ShiftModifier)){
-    QPointF mov = mapToScene(event->pos())-mouseLastScenePos;
-    dragged->moveBy(mov.x(),mov.y());
+    QPointF mov = dragged->mapFromScene(mapToScene(event->pos()))-dragged->mapFromScene(mouseLastScenePos);
+    dragged->setDx(dragged->dx()+mov.x());
+    dragged->setDy(dragged->dy()-mov.y());
     emit imageItemGeometryChanged(dragged);
   }else if(event->buttons() & Qt::LeftButton){
     QPointF mov = mapToScene(event->pos())-mouseLastScenePos;
