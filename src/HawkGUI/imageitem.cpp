@@ -847,7 +847,7 @@ QTransform ImageItem::transformFromParameters(){
   t.rotateRadians(theta(),Qt::ZAxis);
   t.rotateRadians(alpha(),Qt::YAxis);
   t.scale(1.0/dz(),1.0/dz());
-  t.translate(dx(),-dy());
+  t.translate(dx(),dy());
   /* add translation. This is not useless! */
   //  t = QTransform(t.m11(), t.m12(), t.m13()+dz()/1024, t.m21(), t.m22(), t.m23()+dz()/1024, t.m31(), t.m32(),1);
   t.translate(-pixmap().width()/2,-pixmap().height()/2);  

@@ -38,4 +38,6 @@ class StitcherWorkspace: public QWidget
   StitcherView * _stitcherView;
 };
 
+void transformShow(QTransform t);
+
 #endif

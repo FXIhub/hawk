@@ -115,6 +115,8 @@ class ImageItem: public QObject, public QGraphicsPixmapItem
   void deleteControlPoint(QPointF pos);
   QList<QPointF> getControlPoints();
   void moveBy(qreal dx, qreal dy);
+  QTransform transformFromParameters();
+
  private:
   enum EditType{ImageSize,Phased,Shifted,Wavelength,DetectorDistance,PointConvolute,Scaled,PixelSize,ImageCenter,CheckPoint};
   struct EditStep{
@@ -125,7 +127,6 @@ class ImageItem: public QObject, public QGraphicsPixmapItem
   void applyEditStep(EditStep step);
   void repositionCenterIndicators();
   double overallScale() const;
-  QTransform transformFromParameters();
   QGraphicsRectItem * selectRect;
   QString filename;
   Image * image;

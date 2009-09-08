@@ -258,8 +258,8 @@ void StitcherView::drawConstraintFit(real fit, GeometryConstraintType type){
     qreal x1,x2,y1,y2;
     qreal scale = 10000;
     x1 = cos(fit)*scale;
-    /* we have to negate because of the swaped y axis */
-    y1 = -sin(fit)*scale;
+
+    y1 = sin(fit)*scale;
     x2 = -x1;
     y2 = -y1;
     QGraphicsLineItem * item = new QGraphicsLineItem(x1,y1,x2,y2);

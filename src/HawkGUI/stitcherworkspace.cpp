@@ -266,6 +266,10 @@ void StitcherWorkspace::loadGeometry(){
 	  /* convert to degrees */
 	  value *= 180/M_PI;
 	}
+	if(QString(name).endsWith("_dy")){
+	  /* swap axis */
+	  value = -value;
+	}
 	QStandardItem * itemName = new QStandardItem(_stitcherView->propertyNameToDisplayName(name,tag));
 	QStandardItem * itemValue = new QStandardItem(QString("%0").arg(value));
 	itemValue->setData(value,Qt::UserRole + 1);
@@ -323,6 +327,10 @@ void StitcherWorkspace::onItemChanged(QStandardItem * item){
       if(property.endsWith("_theta") || property.endsWith("_alpha")){
 	/* convert from degrees */
 	value /= 180/M_PI;
+      }
+      if(property.endsWith("_dy")){
+	/* swap axis */
+	value = -value;
       }
       ImageItem * imageItem = item->data(Qt::UserRole + 3).value<ImageItem *>();
       //      item->setText(QString("%0").arg(value));		  
@@ -482,9 +490,19 @@ void StitcherWorkspace::onOptimizeGeometryClicked(){
     total_points += points.size();
     for(int i = 0;i<points.size();i++){
       ImageItem * item = points[i].second;
+      affine_transform * at = affine_transfrom_from_parameters(item->dx(),item->dy(),item->dz(),item->alpha(),item->theta());
+      QTransform t = item->transformFromParameters();
       QPointF pos  = item->getControlPoints()[points[i].first];
+      qDebug("maped point %f %f",t.map(pos).x(),t.map(pos).y());
+      sp_vector * d = sp_vector_alloc(2);
+      sp_vector_set(d,0,pos.x());
+      sp_vector_set(d,1,pos.y());
+      d = apply_affine_transform(at,d);
+      qDebug("my maped point %f %f",sp_vector_get(d,0),sp_vector_get(d,1));
+      
       positioned_image * a = pos_image_map.value(item);
-      control_point cp = create_control_point(a,pos.x()-sp_image_x(a->image)/2,sp_image_y(a->image)/2-pos.y());
+      //      control_point cp = create_control_point(a,pos.x()-sp_image_x(a->image)/2,sp_image_y(a->image)/2-pos.y());
+      control_point cp = create_control_point(a,pos.x(),pos.y());
       geometric_constraint_add_point(&c,cp);            
     }
     geometrically_constrained_system_add_constraint(gc,c);
@@ -504,8 +522,8 @@ void StitcherWorkspace::onOptimizeGeometryClicked(){
   for(int i =0 ;i<gc->constraints[0].n_points;i++){
     QGraphicsEllipseItem * point = new QGraphicsEllipseItem(-2,-2,4,4);
     point->setZValue(1000);
-    point->setPos(sp_vector_get(cp_v[i],0),-sp_vector_get(cp_v[i],1));
-    point->setPen(QPen(Qt::green, 2));
+    point->setPos(sp_vector_get(cp_v[i],0),sp_vector_get(cp_v[i],1));
+    point->setPen(QPen(Qt::green, 1));
     _stitcherView->scene()->addItem(point);
   }
   for(int i = 0;i<model->rowCount();i++){
@@ -513,7 +531,6 @@ void StitcherWorkspace::onOptimizeGeometryClicked(){
     for(int j = 0;j<it->rowCount();j++){
       it->child(j,1)->setText(QString("%0").arg(gc->constraints[i].error[j]));      
     }
-    /*    it->child(it->rowCount()-1,1)->setText(QString("%0").arg(gc->constraints[i].best_fit*180.0/M_PI));      	*/
     _stitcherView->drawConstraintFit(gc->constraints[i].best_fit,gc->constraints[i].type);
   }  
   for(int i = 0;i<gc->n_variables;i++){
@@ -537,6 +554,11 @@ void StitcherWorkspace::onOptimizeGeometryClicked(){
   loadGeometry();
 }
 
+void transformShow(QTransform t){
+  qDebug("%5.3e\t%5.3e\t%5.3e\n",t.m11(),t.m12(),t.m13());
+  qDebug("%5.3e\t%5.3e\t%5.3e\n",t.m21(),t.m22(),t.m23());
+  qDebug("%5.3e\t%5.3e\t%5.3e\n",t.m31(),t.m32(),t.m33());
+}
 
 void StitcherWorkspace::onLoadGeometryClicked(){
   QString file = QFileDialog::getOpenFileName(0,tr("Load Geometry from File"), QString(),  tr("Image Geometry (*.hig)"));

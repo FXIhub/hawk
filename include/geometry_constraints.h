@@ -84,6 +84,12 @@ extern "C"
   void affine_transform_free(affine_transform * t);
   /* apply affine transform to the input vector */
   sp_vector * apply_affine_transform(affine_transform * t, sp_vector * p);
+  void affine_transfrom_translate(affine_transform * t, real dx, real dy);
+  void affine_transfrom_scale(affine_transform * t, real scale);
+  void affine_transfrom_y_rotate(affine_transform * t, real angle);
+  void affine_transfrom_z_rotate(affine_transform * t, real angle);
+  void affine_transfrom_multiply(affine_transform * t,affine_transform * o);
+  void affine_transform_show(affine_transform * t);
 
   int minimize_geometry_contraint_error(geometrically_constrained_system * gc);
 
