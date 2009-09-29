@@ -87,7 +87,7 @@ class ImageItem: public QObject, public QGraphicsPixmapItem
   void setSelected(bool selelected = true);
   void rotateImage();
   void xcamPreprocess();
-  void interpolateEmpty(double radius,int iterations,QRegion selected);
+  void interpolateEmpty(double radius,int iterations,QRegion selected,QString kernel);
   void cropImage(QRegion selected);
   void showIdentifier(bool show = true);
   double dx() const;

@@ -57,12 +57,27 @@ QWidget * StitcherWorkspace::createToolBar(){
   connect(saveGeometry,SIGNAL(clicked(bool)),this,SLOT(onSaveGeometryClicked()));
   layout->addWidget(saveGeometry,0,4);
 
+  QToolButton * saveControlPoints = new QToolButton(this);
+  saveControlPoints->setIcon(QIcon(":images/filesave.png"));
+  saveControlPoints->setToolTip(tr("Save control points to a file"));
+  saveControlPoints->setIconSize(iconSize);
+  connect(saveControlPoints,SIGNAL(clicked(bool)),this,SLOT(onSaveControlPointsClicked()));
+  layout->addWidget(saveControlPoints,1,4);
+
+
   QToolButton * loadGeometry = new QToolButton(this);
   loadGeometry->setIcon(QIcon(":images/fileopen.png"));
   loadGeometry->setToolTip(tr("Load geometry from a file"));
   loadGeometry->setIconSize(iconSize);
   connect(loadGeometry,SIGNAL(clicked(bool)),this,SLOT(onLoadGeometryClicked()));
   layout->addWidget(loadGeometry,0,5);
+
+  QToolButton * loadControlPoints = new QToolButton(this);
+  loadControlPoints->setIcon(QIcon(":images/fileload.png"));
+  loadControlPoints->setToolTip(tr("Load control points from a file"));
+  loadControlPoints->setIconSize(iconSize);
+  connect(loadControlPoints,SIGNAL(clicked(bool)),this,SLOT(onLoadControlPointsClicked()));
+  layout->addWidget(loadControlPoints,1,5);
 
   QToolButton * line = new QToolButton(this);
   line->setIcon(QIcon(":images/add_line.png"));
@@ -89,7 +104,7 @@ QWidget * StitcherWorkspace::createToolBar(){
   clearAll->setIcon(QIcon(":images/edit-delete.png"));
   clearAll->setToolTip(tr("Clear workspace"));
   clearAll->setIconSize(iconSize);
-  connect(clearAll,SIGNAL(clicked(bool)),_stitcherView,SLOT(clearAll()));
+  connect(clearAll,SIGNAL(clicked(bool)),this,SLOT(clearAll()));
   layout->addWidget(clearAll,1,3);
 
 
@@ -111,6 +126,11 @@ QWidget * StitcherWorkspace::createToolBar(){
   layout->setColumnStretch(11,100);
   layout->setRowStretch(10,100);
   return ret;
+}
+
+void StitcherWorkspace::clearAll(){
+  _stitcherView->clearAll();
+  initConstraintsTree();    
 }
 
 void StitcherWorkspace::onStitchClicked(){
@@ -490,15 +510,15 @@ void StitcherWorkspace::onOptimizeGeometryClicked(){
     total_points += points.size();
     for(int i = 0;i<points.size();i++){
       ImageItem * item = points[i].second;
-      affine_transform * at = affine_transfrom_from_parameters(item->dx(),item->dy(),item->dz(),item->alpha(),item->theta());
-      QTransform t = item->transformFromParameters();
+      /*      affine_transform * at = affine_transfrom_from_parameters(item->dx(),item->dy(),item->dz(),item->alpha(),item->theta());
+	      QTransform t = item->transformFromParameters();*/
       QPointF pos  = item->getControlPoints()[points[i].first];
-      qDebug("maped point %f %f",t.map(pos).x(),t.map(pos).y());
+      /*      qDebug("maped point %f %f",t.map(pos).x(),t.map(pos).y());
       sp_vector * d = sp_vector_alloc(2);
       sp_vector_set(d,0,pos.x());
       sp_vector_set(d,1,pos.y());
       d = apply_affine_transform(at,d);
-      qDebug("my maped point %f %f",sp_vector_get(d,0),sp_vector_get(d,1));
+      qDebug("my maped point %f %f",sp_vector_get(d,0),sp_vector_get(d,1));*/
       
       positioned_image * a = pos_image_map.value(item);
       //      control_point cp = create_control_point(a,pos.x()-sp_image_x(a->image)/2,sp_image_y(a->image)/2-pos.y());
@@ -516,22 +536,13 @@ void StitcherWorkspace::onOptimizeGeometryClicked(){
   if(model->rowCount()){
     geometry_contraint_minimizer(gc);  
   }
-  /*double check control points */
-  sp_vector ** cp_v = control_point_list_to_global(gc->constraints[0].points,gc->constraints[0].n_points);
   _stitcherView->clearConstraintFits();
-  for(int i =0 ;i<gc->constraints[0].n_points;i++){
-    QGraphicsEllipseItem * point = new QGraphicsEllipseItem(-2,-2,4,4);
-    point->setZValue(1000);
-    point->setPos(sp_vector_get(cp_v[i],0),sp_vector_get(cp_v[i],1));
-    point->setPen(QPen(Qt::green, 1));
-    _stitcherView->scene()->addItem(point);
-  }
   for(int i = 0;i<model->rowCount();i++){
     QStandardItem * it = model->item(i,0);
     for(int j = 0;j<it->rowCount();j++){
       it->child(j,1)->setText(QString("%0").arg(gc->constraints[i].error[j]));      
     }
-    _stitcherView->drawConstraintFit(gc->constraints[i].best_fit,gc->constraints[i].type);
+    _stitcherView->drawConstraintFit(gc);
   }  
   for(int i = 0;i<gc->n_variables;i++){
     ImageItem * item = pos_image_map.keys(gc->variables[i].parent).first();
@@ -634,6 +645,84 @@ void StitcherWorkspace::onSaveGeometryClicked(){
     out << "dy: " << sortedItems[i]->dy() << endl;
     out << "dz: " << sortedItems[i]->dz() << endl;
     out << "theta: " << sortedItems[i]->theta() << endl;
+  }
+  fp.close();
+}
+
+void StitcherWorkspace::onSaveControlPointsClicked(){
+  QString file = QFileDialog::getSaveFileName(0,tr("Save Control Points to File"), QString(),  tr("Image Control Points (*.hicp)"));
+  if(file.isEmpty()){
+    return;
+  }
+  if(!file.endsWith(".hicp")){
+    file = file + ".hicp";
+  }
+  QFile fp(file);
+  if(!fp.open(QIODevice::WriteOnly|QIODevice::Truncate)){
+    return;
+  }
+  QTextStream out(&fp);
+
+  QList<QGraphicsItem *> graphicsItems = _stitcherView->items();
+  QMap<QString,ImageItem *> sortMap;
+
+  for(int i = 0; i < graphicsItems.size(); i++){
+    if(ImageItem * item = qgraphicsitem_cast<ImageItem *>(graphicsItems[i])){
+      if(item->isVisible()){
+	sortMap.insert(item->identifier(),item);
+      }
+    }
+  }
+  QList<ImageItem *>sortedItems = sortMap.values();  
+  out << "Total Images: " << sortedItems.size() << endl;
+  for(int i = 0;i<sortedItems.size();i++){
+    out << "Identifier: " << sortedItems[i]->identifier() << endl;
+    QList<QPointF> points = sortedItems[i]->getControlPoints();
+    out << "Total Points: " << points.size() << endl;
+    for(int j = 0;j<points.size();j++){
+      out << "x: " << points[j].x() << endl;
+      out << "y: " << points[j].y() << endl;
+    }
+  }
+  fp.close();
+}
+
+void StitcherWorkspace::onLoadControlPointsClicked(){
+  QString file = QFileDialog::getOpenFileName(0,tr("Load Control Points from File"), QString(),  tr("Image Control Points (*.hicp)"));
+  if(file.isEmpty()){
+    return;
+  }
+  QFile fp(file);
+  if(!fp.open(QIODevice::ReadOnly)){
+    return;
+  }
+  QList<QGraphicsItem *> graphicsItems = _stitcherView->items();
+  QTextStream in(&fp);
+  QString dumb;
+  int nImages;
+  in >> dumb >> dumb  >> nImages;
+  for(int i = 0;i<nImages;i++){
+    QString id;
+    double dx,dy;
+    in >> dumb >> id;
+    ImageItem * item = NULL;
+    for(int j = 0; j < graphicsItems.size(); j++){      
+      item = qgraphicsitem_cast<ImageItem *>(graphicsItems[j]);
+      if(item && item->identifier() == id){
+	break;
+      }else{
+	item = NULL;
+      }
+    }
+    int nPoints;
+    in >> dumb >> dumb  >> nPoints;
+    for(int j = 0;j<nPoints;j++){
+      in >> dumb >> dx;
+      in >> dumb >> dy;
+      if(item){
+	item->addControlPoint(QPointF(dx,dy));
+      }
+    }
   }
   fp.close();
 }

@@ -17,7 +17,7 @@ class StitcherView: public ImageView
   enum Mode{Default,Line,Circle,AddPoint,DeletePoint};
   void setMode(Mode m);
   void clearConstraintFits();
-  void drawConstraintFit(real fit, GeometryConstraintType type);
+  void drawConstraintFit(geometrically_constrained_system* gc);
  public slots:
   void clearHelpers();
   void clearAll();

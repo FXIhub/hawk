@@ -37,7 +37,7 @@ extern "C"
     positioned_image * parent;
     real pos[2];
   }control_point;
-
+ 
   typedef struct{
     int n_points;
     control_point * points;
@@ -79,7 +79,7 @@ extern "C"
   void geometric_constraint_add_point(geometric_constraint * c,control_point p);
 
   /* create an affine transform from the given parameters */
-  affine_transform * affine_transfrom_from_parameters(real dx,real dy,real zoom, real alpha, real theta);
+  affine_transform * affine_transfrom_from_parameters(real image_x, real image_y, real dx,real dy,real zoom, real alpha, real theta);
   /* free given affine transform */
   void affine_transform_free(affine_transform * t);
   /* apply affine transform to the input vector */

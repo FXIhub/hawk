@@ -23,7 +23,7 @@ Image * basic_hio_iteration(Image * fft_modulos, Image * real_in, Image * suppor
 Image * get_newsupport(Image * input, real level , real radius, /*Image * prev_support, Image * patterson,*/ Options * opts);
 Image * check_for_best_image(Image * in, Image * best, Image * support);
 void fill_image_center(Image * in);
-void output_to_log(Image * exp_amp,Image * real_in, Image * real_out, Image * fourier_out,Image * support, Options * opts, Log * log);
+  //void output_to_log(Image * exp_amp,Image * real_in, Image * real_out, Image * fourier_out,Image * support, Options * opts, Log * log);
 Image * basic_raar_iteration(Image * exp_amp, Image * exp_sigma, Image * real_in, Image * support, 
 			      Options * opts,Log * log);
 real get_beta(Options * opts);

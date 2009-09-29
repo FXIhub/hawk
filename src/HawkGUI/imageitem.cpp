@@ -228,8 +228,9 @@ int ImageItem::display(){
 
 void ImageItem::maxContrast(QRectF area){
   // the area is given in scene coordinates. We have to change to item coordinates
-  QPointF tl = mapFromScene(area.topLeft());
-  QPointF br = mapFromScene(area.bottomRight());
+  QRectF sr = mapRectFromScene(QRectF(area.topLeft(),area.bottomRight())).normalized();
+  QPointF tl = sr.topLeft(); 
+  QPointF br = sr.bottomRight();
   if(!image){
     return;
   }
@@ -614,7 +615,7 @@ void ImageItem::xcamPreprocess(){
   updateImage();
 }
 
-void ImageItem::interpolateEmpty(double radius,int iterations, QRegion selected){
+void ImageItem::interpolateEmpty(double radius,int iterations, QRegion selected,QString kernel_type){
   if(!image || radius <= 0 || iterations < 1){
     return;
   }
@@ -624,8 +625,42 @@ void ImageItem::interpolateEmpty(double radius,int iterations, QRegion selected)
   }else{
     qDebug("Selection radius %f",radius);
   }
+  Image * kernel = sp_image_alloc(sp_image_x(image),sp_image_y(image),1);
+  sp_image_fill(kernel,sp_cinit(0,0));
+  if(kernel_type == "Sinc"){
+    for(int x = 0;x<sp_image_x(image);x++){
+      for(int y = 0;y<sp_image_y(image);y++){
+	if(fabs(x-image->detector->image_center[0]) < sp_image_x(image)/(2*radius) &&
+	   fabs(y-image->detector->image_center[1]) < sp_image_y(image)/(2*radius)){
+	  sp_image_set(kernel,x,y,0,sp_cinit(1,0));
+	}
+      }
+    }  
+    //    sp_image_scale(kernel,sqrt(sp_image_size(kernel)/sp_cabs(sp_image_integrate(kernel))));
+    //    sp_image_scale(kernel,1.0/sp_cabs(sp_image_integrate(kernel)));
+    Image * kernel_shift = sp_image_shift(kernel);
+    sp_image_free(kernel);
+    kernel = kernel_shift;
+  }else{
+    for(int i = 0;i<sp_image_size(image);i++){
+      real dist = sp_image_dist(image,i,SP_TO_CENTER);
+      real v = exp(-dist*dist/(2*radius*radius));
+      sp_image_set_by_index(kernel,i,sp_cinit(v,0));
+    }
+    sp_image_scale(kernel,1.0/sp_cabs(sp_image_integrate(kernel)));
+    Image * kernel_shift = sp_image_shift(kernel);
+    sp_image_free(kernel);
+    kernel = sp_image_fft(kernel_shift);
+    //    sp_image_scale(kernel,1.0/sqrt(sp_image_size(kernel)));
+    sp_image_free(kernel_shift);  
+  }
   for(int i = 0;i<iterations;i++){
-    Image * after = gaussian_blur(image,radius);
+    Image * a = sp_image_fft(image);
+    sp_image_mul_elements(a,kernel);
+    Image * after = sp_image_ifft(a);
+    sp_image_scale(after,1.0/sp_image_size(after));
+    sp_image_free(a);
+    //      Image * after = gaussian_blur(image,radius);
     for(int x = 0;x<sp_image_x(image);x++){
       for(int y = 0;y<sp_image_y(image);y++){
 	if(sp_image_mask_get(image,x,y,0) == 0 && selected.contains(QPoint(x,y))){

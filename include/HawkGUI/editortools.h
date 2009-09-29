@@ -9,6 +9,8 @@ class QStackedLayout;
 class QLineEdit;
 class QDoubleSpinBox;
 class QSpinBox;
+class QListWidget;
+class QComboBox;
 
 class EditorTools: public QGroupBox
 {
@@ -50,6 +52,7 @@ class EditorTools: public QGroupBox
   QStackedLayout * toolOptionsLayout;
   SelectionMode _selectionMode;
   QDoubleSpinBox * fillBlurRadius;
+  QComboBox * fillBlurKernel;
   QSpinBox * fillIterations;
 };
 

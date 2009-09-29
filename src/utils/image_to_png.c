@@ -14,7 +14,8 @@ int main(int argc, char ** argv){
   if(a->shifted){
     a = sp_image_shift(a);
   }
-  sp_image_write(a,argv[2],SpColormapJet|SpColormapLogScale);
+    sp_image_write(a,argv[2],SpColormapJet|SpColormapLogScale);
+    //  sp_image_write(a,argv[2],SpColormapJet);
   if(argc > 3){
     sp_image_write(a,argv[3],SpColormapJet|SpColormapLogScale|SpColormapPhase);
   }

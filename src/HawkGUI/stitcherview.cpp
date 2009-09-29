@@ -63,6 +63,7 @@ void StitcherView::addImage(ImageItem * item){
 
 void StitcherView::clearAll(){
   scene()->clear();
+  constraintFit.clear();
   _selected = NULL;
   emit imageItemGeometryChanged(NULL);
 }
@@ -182,7 +183,7 @@ void StitcherView::mouseMoveEvent(QMouseEvent * event){
   } else if(dragged && event->buttons() & Qt::LeftButton && (event->modifiers() & Qt::ShiftModifier)){
     QPointF mov = dragged->mapFromScene(mapToScene(event->pos()))-dragged->mapFromScene(mouseLastScenePos);
     dragged->setDx(dragged->dx()+mov.x());
-    dragged->setDy(dragged->dy()-mov.y());
+    dragged->setDy(dragged->dy()+mov.y());
     emit imageItemGeometryChanged(dragged);
   }else if(event->buttons() & Qt::LeftButton){
     QPointF mov = mapToScene(event->pos())-mouseLastScenePos;
@@ -253,25 +254,40 @@ void StitcherView::clearConstraintFits(){
   }
 }
 
-void StitcherView::drawConstraintFit(real fit, GeometryConstraintType type){
-  if(type == RadialLineConstraint){
-    qreal x1,x2,y1,y2;
-    qreal scale = 10000;
-    x1 = cos(fit)*scale;
+void StitcherView::drawConstraintFit(geometrically_constrained_system *gc){
+  for(int i = 0;i<gc->n_constraints;i++){
+    GeometryConstraintType type = gc->constraints[i].type;
+    double fit = gc->constraints[i].best_fit;    
+    if(type == RadialLineConstraint){
+      qreal x1,x2,y1,y2;
+      qreal scale = 10000;
+      x1 = cos(fit)*scale;
 
-    y1 = sin(fit)*scale;
-    x2 = -x1;
-    y2 = -y1;
-    QGraphicsLineItem * item = new QGraphicsLineItem(x1,y1,x2,y2);
-    QPen p = item->pen();
-    p.setStyle(Qt::DashLine);
-    QVector<qreal> dashes;
-    dashes << 25 << 15;
-    p.setDashPattern(dashes);
-    p.setColor(Qt::white);
-    item->setPen(p);
-    item->setZValue(10000);
-    scene()->addItem(item);
-    constraintFit.append(item);
+      y1 = sin(fit)*scale;
+      x2 = -x1;
+      y2 = -y1;
+      QGraphicsLineItem * item = new QGraphicsLineItem(x1,y1,x2,y2);
+      QPen p = item->pen();
+      p.setStyle(Qt::DashLine);
+      QVector<qreal> dashes;
+      dashes << 25 << 15;
+      p.setDashPattern(dashes);
+      p.setColor(Qt::white);
+      item->setPen(p);
+      item->setZValue(10000);
+      scene()->addItem(item);
+      constraintFit.append(item);
+    }
+    sp_vector ** cp_g = control_point_list_to_global(gc->constraints[i].points,gc->constraints[i].n_points);
+    QColor color = QColor::fromHsvF(1.0/3+(double)i/gc->n_constraints,1,1,1);
+    for(int j = 0;j<gc->constraints[i].n_points;j++){
+      QGraphicsEllipseItem * point = new QGraphicsEllipseItem(-4,-4,8,8);
+      point->setZValue(10001);
+      point->setPos(sp_vector_get(cp_g[j],0),sp_vector_get(cp_g[j],1));
+      point->setPen(QPen(color, 2));
+      point->setFlags(point->flags() | QGraphicsItem::ItemIgnoresTransformations);
+      scene()->addItem(point);
+      constraintFit.append(point);
+    }
   }
 }

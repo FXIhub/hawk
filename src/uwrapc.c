@@ -192,6 +192,59 @@ void harmonize_sizes(Options * opts){
   }
 }
 
+void complete_reconstruction_clean(Image * amp, Image * initial_support, Image * exp_sigma,
+			     Options * opts, char * dir){  
+
+  SpPhasingAlgorithm * alg = NULL;
+  Log log;
+  init_log(&log);
+  opts->flog = NULL;
+  opts->cur_iteration = 0;
+
+  if(get_algorithm(opts,&log) == HIO){
+    alg = sp_phasing_hio_alloc(opts->beta,0);
+  }
+  if(get_algorithm(opts,&log) == RAAR){
+    alg = sp_phasing_raar_alloc(opts->beta,0);
+  }
+  SpSupportAlgorithm * sup_alg = NULL;
+  if(opts->support_update_algorithm == FIXED){
+    sup_alg = sp_support_threshold_alloc(opts->iterations,opts->support_blur_evolution,opts->threshold_evolution);
+  }
+  if(opts->support_update_algorithm == DECREASING_AREA){
+    sup_alg = sp_support_area_alloc(opts->iterations,opts->support_blur_evolution,opts->object_area_evolution);
+  }
+  if(!alg || !sup_alg){
+    fprintf(stderr,"Algorithm is NULL!\nBlame the programmer!\n");
+    abort();
+  }
+  SpPhaser * ph = sp_phaser_alloc();
+  sp_phaser_init(ph,alg,NULL,amp,SpEngineAutomatic);
+  if(opts->rand_phases == PHASES_RANDOM){
+    sp_phaser_init_model(ph,NULL,SpModelRandomPhases); 
+  }else{
+    sp_phaser_init_model(ph,NULL,SpModelRandomPhases); 
+  }
+  sp_phaser_init_support(ph,initial_support,0,0);
+  while(opts->cur_iteration < opts->max_iterations){
+    char buffer[1024];
+    int to_output = opts->output_period-(ph->iteration)%opts->output_period;
+    int to_log = opts->log_output_period-(ph->iteration)%opts->log_output_period;
+    int to_iterate = sp_min(to_output,to_log);
+    sp_phaser_iterate(ph,to_iterate);
+    opts->cur_iteration = ph->iteration;
+    if(to_iterate == to_log){
+      output_from_phaser(ph,opts,&log);
+    }
+    if(to_iterate == to_output){
+      sprintf(buffer,"real_out-%07d.h5",ph->iteration);
+      sp_image_write(sp_phaser_model(ph),buffer,opts->output_precision);
+      sprintf(buffer,"support-%07d.h5",ph->iteration);
+      sp_image_write(sp_phaser_support(ph),buffer,opts->output_precision);
+    }
+  }
+  
+}
 
 void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_sigma,
 			     Options * opts, char * dir){
@@ -215,6 +268,7 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
   const int stop_threshold = 10;
   int i;
 
+
 #if defined(_MSC_VER) || defined(__MINGW32__)
   _getcwd(prev_dir,1024);
   _chdir(dir);
@@ -222,6 +276,14 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
   getcwd(prev_dir,1024);
   chdir(dir);
 #endif
+
+  if((get_algorithm(opts,&log) == HIO || get_algorithm(opts,&log) == RAAR) &&
+     (opts->support_update_algorithm == FIXED ||
+      opts->support_update_algorithm == DECREASING_AREA) && opts->support_image_averaging == 1){ 
+    /* use new libspimage backend */
+    return complete_reconstruction_clean(amp,initial_support,exp_sigma,
+				  opts,dir);
+  }
 
 
   init_log(&log);
@@ -473,7 +535,7 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
   //sprintf(buffer,"support-final.h5");
   sp_image_write(support,"support-final.h5",0);
   //sprintf(buffer,"support-final.vtk");
-  sp_image_write(support,buffer,opts->output_precision);
+  //  sp_image_write(support,buffer,opts->output_precision);
   tmp = sp_image_fft(real_out); 
   for(i = 0;i<sp_c3matrix_size(tmp->image);i++){
     tmp->mask->data[i] = 1;

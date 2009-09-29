@@ -28,7 +28,10 @@ class StitcherWorkspace: public QWidget
   void onDelConstraintClicked();
   void onOptimizeGeometryClicked();
   void onSaveGeometryClicked();
+  void onSaveControlPointsClicked();
   void onLoadGeometryClicked();
+  void onLoadControlPointsClicked();
+  void clearAll();
  private:
   QTreeView * createGeometryTree();
   QWidget * createConstraintsTree();

@@ -150,6 +150,7 @@ void set_defaults(Options * opt){
   opt->beta_evolution = sp_smap_alloc(2);
   sp_smap_insert(opt->beta_evolution,0,0.9);
   sp_smap_insert(opt->beta_evolution,2000,0.9);
+  opt->threshold_evolution = NULL;
   opt->object_area_evolution = sp_smap_alloc(2);
   sp_smap_insert(opt->object_area_evolution,0,0.001);
   sp_smap_insert(opt->object_area_evolution,2000,0.001);
@@ -281,6 +282,12 @@ void check_options_and_load_images(Options * opts){
   
   if(opts->support_mask_filename  && strcmp(opts->support_mask_filename,"")){
     opts->support_mask = sp_image_read(opts->support_mask_filename,0);
+  }
+
+  /* transform fixed thresholds in maps */
+  if(!opts->threshold_evolution){
+    opts->threshold_evolution = sp_smap_alloc(1);
+    sp_smap_insert(opts->threshold_evolution,0,opts->new_level);
   }
 }
 

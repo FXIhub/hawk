@@ -28,6 +28,7 @@ typedef struct _Log{
 
 
 void init_log(Log * log);
-void output_to_log(Image * exp_amp,Image * real_in, Image * real_out, Image * fourier_out,Image * support, Options * opts,Log * log);
+void output_from_phaser(SpPhaser * ph,Options * opts, Log * log);
+void output_to_log(const Image * exp_amp,const Image * real_in,const Image * real_out,const Image * fourier_out,const Image * support, Options * opts,Log * log);
 
 #endif

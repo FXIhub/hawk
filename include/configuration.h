@@ -147,6 +147,7 @@ typedef struct {
   int random_seed;
   real autocorrelation_area;
   sp_smap * object_area_evolution;
+  sp_smap * threshold_evolution;
   sp_smap * support_blur_evolution;
   sp_smap * beta_evolution;
   sp_smap * phases_blur_evolution;

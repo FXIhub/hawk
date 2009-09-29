@@ -230,8 +230,14 @@ EditorTools::EditorTools(EditorWorkspace * parent)
   fillIterations->setMinimum(1);
   grid->addWidget(fillIterations,1,1);
 
+  grid->addWidget(new QLabel("Blur Kernel"),2,0);
+  fillBlurKernel = new QComboBox(fillEmptyToolOptions);
+  fillBlurKernel->addItem("Gaussian");
+  fillBlurKernel->addItem("Sinc");
+  grid->addWidget(fillBlurKernel,2,1);
+
   push = new QPushButton("Interpolate",fillEmptyToolOptions);
-  grid->addWidget(push,2,0,1,2);
+  grid->addWidget(push,3,0,1,2);
   connect(push,SIGNAL(clicked()),this,SLOT(onInterpolateEmptyClicked()));
   toolOptionsLayout->addWidget(fillEmptyToolOptions);
 
@@ -404,7 +410,7 @@ void EditorTools::onInterpolateEmptyClicked(){
   qDebug("interpolate blur radius %f",radius);
   if(editor->editorView()->selectedImage()){
     qApp->setOverrideCursor(Qt::WaitCursor);
-    editor->editorView()->selectedImage()->interpolateEmpty(radius,iter,editor->editorView()->selectedRegion());
+    editor->editorView()->selectedImage()->interpolateEmpty(radius,iter,editor->editorView()->selectedRegion(),fillBlurKernel->itemText(fillBlurKernel->currentIndex()));
     qApp->setOverrideCursor(Qt::ArrowCursor);
   }
 }
