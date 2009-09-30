@@ -210,10 +210,10 @@ void complete_reconstruction_clean(Image * amp, Image * initial_support, Image *
     phasing_constraints = SpPositiveComplexObject;
   }
   if(get_algorithm(opts,&log) == HIO){
-    alg = sp_phasing_hio_alloc(opts->beta,0);
+    alg = sp_phasing_hio_alloc(opts->beta,phasing_constraints);
   }
   if(get_algorithm(opts,&log) == RAAR){
-    alg = sp_phasing_raar_alloc(opts->beta,0);
+    alg = sp_phasing_raar_alloc(opts->beta,phasing_constraints);
   }
   SpSupportAlgorithm * sup_alg = NULL;
   if(opts->support_update_algorithm == FIXED){
