@@ -201,6 +201,14 @@ void complete_reconstruction_clean(Image * amp, Image * initial_support, Image *
   opts->flog = NULL;
   opts->cur_iteration = 0;
 
+  SpPhasingConstraints phasing_constraints = SpNoConstraints;
+  if(opts->enforce_real && opts->enforce_positivity){
+    phasing_constraints = SpPositiveRealObject;
+  }else if(opts->enforce_real){
+    phasing_constraints = SpRealObject;
+  }else if(opts->enforce_positivity){
+    phasing_constraints = SpPositiveComplexObject;
+  }
   if(get_algorithm(opts,&log) == HIO){
     alg = sp_phasing_hio_alloc(opts->beta,0);
   }
@@ -219,14 +227,14 @@ void complete_reconstruction_clean(Image * amp, Image * initial_support, Image *
     abort();
   }
   SpPhaser * ph = sp_phaser_alloc();
-  sp_phaser_init(ph,alg,NULL,amp,SpEngineAutomatic);
+  sp_phaser_init(ph,alg,sup_alg,amp,SpEngineAutomatic);
   if(opts->rand_phases == PHASES_RANDOM){
     sp_phaser_init_model(ph,NULL,SpModelRandomPhases); 
   }else{
     sp_phaser_init_model(ph,NULL,SpModelRandomPhases); 
   }
   sp_phaser_init_support(ph,initial_support,0,0);
-  while(opts->cur_iteration < opts->max_iterations){
+  while(opts->max_iterations == 0 || opts->cur_iteration < opts->max_iterations){
     char buffer[1024];
     int to_output = opts->output_period-(ph->iteration)%opts->output_period;
     int to_log = opts->log_output_period-(ph->iteration)%opts->log_output_period;
@@ -237,9 +245,9 @@ void complete_reconstruction_clean(Image * amp, Image * initial_support, Image *
       output_from_phaser(ph,opts,&log);
     }
     if(to_iterate == to_output){
-      sprintf(buffer,"real_out-%07d.h5",ph->iteration);
+      sprintf(buffer,"real_out-%07d.h5",ph->iteration-1);
       sp_image_write(sp_phaser_model(ph),buffer,opts->output_precision);
-      sprintf(buffer,"support-%07d.h5",ph->iteration);
+      sprintf(buffer,"support-%07d.h5",ph->iteration-1);
       sp_image_write(sp_phaser_support(ph),buffer,opts->output_precision);
     }
   }
