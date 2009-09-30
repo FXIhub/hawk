@@ -14,16 +14,16 @@ int main(int argc, char ** argv){
   if(a->shifted){
     a = sp_image_shift(a);
   }
-    sp_image_write(a,argv[2],SpColormapJet|SpColormapLogScale);
+    sp_image_write(a,argv[2],SpColormapJet);
     //  sp_image_write(a,argv[2],SpColormapJet);
   if(argc > 3){
-    sp_image_write(a,argv[3],SpColormapJet|SpColormapLogScale|SpColormapPhase);
+    sp_image_write(a,argv[3],SpColormapJet|SpColormapPhase);
   }
   if(argc > 4){
     for(i = 0;i<sp_c3matrix_size(a->image);i++){
       a->image->data[i] = sp_cinit(a->mask->data[i],0);
     }
-    sp_image_write(a,argv[4],SpColormapJet|SpColormapLogScale);
+    sp_image_write(a,argv[4],SpColormapJet);
   }
   return 0;
 }
