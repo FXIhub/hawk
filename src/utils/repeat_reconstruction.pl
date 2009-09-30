@@ -44,7 +44,7 @@ if($nthreads > 1){
     }
 }else{
     for(my $i = $i0 ;$i<$nrec+$i0;$i++){
-	my $dir = printf("%06d",$i);
+	my $dir = sprintf("%06d",$i);
 	system("mkdir -p $dir");
 	system("cp uwrapc.conf $dir");
 	system("cd $dir && uwrapc");
