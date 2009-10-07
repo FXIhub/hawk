@@ -227,7 +227,8 @@ void complete_reconstruction_clean(Image * amp, Image * initial_support, Image *
     abort();
   }
   SpPhaser * ph = sp_phaser_alloc();
-  sp_phaser_init(ph,alg,sup_alg,amp,SpEngineAutomatic);
+  sp_phaser_init(ph,alg,sup_alg,SpEngineAutomatic);
+  sp_phaser_set_amplitudes(ph,amp);
   if(opts->rand_phases == PHASES_RANDOM){
     sp_phaser_init_model(ph,NULL,SpModelRandomPhases); 
   }else{
@@ -249,6 +250,8 @@ void complete_reconstruction_clean(Image * amp, Image * initial_support, Image *
       sp_image_write(sp_phaser_model(ph),buffer,opts->output_precision);
       sprintf(buffer,"support-%07d.h5",ph->iteration-1);
       sp_image_write(sp_phaser_support(ph),buffer,opts->output_precision);
+      sprintf(buffer,"pattern-%07d.h5",ph->iteration-1);
+      sp_image_write(sp_phaser_fmodel(ph),buffer,opts->output_precision);
     }
   }
   
