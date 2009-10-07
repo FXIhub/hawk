@@ -22,6 +22,7 @@ typedef struct _Log{
   Image * cumulative_fluctuation;
   real int_cum_fluctuation;
   real sol_correlation;
+  int timer;
 }Log;
 
 #include "configuration.h"

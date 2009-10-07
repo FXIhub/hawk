@@ -244,6 +244,7 @@ void output_to_log(const Image * exp_amp,const Image * real_in, const Image * re
     fprintf(opts->flog,"@ s14 legend \"Correlation with solution \\N\"\n");
     fprintf(opts->flog,"@ s15 legend \"Phase Blur Radius \\N\"\n");
     fprintf(opts->flog,"@ s16 legend \"Delta Rho \\N\"\n");
+    fprintf(opts->flog,"@ s17 legend \"Iterations/s \\N\"\n");
 
   }
   for(i = 0;i<sp_c3matrix_size(exp_amp->image);i++){
@@ -296,9 +297,10 @@ void output_to_log(const Image * exp_amp,const Image * real_in, const Image * re
     sol_superimpose_counter++;
     log->sol_correlation = sp_image_correlation_coefficient(opts->solution_image,real_out);
   }
-  fprintf(opts->flog,"%d\t%d\t%f\t%f\t%f\t%f\t%f\t%f\t%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",iter,it_outer,
+  fprintf(opts->flog,"%d\t%d\t%f\t%f\t%f\t%f\t%f\t%f\t%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",iter,it_outer,
 	  Ereal,Efourier,FcFo,SupSize,get_beta(opts),log->threshold,get_algorithm(opts,log),
-	  log->dEreal,log->dSupSize,get_blur_radius(opts),log->int_cum_fluctuation,get_object_area(opts),0.0,log->sol_correlation,get_phases_blur_radius(opts),log->dRho);
+	  log->dEreal,log->dSupSize,get_blur_radius(opts),log->int_cum_fluctuation,get_object_area(opts),0.0,
+	  log->sol_correlation,get_phases_blur_radius(opts),log->dRho,iter*1.0e6/sp_timer_elapsed(log->timer));
   fflush(opts->flog);
 
   if(Ereal < opts->real_error_tolerance){
@@ -323,6 +325,7 @@ void init_log(Log * log){
   }
   log->cumulative_fluctuation = NULL;
   log->int_cum_fluctuation = 0;
+  log->timer = sp_timer_start();
 }
 
 
