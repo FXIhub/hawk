@@ -90,6 +90,7 @@ extern "C"
   void affine_transfrom_z_rotate(affine_transform * t, real angle);
   void affine_transfrom_multiply(affine_transform * t,affine_transform * o);
   void affine_transform_show(affine_transform * t);
+  void affine_transform_invert(affine_transform * t);
 
   int minimize_geometry_contraint_error(geometrically_constrained_system * gc);
 

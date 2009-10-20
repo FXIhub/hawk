@@ -189,6 +189,36 @@ sp_vector * apply_affine_transform(affine_transform * t, sp_vector * p){
   return ret;  
 }
 
+void affine_transform_invert(affine_transform * t){
+  if(sp_matrix_get(t->A,0,2) != 0 ||
+     sp_matrix_get(t->A,1,2) != 0 ||
+     sp_matrix_get(t->A,2,2) != 1){
+    fprintf(stderr,"Can't invert this funky matrix yet!\n");
+  }
+  /* first extract and invert the 2x2 matrix inside t */
+  sp_matrix * A = sp_matrix_alloc(2,2);
+  for(int i = 0;i<2;i++){
+    for(int j = 0;j<2;j++){
+      sp_matrix_set(A,i,j,sp_matrix_get(t->A,i,j));
+    }
+  }
+  sp_matrix_invert(A);
+  /* now we have to invert the translation */
+  sp_vector * dr = sp_vector_alloc(2);
+  sp_vector_set(dr,0,sp_matrix_get(t->A,2,0));
+  sp_vector_set(dr,1,sp_matrix_get(t->A,2,1));
+  sp_vector * Adr = sp_matrix_vector_prod(A,dr);
+  sp_vector_free(dr);
+  for(int i = 0;i<2;i++){
+    for(int j = 0;j<2;j++){
+      sp_matrix_set(t->A,i,j,sp_matrix_get(A,i,j));
+    }
+  }
+  sp_matrix_set(t->A,2,0,-sp_vector_get(Adr,0));
+  sp_matrix_set(t->A,2,1,-sp_vector_get(Adr,1)); 
+}
+
+
 
 sp_vector ** control_point_list_to_global(control_point * points, int n){
   sp_vector ** ret = sp_malloc(sizeof(sp_vector *)*n);
