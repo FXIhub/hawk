@@ -61,6 +61,7 @@ ADD_EXECUTABLE(image_gaussian_filter image_gaussian_filter.c)
 ADD_EXECUTABLE(remove_overclocking remove_overclocking.c)
 ADD_EXECUTABLE(stat_hit_find stat_hit_find.c ../xcam.c)
 ADD_EXECUTABLE(remove_modes remove_modes.c)
+ADD_EXECUTABLE(in_plane_common_lines in_plane_common_lines.c)
 if(GSL_FOUND)
   ADD_EXECUTABLE(circular_averaging circular_averaging.c)
   ADD_EXECUTABLE(recover_shanon_mpi2 recover_shanon_mpi2.c)
@@ -73,6 +74,8 @@ IF(MATHEVAL_FOUND)
   LIST(APPEND BINS image_math)
 ENDIF(MATHEVAL_FOUND)
 ADD_EXECUTABLE(localized_blur localized_blur.c)
+ADD_EXECUTABLE(read_metadata read_metadata.c)
+ADD_EXECUTABLE(stitch_images stitch_images.c ../geometry_constraints.c)
 
 #I'm gonna reduce the number of programs actually used
 
@@ -120,11 +123,14 @@ TARGET_LINK_LIBRARIES(image_gaussian_filter ${LIBRARY_LIST})
 TARGET_LINK_LIBRARIES(remove_overclocking ${LIBRARY_LIST})
 TARGET_LINK_LIBRARIES(stat_hit_find ${LIBRARY_LIST})
 TARGET_LINK_LIBRARIES(remove_modes ${LIBRARY_LIST})
+TARGET_LINK_LIBRARIES(in_plane_common_lines ${LIBRARY_LIST})
 if(GSL_FOUND)
   TARGET_LINK_LIBRARIES(circular_averaging ${LIBRARY_LIST} ${GSL_LIBRARIES})
   TARGET_LINK_LIBRARIES(recover_shanon_mpi2 ${LIBRARY_LIST} ${GSL_LIBRARIES})
 endif(GSL_FOUND)
 TARGET_LINK_LIBRARIES(localized_blur ${LIBRARY_LIST})
+TARGET_LINK_LIBRARIES(read_metadata ${LIBRARY_LIST})
+TARGET_LINK_LIBRARIES(stitch_images ${LIBRARY_LIST} ${GSL_LIBRARIES})
 
 SET_TARGET_PROPERTIES(analyse_mask PROPERTIES
   INSTALL_NAME_DIR "@loader_path/../lib"
