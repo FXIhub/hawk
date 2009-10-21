@@ -84,6 +84,7 @@ extern "C"
   void affine_transform_free(affine_transform * t);
   /* apply affine transform to the input vector */
   sp_vector * apply_affine_transform(affine_transform * t, sp_vector * p);
+  sp_vector * apply_affine_transform_inverse(affine_transform * t, sp_vector * p);
   void affine_transfrom_translate(affine_transform * t, real dx, real dy);
   void affine_transfrom_scale(affine_transform * t, real scale);
   void affine_transfrom_y_rotate(affine_transform * t, real angle);

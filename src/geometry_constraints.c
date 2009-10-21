@@ -189,6 +189,31 @@ sp_vector * apply_affine_transform(affine_transform * t, sp_vector * p){
   return ret;  
 }
 
+sp_vector * apply_affine_transform_inverse(affine_transform * t, sp_vector * p){
+  if(sp_vector_size(p) != 2){
+    return NULL;
+  }
+  sp_matrix * A = sp_matrix_alloc(3,3);
+  for(int i = 0;i<3;i++){
+    for(int j = 0;j<3;j++){
+      sp_matrix_set(A,i,j,sp_matrix_get(t->A,i,j));
+    }
+  }
+  sp_matrix_invert(A);
+  real fx = sp_vector_get(p,0);
+  real fy = sp_vector_get(p,1);
+  real x = sp_matrix_get(A,0,0)*fx + sp_matrix_get(A,1,0)*fy + sp_matrix_get(A,2,0);
+  real y = sp_matrix_get(A,0,1)*fx + sp_matrix_get(A,1,1)*fy + sp_matrix_get(A,2,1);
+  real w = sp_matrix_get(A,0,2)*fx + sp_matrix_get(A,1,2)*fy + sp_matrix_get(A,2,2);
+  sp_matrix_free(A);
+  x /= w;
+  y /= w;
+  sp_vector * ret = sp_vector_alloc(2);
+  sp_vector_set(ret,0,x);
+  sp_vector_set(ret,1,y);
+  return ret;  
+}
+
 void affine_transform_invert(affine_transform * t){
   if(sp_matrix_get(t->A,0,2) != 0 ||
      sp_matrix_get(t->A,1,2) != 0 ||
@@ -196,26 +221,18 @@ void affine_transform_invert(affine_transform * t){
     fprintf(stderr,"Can't invert this funky matrix yet!\n");
   }
   /* first extract and invert the 2x2 matrix inside t */
-  sp_matrix * A = sp_matrix_alloc(2,2);
-  for(int i = 0;i<2;i++){
-    for(int j = 0;j<2;j++){
+  sp_matrix * A = sp_matrix_alloc(3,3);
+  for(int i = 0;i<3;i++){
+    for(int j = 0;j<3;j++){
       sp_matrix_set(A,i,j,sp_matrix_get(t->A,i,j));
     }
   }
   sp_matrix_invert(A);
-  /* now we have to invert the translation */
-  sp_vector * dr = sp_vector_alloc(2);
-  sp_vector_set(dr,0,sp_matrix_get(t->A,2,0));
-  sp_vector_set(dr,1,sp_matrix_get(t->A,2,1));
-  sp_vector * Adr = sp_matrix_vector_prod(A,dr);
-  sp_vector_free(dr);
-  for(int i = 0;i<2;i++){
-    for(int j = 0;j<2;j++){
+  for(int i = 0;i<3;i++){
+    for(int j = 0;j<3;j++){
       sp_matrix_set(t->A,i,j,sp_matrix_get(A,i,j));
     }
   }
-  sp_matrix_set(t->A,2,0,-sp_vector_get(Adr,0));
-  sp_matrix_set(t->A,2,1,-sp_vector_get(Adr,1)); 
 }
 
 
