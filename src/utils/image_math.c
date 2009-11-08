@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <getopt.h>
-#include <matheval.h>
+/* #include <matheval.h>*/
 #include "spimage.h"
 #include "math_parser.h"
 

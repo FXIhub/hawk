@@ -38,7 +38,7 @@ find_package(JPEG REQUIRED)
 #find_package(SZIP REQUIRED)
 find_package(MATH REQUIRED)
 find_package(GSL)
-find_package(MATHEVAL)
+#find_package(MATHEVAL)
 find_package(QWT)
 
 
