@@ -6,10 +6,13 @@
 #ifdef __cplusplus
 extern "C"{
 #endif
-  void * attempt_connection(char * server, int server_port);
-  void wait_for_server_instructions(void * _socket);
+  typedef struct RPCInfo RPCInfo;
+
+  RPCInfo * attempt_connection(char * server, int server_port);
+  int start_event_loop();
   void init_qt(int argc, char ** argv);
   void cleanup_and_free_qt();
+  void setup_signals_and_slots(RPCInfo * rpcInfo);
 #ifdef __cplusplus
 }
 #endif

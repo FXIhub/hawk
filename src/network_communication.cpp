@@ -5,32 +5,46 @@
 #include "client_decoder.h"
 #include <QCoreApplication>
 #include <QTcpSocket>
+#include "qxtrpcpeer.h"
+#include <QHostInfo>
+#include "rpccommunicator.h"
+#include "rpcpeer.h"
+#include <QTimer>
 static QCoreApplication * qapp;
+
+struct RPCInfo{
+  QHostInfo serverInfo;
+  int serverPort;
+  RPCPeer * peer;
+  RPCCommunicator * comm;
+};
 
 void init_qt(int argc, char ** argv){
   qapp = new QCoreApplication(argc,argv);
 }
 
-void * attempt_connection(char * server, int server_port){
-  QTcpSocket * socket = new QTcpSocket;
-  socket->connectToHost(server,server_port);
-  if(socket->waitForConnected()){
-    printf("Valid socket!\n");
-    return socket;
+RPCInfo * attempt_connection(char * server, int server_port){
+  RPCInfo * rpcInfo = new RPCInfo;
+  rpcInfo->serverInfo = QHostInfo::fromName(server);
+  rpcInfo->serverPort = server_port;
+  if(rpcInfo->serverInfo.error() != QHostInfo::NoError){
+    QString errorString = rpcInfo->serverInfo.errorString();
+    fprintf(stderr,"Connection failed: %s\n",errorString.toAscii().data());
+    delete rpcInfo;
+    return NULL;
   }
-  delete socket;
-  return NULL;
+  rpcInfo->peer = new RPCPeer;
+  rpcInfo->peer->connect(rpcInfo->serverInfo.addresses().first(), server_port);
+  return rpcInfo;
 }
 
-void wait_for_server_instructions(void * _socket){
-  QTcpSocket * socket = reinterpret_cast<QTcpSocket *>(_socket);
-  /* We're using ClientDecoder because this is the client part of the code */
-  ClientDecoder * factory = new ClientDecoder(NULL);
-  Sender * sender = new Sender(socket);
-  Communicator communicator(socket,factory,sender);  
+void setup_signals_and_slots(RPCInfo * rpcInfo){
+  rpcInfo->comm = new RPCCommunicator;
+}
+
+int start_event_loop(){
   /* Start event loop */
-  qapp->exec();
-  
+  return qapp->exec();
 }
 
 void cleanup_and_free_qt(){
