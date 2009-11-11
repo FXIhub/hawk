@@ -21,6 +21,7 @@
 #include "algorithms.h"
 #include "support.h"
 #include "network_communication.h"
+#include "rpcdefaultport.h"
 
 
 void get_intensities_noise(Options * opts){
@@ -769,7 +770,6 @@ void init_reconstruction(Options * opts){
 
 
 int uwrapc_network_main(int argc, char ** argv){
-  const int default_port = 9150;
 #ifndef NETWORK_SUPPORT
   fprintf(stderr,"uwrapc_network_main reached without network support!\n");
   abort();
@@ -782,7 +782,7 @@ int uwrapc_network_main(int argc, char ** argv){
     return uwrapc_from_file(argc,argv);
   }else if(argc == 2){
     server = argv[1];
-    server_port = default_port;
+    server_port = rpcDefaultPort;
   }else if(argc == 3){
     server = argv[1];
     server_port = atoi(argv[2]);
