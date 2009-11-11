@@ -7,4 +7,6 @@ doc/CodingStandards.log
 doc/CodingStandards.pdf
 doc/_region_.log
 doc/_region_.tex
-
+src/HawkGUI/images/crystal_project
+build*
+Linux_x86_64
