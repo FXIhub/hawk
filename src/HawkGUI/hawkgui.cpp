@@ -11,6 +11,7 @@
 #include "plotdisplay.h"
 #include "editorworkspace.h"
 #include "stitcherworkspace.h"
+#include "rpcserver.h"
 
 HawkGUI::HawkGUI()
   :QMainWindow()
@@ -20,6 +21,7 @@ HawkGUI::HawkGUI()
   createGUI();
   createControls();
   connectGUIToControls();
+  createRPCServer();
   resize(1024,768);
 }
 
@@ -349,6 +351,11 @@ void HawkGUI::createCategories(){
   imageCategories.append(new ImageCategory("Autocorrelation","autocorrelation",false));
   imageCategories.append(new ImageCategory("Initial Image","initial_guess",false));
   imageCategories.append(new ImageCategory("Initial Support","initial_support",false));
+}
+
+
+void HawkGUI::createRPCServer(){
+  m_rpcServer = new RPCServer();  
 }
 
 void HawkGUI::onFocusedViewChanged(ImageView * view){

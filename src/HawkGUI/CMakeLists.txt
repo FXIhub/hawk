@@ -86,7 +86,7 @@ set(GUI_MOC_HDRS
   ${LOCAL_INCLUDE}/client_decoder.h 
   ${LOCAL_INCLUDE}/decoder.h 
   ${LOCAL_INCLUDE}/sender.h
-  ${LOCAL_INCLUDE}/rpcpeer.h
+  ../rpcpeer.h
   rpcserver.h
 )
 

@@ -18,6 +18,7 @@ class ProcessControl;
 class ImageCategory;
 class ImageView;
 class PlotDisplay;
+class RPCServer;
 
 class HawkGUI : public QMainWindow
 {
@@ -46,6 +47,7 @@ private:
   void createControls();
   void connectGUIToControls();
   void loadStyleSheet();
+  void createRPCServer();
   
   QWidget *createPhaserWorkspace();
   QWidget *createEditorWorkspace();
@@ -114,6 +116,8 @@ private:
   QComboBox * displayBox;
 
   ProcessControl * processControl;
+
+  RPCServer * m_rpcServer;
   QList<ImageCategory *>imageCategories;
 };
 
