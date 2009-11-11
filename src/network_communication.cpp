@@ -39,7 +39,7 @@ RPCInfo * attempt_connection(char * server, int server_port){
 }
 
 void setup_signals_and_slots(RPCInfo * rpcInfo){
-  rpcInfo->comm = new RPCCommunicator;
+  //  rpcInfo->comm = new RPCCommunicator;
 }
 
 int start_event_loop(){
