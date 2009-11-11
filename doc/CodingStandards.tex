@@ -32,11 +32,13 @@ under Hawk and libspimage. These conventions should hopefully make the code more
 \section{General Rules}
 \subsection{Floating point variables}
 Throughout the program real should be used as the type for floating point variables.
-This makes it easy to compile the program for either single or double precision. For variables which are seldom used, and as such negligible performance impact, for example those used in the graphical interface, float or double are acceptable.
+This makes it easy to compile the program for either single or double precision. 
+For variables which are seldom used, and as such negligible performance impact, for example those used in the graphical interface, float or double are acceptable.
 \subsection{File location}
 Source files should go under the /src directory. Documentation under /doc. 
-Header files that are included by more than one source file should go under /include. 
-The rest of the header files should be in the same directory as the source file that includes it.
+Header files that are included from more than one location should go under /include. 
+The rest of the header files should be in the same directory as the source files that includes it.
+
 Resources such as images and stylesheets should go under the /src directory and placed close to where they are used.
 
 \subsection{Header files}
@@ -111,6 +113,33 @@ Member functions should be in CamelCase with the first letter lower case (e.g {\
 All member variables should be private except in very special circumstances. 
 The naming convention for member variables is the same as for member functions but with the ``m\_'' prefix in front (e.g. {\tt int m\_serverPort}).
 
+For variables and member functions that begin with an acronym the entire acronym recomes lowercase (e.g. {\tt RPCServer * m\_rpcServer;})
 \subsection{Macros enums and constants}
 The rules for macros enumerations and constants are the same as for C, but with increased effort to avoid macros in C++.
+
+\subsection{Forward declarations}
+Forward declarations should be used in header files as much as possible to decrease coupling and compilation times.
+For example use:
+\begin{sourcestyle}
+\begin{verbatim}
+class B;
+
+Class A{
+ private:
+  B * m_pointerToB;
+}
+\end{verbatim}
+\end{sourcestyle}
+instead of:
+\begin{sourcestyle}
+\begin{verbatim}
+#include <b.h>
+
+Class A{
+ private:
+  B * m_pointerToB;
+}
+\end{verbatim}
+\end{sourcestyle}
+
 \end{document}
