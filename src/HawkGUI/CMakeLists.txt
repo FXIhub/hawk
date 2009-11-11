@@ -5,6 +5,9 @@ project(uwrapc)
 INCLUDE_DIRECTORIES(${LOCAL_INCLUDE}/HawkGUI)
 INCLUDE_DIRECTORIES(${QWT_INCLUDE_DIR})
 
+QT_WRAP_CPP(HawkGUI hawkgui_qxt_moc_files ../qxt/qxtboundfunction.h ../qxt/qxtrpcservice.h ../qxt/qxtrpcservice_p.h ../qxt/qxtabstractconnectionmanager.h ../qxt/qxtrpcpeer.h ../qxt/qxttcpconnectionmanager.h ../qxt/qxttcpconnectionmanager_p.h)
+SET(QXT_OBJS ../qxt/qxtrpcservice.cpp ../qxt/qxtabstractconnectionmanager.cpp ../qxt/qxtmetaobject.cpp ../qxt/qxtdatastreamsignalserializer.cpp ../qxt/qxtrpcpeer.cpp ../qxt/qxttcpconnectionmanager.cpp ${hawkgui_qxt_moc_files})
+
 set(GUI_SRCS
   ../algorithms.c
   ../configuration.c
@@ -25,6 +28,7 @@ set(GUI_SRCS
   ../saddle/minmaxtau.c
   ../xcam.c
   ../geometry_constraints.c
+  ../rpcpeer.cpp
   geometrycontrol.cpp
   hawkgui.cpp
   imagecategory.cpp
@@ -51,6 +55,7 @@ set(GUI_SRCS
   stitcherview.cpp
   addconstraintdialog.cpp
   addvariabledialog.cpp
+  rpcserver.cpp
 )
 
 set(GUI_MOC_HDRS
@@ -81,6 +86,8 @@ set(GUI_MOC_HDRS
   ${LOCAL_INCLUDE}/client_decoder.h 
   ${LOCAL_INCLUDE}/decoder.h 
   ${LOCAL_INCLUDE}/sender.h
+  ${LOCAL_INCLUDE}/rpcpeer.h
+  rpcserver.h
 )
 
 
@@ -88,7 +95,7 @@ QT4_ADD_RESOURCES(HAWK_QRC_FILES hawk.qrc)
 
 QT_WRAP_CPP(HawkGUI GUI_MOC_FILES ${GUI_MOC_HDRS})
 
-LIST(APPEND GUI_OBJ ${GUI_SRCS} ${GUI_MOC_FILES} ${HAWK_QRC_FILES})
+LIST(APPEND GUI_OBJ ${GUI_SRCS} ${GUI_MOC_FILES} ${HAWK_QRC_FILES} ${QXT_OBJS})
 
 ADD_EXECUTABLE(HawkGUI ${GUI_OBJ})
 

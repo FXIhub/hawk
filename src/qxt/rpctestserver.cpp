@@ -1,5 +1,5 @@
 #include <QApplication>
-#include "rpcserver.h"
+#include "rpctestserver.h"
 
 
 int main(int argc, char* argv[])
