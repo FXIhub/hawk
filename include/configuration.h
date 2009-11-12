@@ -194,7 +194,7 @@ extern VariableMetadata variable_metadata[201];
   int get_list_value_from_list_name(VariableMetadata * md,char * name);
   real bezier_map_interpolation(sp_smap * map, real x);
 
-  void check_options_and_load_images(Options * opts);
+  int check_options_and_load_images(Options * opts);
 #ifdef __cplusplus
 }  /* extern "C" */
 #endif /* __cplusplus */
