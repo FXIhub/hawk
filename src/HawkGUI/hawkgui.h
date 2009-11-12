@@ -18,6 +18,7 @@ class ProcessControl;
 class ImageCategory;
 class ImageView;
 class PlotDisplay;
+class QMenu;
 
 class HawkGUI : public QMainWindow
 {
@@ -40,6 +41,8 @@ private slots:
   void showPhaserWorkspace();
   void showEditorWorkspace();
   void showStitcherWorkspace();
+  void helpAbout();
+  void helpAboutQt();
 private:
   void createGUI();
   void createCategories();
@@ -77,28 +80,6 @@ private:
   QAction * lockTransformation;
   QAction * lockBrowse;
   QAction * autoUpdateView;
-  /*
-  QAction * loadImage;
-  QAction * shiftImage;
-  QAction * fourierTransformImage;
-  QAction * fourierTransformSquaredImage;
-  QAction * maxContrastImage;
-  QAction * logScaleImage;
-
-  
-  QAction * displayAmplitudes;
-  QAction * displayPhases;
-  QAction * displayMask;
-  QActionGroup * displayGroup;
-
-  QAction * colorGray;
-  QAction * colorJet;
-  QAction * colorHot;
-  QAction * colorRainbow;
-  QAction * colorTraditional;
-  QAction * colorWheel;
-  QActionGroup * colorGroup;
-  */
 
   QAction * loadLog;
 
@@ -117,6 +98,11 @@ private:
   ProcessControl * processControl;
 
   QList<ImageCategory *>imageCategories;
+
+  QMenu * m_fileMenu;
+  QMenu * m_helpMenu;
+
+
 };
 
 #endif

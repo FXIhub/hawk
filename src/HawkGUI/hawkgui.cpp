@@ -185,6 +185,20 @@ void HawkGUI::createStatusBar(){
 }
 
 void HawkGUI::createMenuBar(){
+  QAction *action;
+  m_fileMenu = menuBar()->addMenu(tr("&File"));
+  action = new QAction("&Quit", this);
+  action->setShortcut(tr("CTRL+Q"));
+  connect(action, SIGNAL(triggered()), QApplication::instance(), SLOT(quit()));
+  m_fileMenu->addAction(action);
+  m_helpMenu = menuBar()->addMenu(tr("&Help"));
+  action = new QAction("&About...", this);
+  connect(action, SIGNAL(triggered()), this, SLOT(helpAbout()));  
+  m_helpMenu->addAction(action);
+  action = new QAction("&About Qt...", this);
+  connect(action, SIGNAL(triggered()), this, SLOT(helpAboutQt()));
+  m_helpMenu->addAction(action);
+     
   
 }
 
@@ -492,4 +506,13 @@ void HawkGUI::showEditorWorkspace(){
 
 void HawkGUI::showStitcherWorkspace(){
   centralLayout->setCurrentWidget(stitcherWorkspace);
+}
+
+void HawkGUI::helpAbout(){
+  QMessageBox::about(this, "About HawkGUI",
+		     "HawkGUI is a graphical interface for the Hawk Image Reconstruction package");
+}
+
+void HawkGUI::helpAboutQt(){
+  QMessageBox::aboutQt(this);
 }
