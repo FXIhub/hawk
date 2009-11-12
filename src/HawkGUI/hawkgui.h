@@ -43,6 +43,8 @@ private slots:
   void showStitcherWorkspace();
   void helpAbout();
   void helpAboutQt();
+  void settingsRunLocally();
+  void settingsRunRemotely();
 private:
   void createGUI();
   void createCategories();
@@ -100,6 +102,8 @@ private:
   QList<ImageCategory *>imageCategories;
 
   QMenu * m_fileMenu;
+  QMenu * m_settingsMenu;
+  QMenu * m_settingsRunMenu;
   QMenu * m_helpMenu;
 
 
