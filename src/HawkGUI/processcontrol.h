@@ -9,6 +9,7 @@
 
 class QWidget;
 class UwrapcThread;
+class RPCServer;
 
 class ProcessControl: public QObject
 {
@@ -34,10 +35,12 @@ class ProcessControl: public QObject
  private:
   void startLocalProcess();
   void startEmbeddedProcess();
+  void startRPCProcess();
   Options * options;
   QProcess * process;
   QWidget * parent;
   QDateTime p_startTime;
+  RPCServer * m_rpcServer;
 };
 
 #endif

@@ -12,6 +12,11 @@ class RPCServer: public QxtRPCPeer
   Q_OBJECT
     public:
     RPCServer(int port=rpcDefaultPort);
+    public slots:
+    void sendOptions(quint64 client);
+    void startReconstruction(quint64 client);
+    void onClientConnected(quint64 client);
+    void reconstructionStarted(quint64 client);
 };
 
 #else

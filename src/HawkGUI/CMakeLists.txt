@@ -29,6 +29,7 @@ set(GUI_SRCS
   ../xcam.c
   ../geometry_constraints.c
   ../rpcpeer.cpp
+  ../uwrapcpeerthread.cpp
   geometrycontrol.cpp
   hawkgui.cpp
   imagecategory.cpp
@@ -59,14 +60,14 @@ set(GUI_SRCS
 )
 
 set(GUI_MOC_HDRS
-  ${LOCAL_INCLUDE}/HawkGUI/hawkgui.h 
+  hawkgui.h 
   ${LOCAL_INCLUDE}/HawkGUI/imagedisplay.h 
   ${LOCAL_INCLUDE}/HawkGUI/imageview.h 
   ${LOCAL_INCLUDE}/HawkGUI/treedelegate.h 
   ${LOCAL_INCLUDE}/HawkGUI/mapeditordialog.h 
   ${LOCAL_INCLUDE}/HawkGUI/optionstree.h 
   ${LOCAL_INCLUDE}/HawkGUI/processdisplay.h 
-  ${LOCAL_INCLUDE}/HawkGUI/processcontrol.h 
+  processcontrol.h 
   ${LOCAL_INCLUDE}/HawkGUI/outputwatcher.h 
   ${LOCAL_INCLUDE}/HawkGUI/imageframe.h 
   ${LOCAL_INCLUDE}/HawkGUI/plotdisplay.h 
@@ -87,6 +88,7 @@ set(GUI_MOC_HDRS
   ${LOCAL_INCLUDE}/decoder.h 
   ${LOCAL_INCLUDE}/sender.h
   ../rpcpeer.h
+  ../uwrapcpeerthread.h
   rpcserver.h
 )
 

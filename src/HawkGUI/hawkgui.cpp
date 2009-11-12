@@ -21,7 +21,6 @@ HawkGUI::HawkGUI()
   createGUI();
   createControls();
   connectGUIToControls();
-  createRPCServer();
   resize(1024,768);
 }
 
@@ -47,6 +46,7 @@ void HawkGUI::createGUI(){
   createActions();
   createToolBars();
   createStatusBar();
+  createMenuBar();
 }
 
 QWidget * HawkGUI::createPhaserWorkspace(){
@@ -182,6 +182,10 @@ void HawkGUI::createToolBars(){
 
 void HawkGUI::createStatusBar(){
   statusBar()->showMessage(tr("Ready"));
+}
+
+void HawkGUI::createMenuBar(){
+  
 }
 
 void HawkGUI::createActions(){
@@ -354,9 +358,6 @@ void HawkGUI::createCategories(){
 }
 
 
-void HawkGUI::createRPCServer(){
-  m_rpcServer = new RPCServer();  
-}
 
 void HawkGUI::onFocusedViewChanged(ImageView * view){
   autoUpdateView->setChecked(view->getAutoUpdate());

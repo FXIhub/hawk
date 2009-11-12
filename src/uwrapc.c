@@ -802,7 +802,9 @@ int uwrapc_network_main(int argc, char ** argv){
 
 
 int uwrapc_start(Options * opts,RPCInfo * rpcInfo){
-  check_options_and_load_images(opts);
+  if(check_options_and_load_images(opts)){
+    return -1;
+  }
   char buffer[OPTION_STRING_SIZE*2+1];
 #if defined(_MSC_VER) || defined(__MINGW32__)
   _mkdir(opts->work_dir);

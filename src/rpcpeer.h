@@ -5,25 +5,40 @@
 
 #include "qxtrpcpeer.h"
 #include <QTimer>
+#include <QHostInfo>
+
+class RPCPeer;
+class UwrapcPeerThread;
+
+struct RPCInfo{
+  QHostInfo serverInfo;
+  int serverPort;
+  RPCPeer * peer;
+};
+
 
 class RPCPeer: public QxtRPCPeer
 {
   Q_OBJECT
     public:
-  RPCPeer();
+  RPCPeer(RPCInfo * rpcInfo);
   void connect(QHostAddress addr , int port);
   public slots:
   void connectionEstablished();
+  void connectionRecovered();
   void checkTimeOut();
   void connectionLost();
   void attemptReconnection();  
   private slots:
   void receiveOptions(QByteArray optionsFile);
+  void startReconstruction();
+  void threadFinished();
+  private slots:
+  void reconstructionStarted();
  private:
   QTimer m_timer;
-  QHostAddress m_serverAddress;
-  int m_serverPort;
-  
+  RPCInfo * m_rpcInfo;  
+  UwrapcPeerThread * m_thread;
 };
 #else
 #error "Someone is including " __FILE__ " from a C file!"

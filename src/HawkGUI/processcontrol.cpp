@@ -6,18 +6,26 @@
 
 #include "outputwatcher.h"
 #include "uwrapcthread.h"
+#include "rpcserver.h"
 
 ProcessControl::ProcessControl(QWidget * p)
   :QObject(p)
 {
   process = NULL;
   parent = p;
+  m_rpcServer = new RPCServer();  
 }
 
 void ProcessControl::startProcess(){
   qDebug("start");
   //  startLocalProcess();
   startEmbeddedProcess();
+}
+
+void ProcessControl::startRPCProcess(){
+  quint64 client = m_rpcServer->clients().first(); 
+  m_rpcServer->sendOptions(client);
+  m_rpcServer->startReconstruction(client);
 }
 
 void ProcessControl::startLocalProcess(){

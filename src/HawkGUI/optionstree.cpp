@@ -129,7 +129,7 @@ void OptionsTree::saveOptions(){
   if(file.isEmpty()){
     return;
   }
-  write_options_file(file.toAscii().data());
+  write_options_file(file.toAscii().constData());
 }
 
 void OptionsTree::resetSelectedOption(){

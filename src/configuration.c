@@ -270,14 +270,15 @@ void read_options_file(const char * filename){
 }
 
 
-void check_options_and_load_images(Options * opts){
+int check_options_and_load_images(Options * opts){
  /* Make sure option is set and is not empty */
   if(opts->diffraction_filename && strcmp(opts->diffraction_filename,"")){    
     opts->diffraction = sp_image_read(opts->diffraction_filename,0);
   }else if(opts->real_image_filename  && strcmp(opts->real_image_filename,"")){
     opts->real_image = sp_image_read(opts->real_image_filename,0);
   }else{
-    sp_error_fatal("Neither diffraction nor real image specified!");
+    sp_error_warning("Neither diffraction nor real image specified!");
+    return -1;
   }
   
   if(opts->support_mask_filename  && strcmp(opts->support_mask_filename,"")){
@@ -289,6 +290,7 @@ void check_options_and_load_images(Options * opts){
     opts->threshold_evolution = sp_smap_alloc(1);
     sp_smap_insert(opts->threshold_evolution,0,opts->new_level);
   }
+  return 0;
 }
 
 /*
