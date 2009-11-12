@@ -294,21 +294,6 @@ void HawkGUI::connectGUIToControls(){
 
   connect(deleteOutput,SIGNAL(triggered()),this,SLOT(onDeleteOutputTriggered()));
 
-  /*
-  connect(displayAmplitudes,SIGNAL(triggered()),imageDisplay,SLOT(displayAmplitudes()));
-  connect(displayPhases,SIGNAL(triggered()),imageDisplay,SLOT(displayPhases()));
-  connect(displayMask,SIGNAL(triggered()),imageDisplay,SLOT(displayMask()));
-  
-  connect(colorGray,SIGNAL(triggered()),imageDisplay,SLOT(setColorGray()));
-  connect(colorJet,SIGNAL(triggered()),imageDisplay,SLOT(setColorJet()));
-  connect(colorHot,SIGNAL(triggered()),imageDisplay,SLOT(setColorHot()));
-  connect(colorWheel,SIGNAL(triggered()),imageDisplay,SLOT(setColorWheel()));
-  connect(colorRainbow,SIGNAL(triggered()),imageDisplay,SLOT(setColorRainbow()));
-  connect(colorTraditional,SIGNAL(triggered()),imageDisplay,SLOT(setColorTraditional()));
-
-  connect(colorBox,SIGNAL(currentIndexChanged(int)),this,SLOT(onColorBoxChanged(int)));
-  connect(displayBox,SIGNAL(currentIndexChanged(int)),this,SLOT(onDisplayBoxChanged(int)));
-  */
   // force initial signal
   optionsTree->rebuildTree();
 }
