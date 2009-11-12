@@ -5,8 +5,8 @@
 doc/CodingStandards.aux
 doc/CodingStandards.log
 doc/CodingStandards.pdf
-doc/_region_.log
-doc/_region_.tex
+doc/CodingStandards.out
+doc/_whizzy_CodingStandards_d/
 src/HawkGUI/images/crystal_project
 build*
 Linux_x86_64
