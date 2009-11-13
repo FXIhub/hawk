@@ -12,6 +12,7 @@
 #include "editorworkspace.h"
 #include "stitcherworkspace.h"
 #include "rpcserver.h"
+#include "remotelaunchdialog.h"
 
 HawkGUI::HawkGUI()
   :QMainWindow()
@@ -137,14 +138,27 @@ void HawkGUI::createMenuBar(){
   connect(action, SIGNAL(triggered()), QApplication::instance(), SLOT(quit()));
   m_fileMenu->addAction(action);
 
+
+  QActionGroup * actionGroup = new QActionGroup(this);
+  actionGroup->setExclusive(true);
+
   m_settingsMenu = menuBar()->addMenu(tr("&Settings"));
-  m_settingsRunMenu = m_settingsMenu->addMenu(tr("&Run reconstruction"));
+  m_settingsRunMenu = m_settingsMenu->addMenu(tr("&Launch runs"));
   action = new QAction("&Locally", this);
+  action->setCheckable(true);
+  action->setChecked(true);
+  actionGroup->addAction(action);
   connect(action, SIGNAL(triggered()), this, SLOT(settingsRunLocally()));
   m_settingsRunMenu->addAction(action);
   action = new QAction("&Remotely (RPC)", this);
+  action->setCheckable(true);
+  actionGroup->addAction(action);
   connect(action, SIGNAL(triggered()), this, SLOT(settingsRunRemotely()));
   m_settingsRunMenu->addAction(action);
+
+  action = new QAction("&Remote Launch...", this);
+  m_settingsMenu->addAction(action);
+  connect(action, SIGNAL(triggered()), this, SLOT(settingsRemoteLaunch()));
 
   m_helpMenu = menuBar()->addMenu(tr("&Help"));
   action = new QAction("&About...", this);
@@ -180,64 +194,6 @@ void HawkGUI::createActions(){
   autoUpdateView->setCheckable(true);
   connect(autoUpdateView,SIGNAL(toggled(bool)),imageDisplay,SLOT(setAutoUpdate(bool)));
   autoUpdateView->setChecked(true);
-
-  /*
-  loadImage = new QAction(QIcon(":images/image_open.png"),tr("&Load Image"), this);
-  loadImage->setStatusTip(tr("Load image file."));
-  connect(loadImage,SIGNAL(triggered(bool)),imageDisplay,SLOT(loadUserSelectedImage()));
-  shiftImage = new QAction(QIcon(":images/image_shift.png"),tr("&Shift Image"), this);
-  shiftImage->setStatusTip(tr("Shifts the quadrants of the selected image."));
-  connect(shiftImage,SIGNAL(triggered(bool)),imageDisplay,SLOT(shiftSelectedImage()));
-  fourierTransformImage = new QAction(QIcon(":images/fourier_transform.png"),tr("&Fourier Transform Image"), this);
-  fourierTransformImage->setStatusTip(tr("Fourier Transforms the part of the image currently visible."));
-  connect(fourierTransformImage,SIGNAL(triggered(bool)),imageDisplay,SLOT(fourierTransformSelectedImage()));
-  fourierTransformSquaredImage = new QAction(QIcon(":images/fourier_transform_squared.png"),tr("&Fourier Transform the square of the Image"), this);
-  fourierTransformSquaredImage->setStatusTip(tr("Fourier Transform of the square of the absolute value of the part of the image currently visible."));
-  connect(fourierTransformSquaredImage,SIGNAL(triggered(bool)),imageDisplay,SLOT(fourierTransformSquaredSelectedImage()));
-
-
-  maxContrastImage = new QAction(QIcon(":images/bricontrast.png"),tr("&Maximize Contrast"), this);
-  maxContrastImage->setStatusTip(tr("Maximizes the contrast of the selected image."));
-  connect(maxContrastImage,SIGNAL(triggered(bool)),imageDisplay,SLOT(maxContrastSelectedImage()));
-  logScaleImage = new QAction(QIcon(":images/log_scale.png"),tr("&Log Scale"), this);
-  logScaleImage->setStatusTip(tr("Toggles log scale on the selected image."));
-  logScaleImage->setCheckable(true);
-  connect(logScaleImage,SIGNAL(toggled(bool)),imageDisplay,SLOT(logScaleSelectedImage(bool)));
-
-  displayGroup = new QActionGroup(this);
-  displayAmplitudes = new QAction(tr("&Amplitudes"), this);
-  displayAmplitudes->setCheckable(true);
-  displayAmplitudes->setChecked(true);
-  displayPhases = new QAction(tr("&Phases"), this);
-  displayPhases->setCheckable(true);
-  displayMask = new QAction(tr("&Mask"), this);
-  displayMask->setCheckable(true);
-  displayGroup->addAction(displayAmplitudes);
-  displayGroup->addAction(displayPhases);
-  displayGroup->addAction(displayMask);
-
-
-  colorGroup = new QActionGroup(this);
-  colorGray = new QAction(tr("Gray"),this);
-  colorGray->setCheckable(true);
-  colorGroup->addAction(colorGray);
-  colorJet = new QAction(tr("Jet"),this);
-  colorJet->setCheckable(true);
-  colorJet->setChecked(true);
-  colorGroup->addAction(colorJet);
-  colorHot = new QAction(tr("Hot"),this);
-  colorHot->setCheckable(true);
-  colorGroup->addAction(colorHot);
-  colorRainbow = new QAction(tr("Rainbow"),this);
-  colorRainbow->setCheckable(true);
-  colorGroup->addAction(colorRainbow);
-  colorTraditional = new QAction(tr("Traditional"),this);
-  colorTraditional->setCheckable(true);
-  colorGroup->addAction(colorTraditional);
-  colorWheel = new QAction(tr("Wheel"),this);
-  colorWheel->setCheckable(true);
-  colorGroup->addAction(colorWheel);
-  */
 
   loadLog = new QAction(QIcon(":images/log_open.png"),tr("&Load Log"), this);
   loadLog->setStatusTip(tr("Load log file."));
@@ -354,13 +310,6 @@ void HawkGUI::onDisplayBoxChanged(int index){
 }
 
 void HawkGUI::onLockTransformationToggled(bool on){
-  /*  if(on){
-    lockTransformation->setIcon(QIcon(":/images/unlock_zoom.png"));
-    lockTransformation->setText("Unlock Transformation");
-  }else{
-    lockTransformation->setIcon(QIcon(":/images/lock_zoom.png"));
-  }
-  */
   imageDisplay->setLockedTransformation(on);
 }
 
@@ -425,4 +374,10 @@ void HawkGUI::settingsRunLocally(){
 
 void HawkGUI::settingsRunRemotely(){
   qDebug("Running reconstructions remotely");
+}
+
+void HawkGUI::settingsRemoteLaunch(){
+  qDebug("Remote launch settings opened");
+  RemoteLaunchDialog dialog(this);
+  dialog.exec();
 }

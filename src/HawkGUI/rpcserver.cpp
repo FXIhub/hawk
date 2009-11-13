@@ -4,6 +4,7 @@
 
 
 RPCServer::RPCServer(int port){
+  QSettings settings;
   bool ok = false;
   while(!ok){
     ok = listen(QHostAddress::Any, port);
@@ -13,6 +14,7 @@ RPCServer::RPCServer(int port){
       port++;
     }else{
       qDebug("RPCServer: Listening on port %d",port);
+      settings.setValue("RPCServer/serverPort",port);
     }
   }  
   if(!ok){

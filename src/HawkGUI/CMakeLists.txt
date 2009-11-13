@@ -57,6 +57,7 @@ set(GUI_SRCS
   addconstraintdialog.cpp
   addvariabledialog.cpp
   rpcserver.cpp
+  remotelaunchdialog.cpp
 )
 
 set(GUI_MOC_HDRS
@@ -90,6 +91,7 @@ set(GUI_MOC_HDRS
   ../rpcpeer.h
   ../uwrapcpeerthread.h
   rpcserver.h
+  remotelaunchdialog.h
 )
 
 

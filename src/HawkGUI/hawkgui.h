@@ -45,6 +45,7 @@ private slots:
   void helpAboutQt();
   void settingsRunLocally();
   void settingsRunRemotely();
+  void settingsRemoteLaunch();
 private:
   void createGUI();
   void createCategories();
