@@ -29,6 +29,7 @@ class RemoteLaunchDialog: public QDialog
   void sshPathChanged();
   void saveSettings();
   void checkSettings();
+  void uwrapcPathChanged();
  private:
   bool isHostAlive(QString host, int port,int msecTimeout=1000);
   QListWidget * m_profileList;
@@ -39,13 +40,15 @@ class RemoteLaunchDialog: public QDialog
   QSpinBox * m_localPort;
   QCheckBox * m_autoLocalPort;
   QLabel * localPortLabel;
+  QLineEdit * m_uwrapcPathEdit;
   QStringList m_profiles;
   QMap<QString,QString> m_remoteHostMap;
   QMap<QString,QString> m_localHostMap;
   QMap<QString,int> m_remotePortMap;
   QMap<QString,int> m_localPortMap;
   QMap<QString,int> m_autoLocalPortMap;
-  QString m_sshPath;
+  QMap<QString,QString>m_sshPath;
+  QMap<QString,QString>m_uwrapcPath;
 };
 
 #endif

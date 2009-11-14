@@ -23,7 +23,6 @@ RemoteLaunchDialog::RemoteLaunchDialog(QWidget * parent, Qt::WindowFlags f)
   vbox->addWidget(m_profileList);
   /* Add profiles from settings */
   m_profiles = settings.value("RemoteLaunchDialog/profileList").toStringList();
-  m_sshPath = settings.value("RemoteLaunchDialog/sshPath").toString();
 
   QHBoxLayout * hbox2 = new QHBoxLayout();
   vbox->addLayout(hbox2);
@@ -42,7 +41,7 @@ RemoteLaunchDialog::RemoteLaunchDialog(QWidget * parent, Qt::WindowFlags f)
 
   vbox = new QVBoxLayout();
   hbox->addLayout(vbox);
-  QGroupBox * groupBox = new QGroupBox("Profile settings",this);
+  QGroupBox * groupBox = new QGroupBox("Hosts settings",this);
   QGridLayout * grid = new QGridLayout(groupBox);
   grid->addWidget(new QLabel("Remote host:",groupBox),0,0);
 
@@ -84,15 +83,22 @@ RemoteLaunchDialog::RemoteLaunchDialog(QWidget * parent, Qt::WindowFlags f)
   vbox->addWidget(groupBox);
   groupBox = new QGroupBox("SSH settings",this);
   grid = new QGridLayout(groupBox);
-  grid->addWidget(new QLabel("SSH path:",groupBox),0,0);
-  m_sshPathEdit = new QLineEdit(m_sshPath,groupBox);
+  grid->addWidget(new QLabel("Local path:",groupBox),0,0);
+  m_sshPathEdit = new QLineEdit("",groupBox);
   connect(m_sshPathEdit,SIGNAL(editingFinished()),m_profileList,SLOT(setFocus()));
   connect(m_sshPathEdit,SIGNAL(editingFinished()),this,SLOT(sshPathChanged()));
-
   grid->addWidget(m_sshPathEdit,0,1);
-
-
   vbox->addWidget(groupBox);
+
+  groupBox = new QGroupBox("uwrapc settings",this);
+  grid = new QGridLayout(groupBox);
+  grid->addWidget(new QLabel("Remote path:",groupBox),0,0);
+  m_uwrapcPathEdit = new QLineEdit("",groupBox);
+  connect(m_uwrapcPathEdit,SIGNAL(editingFinished()),m_profileList,SLOT(setFocus()));
+  connect(m_uwrapcPathEdit,SIGNAL(editingFinished()),this,SLOT(uwrapcPathChanged()));
+  grid->addWidget(m_uwrapcPathEdit,0,1);
+  vbox->addWidget(groupBox);
+
   hbox2 = new QHBoxLayout();
   vbox->addLayout(hbox2);
 
@@ -114,6 +120,8 @@ RemoteLaunchDialog::RemoteLaunchDialog(QWidget * parent, Qt::WindowFlags f)
     m_remotePortMap.insert(m_profiles[i],settings.value("RemoteLaunchDialog/"+m_profiles[i]+"/remotePort").toInt());
     m_localPortMap.insert(m_profiles[i],settings.value("RemoteLaunchDialog/"+m_profiles[i]+"/localPort").toInt());
     m_autoLocalPortMap.insert(m_profiles[i],settings.value("RemoteLaunchDialog/"+m_profiles[i]+"/autoLocalPort").toBool());
+    m_sshPath.insert(m_profiles[i],settings.value("RemoteLaunchDialog/"+m_profiles[i]+"/sshPath").toString());
+    m_uwrapcPath.insert(m_profiles[i],settings.value("RemoteLaunchDialog/"+m_profiles[i]+"/uwrapcPath").toString());
 
     m_profileList->addItem(m_profiles[i]);      
     if(m_profiles[i] == settings.value("RemoteLaunchDialog/selectedProfile").toString()){
@@ -138,6 +146,8 @@ void RemoteLaunchDialog::selectedProfileChanged(){
 
   int port = m_remotePortMap.value(selectedProfile);
   m_remotePort->setValue(port);
+  m_sshPathEdit->setText(m_sshPath.value(selectedProfile));
+  m_uwrapcPathEdit->setText(m_uwrapcPath.value(selectedProfile));
 
   port = m_localPortMap.value(selectedProfile);
   m_localPort->setValue(port);
@@ -186,10 +196,12 @@ void RemoteLaunchDialog::addProfile(){
 			  tr("Profile names must be unique.\n"),QMessageBox::Ok);
     return;
   }
-  m_localPortMap.insert(text,22);
-  m_remotePortMap.insert(text,9501);
+  m_remotePortMap.insert(text,22);
+  m_localPortMap.insert(text,rpcDefaultPort);
   m_localHostMap.insert(text,"localhost");
   m_remoteHostMap.insert(text,"localhost");
+  m_sshPath.insert(text,"/usr/bin/ssh");
+  m_uwrapcPath.insert(text,"/usr/bin/uwrapc");
   m_autoLocalPortMap.insert(text,true);
   m_profileList->addItem(text);
   m_profiles << text;
@@ -213,7 +225,14 @@ void RemoteLaunchDialog::autoLocalPortToggled(bool checked){
 }
 
 void RemoteLaunchDialog::sshPathChanged(){
-  m_sshPath = m_sshPathEdit->text();
+  QString selectedProfile = m_profileList->currentItem()->text();
+  m_sshPath.insert(selectedProfile,m_sshPathEdit->text());
+}
+
+void RemoteLaunchDialog::uwrapcPathChanged(){
+  QString selectedProfile = m_profileList->currentItem()->text();
+  m_uwrapcPath.insert(selectedProfile,m_uwrapcPathEdit->text());
+
 }
 
 void RemoteLaunchDialog::saveSettings(){
@@ -221,13 +240,15 @@ void RemoteLaunchDialog::saveSettings(){
   qDebug("RemoteLaunchDialog: Saving settings");
   QString selectedProfile = m_profileList->currentItem()->text();
   settings.setValue("RemoteLaunchDialog/profileList",m_profiles);
-  settings.setValue("RemoteLaunchDialog/sshPath",m_sshPath);
   for(int i = 0;i<m_profiles.size();i++){
     settings.setValue("RemoteLaunchDialog/"+m_profiles[i]+"/remoteHost", m_remoteHostMap.value(m_profiles[i]));
     settings.setValue("RemoteLaunchDialog/"+m_profiles[i]+"/localHost", m_localHostMap.value(m_profiles[i]));
     settings.setValue("RemoteLaunchDialog/"+m_profiles[i]+"/remotePort", m_remotePortMap.value(m_profiles[i]));
     settings.setValue("RemoteLaunchDialog/"+m_profiles[i]+"/localPort", m_localPortMap.value(m_profiles[i]));
     settings.setValue("RemoteLaunchDialog/"+m_profiles[i]+"/autoLocalPort", m_autoLocalPortMap.value(m_profiles[i]));
+    settings.setValue("RemoteLaunchDialog/"+m_profiles[i]+"/sshPath", m_sshPath.value(m_profiles[i]));
+    settings.setValue("RemoteLaunchDialog/"+m_profiles[i]+"/uwrapcPath", m_uwrapcPath.value(m_profiles[i]));
+
     settings.setValue("RemoteLaunchDialog/selectedProfile",selectedProfile);
   }  
 }
@@ -256,7 +277,7 @@ void RemoteLaunchDialog::checkSettings(){
 			  QMessageBox::Ok);
     settingsOK = false;
   }
-  if(!QFile::exists(m_sshPath)){
+  if(!QFile::exists(m_sshPath.value(selectedProfile))){
     QMessageBox::warning(this, tr("HawkGUI"),
 			  tr("Can't find ssh executable in the specified path"),
 			  QMessageBox::Ok);

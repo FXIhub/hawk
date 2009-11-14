@@ -43,13 +43,15 @@ void ProcessControl::startRPCProcess(){
 
 void ProcessControl::startRemoteProcessBySSH(int key){
   QSettings settings;
-  QString ssh = settings.value("RemoteLaunchDialog/sshPath").toString();
   QString selectedProfile = settings.value("RemoteLaunchDialog/selectedProfile").toString();
   QString remoteHost = settings.value("RemoteLaunchDialog/"+selectedProfile+"/remoteHost").toString();
+  QString sshPath = settings.value("RemoteLaunchDialog/"+selectedProfile+"/sshPath").toString();
+  QString uwrapcPath = settings.value("RemoteLaunchDialog/"+selectedProfile+"/uwrapcPath").toString();
   int remotePort = settings.value("RemoteLaunchDialog/"+selectedProfile+"/remotePort").toInt();
   QString localHost = settings.value("RemoteLaunchDialog/"+selectedProfile+"/localHost").toString();
   int localPort = RemoteLaunchDialog::getLocalPortNumber();
-  QString command = QString("%1 -p %6 -t %2 uwrapc %3 %4 %5").arg(ssh).arg(remoteHost).arg(localHost).arg(localPort).arg(key).arg(remotePort);
+  QString command = QString("%1 -p %2 -t %3 %4 %5 %6 %7").arg(sshPath).arg(remotePort).
+    arg(remoteHost).arg(uwrapcPath).arg(localHost).arg(localPort).arg(key);
   qDebug("ProcessControl: running '%s'",command.toAscii().constData());
   QProcess::startDetached(command);  
 }
@@ -126,13 +128,17 @@ void ProcessControl::startEmbeddedProcess(){
 
 void ProcessControl::stopProcess(){  
   if(m_processType == LaunchLocally){
-    process->terminate();
-    if(!process->waitForFinished(2000)){
-      qDebug("Killing process");
-      process->kill();
+    if(process){
+      process->terminate();
+      if(!process->waitForFinished(2000)){
+	qDebug("Killing process");
+	process->kill();
+      }
     }
   }else if(m_processType == LaunchRemotely){
-    m_rpcServer->stopByKey(m_keysRunning.first());
+    if(m_keysRunning.size()){
+      m_rpcServer->stopByKey(m_keysRunning.first());
+    }
   }
 }
 

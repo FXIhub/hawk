@@ -5,13 +5,13 @@
 
 #include "qxtrpcpeer.h"
 #include <QTimer>
-#include <QHostInfo>
+//#include <QHostInfo>
 
 class RPCPeer;
 class UwrapcPeerThread;
 
 struct RPCInfo{
-  QHostInfo serverInfo;
+  QString serverInfo;
   int serverPort;
   RPCPeer * peer;
   int key;
@@ -23,7 +23,7 @@ class RPCPeer: public QxtRPCPeer
   Q_OBJECT
     public:
   RPCPeer(RPCInfo * rpcInfo);
-  void connect(QHostAddress addr , int port);
+  void connect(QString addr , int port);
  signals:
   void identificationKey(int key);
   void reconstructionStopped();

@@ -19,11 +19,12 @@ RPCPeer::RPCPeer(RPCInfo * rpcInfo)
 
 }
 
-void RPCPeer::connect(QHostAddress addr , int port){
+void RPCPeer::connect(QString addr , int port){
+  qDebug("RPCPeer: connecting to %s:%d",addr.toAscii().constData(),port);
   QxtRPCPeer::connect(addr,port);
   m_timer.setSingleShot(true);
   QObject::connect(&m_timer, SIGNAL(timeout()), this, SLOT(checkTimeOut()));
-  m_timer.start(5000);
+  m_timer.start(10000);
 }
 
 void RPCPeer::connectionEstablished(){
@@ -61,7 +62,7 @@ void RPCPeer::connectionLost(){
 
 void RPCPeer::attemptReconnection(){  
   qDebug("RPC Peer: Attempting reconnection...");
-  QxtRPCPeer::connect(m_rpcInfo->serverInfo.addresses().first(),m_rpcInfo->serverPort);
+  QxtRPCPeer::connect(m_rpcInfo->serverInfo,m_rpcInfo->serverPort);
 }
 
 void RPCPeer::receiveOptions(QByteArray optionsString){

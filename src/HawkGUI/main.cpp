@@ -21,11 +21,9 @@ void initSettings(){
     settings.setValue("RemoteLaunchDialog/default/localHost",QString("localhost"));
     settings.setValue("RemoteLaunchDialog/default/autoLocalPort",true);
     settings.setValue("RemoteLaunchDialog/default/localPort",rpcDefaultPort);
+    settings.setValue("RemoteLaunchDialog/default/sshPath","/usr/bin/ssh");
+    settings.setValue("RemoteLaunchDialog/default/uwrapcPath","/usr/bin/uwrapc");
     settings.setValue("RemoteLaunchDialog/selectedProfile",QString("default"));
-  }
-  QString sshPath = settings.value("RemoteLaunchDialog/sshPath").toString();
-  if(sshPath.isEmpty()){
-    settings.setValue("RemoteLaunchDialog/sshPath",QString("/usr/bin/ssh"));
   }
   bool ok = false;
   settings.value("ProcessControl/launchMethod").toInt(&ok);

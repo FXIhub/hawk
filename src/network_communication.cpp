@@ -18,17 +18,11 @@ void init_qt(int argc, char ** argv){
 
 RPCInfo * attempt_connection(char * server, int server_port,int key){
   RPCInfo * rpcInfo = new RPCInfo;
-  rpcInfo->serverInfo = QHostInfo::fromName(server);
+  rpcInfo->serverInfo = QString(server);
   rpcInfo->serverPort = server_port;
   rpcInfo->key = key;
-  if(rpcInfo->serverInfo.error() != QHostInfo::NoError){
-    QString errorString = rpcInfo->serverInfo.errorString();
-    fprintf(stderr,"Connection failed: %s\n",errorString.toAscii().data());
-    delete rpcInfo;
-    return NULL;
-  }
   rpcInfo->peer = new RPCPeer(rpcInfo);
-  rpcInfo->peer->connect(rpcInfo->serverInfo.addresses().first(), server_port);
+  rpcInfo->peer->connect(server, server_port);
   return rpcInfo;
 }
 
