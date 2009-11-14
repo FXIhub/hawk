@@ -16,10 +16,11 @@ void init_qt(int argc, char ** argv){
   qapp = new QCoreApplication(argc,argv);
 }
 
-RPCInfo * attempt_connection(char * server, int server_port){
+RPCInfo * attempt_connection(char * server, int server_port,int key){
   RPCInfo * rpcInfo = new RPCInfo;
   rpcInfo->serverInfo = QHostInfo::fromName(server);
   rpcInfo->serverPort = server_port;
+  rpcInfo->key = key;
   if(rpcInfo->serverInfo.error() != QHostInfo::NoError){
     QString errorString = rpcInfo->serverInfo.errorString();
     fprintf(stderr,"Connection failed: %s\n",errorString.toAscii().data());

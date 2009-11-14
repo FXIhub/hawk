@@ -19,3 +19,8 @@ void UwrapcPeerThread::run(){
   uwrapc_start(&global_options,m_rpcInfo);
   qDebug("UwrapcPeerThread: finishing run");
 }
+
+void UwrapcPeerThread::terminate(){
+  setTerminationEnabled(true);
+  QThread::terminate();
+}

@@ -132,6 +132,7 @@ void HawkGUI::createStatusBar(){
 
 void HawkGUI::createMenuBar(){
   QAction *action;
+  QSettings settings;
   m_fileMenu = menuBar()->addMenu(tr("&File"));
   action = new QAction("&Quit", this);
   action->setShortcut(tr("CTRL+Q"));
@@ -146,12 +147,17 @@ void HawkGUI::createMenuBar(){
   m_settingsRunMenu = m_settingsMenu->addMenu(tr("&Launch runs"));
   action = new QAction("&Locally", this);
   action->setCheckable(true);
-  action->setChecked(true);
+  if(settings.value("ProcessControl/launchMethod").toInt() == ProcessControl::LaunchLocally){
+    action->setChecked(true);
+  }
   actionGroup->addAction(action);
   connect(action, SIGNAL(triggered()), this, SLOT(settingsRunLocally()));
   m_settingsRunMenu->addAction(action);
   action = new QAction("&Remotely (RPC)", this);
   action->setCheckable(true);
+  if(settings.value("ProcessControl/launchMethod").toInt() == ProcessControl::LaunchRemotely){
+    action->setChecked(true);
+  }
   actionGroup->addAction(action);
   connect(action, SIGNAL(triggered()), this, SLOT(settingsRunRemotely()));
   m_settingsRunMenu->addAction(action);
@@ -369,10 +375,14 @@ void HawkGUI::helpAboutQt(){
 }
 
 void HawkGUI::settingsRunLocally(){
+  QSettings settings;
+  settings.setValue("ProcessControl/launchMethod",ProcessControl::LaunchLocally);
   qDebug("Running reconstructions locally");
 }
 
 void HawkGUI::settingsRunRemotely(){
+  QSettings settings;
+  settings.setValue("ProcessControl/launchMethod",ProcessControl::LaunchRemotely);
   qDebug("Running reconstructions remotely");
 }
 

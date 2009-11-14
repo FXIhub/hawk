@@ -4,6 +4,7 @@
 #include "configuration.h"
 #include "uwrapc.h"
 #include "rpcdefaultport.h"
+#include "processcontrol.h"
 
 void initSettings(){
   QSettings settings;
@@ -25,6 +26,11 @@ void initSettings(){
   QString sshPath = settings.value("RemoteLaunchDialog/sshPath").toString();
   if(sshPath.isEmpty()){
     settings.setValue("RemoteLaunchDialog/sshPath",QString("/usr/bin/ssh"));
+  }
+  bool ok = false;
+  settings.value("ProcessControl/launchMethod").toInt(&ok);
+  if(!ok){
+    settings.setValue("ProcessControl/launchMethod",ProcessControl::LaunchLocally);
   }
 }
 

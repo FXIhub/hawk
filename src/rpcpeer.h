@@ -14,6 +14,7 @@ struct RPCInfo{
   QHostInfo serverInfo;
   int serverPort;
   RPCPeer * peer;
+  int key;
 };
 
 
@@ -23,6 +24,9 @@ class RPCPeer: public QxtRPCPeer
     public:
   RPCPeer(RPCInfo * rpcInfo);
   void connect(QHostAddress addr , int port);
+ signals:
+  void identificationKey(int key);
+  void reconstructionStopped();
   public slots:
   void connectionEstablished();
   void connectionRecovered();
@@ -33,6 +37,7 @@ class RPCPeer: public QxtRPCPeer
   void receiveOptions(QByteArray optionsFile);
   void startReconstruction();
   void threadFinished();
+  void stopReconstruction();
   private slots:
   void reconstructionStarted();
  private:

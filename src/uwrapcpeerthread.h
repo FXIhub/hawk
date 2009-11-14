@@ -9,6 +9,7 @@ class RPCInfo;
    Q_OBJECT
  public:
    UwrapcPeerThread(RPCInfo * rpcInfo);
+   void terminate();
  protected:
    void run();
  signals:

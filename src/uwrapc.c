@@ -777,6 +777,7 @@ int uwrapc_network_main(int argc, char ** argv){
   init_qt(argc,argv);
   char * server = 0;
   int server_port = 0;
+  int key = 0;
   if(argc == 1){
     /* don't try to connect to any server*/
     return uwrapc_from_file(argc,argv);
@@ -786,12 +787,19 @@ int uwrapc_network_main(int argc, char ** argv){
   }else if(argc == 3){
     server = argv[1];
     server_port = atoi(argv[2]);
+  }else if(argc == 3){
+    server = argv[1];
+    server_port = atoi(argv[2]);
+  }else if(argc == 4){
+    server = argv[1];
+    server_port = atoi(argv[2]);
+    key = atoi(argv[3]);
   }else{
-    printf("Usage: uwrapc [server [port]]\n");
+    printf("Usage: uwrapc [server [port [key]]]\n");
     return 0;
   }
   RPCInfo * rpcInfo = 0;
-  rpcInfo = attempt_connection(server,server_port);  
+  rpcInfo = attempt_connection(server,server_port,key);  
   if(!rpcInfo){
     return -1;
   }

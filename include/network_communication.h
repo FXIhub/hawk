@@ -8,7 +8,7 @@ extern "C"{
 #endif
   typedef struct RPCInfo RPCInfo;
 
-  RPCInfo * attempt_connection(char * server, int server_port);
+  RPCInfo * attempt_connection(char * server, int server_port,int key);
   int start_event_loop();
   void init_qt(int argc, char ** argv);
   void cleanup_and_free_qt();

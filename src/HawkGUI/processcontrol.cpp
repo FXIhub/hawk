@@ -7,25 +7,51 @@
 #include "outputwatcher.h"
 #include "uwrapcthread.h"
 #include "rpcserver.h"
+#include "remotelaunchdialog.h"
 
 ProcessControl::ProcessControl(QWidget * p)
   :QObject(p)
 {
   process = NULL;
   parent = p;
-  m_rpcServer = new RPCServer();  
+  m_rpcServer = new RPCServer();
+  connect(m_rpcServer,SIGNAL(keyReceived(int)),this,SLOT(handleRemoteClient(int)));
+  connect(m_rpcServer,SIGNAL(clientFinished(quint64,int)),this,SLOT(cleanRemoteClient(quint64,int)));
 }
 
 void ProcessControl::startProcess(){
+  QSettings settings;
   qDebug("start");
+  if(settings.value("ProcessControl/launchMethod") == ProcessControl::LaunchLocally){
   //  startLocalProcess();
-  startEmbeddedProcess();
+    startEmbeddedProcess();
+  }else if(settings.value("ProcessControl/launchMethod") == ProcessControl::LaunchRemotely){
+    startRPCProcess();
+  }
 }
 
 void ProcessControl::startRPCProcess(){
-  quint64 client = m_rpcServer->clients().first(); 
-  m_rpcServer->sendOptions(client);
-  m_rpcServer->startReconstruction(client);
+  qDebug("ProcessControl: Starting remote process");
+  int key;
+  /* Make sure the generated key is unique */
+  do{
+    key = qrand();
+  }while(m_keysToStart.contains(key));
+  m_keysToStart.append(key);
+  startRemoteProcessBySSH(key);
+}
+
+void ProcessControl::startRemoteProcessBySSH(int key){
+  QSettings settings;
+  QString ssh = settings.value("RemoteLaunchDialog/sshPath").toString();
+  QString selectedProfile = settings.value("RemoteLaunchDialog/selectedProfile").toString();
+  QString remoteHost = settings.value("RemoteLaunchDialog/"+selectedProfile+"/remoteHost").toString();
+  int remotePort = settings.value("RemoteLaunchDialog/"+selectedProfile+"/remotePort").toInt();
+  QString localHost = settings.value("RemoteLaunchDialog/"+selectedProfile+"/localHost").toString();
+  int localPort = RemoteLaunchDialog::getLocalPortNumber();
+  QString command = QString("%1 -p %6 -t %2 uwrapc %3 %4 %5").arg(ssh).arg(remoteHost).arg(localHost).arg(localPort).arg(key).arg(remotePort);
+  qDebug("ProcessControl: running '%s'",command.toAscii().constData());
+  QProcess::startDetached(command);  
 }
 
 void ProcessControl::startLocalProcess(){
@@ -78,6 +104,7 @@ void ProcessControl::startEmbeddedProcess(){
   if(!ok){
     QMessageBox::warning(parent, tr("uwrapc message"),tr("Could not start %1. Please report the situation to the developers").arg(command));
   }else{
+    m_processType = LaunchLocally;  
     emit processStarted("embedded",fullPath,this);  
   }
 }
@@ -98,10 +125,14 @@ void ProcessControl::startEmbeddedProcess(){
 //}
 
 void ProcessControl::stopProcess(){  
-  process->terminate();
-  if(!process->waitForFinished(2000)){
-    qDebug("Killing process");
-    process->kill();
+  if(m_processType == LaunchLocally){
+    process->terminate();
+    if(!process->waitForFinished(2000)){
+      qDebug("Killing process");
+      process->kill();
+    }
+  }else if(m_processType == LaunchRemotely){
+    m_rpcServer->stopByKey(m_keysRunning.first());
   }
 }
 
@@ -169,4 +200,24 @@ bool ProcessControl::isRunning(){
     }       
   }
   return false;
+}
+
+void ProcessControl::handleRemoteClient(int key){
+  if(m_keysToStart.contains(key)){
+    m_keysToStart.removeAll(key);
+    m_keysRunning.append(key);
+    qDebug("ProcessControl: Starting reconstruction on client with key %d",key);
+    quint64 client = m_rpcServer->clientFromKey(key);
+    m_rpcServer->sendOptions(client);
+    m_rpcServer->startReconstruction(client);    
+    m_processType = LaunchRemotely;
+  }else{
+    qDebug("ProcessControl: Received unknown key - %d",key);
+  }
+}
+
+void ProcessControl::cleanRemoteClient(quint64 client, int key){
+  qDebug("ProcessControl: Cleaning finished client %llu",client);
+  m_keysRunning.removeAll(key);
+  emit processFinished();
 }

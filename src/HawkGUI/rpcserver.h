@@ -11,12 +11,22 @@ class RPCServer: public QxtRPCPeer
 {
   Q_OBJECT
     public:
-    RPCServer(int port=rpcDefaultPort);
-    public slots:
-    void sendOptions(quint64 client);
-    void startReconstruction(quint64 client);
-    void onClientConnected(quint64 client);
-    void reconstructionStarted(quint64 client);
+  RPCServer(int port=rpcDefaultPort);
+  quint64 clientFromKey(int key);
+  int keyFromClient(quint64 client);
+  void stopByKey(int key);
+ signals:
+  void keyReceived(int key);
+  void clientFinished(quint64 client, int key);
+  public slots:
+  void sendOptions(quint64 client);
+  void startReconstruction(quint64 client);
+  void onClientConnected(quint64 client);
+  void reconstructionStarted(quint64 client);
+  void reconstructionStopped(quint64 client);
+  void receiveIdentificationKey(quint64 client, int key);
+ private:
+  QMap<quint64,int> m_clientKeyMap;
 };
 
 #else

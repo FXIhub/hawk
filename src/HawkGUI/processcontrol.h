@@ -17,6 +17,7 @@ class ProcessControl: public QObject
     public:
   ProcessControl(QWidget * parent = NULL);
   QDateTime startTime();
+  enum LaunchMethod{LaunchLocally=1,LaunchRemotely};
   public slots:
   void startProcess();
   void stopProcess();
@@ -24,23 +25,29 @@ class ProcessControl: public QObject
   Options * getOptions();
   void deleteOutputFromDir(QString dir);
   bool isRunning();
+  void cleanRemoteClient(quint64 client, int key);
  signals:
   void processFinished();
   void processStarted(QString type, QString workDir,ProcessControl * process);
-  void newOutput(QString type, QFileInfo fi);
+  void newOutput(QString type, QFileInfo fi);  
   private slots:
   void readStdOut();
   void readStdErr();
   void onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
+  void handleRemoteClient(int key);
  private:
   void startLocalProcess();
   void startEmbeddedProcess();
   void startRPCProcess();
+  void startRemoteProcessBySSH(int key);
   Options * options;
   QProcess * process;
   QWidget * parent;
   QDateTime p_startTime;
   RPCServer * m_rpcServer;
+  QList<int> m_keysToStart;
+  QList<int> m_keysRunning;
+  LaunchMethod m_processType;
 };
 
 #endif

@@ -13,6 +13,10 @@ RPCPeer::RPCPeer(RPCInfo * rpcInfo)
   QObject::connect(this,SIGNAL(disconnectedFromServer()),this,SLOT(connectionLost()));
   attachSlot(QString("sendOptions(QByteArray)"),this,SLOT(receiveOptions(QByteArray)));
   attachSlot(QString("startReconstruction()"),this,SLOT(startReconstruction()));
+  attachSlot(QString("stopReconstruction()"),this,SLOT(stopReconstruction()));
+  attachSignal(this,SIGNAL(reconstructionStopped()),QString("reconstructionStopped()"));  
+  attachSignal(this,SIGNAL(identificationKey(int)),QString("identificationKey(int)"));
+
 }
 
 void RPCPeer::connect(QHostAddress addr , int port){
@@ -30,6 +34,7 @@ void RPCPeer::connectionEstablished(){
   /* new connectedToServer will mean the connection was recovered not established */
   QObject::disconnect(this,SIGNAL(connectedToServer()),this,SLOT(connectionEstablished()));
   QObject::connect(this,SIGNAL(connectedToServer()),this,SLOT(connectionRecovered()));
+  emit identificationKey(m_rpcInfo->key);
 }
 
 void RPCPeer::connectionRecovered(){
@@ -79,19 +84,31 @@ void RPCPeer::receiveOptions(QByteArray optionsString){
 void RPCPeer::startReconstruction(){
   qDebug("RPCPeer: Reconstruction started");
   m_thread = new UwrapcPeerThread(m_rpcInfo);
+  attachSignal(m_thread,SIGNAL(reconstructionStarted()),QString("reconstructionStarted()"));
   QObject::connect(m_thread,SIGNAL(finished()),this,SLOT(threadFinished()));
   QObject::connect(m_thread,SIGNAL(reconstructionStarted()),this,SLOT(reconstructionStarted()));
-  attachSignal(m_thread,SIGNAL(reconstructionStarted()),QString("reconstructionStarted()"));
   m_thread->start();
 }
 
 void RPCPeer::threadFinished(){
   qDebug("RPCPeer: Reconstruction thread exited.");
   qDebug("RPCPeer: Thread id %p",(void *)QThread::currentThread());
+  emit reconstructionStopped();
+  QCoreApplication::processEvents();
+  QCoreApplication::exit(0);  
 }
 
 void RPCPeer::reconstructionStarted(){
   qDebug("RPCPeer: Reconstruction started.");
   qDebug("RPCPeer: Thread id %p",(void *)QThread::currentThread());
+}
+
+void RPCPeer::stopReconstruction(){
+  qDebug("RPCPeer: Stopping reconstruction!");
+  m_thread->terminate();
+  m_thread->wait();
+  emit reconstructionStopped();
+  QCoreApplication::processEvents();
+  QCoreApplication::exit(0);
 }
 #endif

@@ -22,6 +22,8 @@ RPCServer::RPCServer(int port){
     return;
   }
   attachSlot(QString("reconstructionStarted()"),this,SLOT(reconstructionStarted(quint64)));
+  attachSlot(QString("reconstructionStopped()"),this,SLOT(reconstructionStopped(quint64)));
+  attachSlot(QString("identificationKey(int)"),this,SLOT(receiveIdentificationKey(quint64,int)));
   QObject::connect(this,SIGNAL(clientConnected(quint64)),this,SLOT(onClientConnected(quint64)));
   //  attachSignal(this,SIGNAL(sendOptions(quint64,QByteArray)),QString("sendOptions(quint64,QByteArray)"));
   //  attachSignal(this,SIGNAL(startReconstruction(quint64)),QString("startReconstruction(quint64)"));
@@ -51,6 +53,31 @@ void RPCServer::reconstructionStarted(quint64 client){
   qDebug("Reconstruction started at peer %llu",client);
 }
 
+void RPCServer::reconstructionStopped(quint64 client){
+  qDebug("Reconstruction stopped at peer %llu",client);
+  emit clientFinished(client,keyFromClient(client));
+  m_clientKeyMap.remove(client);
+}
+
 void RPCServer::onClientConnected(quint64 client){
   qDebug("Peer %llu connected",client);
+}
+
+void RPCServer::receiveIdentificationKey(quint64 client,int key){
+  qDebug("Peer %llu sent key %d",client,key); 
+  m_clientKeyMap.insert(client,key);
+  emit keyReceived(key);
+}
+
+quint64 RPCServer::clientFromKey(int key){
+  return m_clientKeyMap.key(key);
+}
+
+int RPCServer::keyFromClient(quint64 client){
+  return m_clientKeyMap.value(client);
+}
+
+void RPCServer::stopByKey(int key){
+  quint64 client = clientFromKey(key);
+  call(client,QString("stopReconstruction()"));
 }
