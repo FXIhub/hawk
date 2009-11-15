@@ -4,6 +4,7 @@
 #include "uwrapc.h"
 #include "configuration.h"
 #include "support.h"
+#include "io_utils.h"
 #ifdef _USE_DMALLOC
 #include <dmalloc.h>
 #endif
@@ -319,8 +320,7 @@ real get_support_level(Image * input, real * previous_size , real radius, Log * 
     sp_image_free(res);
     return new_level;
   }else{
-    fprintf(stderr,"Unkown algorithm!\n");
-    abort();
+    hawk_fatal("Unkown algorithm!");
   }
   return 0;
 }
@@ -350,8 +350,7 @@ real get_patterson_level(Image * input, real radius, Options * opts){
     /* the level is always a fraction of the maximum value so we divide by the maximum (data[0]) */
     return sp_cabs(res->image->data[(int)(sp_image_size(res)*opts->object_area)])/sp_cabs(res->image->data[0]);    
   }else{
-    fprintf(stderr,"Unkown algorithm!\n");
-    abort();
+    hawk_fatal("Unkown algorithm!");
   }
   return 0;
 }

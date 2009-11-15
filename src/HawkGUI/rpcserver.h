@@ -18,6 +18,8 @@ class RPCServer: public QxtRPCPeer
  signals:
   void keyReceived(int key);
   void clientFinished(quint64 client, int key);
+  void warningMessage(int key, QString msg);
+  void criticalMessage(int key, QString msg);
   public slots:
   void sendOptions(quint64 client);
   void startReconstruction(quint64 client);
@@ -25,6 +27,8 @@ class RPCServer: public QxtRPCPeer
   void reconstructionStarted(quint64 client);
   void reconstructionStopped(quint64 client);
   void receiveIdentificationKey(quint64 client, int key);
+  void receiveWarningMessage(quint64 client,QString msg);
+  void receiveCriticalMessage(quint64 client,QString msg);
  private:
   QMap<quint64,int> m_clientKeyMap;
 };

@@ -35,6 +35,8 @@ class ProcessControl: public QObject
   void readStdErr();
   void onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
   void handleRemoteClient(int key);
+  void handleWarningMessage(int key, QString msg);
+  void handleCriticalMessage(int key, QString msg);
  private:
   void startLocalProcess();
   void startEmbeddedProcess();

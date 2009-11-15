@@ -19,7 +19,7 @@
 #include "spimage.h"
 
 #include "configuration.h"
-
+#include "io_utils.h"
 
 Options global_options;
 
@@ -67,8 +67,7 @@ int get_config_type(Variable_Type vt){
   }else if(vt == Type_Map_Real){
     return CONFIG_TYPE_LIST;
   }
-  fprintf(stderr,"Unkown variable type\n");
-  abort();
+  hawk_fatal("Unkown variable type");
   return -1;
 }
 
@@ -166,9 +165,8 @@ void read_options_file(const char * filename){
   config_t config;
   config_init(&config);
   if(!config_read_file(&config,filename)){
-    fprintf(stderr,"Error parsing %s on line %d:\n,%s\n",
-	    filename,config_error_line(&config),config_error_text(&config));
-    exit(1);
+    hawk_fatal("Error parsing %s on line %d:\n,%s",
+	       filename,config_error_line(&config),config_error_text(&config));
   }
 
 
@@ -227,10 +225,9 @@ void read_options_file(const char * filename){
 	  /* Compare with list of known good strings */
 	  for(int j = 0;;j++){
 	    if(variable_metadata[i].list_valid_names[j] == NULL){
-	      fprintf(stderr,"Error invalid list value %s for option %s\n",
-		      config_lookup_string(&config,path),
-		      variable_metadata[i].variable_name);
-	      abort();
+	      hawk_fatal("Error invalid list value %s for option %s",
+			 config_lookup_string(&config,path),
+			 variable_metadata[i].variable_name);
 	    }
 	    if(strcmp(variable_metadata[i].list_valid_names[j],buffer) == 0){
 	      *((int *)variable_metadata[i].variable_address) = variable_metadata[i].list_valid_values[j];
@@ -253,15 +250,14 @@ void read_options_file(const char * filename){
 		  sp_smap_insert(m, config_setting_get_float_elem(keys,j),config_setting_get_float_elem(values,j));
 		}
 	      }else{
-		sp_error_fatal("Map datatype not supported!");
+		hawk_fatal("Map datatype not supported!");
 	      }
 	    }
 	  }else{
-	    sp_error_fatal("Keys field missing in Map Type!");	    
+	    hawk_fatal("Keys field missing in Map Type!");	    
 	  }
 	}else{
-	  fprintf(stderr,"Variable type not yet supported!\n");	
-	  abort();
+	  hawk_fatal("Variable type not yet supported!");	
 	}
       }
       sp_free(path);
@@ -277,7 +273,7 @@ int check_options_and_load_images(Options * opts){
   }else if(opts->real_image_filename  && strcmp(opts->real_image_filename,"")){
     opts->real_image = sp_image_read(opts->real_image_filename,0);
   }else{
-    sp_error_warning("Neither diffraction nor real image specified!");
+    hawk_fatal("Neither diffraction nor real image specified!");
     return -1;
   }
   
@@ -345,12 +341,11 @@ void write_options_file(const char * filename){
 	parent = config_lookup(&config,variable_metadata[i].parent->variable_name);
       }
       if(!parent){
-	fprintf(stderr,"Could not find parent of %s\n",variable_metadata[i].variable_name);
-	abort();
+	hawk_fatal("Could not find parent of %s",variable_metadata[i].variable_name);
       }
       s = config_setting_add(parent,variable_metadata[i].variable_name,get_config_type(variable_metadata[i].variable_type));
       if(!s){
-	sp_error_fatal("Could not add config setting");
+	hawk_fatal("Could not add config setting");
       }
       if(variable_metadata[i].variable_type == Type_String || 
 	 variable_metadata[i].variable_type == Type_Filename ||
@@ -379,8 +374,7 @@ void write_options_file(const char * filename){
       }else if(variable_metadata[i].variable_type == Type_MultipleChoice){
 	for(int j = 0;;j++){
 	  if(variable_metadata[i].list_valid_names[j] == NULL){
-	    fprintf(stderr,"Error invalid list value\n");
-	    abort();
+	    hawk_fatal("Error invalid list value");
 	  }
 	  if(*((int *)variable_metadata[i].variable_address) == variable_metadata[i].list_valid_values[j]){
 	    config_setting_set_string(s,variable_metadata[i].list_valid_names[j]);
@@ -401,8 +395,7 @@ void write_options_file(const char * filename){
 	  config_setting_set_float_elem(s,-1,sp_list_get(values,i));
 	}
       }else{
-	fprintf(stderr,"Variable type not yet supported!\n");	
-	abort();
+	hawk_fatal("Variable type not yet supported!");	
       }
     }
   }
@@ -417,7 +410,7 @@ static real interpolate_on_checkpoints(sp_vector * values,sp_vector * checkpoint
   int right = INT_MAX;
   int right_i;    
   if(sp_vector_size(values) != sp_vector_size(checkpoints)){
-    sp_error_fatal("Number of checkpoint elements doesn't match number of values!");
+    hawk_fatal("Number of checkpoint elements doesn't match number of values!");
   }
   for(unsigned int i = 0;i<sp_vector_size(checkpoints);i++){
     real iter = sp_vector_get(checkpoints,i);
@@ -431,7 +424,7 @@ static real interpolate_on_checkpoints(sp_vector * values,sp_vector * checkpoint
     }
   }
   if(left == INT_MIN && right == INT_MAX){
-    sp_error_fatal("Cannot find boundaries on object area!");
+    hawk_fatal("Cannot find boundaries on object area!");
   }else if(left == INT_MIN){
     /* cur_iteration is before first checkpoint */
     return sp_vector_get(values,right_i);
@@ -454,7 +447,7 @@ static real interpolate_on_checkpoints(sp_vector * values,sp_vector * checkpoint
       return (delta)*(n)+sp_vector_get(values,right_i);
     }    
   }
-  sp_error_fatal("Cannot reach here!");
+  hawk_fatal("Cannot reach here!");
   return -1;
 }
 
@@ -465,7 +458,7 @@ real get_beta(Options * opts){
   }
   if(opts->beta_checkpoints){
     if(!opts->beta_at_checkpoints){
-      sp_error_fatal("When you specify beta_checkpoints you also need to specify the corresponding beta_at_checkpoints!");
+      hawk_fatal("When you specify beta_checkpoints you also need to specify the corresponding beta_at_checkpoints!");
     }
     return interpolate_on_checkpoints(opts->beta_at_checkpoints,opts->beta_checkpoints,opts,1);
   }
@@ -519,10 +512,10 @@ real get_object_area(Options * opts){
     int right = INT_MAX;
     int right_i = -1;
     if(!opts->object_area_at_checkpoints){
-      sp_error_fatal("When you specify object_area_checkpoints you also need to specify the corresponding object_area_at_checkpoints!");
+      hawk_fatal("When you specify object_area_checkpoints you also need to specify the corresponding object_area_at_checkpoints!");
     }
     if(sp_vector_size(opts->object_area_checkpoints) != sp_vector_size(opts->object_area_at_checkpoints)){
-      sp_error_fatal("Number of elements of object_area_at_checkpoints does not match object_area_checkpoints!");
+      hawk_fatal("Number of elements of object_area_at_checkpoints does not match object_area_checkpoints!");
     }
     for(unsigned int i = 0;i<sp_vector_size(opts->object_area_checkpoints);i++){
       real value = sp_vector_get(opts->object_area_checkpoints,i);
@@ -536,7 +529,7 @@ real get_object_area(Options * opts){
       }
     }
     if(left == INT_MIN && right == INT_MAX){
-      sp_error_fatal("Cannot find boundaries on object area!");
+      hawk_fatal("Cannot find boundaries on object area!");
     }else if(left == INT_MIN){
       /* cur_iteration is before first checkpoint */
       return sp_vector_get(opts->object_area_at_checkpoints,right_i);

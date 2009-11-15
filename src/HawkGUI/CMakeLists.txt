@@ -30,6 +30,7 @@ set(GUI_SRCS
   ../geometry_constraints.c
   ../rpcpeer.cpp
   ../uwrapcpeerthread.cpp
+  ../io_utils.c
   geometrycontrol.cpp
   hawkgui.cpp
   imagecategory.cpp

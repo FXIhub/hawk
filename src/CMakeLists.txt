@@ -8,8 +8,10 @@ LIST(APPEND INCLUDE_LIST ${LOCAL_INCLUDE} ${LOCAL_INCLUDE}/saddle ${LOCAL_INCLUD
 
 
 INCLUDE_DIRECTORIES(${INCLUDE_LIST})
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 
-SET(UWRAPC_OBJ main.c uwrapc.c configuration.c support.c algorithms.c log.c saddle/minmaxtau.c saddle/minmaxL.c)
+SET(UWRAPC_OBJ main.c uwrapc.c configuration.c support.c algorithms.c log.c)
+LIST(APPEND UWRAPC_OBJ io_utils.c saddle/minmaxtau.c saddle/minmaxL.c)
 LIST(APPEND UWRAPC_OBJ libconfig/libconfig.c libconfig/scanner.c libconfig/grammar.c)
 
 

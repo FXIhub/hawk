@@ -22,7 +22,7 @@
 #include "support.h"
 #include "network_communication.h"
 #include "rpcdefaultport.h"
-
+#include "io_utils.h"
 
 void get_intensities_noise(Options * opts){
   int i;
@@ -101,7 +101,7 @@ void enforce_parsevals_theorem(Image * master, Image * to_scale){
   double f;
   Image * tmp;
   if(sp_image_size(master) != sp_image_size(to_scale)){
-    fprintf(stderr,"Cannot enforce parsevals_theorem on images of different sizes!\n");
+    hawk_warning("Cannot enforce parsevals_theorem on images of different sizes!");
     return;
   }
 
@@ -149,7 +149,7 @@ void harmonize_sizes(Options * opts){
      (sp_c3matrix_x(tmp->image) != sp_c3matrix_x(exp->image) ||
       sp_c3matrix_y(tmp->image) != sp_c3matrix_y(exp->image) ||
       sp_c3matrix_z(tmp->image) != sp_c3matrix_z(exp->image))){
-    fprintf(stderr,"Rescaling support_mask\n");
+    hawk_warning("Rescaling support_mask");
     tmp = bilinear_rescale(opts->support_mask,sp_c3matrix_x(exp->image),sp_c3matrix_y(exp->image),sp_c3matrix_z(exp->image));
     sp_image_free(opts->support_mask);
     opts->support_mask = tmp;
@@ -167,7 +167,7 @@ void harmonize_sizes(Options * opts){
      (sp_c3matrix_x(tmp->image) != sp_c3matrix_x(exp->image) ||
       sp_c3matrix_y(tmp->image) != sp_c3matrix_y(exp->image) ||
       sp_c3matrix_z(tmp->image) != sp_c3matrix_z(exp->image))){
-    fprintf(stderr,"Rescaling init_support\n");
+    hawk_warning("Rescaling init_support");
     tmp = bilinear_rescale(opts->init_support,sp_c3matrix_x(exp->image),sp_c3matrix_y(exp->image),sp_c3matrix_z(exp->image));
     sp_image_free(opts->init_support);
     opts->init_support = tmp;
@@ -185,7 +185,7 @@ void harmonize_sizes(Options * opts){
      (sp_c3matrix_x(tmp->image) != sp_c3matrix_x(exp->image) ||
       sp_c3matrix_y(tmp->image) != sp_c3matrix_y(exp->image) ||
       sp_c3matrix_z(tmp->image) != sp_c3matrix_z(exp->image))){
-    fprintf(stderr,"Rescaling image_guess\n");
+    hawk_warning("Rescaling image_guess");
     tmp = fourier_rescale(opts->image_guess,sp_c3matrix_x(exp->image),sp_c3matrix_y(exp->image),sp_c3matrix_z(exp->image));
     sp_image_free(opts->image_guess);
     opts->image_guess = tmp;
@@ -224,8 +224,7 @@ void complete_reconstruction_clean(Image * amp, Image * initial_support, Image *
     sup_alg = sp_support_area_alloc(opts->iterations,opts->support_blur_evolution,opts->object_area_evolution);
   }
   if(!alg || !sup_alg){
-    fprintf(stderr,"Algorithm is NULL!\nBlame the programmer!\n");
-    abort();
+    hawk_fatal("Algorithm is NULL!\nBlame the programmer!");
   }
   SpPhaser * ph = sp_phaser_alloc();
   sp_phaser_init(ph,alg,sup_alg,SpEngineAutomatic);
@@ -375,8 +374,7 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
   }else if(get_algorithm(opts,&log) == DIFF_MAP){
     real_out = serial_difference_map_iteration(amp,real_in, support,opts,&log);
   }else{
-    fprintf(stderr,"Error: Undefined algorithm!\n");
-    exit(-1);
+    hawk_fatal("Error: Undefined algorithm!");
   }
 
   radius = opts->max_blur_radius;
@@ -667,8 +665,7 @@ void init_reconstruction(Options * opts){
     sp_image_dephase(opts->diffraction);
     sp_image_to_amplitudes(opts->amplitudes);
   }else{
-    fprintf(stderr,"Error: either real_image_file or amplitudes_file have to be specified!\n");
-    exit(1);
+    hawk_fatal("Error: either real_image_file or amplitudes_file have to be specified!");
   }
   if(sp_image_z(opts->amplitudes) == 1){
     sp_image_high_pass(opts->amplitudes, opts->beamstop, SP_2D);
@@ -727,18 +724,18 @@ void init_reconstruction(Options * opts){
   if(opts->rand_intensities){
     set_rand_ints(opts->image_guess,opts->amplitudes);
     if(opts->image_guess_filename[0]){
-      fprintf(stderr,"Warning: Using random intensities, with image guess. Think about it...\n");
+      hawk_warning("Warning: Using random intensities, with image guess. Think about it...");
     }
   }
   if(opts->rand_phases == PHASES_RANDOM){
     set_rand_phases(opts->image_guess,opts->amplitudes);
     if(opts->image_guess_filename[0]){
-      fprintf(stderr,"Warning: Using random phases, with image guess. Think about it...\n");
+      hawk_warning("Warning: Using random phases, with image guess. Think about it...");
     }
   }else if(opts->rand_phases == PHASES_ZERO){
     set_zero_phases(opts->image_guess,opts->amplitudes);
     if(opts->image_guess_filename[0]){
-      fprintf(stderr,"Warning: Using zero phases, with image guess. Think about it...\n");
+      hawk_warning("Warning: Using zero phases, with image guess. Think about it...");
     }
   }
 
@@ -771,8 +768,7 @@ void init_reconstruction(Options * opts){
 
 int uwrapc_network_main(int argc, char ** argv){
 #ifndef NETWORK_SUPPORT
-  fprintf(stderr,"uwrapc_network_main reached without network support!\n");
-  abort();
+  hawk_fatal("uwrapc_network_main reached without network support!");
 #endif
   init_qt(argc,argv);
   char * server = 0;
@@ -798,12 +794,8 @@ int uwrapc_network_main(int argc, char ** argv){
     printf("Usage: uwrapc [server [port [key]]]\n");
     return 0;
   }
-  RPCInfo * rpcInfo = 0;
-  rpcInfo = attempt_connection(server,server_port,key);  
-  if(!rpcInfo){
-    return -1;
-  }
-  setup_signals_and_slots(rpcInfo);
+  attempt_connection(server,server_port,key);  
+  //  setup_signals_and_slots(r);
   return start_event_loop();
 }
 

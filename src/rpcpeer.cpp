@@ -7,7 +7,7 @@
 #include "uwrapcpeerthread.h"
 
 RPCPeer::RPCPeer(RPCInfo * rpcInfo)
-  :m_rpcInfo(rpcInfo)
+  :m_rpcInfo(rpcInfo),m_connected(false)
 {
   QObject::connect(this,SIGNAL(connectedToServer()),this,SLOT(connectionEstablished()));
   QObject::connect(this,SIGNAL(disconnectedFromServer()),this,SLOT(connectionLost()));
@@ -16,6 +16,10 @@ RPCPeer::RPCPeer(RPCInfo * rpcInfo)
   attachSlot(QString("stopReconstruction()"),this,SLOT(stopReconstruction()));
   attachSignal(this,SIGNAL(reconstructionStopped()),QString("reconstructionStopped()"));  
   attachSignal(this,SIGNAL(identificationKey(int)),QString("identificationKey(int)"));
+  attachSignal(this,SIGNAL(sendWarningMessage(QString)),QString("sendWarningMessage(QString)"));
+  attachSignal(this,SIGNAL(sendCriticalMessage(QString)),QString("sendCriticalMessage(QString)"));
+  attachSignal(this,SIGNAL(sendInfoMessage(QString)),QString("sendInfoMessage(QString)"));
+  attachSignal(this,SIGNAL(sendLogLine(QString)),QString("sendLogLine(QString)"));
 
 }
 
@@ -29,6 +33,7 @@ void RPCPeer::connect(QString addr , int port){
 
 void RPCPeer::connectionEstablished(){
   qDebug("RPC Peer: Connection established");  
+  m_connected = true;
   m_timer.stop();
   m_timer.disconnect();
   QObject::connect(this,SIGNAL(serverError(QAbstractSocket::SocketError)),this,SLOT(connectionLost()));
@@ -40,6 +45,7 @@ void RPCPeer::connectionEstablished(){
 
 void RPCPeer::connectionRecovered(){
   qDebug("RPC Peer: Connection recovered");  
+  m_connected = true;
   m_timer.stop();
   m_timer.disconnect();
   QObject::connect(this,SIGNAL(serverError(QAbstractSocket::SocketError)),this,SLOT(connectionLost()));
@@ -51,6 +57,7 @@ void RPCPeer::checkTimeOut(){
 }
 
 void RPCPeer::connectionLost(){
+  m_connected = false;  
   /* Only start the timer on the first failure */
   if(!m_timer.isActive()){
     qDebug("RPC Peer: lost connection to server!");
@@ -111,5 +118,36 @@ void RPCPeer::stopReconstruction(){
   emit reconstructionStopped();
   QCoreApplication::processEvents();
   QCoreApplication::exit(0);
+}
+
+
+void RPCPeer::warningMessage(QString s){
+  qDebug("RPCPeer: Sending warning message");
+  emit sendWarningMessage(s);
+  QCoreApplication::processEvents();
+}
+
+
+void RPCPeer::criticalMessage(QString s){
+  qDebug("RPCPeer: Sending critical message");
+  //  emit sendCriticalMessage(s);
+ sendCriticalMessage(s);
+  QCoreApplication::processEvents();
+}
+
+void RPCPeer::infoMessage(QString s){
+  qDebug("RPCPeer: Sending info message");
+  emit sendInfoMessage(s);
+  QCoreApplication::processEvents();
+}
+
+void RPCPeer::logLine(QString s){
+  qDebug("RPCPeer: Sending log line");
+  emit sendLogLine(s);
+  QCoreApplication::processEvents();
+}
+
+bool RPCPeer::isConnected(){
+  return m_connected;
 }
 #endif

@@ -1,6 +1,7 @@
 #include "spimage.h"
 #include "math_parser.h"
 #include <ctype.h>
+#include "io_utils.h"
 
 /* All operators are lowercase and all variables are uppercase! 
    Variables names start with A for the first given file B for the second
