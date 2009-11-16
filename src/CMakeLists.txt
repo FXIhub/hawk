@@ -28,7 +28,8 @@ ENDIF(QT4_FOUND)
 
 
 ADD_EXECUTABLE(uwrapc ${UWRAPC_OBJ})
-ADD_EXECUTABLE(restore_image restore_image.c configuration.c support.c algorithms.c log.c saddle/minmaxtau.c saddle/minmaxL.c libconfig/libconfig.c libconfig/scanner.c libconfig/grammar.c metadata.c )
+#ADD_EXECUTABLE(restore_image restore_image.c configuration.c support.c algorithms.c log.c saddle/minmaxtau.c saddle/minmaxL.c libconfig/libconfig.c libconfig/scanner.c libconfig/grammar.c metadata.c io_utils.c network_communication.cpp rpcpeer.cpp ${restore_moc_files} ${QXT_OBJS} uwrapcpeerthread.cpp)
+
 ADD_EXECUTABLE(process_image process_image.c ${GETOPT})
 ADD_EXECUTABLE(post_process post_process.c ${GETOPT})
 
@@ -54,14 +55,14 @@ ADD_SUBDIRECTORY(qxt)
 TARGET_LINK_LIBRARIES(uwrapc ${LIBRARY_LIST})
 TARGET_LINK_LIBRARIES(process_image ${LIBRARY_LIST})
 TARGET_LINK_LIBRARIES(post_process ${LIBRARY_LIST})
-TARGET_LINK_LIBRARIES(restore_image ${LIBRARY_LIST})
+#TARGET_LINK_LIBRARIES(restore_image ${LIBRARY_LIST})
 
 #INSTALL(TARGETS uwrapc process_image post_process restore_image
 #            RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
 #            LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
 #            ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 
-INSTALL(TARGETS uwrapc process_image post_process restore_image
+INSTALL(TARGETS uwrapc process_image post_process# restore_image
             RUNTIME DESTINATION bin
             LIBRARY DESTINATION lib
             ARCHIVE DESTINATION lib)
