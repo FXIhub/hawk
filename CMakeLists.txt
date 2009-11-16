@@ -181,4 +181,5 @@ set(top_level_DOCFILES
   )
 install(FILES ${top_level_DOCFILES} DESTINATION doc)
 install(FILES doc/UserManual.pdf DESTINATION doc)
-ADD_SUBDIRECTORY(examples)
+# No CMakeLists.txt there, no point to add it 
+#ADD_SUBDIRECTORY(examples)
