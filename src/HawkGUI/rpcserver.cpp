@@ -56,8 +56,7 @@ void RPCServer::reconstructionStarted(quint64 client){
 
 void RPCServer::reconstructionStopped(quint64 client){
   qDebug("Reconstruction stopped at peer %llu",client);
-  emit clientFinished(client,keyFromClient(client));
-  m_clientKeyMap.remove(client);
+  call(client,QString("quit()"));
 }
 
 void RPCServer::onClientConnected(quint64 client){
@@ -66,6 +65,10 @@ void RPCServer::onClientConnected(quint64 client){
 
 void RPCServer::onClientDisconnected(quint64 client){
   qDebug("Peer %llu disconnected",client);
+  if(m_clientKeyMap.contains(client)){
+    emit clientFinished(client,keyFromClient(client));
+    m_clientKeyMap.remove(client);
+  }
 }
 
 void RPCServer::receiveIdentificationKey(quint64 client,int key){

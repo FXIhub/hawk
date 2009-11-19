@@ -14,6 +14,7 @@ RPCPeer::RPCPeer(RPCInfo * rpcInfo)
   attachSlot(QString("sendOptions(QByteArray)"),this,SLOT(receiveOptions(QByteArray)));
   attachSlot(QString("startReconstruction()"),this,SLOT(startReconstruction()));
   attachSlot(QString("stopReconstruction()"),this,SLOT(stopReconstruction()));
+  attachSlot(QString("quit()"),this,SLOT(quit()));
   attachSignal(this,SIGNAL(reconstructionStopped()),QString("reconstructionStopped()"));  
   attachSignal(this,SIGNAL(identificationKey(int)),QString("identificationKey(int)"));
   attachSignal(this,SIGNAL(sendWarningMessage(QString)),QString("sendWarningMessage(QString)"));
@@ -103,8 +104,6 @@ void RPCPeer::threadFinished(){
   qDebug("RPCPeer: Thread id %p",(void *)QThread::currentThread());
   emit reconstructionStopped();
   QCoreApplication::processEvents();
-  //  QCoreApplication::exit(0);  
-  //  QCoreApplication::quit();  
 }
 
 void RPCPeer::reconstructionStarted(){
@@ -118,8 +117,18 @@ void RPCPeer::stopReconstruction(){
   m_thread->wait();
   reconstructionStopped();
   QCoreApplication::processEvents();
-  QCoreApplication::exit(0);
 }
+
+void RPCPeer::quit(){
+  qDebug("RPCPeer: Quiting!");
+  if(m_thread && m_thread->isRunning()){
+    m_thread->terminate();
+    m_thread->wait();
+  }
+  QCoreApplication::quit();
+}
+
+
 
 
 void RPCPeer::warningMessage(QString s){

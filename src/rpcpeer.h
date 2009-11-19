@@ -42,6 +42,7 @@ class RPCPeer: public QxtRPCPeer
   void checkTimeOut();
   void connectionLost();
   void attemptReconnection();  
+  void quit();
   private slots:
   void receiveOptions(QByteArray optionsFile);
   void startReconstruction();

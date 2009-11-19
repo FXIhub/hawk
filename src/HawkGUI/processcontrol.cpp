@@ -17,6 +17,7 @@ ProcessControl::ProcessControl(QWidget * p)
   m_rpcServer = new RPCServer();
   connect(m_rpcServer,SIGNAL(keyReceived(int)),this,SLOT(handleRemoteClient(int)));
   connect(m_rpcServer,SIGNAL(clientFinished(quint64,int)),this,SLOT(cleanRemoteClient(quint64,int)));
+  connect(m_rpcServer,SIGNAL(infoMessage(int,QString)),this,SLOT(handleInfoMessage(int,QString)));
   connect(m_rpcServer,SIGNAL(warningMessage(int,QString)),this,SLOT(handleWarningMessage(int,QString)));
   connect(m_rpcServer,SIGNAL(criticalMessage(int,QString)),this,SLOT(handleCriticalMessage(int,QString)));
 }
@@ -225,13 +226,23 @@ void ProcessControl::handleRemoteClient(int key){
 }
 
 void ProcessControl::cleanRemoteClient(quint64 client, int key){
-  qDebug("ProcessControl: Cleaning finished client %llu",client);
-  QMessageBox::information(0, tr("HawkGUI"),
-			   tr("Remote process finished."),
-			   QMessageBox::Ok,QMessageBox::Ok);
-  
-  m_keysRunning.removeAll(key);
-  emit processFinished();
+  if(m_keysRunning.contains(key)){
+    qDebug("ProcessControl: Cleaning finished client %llu",client);
+    QMessageBox::information(0, tr("HawkGUI"),
+			     tr("Remote process finished."),
+			     QMessageBox::Ok,QMessageBox::Ok);
+    
+    m_keysRunning.removeAll(key);
+    emit processFinished();
+  }
+}
+
+void ProcessControl::handleInfoMessage(int key, QString msg){
+  if(m_keysToStart.contains(key) || m_keysRunning.contains(key)){
+    QMessageBox::information(0, tr("HawkGUI"),
+			 msg,
+			 QMessageBox::Ok,QMessageBox::Ok);
+  }
 }
 
 void ProcessControl::handleWarningMessage(int key, QString msg){
