@@ -7,6 +7,9 @@
 #include <QFileInfo>
 #include <QDateTime>
 
+#include <io_utils.h>
+
+
 class QWidget;
 class UwrapcThread;
 class RPCServer;
@@ -35,9 +38,7 @@ class ProcessControl: public QObject
   void readStdErr();
   void onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
   void handleRemoteClient(int key);
-  void handleInfoMessage(int key, QString msg);
-  void handleWarningMessage(int key, QString msg);
-  void handleCriticalMessage(int key, QString msg);
+  void displayMessage(quint64 client, int type,QString msg);
  private:
   void startLocalProcess();
   void startEmbeddedProcess();

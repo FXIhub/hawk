@@ -32,21 +32,9 @@ void attempt_connection(char * server, int server_port,int key){
   rpcInfo->peer->connect(server, server_port);
 }
 
-void rpc_send_warning_message(const char * s){
+void rpc_send_message(MessageType type, const char * s){
   if(rpcInfo){
-    rpcInfo->peer->warningMessage(s);
-  }
-}
-
-void rpc_send_critical_message(const char * s){
-  if(rpcInfo){
-    rpcInfo->peer->criticalMessage(QString(s));
-  }
-}
-
-void rpc_send_info_message(const char * s){
-  if(rpcInfo){
-    rpcInfo->peer->infoMessage(s);
+    rpcInfo->peer->sendMessage(type,s);
   }
 }
 

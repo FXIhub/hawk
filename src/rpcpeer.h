@@ -5,8 +5,8 @@
 
 #include "qxtrpcpeer.h"
 #include <QTimer>
+#include "io_utils.h"
 //#include <QHostInfo>
-
 class RPCPeer;
 class UwrapcPeerThread;
 
@@ -24,17 +24,13 @@ class RPCPeer: public QxtRPCPeer
     public:
   RPCPeer(RPCInfo * rpcInfo);
   void connect(QString addr , int port);
-  void warningMessage(QString s);
-  void criticalMessage(QString s);
-  void infoMessage(QString s);
   void logLine(QString s);
   bool isConnected();
+  void sendMessage(MessageType type,QString msg);
  signals:
   void identificationKey(int key);
   void reconstructionStopped();
-  void sendWarningMessage(QString msg);
-  void sendCriticalMessage(QString msg);
-  void sendInfoMessage(QString msg);
+  void messageSent(int type, QString msg);
   void sendLogLine(QString line);
   public slots:
   void connectionEstablished();

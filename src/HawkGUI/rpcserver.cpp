@@ -4,6 +4,7 @@
 
 
 RPCServer::RPCServer(int port){
+
   QSettings settings;
   bool ok = false;
   while(!ok){
@@ -24,8 +25,6 @@ RPCServer::RPCServer(int port){
   attachSlot(QString("reconstructionStarted()"),this,SLOT(reconstructionStarted(quint64)));
   attachSlot(QString("reconstructionStopped()"),this,SLOT(reconstructionStopped(quint64)));
   attachSlot(QString("identificationKey(int)"),this,SLOT(receiveIdentificationKey(quint64,int)));
-  attachSlot(QString("sendWarningMessage(QString)"),this,SLOT(receiveWarningMessage(quint64,QString)));
-  attachSlot(QString("sendCriticalMessage(QString)"),this,SLOT(receiveCriticalMessage(quint64,QString)));
   QObject::connect(this,SIGNAL(clientConnected(quint64)),this,SLOT(onClientConnected(quint64)));
   QObject::connect(this,SIGNAL(clientDisconnected(quint64)),this,SLOT(onClientDisconnected(quint64)));
 }
@@ -88,17 +87,4 @@ int RPCServer::keyFromClient(quint64 client){
 void RPCServer::stopByKey(int key){
   quint64 client = clientFromKey(key);
   call(client,QString("stopReconstruction()"));
-}
-
-void RPCServer::receiveWarningMessage(quint64 client, QString msg){
-  if(m_clientKeyMap.contains(client)){
-    emit warningMessage(m_clientKeyMap.value(client),msg);
-  }
-}
-
-void RPCServer::receiveCriticalMessage(quint64 client, QString msg){
-  qDebug("RPCServer: Received critical message");
-  if(m_clientKeyMap.contains(client)){
-    emit criticalMessage(m_clientKeyMap.value(client),msg);
-  }
 }

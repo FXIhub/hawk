@@ -18,6 +18,7 @@ RPCPeer::RPCPeer(RPCInfo * rpcInfo)
   attachSignal(this,SIGNAL(reconstructionStopped()),QString("reconstructionStopped()"));  
   attachSignal(this,SIGNAL(identificationKey(int)),QString("identificationKey(int)"));
   attachSignal(this,SIGNAL(sendWarningMessage(QString)),QString("sendWarningMessage(QString)"));
+  attachSignal(this,SIGNAL(messageSent(int,QString)),QString("messageSent(int,QString)"));
   attachSignal(this,SIGNAL(sendCriticalMessage(QString)),QString("sendCriticalMessage(QString)"));
   attachSignal(this,SIGNAL(sendInfoMessage(QString)),QString("sendInfoMessage(QString)"));
   attachSignal(this,SIGNAL(sendLogLine(QString)),QString("sendLogLine(QString)"));
@@ -128,25 +129,9 @@ void RPCPeer::quit(){
   QCoreApplication::quit();
 }
 
-
-
-
-void RPCPeer::warningMessage(QString s){
-  qDebug("RPCPeer: Sending warning message");
-  emit sendWarningMessage(s);
-  QCoreApplication::processEvents();
-}
-
-
-void RPCPeer::criticalMessage(QString s){
-  qDebug("RPCPeer: Sending critical message");
-  emit sendCriticalMessage(s);
-  QCoreApplication::processEvents();
-}
-
-void RPCPeer::infoMessage(QString s){
-  qDebug("RPCPeer: Sending info message");
-  emit sendInfoMessage(s);
+void RPCPeer::sendMessage(MessageType type,QString s){
+  qDebug("RPCPeer: Sending message");
+  emit messageSent(type,s);
   QCoreApplication::processEvents();
 }
 

@@ -1,18 +1,23 @@
 #ifndef _IO_UTILS_H_
 #define _IO_UTILS_H_ 1
 
+#include <stdio.h>
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif /* __cplusplus */
 
+typedef enum{DebugMessage=1,InformationMessage,WarningMessage,CriticalMessage}MessageType;
+
   void hawk_log(FILE * fp, const char *format, ...);
 #if __STDC_VERSION__ >= 199901L
   /* Lets try our luck with variable argument macros */ 
+#ifndef  _IO_UTILS_NO_MACRO_SUBSTITUTIONS_
 #define  hawk_info(...) _hawk_warning(__FILE__,__LINE__,__VA_ARGS__)
 #define  hawk_warning(...) _hawk_warning(__FILE__,__LINE__,__VA_ARGS__)
 #define  hawk_fatal(...) _hawk_fatal(__FILE__,__LINE__,__VA_ARGS__)
+#endif
 
    void _hawk_info(const char * file, int line,
 					const char *format, ...);

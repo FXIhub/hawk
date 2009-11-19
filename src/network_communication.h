@@ -1,6 +1,7 @@
 #ifndef _NETWORK_COMMUNICATION_H_
 #define _NETWORK_COMMUNICATION_H_ 1
 
+#include <io_utils.h>
 
 #ifdef __cplusplus
 extern "C"{
@@ -15,9 +16,7 @@ extern "C"{
   void init_qt(int argc, char ** argv);
   void cleanup_and_free_qt();
   void setup_signals_and_slots(RPCInfo * rpcInfo);
-  void rpc_send_info_message(const char * s);
-  void rpc_send_warning_message(const char * s);
-  void rpc_send_critical_message(const char * s);
+  void rpc_send_message(MessageType type, const char * s);
   void rpc_send_log_line(const char * s);
   int is_connected();
 
