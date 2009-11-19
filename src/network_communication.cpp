@@ -40,7 +40,7 @@ void rpc_send_warning_message(const char * s){
 
 void rpc_send_critical_message(const char * s){
   if(rpcInfo){
-    rpcInfo->peer->criticalMessage(s);
+    rpcInfo->peer->criticalMessage(QString(s));
   }
 }
 

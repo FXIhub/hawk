@@ -136,7 +136,7 @@ void QxtTcpConnectionManager::removeConnection(QIODevice* device, quint64 client
         QAbstractSocket* sock = qobject_cast<QAbstractSocket*>(device);
         if (sock) sock->disconnectFromHost();
         device->close();
-        device->deleteLater();
+	//        device->deleteLater();
     }
 }
 

@@ -103,7 +103,8 @@ void RPCPeer::threadFinished(){
   qDebug("RPCPeer: Thread id %p",(void *)QThread::currentThread());
   emit reconstructionStopped();
   QCoreApplication::processEvents();
-  QCoreApplication::exit(0);  
+  //  QCoreApplication::exit(0);  
+  //  QCoreApplication::quit();  
 }
 
 void RPCPeer::reconstructionStarted(){
@@ -115,7 +116,7 @@ void RPCPeer::stopReconstruction(){
   qDebug("RPCPeer: Stopping reconstruction!");
   m_thread->terminate();
   m_thread->wait();
-  emit reconstructionStopped();
+  reconstructionStopped();
   QCoreApplication::processEvents();
   QCoreApplication::exit(0);
 }
@@ -130,8 +131,7 @@ void RPCPeer::warningMessage(QString s){
 
 void RPCPeer::criticalMessage(QString s){
   qDebug("RPCPeer: Sending critical message");
-  //  emit sendCriticalMessage(s);
- sendCriticalMessage(s);
+  emit sendCriticalMessage(s);
   QCoreApplication::processEvents();
 }
 

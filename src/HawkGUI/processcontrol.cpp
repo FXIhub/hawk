@@ -226,10 +226,10 @@ void ProcessControl::handleRemoteClient(int key){
 
 void ProcessControl::cleanRemoteClient(quint64 client, int key){
   qDebug("ProcessControl: Cleaning finished client %llu",client);
-    QMessageBox::information(0, tr("HawkGUI"),
-			 tr("Remote process finished."),
-			 QMessageBox::Ok,QMessageBox::Ok);
-
+  QMessageBox::information(0, tr("HawkGUI"),
+			   tr("Remote process finished."),
+			   QMessageBox::Ok,QMessageBox::Ok);
+  
   m_keysRunning.removeAll(key);
   emit processFinished();
 }
@@ -245,7 +245,7 @@ void ProcessControl::handleWarningMessage(int key, QString msg){
 void ProcessControl::handleCriticalMessage(int key, QString msg){
   if(m_keysToStart.contains(key) || m_keysRunning.contains(key)){
     QMessageBox::critical(0, tr("HawkGUI"),
-			 msg,
-			 QMessageBox::Ok,QMessageBox::Ok);
+			  msg,
+			  QMessageBox::Ok,QMessageBox::Ok);
   }
 }

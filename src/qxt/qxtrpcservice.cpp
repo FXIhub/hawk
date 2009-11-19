@@ -197,7 +197,7 @@ void QxtRPCServicePrivate::clientData(quint64 id)
     QIODevice* dev = manager->client(id);
     QByteArray& buf = buffers[id]; // caching to avoid repeated hash lookups
     buf.append(dev->readAll());
-    while (serializer->canDeserialize(buf))
+    while (buffers.contains(id) && serializer->canDeserialize(buf))
     {
         QxtAbstractSignalSerializer::DeserializedData data = serializer->deserialize(buf);
         // check for blank command

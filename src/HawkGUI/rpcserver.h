@@ -24,6 +24,7 @@ class RPCServer: public QxtRPCPeer
   void sendOptions(quint64 client);
   void startReconstruction(quint64 client);
   void onClientConnected(quint64 client);
+  void onClientDisconnected(quint64 client);
   void reconstructionStarted(quint64 client);
   void reconstructionStopped(quint64 client);
   void receiveIdentificationKey(quint64 client, int key);

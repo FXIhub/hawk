@@ -27,8 +27,7 @@ RPCServer::RPCServer(int port){
   attachSlot(QString("sendWarningMessage(QString)"),this,SLOT(receiveWarningMessage(quint64,QString)));
   attachSlot(QString("sendCriticalMessage(QString)"),this,SLOT(receiveCriticalMessage(quint64,QString)));
   QObject::connect(this,SIGNAL(clientConnected(quint64)),this,SLOT(onClientConnected(quint64)));
-  //  attachSignal(this,SIGNAL(sendOptions(quint64,QByteArray)),QString("sendOptions(quint64,QByteArray)"));
-  //  attachSignal(this,SIGNAL(startReconstruction(quint64)),QString("startReconstruction(quint64)"));
+  QObject::connect(this,SIGNAL(clientDisconnected(quint64)),this,SLOT(onClientDisconnected(quint64)));
 }
 
 
@@ -63,6 +62,10 @@ void RPCServer::reconstructionStopped(quint64 client){
 
 void RPCServer::onClientConnected(quint64 client){
   qDebug("Peer %llu connected",client);
+}
+
+void RPCServer::onClientDisconnected(quint64 client){
+  qDebug("Peer %llu disconnected",client);
 }
 
 void RPCServer::receiveIdentificationKey(quint64 client,int key){

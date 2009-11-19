@@ -36,7 +36,7 @@ static void hawk_report(const char * file, int line, int status, char *mode,cons
   if(strcmp(mode,"FATAL") == 0){
     rpc_send_critical_message(buffer);
   }
-  free(buffer);
+  free(buffer);  
   /* I can't abort in network more or the critical message never gets to the server */
   if(!is_connected()){
     if (status >= 0){
