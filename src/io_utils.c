@@ -110,7 +110,7 @@ void hawk_log(FILE * fp,const char *format, ...){
   size = vsnprintf(buffer,0 , format, ap);
   va_end(ap); 
   va_start(ap, format);
-  buffer = malloc(sizeof(char)*(1024+size+1));
+  buffer = malloc(sizeof(char)*(size+1));
   vsnprintf(buffer,size+1 , format, ap);
   va_end(ap); 
   fprintf(fp,"%s",buffer);
