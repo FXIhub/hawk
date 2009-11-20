@@ -94,18 +94,15 @@ void ImageDisplay::onProcessStarted(ProcessControl::ProcessType type, QString pa
   outputWatcher = new OutputWatcher(path,this,imageCategories,p->getOptions()->output_period,p->startTime());
   if(type == ProcessControl::Local){
     connect(outputWatcher,SIGNAL(newOutput(QString,QFileInfo,QFileInfo)),this,SLOT(updateLatestOutput(QString,QFileInfo,QFileInfo)));
-    //    qDebug("connecting");
     connect(outputWatcher,SIGNAL(initialOutput(QString,QFileInfo)),this,SLOT(loadInitialProcessOutput(QString,QFileInfo)));
     outputWatcher->start(QThread::IdlePriority);
   }else if(type == ProcessControl::Embedded){
     connect(outputWatcher,SIGNAL(newOutput(QString,QFileInfo,QFileInfo)),this,SLOT(updateLatestOutput(QString,QFileInfo,QFileInfo)));
-    //    qDebug("connecting");
     connect(outputWatcher,SIGNAL(initialOutput(QString,QFileInfo)),this,SLOT(loadInitialProcessOutput(QString,QFileInfo)));
     outputWatcher->start(QThread::IdlePriority);
   }else{
-    qDebug("Process type unkown in %s:%d",__FILE__,__LINE__);
+    qWarning("Process type unkown in %s:%d",__FILE__,__LINE__);
   }
-  //  connect(this,SIGNAL(stopOutputWatcher()),outputWatcher,SLOT(stop()));
   processRunning = true;
   process = p;
 }

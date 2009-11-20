@@ -29,7 +29,6 @@ ImageView::ImageView(QWidget * parent)
   }
   delayedLoader = new QTimer(this);
   connect(delayedLoader,SIGNAL(timeout()),this,SLOT(loadScheduledImage()));
-  delayedLoader->start(3);
   loader = NULL;
   QVBoxLayout * vbox = new QVBoxLayout(this);
   vbox->setContentsMargins(0,0,0,0);
@@ -317,6 +316,7 @@ bool ImageView::loadImage(QString file){
     return true;
   }else{
     scheduledImage = file;
+    delayedLoader->start(1000);
     qDebug("Loader busy...");
     return false;
   }
@@ -429,16 +429,21 @@ void ImageView::finishLoadImage(){
   setImage(item);    
   item->update();
   emit imageLoaded(filename);
+  if(scheduledImage.isEmpty()){
+    delayedLoader->stop();    
+  }
 }
 
 void ImageView::scheduleImageLoad(QString file){
   scheduledImage = file;
+    delayedLoader->start(300);
 }
 
 void ImageView::loadScheduledImage(){
-  //  qDebug("Checking scheduled image");
+  qDebug("Checking scheduled image");
   if(!scheduledImage.isEmpty()){
     if(loader == NULL){
+      qDebug("Trying scheduled image");
       QString file = scheduledImage;
       currentlyLoading = file;
       scheduledImage.clear();

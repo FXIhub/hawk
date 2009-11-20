@@ -70,7 +70,7 @@ set(GUI_MOC_HDRS
   ${LOCAL_INCLUDE}/HawkGUI/optionstree.h 
   ${LOCAL_INCLUDE}/HawkGUI/processdisplay.h 
   processcontrol.h 
-  ${LOCAL_INCLUDE}/HawkGUI/outputwatcher.h 
+  outputwatcher.h 
   ${LOCAL_INCLUDE}/HawkGUI/imageframe.h 
   plotdisplay.h 
   logtailer.h 
