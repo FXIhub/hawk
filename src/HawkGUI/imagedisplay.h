@@ -3,6 +3,7 @@
 
 #include <QFrame>
 #include <QFileInfo>
+#include "processcontrol.h"
 
 class GeometryControl;
 class ImageView;
@@ -12,7 +13,6 @@ class QFocusFrame;
 class OutputWatcher;
 class ImageCategory;
 class ImageFrame;
-class ProcessControl;
 
 class ImageDisplay : public QFrame
 {
@@ -29,7 +29,7 @@ public slots:
   void setLockedBrowse(bool locked);
   void translateView(QPointF ammount);
   void scaleView(qreal scale);
-  void onProcessStarted(QString type,QString path,ProcessControl * process);
+  void onProcessStarted(ProcessControl::ProcessType type,QString path,ProcessControl * process);
   void onProcessStopped();
   void updateLatestOutput(QString type,QFileInfo file,QFileInfo old);
   void setAutoUpdate(bool update);

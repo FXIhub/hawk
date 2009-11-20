@@ -5,10 +5,10 @@
 #include <qwt_plot.h>
 #include <QTimer>
 #include <QMap>
+#include "processcontrol.h"
 
 class QwtPlotCurve;
 class Zoomer;
-class ProcessControl;
 class LogTailer;
 
 class CurveData
@@ -42,7 +42,7 @@ class PlotDisplay : public QwtPlot
   int appendData(DatasetId id,double *x, double *y, int size);  
 
   public slots:
-  void onProcessStarted(QString type, QString path,ProcessControl * p);
+  void onProcessStarted(ProcessControl::ProcessType type, QString path,ProcessControl * p);
   void onProcessStopped();
   void loadUserSelectedLogFile();
   private slots:

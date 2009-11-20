@@ -24,7 +24,7 @@ RPCServer::RPCServer(int port){
   }
   attachSlot(QString("reconstructionStarted()"),this,SLOT(reconstructionStarted(quint64)));
   attachSlot(QString("reconstructionStopped()"),this,SLOT(reconstructionStopped(quint64)));
-  attachSlot(QString("identificationKey(int)"),this,SLOT(receiveIdentificationKey(quint64,int)));
+  attachSlot(QString("identificationKeySent(int)"),this,SLOT(receiveIdentificationKey(quint64,int)));
   QObject::connect(this,SIGNAL(clientConnected(quint64)),this,SLOT(onClientConnected(quint64)));
   QObject::connect(this,SIGNAL(clientDisconnected(quint64)),this,SLOT(onClientDisconnected(quint64)));
 }

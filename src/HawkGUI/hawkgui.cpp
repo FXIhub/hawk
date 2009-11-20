@@ -249,8 +249,8 @@ void HawkGUI::connectGUIToControls(){
   connect(runProcess,SIGNAL(toggled(bool)),this,SLOT(onRunProcessToggled(bool)));
   connect(optionsTree,SIGNAL(optionsTreeUpdated(Options *)),processControl,SLOT(setOptions(Options *)));
   connect(processControl,SIGNAL(processFinished()),this,SLOT(onProcessFinished()));
-  connect(processControl,SIGNAL(processStarted(QString,QString,ProcessControl *)),imageDisplay,SLOT(onProcessStarted(QString,QString,ProcessControl *)));
-  connect(processControl,SIGNAL(processStarted(QString,QString,ProcessControl *)),plotDisplay,SLOT(onProcessStarted(QString,QString,ProcessControl *)));
+  connect(processControl,SIGNAL(processStarted(ProcessControl::ProcessType,QString,ProcessControl *)),imageDisplay,SLOT(onProcessStarted(ProcessControl::ProcessType,QString,ProcessControl *)));
+  connect(processControl,SIGNAL(processStarted(ProcessControl::ProcessType,QString,ProcessControl *)),plotDisplay,SLOT(onProcessStarted(ProcessControl::ProcessType,QString,ProcessControl *)));
 
   connect(imageDisplay,SIGNAL(focusedViewChanged(ImageView *)),this,SLOT(onFocusedViewChanged(ImageView *)));
 

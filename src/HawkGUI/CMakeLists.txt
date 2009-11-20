@@ -63,7 +63,7 @@ set(GUI_SRCS
 
 set(GUI_MOC_HDRS
   hawkgui.h 
-  ${LOCAL_INCLUDE}/HawkGUI/imagedisplay.h 
+  imagedisplay.h 
   ${LOCAL_INCLUDE}/HawkGUI/imageview.h 
   ${LOCAL_INCLUDE}/HawkGUI/treedelegate.h 
   ${LOCAL_INCLUDE}/HawkGUI/mapeditordialog.h 
@@ -72,8 +72,8 @@ set(GUI_MOC_HDRS
   processcontrol.h 
   ${LOCAL_INCLUDE}/HawkGUI/outputwatcher.h 
   ${LOCAL_INCLUDE}/HawkGUI/imageframe.h 
-  ${LOCAL_INCLUDE}/HawkGUI/plotdisplay.h 
-  ${LOCAL_INCLUDE}/HawkGUI/logtailer.h 
+  plotdisplay.h 
+  logtailer.h 
   ${LOCAL_INCLUDE}/HawkGUI/imageloader.h
   ${LOCAL_INCLUDE}/HawkGUI/imageviewpanel.h
   ${LOCAL_INCLUDE}/HawkGUI/editorworkspace.h

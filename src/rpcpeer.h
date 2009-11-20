@@ -24,14 +24,14 @@ class RPCPeer: public QxtRPCPeer
     public:
   RPCPeer(RPCInfo * rpcInfo);
   void connect(QString addr , int port);
-  void logLine(QString s);
+  void sendLogLine(QString s);
   bool isConnected();
   void sendMessage(MessageType type,QString msg);
  signals:
-  void identificationKey(int key);
   void reconstructionStopped();
+  void identificationKeySent(int key);
   void messageSent(int type, QString msg);
-  void sendLogLine(QString line);
+  void logLineSent(QString line);
   public slots:
   void connectionEstablished();
   void connectionRecovered();

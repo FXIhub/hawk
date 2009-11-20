@@ -16,6 +16,7 @@
 #include <QCheckBox>
 #include <QFileDialog>
 #include "logtailer.h"
+#include "processcontrol.h"
 
 class Zoomer: public QwtPlotZoomer
 {
@@ -235,7 +236,7 @@ int PlotDisplay::setCurveVisible(QwtPlotItem *plotItem, bool visible){
 }
 
 
-void PlotDisplay::onProcessStarted(QString type, QString path,ProcessControl * p){    
+void PlotDisplay::onProcessStarted(ProcessControl::ProcessType type, QString path,ProcessControl * p){    
   //  qDebug("creating log tailer");
   if(logTailer){
     delete logTailer;
@@ -245,9 +246,12 @@ void PlotDisplay::onProcessStarted(QString type, QString path,ProcessControl * p
   clearPlot();
   replot();
   
-  logTailer->tailLogFile(path+"/uwrapc.log");
+  if(type == ProcessControl::Local || type == ProcessControl::Embedded){
+    logTailer->tailLogFile(path+"/uwrapc.log");
+  }
   connect(logTailer,SIGNAL(dataLineRead(QList<double>)),this,SLOT(addDataLine(QList<double>)));
   connect(logTailer,SIGNAL(headerRead(QString,int)),this,SLOT(addHeader(QString,int)));
+  connect(p,SIGNAL(logLineReceived(QString)),logTailer,SLOT(parseLine(QString)));
 }
 
 void PlotDisplay::addDataLine(QList<double> data){

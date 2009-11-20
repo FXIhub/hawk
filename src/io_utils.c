@@ -24,7 +24,10 @@ static void hawk_report(const char * file, int line, int status, MessageType typ
   char * buffer;
   int size[3] = {0,0,0};
   size[0] = snprintf(buffer,0, "%s: ", prog_name);
-  size[1] = vsnprintf(buffer,0 , format, ap);
+  va_list ap_copy;
+  va_copy(ap_copy,ap);
+  size[1] = vsnprintf(buffer,0 , format, ap_copy);
+  va_end(ap_copy); 
   size[2] = snprintf(buffer,0, " in %s:%d\n",file,line);
   buffer = malloc(sizeof(char)*size[0]+size[1]+size[2]+1);
   snprintf(buffer,size[0]+1, "%s: ", prog_name);
@@ -45,7 +48,10 @@ static void hawk_report2(int status, MessageType type,const char *format,va_list
   char * buffer;
   int size[3] = {0,0,0};
   size[0] = snprintf(buffer,0, "%s: ", prog_name);
-  size[1] = vsnprintf(buffer,0 , format, ap);
+  va_list ap_copy;
+  va_copy(ap_copy,ap);
+  size[1] = vsnprintf(buffer,0 , format, ap_copy);
+  va_end(ap_copy); 
   size[2] = snprintf(buffer,0, "\n");
   buffer = malloc(sizeof(char)*size[0]+size[1]+size[2]+1);
   snprintf(buffer,size[0]+1, "%s: ", prog_name);
@@ -102,8 +108,11 @@ void hawk_log(FILE * fp,const char *format, ...){
   va_list ap;
   va_start(ap,format);
   size = vsnprintf(buffer,0 , format, ap);
-  buffer = malloc(sizeof(char)*size+1);
+  va_end(ap); 
+  va_start(ap, format);
+  buffer = malloc(sizeof(char)*(1024+size+1));
   vsnprintf(buffer,size+1 , format, ap);
+  va_end(ap); 
   fprintf(fp,"%s",buffer);
   rpc_send_log_line(buffer);
   free(buffer);

@@ -19,6 +19,7 @@ ProcessControl::ProcessControl(QWidget * p)
   connect(m_rpcServer,SIGNAL(keyReceived(int)),this,SLOT(handleRemoteClient(int)));
   connect(m_rpcServer,SIGNAL(clientFinished(quint64,int)),this,SLOT(cleanRemoteClient(quint64,int)));
   m_rpcServer->attachSlot(QString("messageSent(int,QString)"),this,SLOT(displayMessage(quint64,int,QString)));
+  m_rpcServer->attachSlot(QString("logLineSent(QString)"),this,SLOT(receiveLogLine(quint64,QString)));
 }
 
 void ProcessControl::startProcess(){
@@ -56,6 +57,7 @@ void ProcessControl::startRemoteProcessBySSH(int key){
     arg(remoteHost).arg(uwrapcPath).arg(localHost).arg(localPort).arg(key);
   qDebug("ProcessControl: running '%s'",command.toAscii().constData());
   QProcess::startDetached(command);  
+  emit processStarted(NetworkRPC,0,this);  
 }
 
 void ProcessControl::startLocalProcess(){
@@ -75,7 +77,7 @@ void ProcessControl::startLocalProcess(){
   connect(process,SIGNAL(finished(int,QProcess::ExitStatus)),this,SLOT(onProcessFinished(int,QProcess::ExitStatus)));
   p_startTime = QDateTime::currentDateTime();
   process->start("uwrapc");
-  emit processStarted("local",fullPath,this);  
+  emit processStarted(Local,fullPath,this);  
 }
 
 void ProcessControl::startEmbeddedProcess(){
@@ -109,7 +111,7 @@ void ProcessControl::startEmbeddedProcess(){
     QMessageBox::warning(parent, tr("uwrapc message"),tr("Could not start %1. Please report the situation to the developers").arg(command));
   }else{
     m_processType = LaunchLocally;  
-    emit processStarted("embedded",fullPath,this);  
+    emit processStarted(Embedded,fullPath,this);  
   }
 }
 
@@ -225,7 +227,7 @@ void ProcessControl::handleRemoteClient(int key){
 }
 
 void ProcessControl::cleanRemoteClient(quint64 client, int key){
-  if(m_keysRunning.contains(key)){
+  if(isRunningClient(client)){
     qDebug("ProcessControl: Cleaning finished client %llu",client);
     QMessageBox::information(0, tr("HawkGUI"),
 			     tr("Remote process finished."),
@@ -239,8 +241,7 @@ void ProcessControl::cleanRemoteClient(quint64 client, int key){
 void ProcessControl::displayMessage(quint64 client,int t, QString msg){
   MessageType type = (MessageType)t;
   qDebug("Displaying message");
-  int key = m_rpcServer->keyFromClient(client);
-  if(m_keysToStart.contains(key) || m_keysRunning.contains(key)){
+  if(isValidClient(client)){
     if(type == InformationMessage){
       QMessageBox::information(0, tr("HawkGUI"),
 			       msg,
@@ -256,4 +257,31 @@ void ProcessControl::displayMessage(quint64 client,int t, QString msg){
 			    QMessageBox::Ok,QMessageBox::Ok);
     }
   }
+}
+
+void ProcessControl::receiveLogLine(quint64 client, QString msg){
+  if(isRunningClient(client)){
+    emit logLineReceived(msg);
+  }
+}
+
+bool ProcessControl::isValidClient(quint64 client){
+  return isRunningClient(client) || isStartingClient(client);
+}
+
+bool ProcessControl::isRunningClient(quint64 client){
+  int key = m_rpcServer->keyFromClient(client);
+  if(m_keysRunning.contains(key)){
+    return true;
+  }
+  return false;
+}
+
+
+bool ProcessControl::isStartingClient(quint64 client){
+  int key = m_rpcServer->keyFromClient(client);
+  if(m_keysToStart.contains(key)){
+    return true;
+  }
+  return false;
 }

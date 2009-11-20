@@ -40,7 +40,7 @@ void rpc_send_message(MessageType type, const char * s){
 
 void rpc_send_log_line(const char * s){
   if(rpcInfo){
-    rpcInfo->peer->logLine(s);
+    rpcInfo->peer->sendLogLine(s);
   }
 }
 

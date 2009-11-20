@@ -16,12 +16,9 @@ RPCPeer::RPCPeer(RPCInfo * rpcInfo)
   attachSlot(QString("stopReconstruction()"),this,SLOT(stopReconstruction()));
   attachSlot(QString("quit()"),this,SLOT(quit()));
   attachSignal(this,SIGNAL(reconstructionStopped()),QString("reconstructionStopped()"));  
-  attachSignal(this,SIGNAL(identificationKey(int)),QString("identificationKey(int)"));
-  attachSignal(this,SIGNAL(sendWarningMessage(QString)),QString("sendWarningMessage(QString)"));
+  attachSignal(this,SIGNAL(identificationKeySent(int)),QString("identificationKeySent(int)"));
   attachSignal(this,SIGNAL(messageSent(int,QString)),QString("messageSent(int,QString)"));
-  attachSignal(this,SIGNAL(sendCriticalMessage(QString)),QString("sendCriticalMessage(QString)"));
-  attachSignal(this,SIGNAL(sendInfoMessage(QString)),QString("sendInfoMessage(QString)"));
-  attachSignal(this,SIGNAL(sendLogLine(QString)),QString("sendLogLine(QString)"));
+  attachSignal(this,SIGNAL(logLineSent(QString)),QString("logLineSent(QString)"));
 
 }
 
@@ -42,7 +39,7 @@ void RPCPeer::connectionEstablished(){
   /* new connectedToServer will mean the connection was recovered not established */
   QObject::disconnect(this,SIGNAL(connectedToServer()),this,SLOT(connectionEstablished()));
   QObject::connect(this,SIGNAL(connectedToServer()),this,SLOT(connectionRecovered()));
-  emit identificationKey(m_rpcInfo->key);
+  emit identificationKeySent(m_rpcInfo->key);
 }
 
 void RPCPeer::connectionRecovered(){
@@ -135,9 +132,8 @@ void RPCPeer::sendMessage(MessageType type,QString s){
   QCoreApplication::processEvents();
 }
 
-void RPCPeer::logLine(QString s){
-  qDebug("RPCPeer: Sending log line");
-  emit sendLogLine(s);
+void RPCPeer::sendLogLine(QString s){
+  emit logLineSent(s);
   QCoreApplication::processEvents();
 }
 

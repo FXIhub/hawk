@@ -1,5 +1,5 @@
 #ifndef _PROCESSCONTROL_H_
-#define _PROCESSCONTROL_H_
+#define _PROCESSCONTROL_H_ 1
 
 #include <QObject>
 #include "configuration.h"
@@ -21,6 +21,7 @@ class ProcessControl: public QObject
   ProcessControl(QWidget * parent = NULL);
   QDateTime startTime();
   enum LaunchMethod{LaunchLocally=1,LaunchRemotely};
+  enum ProcessType{Embedded=1,Local,LocalRPC,NetworkRPC};
   public slots:
   void startProcess();
   void stopProcess();
@@ -31,15 +32,20 @@ class ProcessControl: public QObject
   void cleanRemoteClient(quint64 client, int key);
  signals:
   void processFinished();
-  void processStarted(QString type, QString workDir,ProcessControl * process);
+  void processStarted(ProcessControl::ProcessType type, QString workDir,ProcessControl * process);
   void newOutput(QString type, QFileInfo fi);  
+  void logLineReceived(QString);
   private slots:
   void readStdOut();
   void readStdErr();
   void onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
   void handleRemoteClient(int key);
   void displayMessage(quint64 client, int type,QString msg);
+  void receiveLogLine(quint64 client, QString line);
  private:
+  bool isValidClient(quint64 client);
+  bool isRunningClient(quint64 client);
+  bool isStartingClient(quint64 client);
   void startLocalProcess();
   void startEmbeddedProcess();
   void startRPCProcess();
