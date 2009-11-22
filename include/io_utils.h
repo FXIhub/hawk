@@ -2,6 +2,7 @@
 #define _IO_UTILS_H_ 1
 
 #include <stdio.h>
+#include <spimage.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -11,6 +12,7 @@ extern "C"
 typedef enum{DebugMessage=1,InformationMessage,WarningMessage,CriticalMessage}MessageType;
 
   void hawk_log(FILE * fp, const char *format, ...);
+  void hawk_image_write(const Image * img, const char * filename, int flags);
 #if __STDC_VERSION__ >= 199901L
   /* Lets try our luck with variable argument macros */ 
 #ifndef  _IO_UTILS_NO_MACRO_SUBSTITUTIONS_

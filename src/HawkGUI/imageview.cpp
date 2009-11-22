@@ -434,6 +434,23 @@ void ImageView::finishLoadImage(){
   }
 }
 
+void ImageView::loadImageFromMemory(Image * image){
+ if(!image){
+    qDebug(("Failed to read image " + loader->getFile()).toAscii());
+    return;
+  }
+  currentlyLoading.clear();
+  filename = loader->getFile();
+  currentIteration = ImageCategory::getFileIteration(filename);
+  qDebug(("Current iteration:" + currentIteration).toAscii());
+  delete loader;
+  loader = NULL;
+  ImageItem * item = new ImageItem(image,filename,this,NULL);
+  setImage(item);    
+  item->update();
+  emit imageLoaded(filename);
+}
+
 void ImageView::scheduleImageLoad(QString file){
   scheduledImage = file;
     delayedLoader->start(300);
@@ -574,3 +591,5 @@ void ImageView::setSelectedImage(ImageItem * item){
     selectedImage()->setSelected(true);
   }
 }
+
+

@@ -14,11 +14,13 @@ RPCPeer::RPCPeer(RPCInfo * rpcInfo)
   attachSlot(QString("sendOptions(QByteArray)"),this,SLOT(receiveOptions(QByteArray)));
   attachSlot(QString("startReconstruction()"),this,SLOT(startReconstruction()));
   attachSlot(QString("stopReconstruction()"),this,SLOT(stopReconstruction()));
+  attachSlot(QString("loadImage(QString)"),this,SLOT(loadImage(QString)));
   attachSlot(QString("quit()"),this,SLOT(quit()));
   attachSignal(this,SIGNAL(reconstructionStopped()),QString("reconstructionStopped()"));  
   attachSignal(this,SIGNAL(identificationKeySent(int)),QString("identificationKeySent(int)"));
   attachSignal(this,SIGNAL(messageSent(int,QString)),QString("messageSent(int,QString)"));
   attachSignal(this,SIGNAL(logLineSent(QString)),QString("logLineSent(QString)"));
+  attachSignal(this,SIGNAL(imageOutputNotificationSent(QString)),QString("imageOutputNotificationSent(QString)"));
 
 }
 
@@ -137,7 +139,22 @@ void RPCPeer::sendLogLine(QString s){
   QCoreApplication::processEvents();
 }
 
+void RPCPeer::sendImageOutputNotification(QString s){
+  /* Check if it's a useful image file */
+  if(s.endsWith(".h5") && 
+     (s.contains("real_out-") ||
+      s.contains("support-"))){
+    emit imageOutputNotificationSent(s);
+    QCoreApplication::processEvents();
+  }
+}
+
 bool RPCPeer::isConnected(){
   return m_connected;
+}
+
+void RPCPeer::loadImage(QString location){
+  qDebug("RPCPeer: Loading %s",location.toAscii().constData());
+  Image * a = sp_image_read(location.toAscii().constData(),0);
 }
 #endif

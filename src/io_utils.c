@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
+#include <spimage.h>
 /* This macro prevent the macros from the
    header file from screwing up our function definitions */
 #define _IO_UTILS_NO_MACRO_SUBSTITUTIONS_
@@ -116,6 +117,12 @@ void hawk_log(FILE * fp,const char *format, ...){
   fprintf(fp,"%s",buffer);
   rpc_send_log_line(buffer);
   free(buffer);
+}
+
+
+void hawk_image_write(const Image * img, const char * filename, int flags){
+  sp_image_write(img,filename,flags);
+  rpc_send_image_output_notification(filename);
 }
 
 void hawk_fatal(const char *format, ...){

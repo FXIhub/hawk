@@ -35,6 +35,7 @@ public slots:
   void setAutoUpdate(bool update);
   void loadUserSelectedImage();
   void loadInitialProcessOutput(QString key, QFileInfo file);
+  void loadInitialProcessOutput(quint64 client, QString location);
   void shiftSelectedImage();
   void fourierTransformSelectedImage();
   void fourierTransformSquaredSelectedImage();

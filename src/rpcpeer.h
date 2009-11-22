@@ -27,7 +27,9 @@ class RPCPeer: public QxtRPCPeer
   void sendLogLine(QString s);
   bool isConnected();
   void sendMessage(MessageType type,QString msg);
+  void sendImageOutputNotification(QString s);
  signals:
+  void imageOutputNotificationSent(QString s);
   void reconstructionStopped();
   void identificationKeySent(int key);
   void messageSent(int type, QString msg);
@@ -39,6 +41,7 @@ class RPCPeer: public QxtRPCPeer
   void connectionLost();
   void attemptReconnection();  
   void quit();
+  void loadImage(QString location);
   private slots:
   void receiveOptions(QByteArray optionsFile);
   void startReconstruction();

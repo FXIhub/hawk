@@ -6,6 +6,7 @@
 #include "imageframe.h"
 #include "imagecategory.h"
 #include "processcontrol.h"
+#include "rpcimageloader.h"
 
 ImageDisplay::ImageDisplay(QWidget * parent)
   :QFrame(parent)
@@ -100,6 +101,9 @@ void ImageDisplay::onProcessStarted(ProcessControl::ProcessType type, QString pa
     connect(outputWatcher,SIGNAL(newOutput(QString,QFileInfo,QFileInfo)),this,SLOT(updateLatestOutput(QString,QFileInfo,QFileInfo)));
     connect(outputWatcher,SIGNAL(initialOutput(QString,QFileInfo)),this,SLOT(loadInitialProcessOutput(QString,QFileInfo)));
     outputWatcher->start(QThread::IdlePriority);
+  }else if(type == ProcessControl::NetworkRPC){
+    connect(p->rpcImageLoader(),SIGNAL(initialImageOutputNotificationReceived(quint64,QString)),this,SLOT(loadInitialProcessOutput(quint64,QString)));
+    //    connect(p,SIGNAL(rpcImageReceived(QString)),this,SLOT(updateLatestOutput(QString)));
   }else{
     qWarning("Process type unkown in %s:%d",__FILE__,__LINE__);
   }
@@ -174,6 +178,27 @@ void ImageDisplay::loadInitialProcessOutput(QString key, QFileInfo file){
     }
   }
 }
+
+void ImageDisplay::loadInitialProcessOutput(quint64 client, QString location){
+  QFileInfo file(location);
+  qDebug("ImageDisplay: Initial Output Received! %s",location.toAscii().constData());
+  if(file.suffix() == "h5"){
+    process->rpcImageLoader()->loadImage(client,location);
+    if(location.contains("real_out-")){
+      if(imageViewers[0]){
+	process->rpcImageLoader()->loadImage(client,location);
+	//	imageViewers[0]->loadRPCImage(client,location);
+      }
+    }
+    if(location.contains("support-")){
+      if(imageViewers[1]){
+	process->rpcImageLoader()->loadImage(client,location);
+	//	imageViewers[1]->loadRPCImage(client,location);
+      }
+    }
+  }
+}
+
 
 ProcessControl * ImageDisplay::getProcess(){
   return process;

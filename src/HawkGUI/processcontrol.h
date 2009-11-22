@@ -13,6 +13,7 @@
 class QWidget;
 class UwrapcThread;
 class RPCServer;
+class RPCImageLoader;
 
 class ProcessControl: public QObject
 {
@@ -30,11 +31,14 @@ class ProcessControl: public QObject
   void deleteOutputFromDir(QString dir);
   bool isRunning();
   void cleanRemoteClient(quint64 client, int key);
+  RPCImageLoader * rpcImageLoader();
  signals:
   void processFinished();
   void processStarted(ProcessControl::ProcessType type, QString workDir,ProcessControl * process);
   void newOutput(QString type, QFileInfo fi);  
   void logLineReceived(QString);
+  void firstRPCImageReceived(QString name, Image * image);
+  void rpcImageReceived(QString name, Image * image);
   private slots:
   void readStdOut();
   void readStdErr();
@@ -55,6 +59,7 @@ class ProcessControl: public QObject
   QWidget * parent;
   QDateTime p_startTime;
   RPCServer * m_rpcServer;
+  RPCImageLoader * m_rpcImageLoader;
   QList<int> m_keysToStart;
   QList<int> m_keysRunning;
   LaunchMethod m_processType;

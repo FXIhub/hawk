@@ -18,6 +18,7 @@ extern "C"{
   void setup_signals_and_slots(RPCInfo * rpcInfo);
   void rpc_send_message(MessageType type, const char * s);
   void rpc_send_log_line(const char * s);
+  void rpc_send_image_output_notification(const char * s);
   int is_connected();
 
 #endif /* NETWORK_SUPPORT */

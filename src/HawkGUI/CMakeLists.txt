@@ -4,6 +4,7 @@ project(uwrapc)
 
 INCLUDE_DIRECTORIES(${LOCAL_INCLUDE}/HawkGUI)
 INCLUDE_DIRECTORIES(${QWT_INCLUDE_DIR})
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 
 QT_WRAP_CPP(HawkGUI hawkgui_qxt_moc_files ../qxt/qxtboundfunction.h ../qxt/qxtrpcservice.h ../qxt/qxtrpcservice_p.h ../qxt/qxtabstractconnectionmanager.h ../qxt/qxtrpcpeer.h ../qxt/qxttcpconnectionmanager.h ../qxt/qxttcpconnectionmanager_p.h)
 SET(QXT_OBJS ../qxt/qxtrpcservice.cpp ../qxt/qxtabstractconnectionmanager.cpp ../qxt/qxtmetaobject.cpp ../qxt/qxtdatastreamsignalserializer.cpp ../qxt/qxtrpcpeer.cpp ../qxt/qxttcpconnectionmanager.cpp ${hawkgui_qxt_moc_files})
@@ -59,12 +60,13 @@ set(GUI_SRCS
   addvariabledialog.cpp
   rpcserver.cpp
   remotelaunchdialog.cpp
+  rpcimageloader.cpp
 )
 
 set(GUI_MOC_HDRS
   hawkgui.h 
   imagedisplay.h 
-  ${LOCAL_INCLUDE}/HawkGUI/imageview.h 
+  imageview.h 
   ${LOCAL_INCLUDE}/HawkGUI/treedelegate.h 
   ${LOCAL_INCLUDE}/HawkGUI/mapeditordialog.h 
   ${LOCAL_INCLUDE}/HawkGUI/optionstree.h 
@@ -73,7 +75,7 @@ set(GUI_MOC_HDRS
   outputwatcher.h 
   ${LOCAL_INCLUDE}/HawkGUI/imageframe.h 
   plotdisplay.h 
-  logtailer.h 
+  logtailer.h   
   ${LOCAL_INCLUDE}/HawkGUI/imageloader.h
   ${LOCAL_INCLUDE}/HawkGUI/imageviewpanel.h
   ${LOCAL_INCLUDE}/HawkGUI/editorworkspace.h
@@ -93,6 +95,7 @@ set(GUI_MOC_HDRS
   ../uwrapcpeerthread.h
   rpcserver.h
   remotelaunchdialog.h
+  rpcimageloader.h
 )
 
 

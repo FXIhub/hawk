@@ -9,6 +9,7 @@
 #include "rpcserver.h"
 #include "remotelaunchdialog.h"
 #include "io_utils.h"
+#include "rpcimageloader.h"
 
 ProcessControl::ProcessControl(QWidget * p)
   :QObject(p)
@@ -16,10 +17,12 @@ ProcessControl::ProcessControl(QWidget * p)
   process = NULL;
   parent = p;
   m_rpcServer = new RPCServer();
+  m_rpcImageLoader = new RPCImageLoader(m_rpcServer,this);
   connect(m_rpcServer,SIGNAL(keyReceived(int)),this,SLOT(handleRemoteClient(int)));
   connect(m_rpcServer,SIGNAL(clientFinished(quint64,int)),this,SLOT(cleanRemoteClient(quint64,int)));
   m_rpcServer->attachSlot(QString("messageSent(int,QString)"),this,SLOT(displayMessage(quint64,int,QString)));
   m_rpcServer->attachSlot(QString("logLineSent(QString)"),this,SLOT(receiveLogLine(quint64,QString)));
+  m_rpcServer->attachSlot(QString("imageOutputNotificationSent(QString)"),m_rpcImageLoader,SLOT(receiveImageOutputNotification(quint64,QString)));
 }
 
 void ProcessControl::startProcess(){
@@ -284,4 +287,9 @@ bool ProcessControl::isStartingClient(quint64 client){
     return true;
   }
   return false;
+}
+
+
+RPCImageLoader * ProcessControl::rpcImageLoader(){
+  return m_rpcImageLoader;
 }

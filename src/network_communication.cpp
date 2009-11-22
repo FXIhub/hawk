@@ -44,6 +44,12 @@ void rpc_send_log_line(const char * s){
   }
 }
 
+void rpc_send_image_output_notification(const char * s){
+  if(rpcInfo){
+    rpcInfo->peer->sendImageOutputNotification(s);
+  }
+}
+
 void setup_signals_and_slots(RPCInfo * rpcInfo){
   //  rpcInfo->comm = new RPCCommunicator;
 }
