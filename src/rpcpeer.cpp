@@ -5,6 +5,7 @@
 #include <QTemporaryFile>
 #include "configuration.h"
 #include "uwrapcpeerthread.h"
+#include "imagestream.h"
 
 RPCPeer::RPCPeer(RPCInfo * rpcInfo)
   :m_rpcInfo(rpcInfo),m_connected(false)
@@ -113,7 +114,10 @@ void RPCPeer::reconstructionStarted(){
 
 void RPCPeer::stopReconstruction(){
   qDebug("RPCPeer: Stopping reconstruction!");
-  m_thread->terminate();
+  /* fast way to terminate a thread instead of using terminate
+     which doesn't seem to do anything on MacOSX
+  */
+  global_options.max_iterations = 1;
   m_thread->wait();
   reconstructionStopped();
   QCoreApplication::processEvents();
@@ -156,5 +160,13 @@ bool RPCPeer::isConnected(){
 void RPCPeer::loadImage(QString location){
   qDebug("RPCPeer: Loading %s",location.toAscii().constData());
   Image * a = sp_image_read(location.toAscii().constData(),0);
+  QByteArray data;
+  ImageStream instream(&data,QIODevice::WriteOnly);
+  ImageStream outstream(&data,QIODevice::ReadOnly);
+  instream << a;
+  Image * b;
+  outstream >> b;
+  sp_image_write(b,"received_image.h5",0);
+  qDebug("finished writing test image");
 }
 #endif
