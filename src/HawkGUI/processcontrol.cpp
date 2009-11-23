@@ -23,6 +23,7 @@ ProcessControl::ProcessControl(QWidget * p)
   m_rpcServer->attachSlot(QString("messageSent(int,QString)"),this,SLOT(displayMessage(quint64,int,QString)));
   m_rpcServer->attachSlot(QString("logLineSent(QString)"),this,SLOT(receiveLogLine(quint64,QString)));
   m_rpcServer->attachSlot(QString("imageOutputNotificationSent(QString)"),m_rpcImageLoader,SLOT(receiveImageOutputNotification(quint64,QString)));
+  m_rpcServer->attachSlot(QString("imageLoaded(QString,QByteArray)"),m_rpcImageLoader,SLOT(receiveImage(quint64,QString,QByteArray)));
 }
 
 void ProcessControl::startProcess(){
@@ -56,10 +57,22 @@ void ProcessControl::startRemoteProcessBySSH(int key){
   int remotePort = settings.value("RemoteLaunchDialog/"+selectedProfile+"/remotePort").toInt();
   QString localHost = settings.value("RemoteLaunchDialog/"+selectedProfile+"/localHost").toString();
   int localPort = RemoteLaunchDialog::getLocalPortNumber();
-  QString command = QString("%1 -p %2 -t %3 %4 %5 %6 %7").arg(sshPath).arg(remotePort).
+
+  /* the double -t is necessary to start when there's no terminal, as in QProcess */
+  QString command = QString("%1  -t -t -p %2  %3 %4 %5 %6 %7").arg(sshPath).arg(remotePort).
     arg(remoteHost).arg(uwrapcPath).arg(localHost).arg(localPort).arg(key);
+  QStringList args;
+  args << "-p" << QString::number(remotePort) << "-t" << remoteHost << uwrapcPath << localHost << QString::number(localPort) << QString::number(key);
+  QString bareCommand = sshPath;
   qDebug("ProcessControl: running '%s'",command.toAscii().constData());
-  QProcess::startDetached(command);  
+  if(process){
+    delete process;
+  }
+  process = new QProcess(this);
+
+  /* If you want to see the output of the client use startDetached */
+  process->start(command,QIODevice::NotOpen);
+  //QProcess::startDetached(command);  
   emit processStarted(NetworkRPC,0,this);  
 }
 
@@ -292,4 +305,12 @@ bool ProcessControl::isStartingClient(quint64 client){
 
 RPCImageLoader * ProcessControl::rpcImageLoader(){
   return m_rpcImageLoader;
+}
+
+void ProcessControl::onProcessError(){
+  qDebug("ProcessError");
+}
+
+void ProcessControl::onProcessStarted(){
+  qDebug("ProcessStarted");
 }

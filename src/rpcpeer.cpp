@@ -22,6 +22,7 @@ RPCPeer::RPCPeer(RPCInfo * rpcInfo)
   attachSignal(this,SIGNAL(messageSent(int,QString)),QString("messageSent(int,QString)"));
   attachSignal(this,SIGNAL(logLineSent(QString)),QString("logLineSent(QString)"));
   attachSignal(this,SIGNAL(imageOutputNotificationSent(QString)),QString("imageOutputNotificationSent(QString)"));
+  attachSignal(this,SIGNAL(imageLoaded(QString,QByteArray)),QString("imageLoaded(QString,QByteArray)"));
 
 }
 
@@ -162,11 +163,7 @@ void RPCPeer::loadImage(QString location){
   Image * a = sp_image_read(location.toAscii().constData(),0);
   QByteArray data;
   ImageStream instream(&data,QIODevice::WriteOnly);
-  ImageStream outstream(&data,QIODevice::ReadOnly);
   instream << a;
-  Image * b;
-  outstream >> b;
-  sp_image_write(b,"received_image.h5",0);
-  qDebug("finished writing test image");
+  emit imageLoaded(location,data);
 }
 #endif

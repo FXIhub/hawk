@@ -34,6 +34,8 @@ class RPCPeer: public QxtRPCPeer
   void identificationKeySent(int key);
   void messageSent(int type, QString msg);
   void logLineSent(QString line);
+  void imageLoaded(QString location, QByteArray data);
+  
   public slots:
   void connectionEstablished();
   void connectionRecovered();

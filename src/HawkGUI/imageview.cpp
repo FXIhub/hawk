@@ -434,21 +434,17 @@ void ImageView::finishLoadImage(){
   }
 }
 
-void ImageView::loadImageFromMemory(Image * image){
- if(!image){
+void ImageView::loadImageFromMemory(Image * image,QString name){
+  qDebug("ImageView: Loading image from memory %p",image);
+  if(!image){
     qDebug(("Failed to read image " + loader->getFile()).toAscii());
     return;
   }
-  currentlyLoading.clear();
-  filename = loader->getFile();
-  currentIteration = ImageCategory::getFileIteration(filename);
-  qDebug(("Current iteration:" + currentIteration).toAscii());
-  delete loader;
-  loader = NULL;
-  ImageItem * item = new ImageItem(image,filename,this,NULL);
+  filename = name;
+  ImageItem * item = new ImageItem(image,name,this,NULL);
   setImage(item);    
   item->update();
-  emit imageLoaded(filename);
+  emit imageLoaded(name);
 }
 
 void ImageView::scheduleImageLoad(QString file){

@@ -46,6 +46,8 @@ class ProcessControl: public QObject
   void handleRemoteClient(int key);
   void displayMessage(quint64 client, int type,QString msg);
   void receiveLogLine(quint64 client, QString line);
+  void onProcessStarted();
+  void onProcessError();
  private:
   bool isValidClient(quint64 client);
   bool isRunningClient(quint64 client);

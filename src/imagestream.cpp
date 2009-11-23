@@ -13,7 +13,7 @@ ImageStream & ImageStream::operator<<(sp_i3matrix * mask){
   QDataStream & s = *this;
   QByteArray compressedMask = qCompress((const uchar *)mask->data,
 					 sp_i3matrix_size(mask)*sizeof(int),m_maskCompression);
-  qDebug("Compressed from %lld to %d bytes",sp_i3matrix_size(mask)*sizeof(int),compressedMask.size());
+  qDebug("Compressed i3matrix from %lld to %d bytes",sp_i3matrix_size(mask)*sizeof(int),compressedMask.size());
   s.writeBytes(compressedMask.constData(),compressedMask.size());
   return *this;
 }
@@ -27,7 +27,7 @@ ImageStream & ImageStream::operator>>(sp_i3matrix * & mask){
   l = imageMask.size();
   memcpy(mask->data,imageMask.constData(),imageMask.size());
   free(buffer);
-  int expectedSize = sp_i3matrix_size(mask)*sizeof(int);
+  uint expectedSize = sp_i3matrix_size(mask)*sizeof(int);
   if(l != expectedSize){
     qWarning("ImageStream: read %u instead of %u bytes",l,expectedSize);
   }else{
@@ -36,13 +36,23 @@ ImageStream & ImageStream::operator>>(sp_i3matrix * & mask){
   return *this;
 }
 
-ImageStream & ImageStream::operator<<(sp_c3matrix * data){
+ImageStream & ImageStream::operator<<(sp_c3matrix * image){
   QDataStream & s = *this;
+  s.writeBytes((const char *)image->data,sp_c3matrix_size(image)*sizeof(real)*2);
   return *this;
 }
 
-ImageStream & ImageStream::operator>>(sp_c3matrix * & data){
+ImageStream & ImageStream::operator>>(sp_c3matrix * & image){
   QDataStream & s = *this;
+  uint l;
+  uint expectedSize = sp_c3matrix_size(image)*sizeof(real)*2;    
+  sp_free(image->data);
+  s.readBytes((char *&)image->data,l);
+  if(l != expectedSize){
+    qWarning("ImageStream: read %u instead of %u bytes",l,expectedSize);
+  }else{
+    qDebug("ImageStream: correctly read %u bytes",l);
+  }
   return *this;
 }
 
@@ -73,7 +83,7 @@ ImageStream & ImageStream::operator<<(Image * a){
   s << (int)QSysInfo::ByteOrder;
   s << (int)sizeof(real);
   //  qDebug("Image size %d %d %d",x,y,z);
-  s.writeBytes((const char *)a->image->data,sp_image_size(a)*sizeof(real)*2);
+  s << a->image;
   s << a->mask;
   s << a->detector;
   s << a->shifted;
@@ -105,15 +115,7 @@ ImageStream & ImageStream::operator>>(Image * & a){
   }
   /* the byte order of the source
      is the same as ours, no need for conversion */
-  uint l;
-  uint expectedSize = sp_image_size(a)*sizeof(real)*2;
-    
-  s.readBytes((char *&)a->image->data,l);
-  if(l != expectedSize){
-    qWarning("ImageStream: read %u instead of %u bytes",l,expectedSize);
-  }else{
-    qDebug("ImageStream: correctly read %u bytes",l);
-  }
+  s >> a->image;
   s >> a->mask;
   s >> a->detector;
   s >> i;
@@ -136,6 +138,7 @@ QDataStream &operator>>(QDataStream &s, Detector * & d){
   s >> d->wavelength;
   return s;
 }
+/*
 
 QDataStream &operator<<(QDataStream &s, Image * a){
   qDebug("DataStream: serializing image at %p",a); 
@@ -170,8 +173,8 @@ QDataStream &operator>>(QDataStream &s, Image * &a){
   s >> i;
   sourceOrder = (QSysInfo::Endian)i;
   if(sourceOrder == QSysInfo::ByteOrder){
-    /* the byte order of the source
-       is the same as ours, no need for conversion */
+//     the byte order of the source
+//     is the same as ours, no need for conversion 
     uint l;
     uint expectedSize = sp_image_size(a)*sizeof(real);
     
@@ -191,3 +194,4 @@ QDataStream &operator>>(QDataStream &s, Image * &a){
   }
   return s;
 }
+*/

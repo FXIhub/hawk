@@ -3,6 +3,7 @@
 
 #include <QFrame>
 #include <QFileInfo>
+#include <QMap>
 #include "processcontrol.h"
 
 class GeometryControl;
@@ -32,6 +33,7 @@ public slots:
   void onProcessStarted(ProcessControl::ProcessType type,QString path,ProcessControl * process);
   void onProcessStopped();
   void updateLatestOutput(QString type,QFileInfo file,QFileInfo old);
+  void updateLatestOutput(quint64 client,QString location);
   void setAutoUpdate(bool update);
   void loadUserSelectedImage();
   void loadInitialProcessOutput(QString key, QFileInfo file);
@@ -58,6 +60,9 @@ public slots:
   void stopOutputWatcher();
   private slots:
   void onImageLoaded(QString image);
+  private slots:
+  void finishLoadRPCImage(quint64 client, QString location,Image * a);
+  
 private:
   void initImageViewers();
   GeometryControl * geometryControl;
@@ -73,5 +78,6 @@ private:
   bool processRunning;  
   ProcessControl * process;
   bool lockedBrowse;
+  QMap<QPair<quint64,QString>,ImageView *> m_rpcImageToView;
 };
 #endif

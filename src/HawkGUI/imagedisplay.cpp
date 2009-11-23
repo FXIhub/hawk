@@ -102,8 +102,8 @@ void ImageDisplay::onProcessStarted(ProcessControl::ProcessType type, QString pa
     connect(outputWatcher,SIGNAL(initialOutput(QString,QFileInfo)),this,SLOT(loadInitialProcessOutput(QString,QFileInfo)));
     outputWatcher->start(QThread::IdlePriority);
   }else if(type == ProcessControl::NetworkRPC){
+    connect(p->rpcImageLoader(),SIGNAL(imageOutputNotificationReceived(quint64,QString)),this,SLOT(updateLatestOutput(quint64,QString)));
     connect(p->rpcImageLoader(),SIGNAL(initialImageOutputNotificationReceived(quint64,QString)),this,SLOT(loadInitialProcessOutput(quint64,QString)));
-    //    connect(p,SIGNAL(rpcImageReceived(QString)),this,SLOT(updateLatestOutput(QString)));
   }else{
     qWarning("Process type unkown in %s:%d",__FILE__,__LINE__);
   }
@@ -129,6 +129,24 @@ void ImageDisplay::updateLatestOutput(QString type,QFileInfo file,QFileInfo old)
       //      qDebug(("Checking if " + fi.absoluteFilePath() + " matches "+ old.absoluteFilePath()).toAscii());
       if(fi == old ){
 	imageViewers[i]->scheduleImageLoad(file.absoluteFilePath());
+      }
+    }
+  }
+}
+
+void ImageDisplay::updateLatestOutput(quint64 client,QString location){
+  //  qDebug("ImageDisplay: updateLatestOutput");
+  int size = imageViewers.size();
+  for(int i = 0;i<size;i++){
+    if(imageViewers[i]->getAutoUpdate() == true){
+      RPCImageLoader * ril = process->rpcImageLoader();
+      qDebug("ImageDisplay: comparing %s to %s",location.toAscii().constData(),imageViewers[i]->newestFilename().toAscii().constData());
+      qDebug("ImageDisplay: next in sequence %s",ril->nextInSequence(client,imageViewers[i]->newestFilename()).toAscii().constData());
+      if(ril->nextInSequence(client,imageViewers[i]->newestFilename()) == location){
+	qDebug("ImageDisplay: trying to load %s",location.toAscii().constData());
+	connect(process->rpcImageLoader(),SIGNAL(imageLoaded(quint64, QString,Image *)),this,SLOT(finishLoadRPCImage(quint64, QString,Image *)));
+	m_rpcImageToView.insert(QPair<quint64,QString>(client,location),imageViewers[i]);
+	ril->loadImage(client,location);
       }
     }
   }
@@ -183,17 +201,17 @@ void ImageDisplay::loadInitialProcessOutput(quint64 client, QString location){
   QFileInfo file(location);
   qDebug("ImageDisplay: Initial Output Received! %s",location.toAscii().constData());
   if(file.suffix() == "h5"){
-    process->rpcImageLoader()->loadImage(client,location);
+    connect(process->rpcImageLoader(),SIGNAL(imageLoaded(quint64, QString,Image *)),this,SLOT(finishLoadRPCImage(quint64, QString,Image *)));
     if(location.contains("real_out-")){
       if(imageViewers[0]){
+	m_rpcImageToView.insert(QPair<quint64,QString>(client,location),imageViewers[0]);
 	process->rpcImageLoader()->loadImage(client,location);
-	//	imageViewers[0]->loadRPCImage(client,location);
       }
     }
     if(location.contains("support-")){
       if(imageViewers[1]){
+	m_rpcImageToView.insert(QPair<quint64,QString>(client,location),imageViewers[1]);
 	process->rpcImageLoader()->loadImage(client,location);
-	//	imageViewers[1]->loadRPCImage(client,location);
       }
     }
   }
@@ -331,4 +349,12 @@ void ImageDisplay::logScaleSelectedImage(bool on){
 
 void ImageDisplay::deleteOutputWatcher(){
   delete sender();
+}
+
+void ImageDisplay::finishLoadRPCImage(quint64 client, QString location,Image * a){
+  if(m_rpcImageToView.contains(QPair<quint64,QString>(client,location))){
+    ImageView * v = m_rpcImageToView.take(QPair<quint64,QString>(client,location));
+    v->loadImageFromMemory(a,location);
+    qDebug("ImageDisplay: Finished loading %s",location.toAscii().constData());
+  }
 }

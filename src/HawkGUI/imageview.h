@@ -53,7 +53,7 @@ class ImageView: public QGraphicsView
   void scheduleImageLoad(QString file);
   virtual bool loadImage(QString file);
   void loadImage(QPixmap pix);
-  void loadImageFromMemory(Image * image);
+  void loadImageFromMemory(Image * image,QString name=QString());
   void setPos(QPointF pos);
   void setTransform(QTransform t);
   void setLogScale(bool on);
