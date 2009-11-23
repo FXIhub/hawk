@@ -265,7 +265,7 @@ void RemoteLaunchDialog::checkSettings(){
 			 QMessageBox::Ok);
     settingsOK = false;
   }
-  host = m_remoteHostMap.value(selectedProfile);
+  host = m_localHostMap.value(selectedProfile);
   if(m_autoLocalPortMap.value(selectedProfile)){
     port = settings.value("RPCServer/serverPort").toInt();
   }else{
