@@ -14,7 +14,7 @@ SET(TESTS_OBJ CuTest.c AllTests.c AlgorithmsTests.c GeometryTests.c ../algorithm
 IF(QT4_FOUND)
 QT_WRAP_CPP(tests qxt_tests_moc_files ../qxt/qxtboundfunction.h ../qxt/qxtrpcservice.h ../qxt/qxtrpcservice_p.h ../qxt/qxtabstractconnectionmanager.h ../qxt/qxtrpcpeer.h ../qxt/qxttcpconnectionmanager.h ../qxt/qxttcpconnectionmanager_p.h  ../rpcpeer.h ../uwrapcpeerthread.h)
 SET(QXT_OBJS ../qxt/qxtrpcservice.cpp ../qxt/qxtabstractconnectionmanager.cpp ../qxt/qxtmetaobject.cpp ../qxt/qxtdatastreamsignalserializer.cpp ../qxt/qxtrpcpeer.cpp ../qxt/qxttcpconnectionmanager.cpp)
-LIST(APPEND TESTS_OBJ  ../rpcpeer.cpp ../uwrapcpeerthread.cpp ${QXT_OBJS})
+LIST(APPEND TESTS_OBJ  ../rpcpeer.cpp ../uwrapcpeerthread.cpp ../imagestream.cpp ${QXT_OBJS})
 LIST(APPEND TESTS_OBJ ${qxt_tests_moc_files})
 ENDIF(QT4_FOUND)
 

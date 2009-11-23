@@ -32,6 +32,7 @@ set(GUI_SRCS
   ../rpcpeer.cpp
   ../uwrapcpeerthread.cpp
   ../io_utils.c
+  ../imagestream.cpp
   geometrycontrol.cpp
   hawkgui.cpp
   imagecategory.cpp
