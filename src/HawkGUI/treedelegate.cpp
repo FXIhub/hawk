@@ -67,6 +67,7 @@ QWidget *ComboBoxDelegate::createEditor(QWidget *parent,
   QWidget * ret;
   if(md->variable_type == Type_MultipleChoice){
     QComboBox *editor = new QComboBox(parent);
+    editor->setMinimumHeight(editor->sizeHint().height());
     QStringList options;
     for(int i = 0;md->list_valid_names[i] != 0;i++){
       options << md->list_valid_names[i];
@@ -78,6 +79,7 @@ QWidget *ComboBoxDelegate::createEditor(QWidget *parent,
   }else if(md->variable_type == Type_Real){    
     if(md->variable_properties & withSpecialValue){
       QComboBox * editor = new QComboBox(parent);
+      editor->setMinimumHeight(editor->sizeHint().height());
       QDoubleValidator * sv = new QDoubleValidator(editor);
       sv->setNotation(QDoubleValidator::ScientificNotation);
       editor->setEditable(true);
@@ -87,6 +89,7 @@ QWidget *ComboBoxDelegate::createEditor(QWidget *parent,
       ret = editor;
     }else{
       QLineEdit * editor = new QLineEdit(parent);
+      editor->setMinimumHeight(editor->sizeHint().height());
       QDoubleValidator * sv = new QDoubleValidator(editor);
       sv->setNotation(QDoubleValidator::ScientificNotation);
       editor->setValidator(sv);
@@ -97,6 +100,7 @@ QWidget *ComboBoxDelegate::createEditor(QWidget *parent,
   }else if(md->variable_type == Type_Int){    
     if(md->variable_properties & withSpecialValue){
       QComboBox * editor = new QComboBox(parent);
+      editor->setMinimumHeight(editor->sizeHint().height());
       QIntValidator * sv = new QIntValidator(editor);
       editor->setEditable(true);
       editor->setValidator(sv);
@@ -105,6 +109,7 @@ QWidget *ComboBoxDelegate::createEditor(QWidget *parent,
       ret = editor;
     }else{
       QSpinBox * editor = new QSpinBox(parent);
+      editor->setMinimumHeight(editor->sizeHint().height());
       editor->setRange(INT_MIN,INT_MAX);
       int v = *((int *)md->variable_address);
       editor->setValue(v);
@@ -112,6 +117,7 @@ QWidget *ComboBoxDelegate::createEditor(QWidget *parent,
     }
   }else if(md->variable_type == Type_Bool){    
     QComboBox *editor = new QComboBox(parent);
+    editor->setMinimumHeight(editor->sizeHint().height());
     QStringList options;
     options << "true";
     options << "false";
@@ -121,9 +127,15 @@ QWidget *ComboBoxDelegate::createEditor(QWidget *parent,
     ret = editor;
   }else if(md->variable_type == Type_Filename){  
     QLineEdit * editor = new QLineEdit(parent);
+    editor->setMinimumHeight(editor->sizeHint().height());
     ret = editor;
   }else if(md->variable_type == Type_Directory_Name){  
     QLineEdit * editor = new QLineEdit(parent);
+    editor->setMinimumHeight(editor->sizeHint().height());
+    ret = editor;
+  }else if(md->variable_type == Type_String){  
+    QLineEdit * editor = new QLineEdit(parent);
+    editor->setMinimumHeight(editor->sizeHint().height());
     ret = editor;
   }else if(md->variable_type == Type_Map_Real){  
     MapEditorDialog * editor = new MapEditorDialog(parent);
@@ -181,6 +193,10 @@ void ComboBoxDelegate::setEditorData(QWidget *editor,
     QComboBox *comboBox = static_cast<QComboBox*>(editor);  
     QString option = index.model()->data(index, Qt::DisplayRole).toString();
     comboBox->setCurrentIndex(comboBox->findData(option, int(Qt::DisplayRole)));
+  }else if(md->variable_type == Type_String){    
+    QLineEdit *le = static_cast<QLineEdit*>(editor);  
+    QString option = index.model()->data(index, Qt::DisplayRole).toString();
+    le->setText(option);
   }else if(md->variable_type == Type_Filename){      
     QFileInfo fi = QFileInfo((char *)md->variable_address);
     QLineEdit * le = static_cast<QLineEdit*>(editor);  
@@ -254,6 +270,10 @@ void ComboBoxDelegate::setModelData(QWidget *editor, QAbstractItemModel *model,
   }else if(md->variable_type == Type_Bool){
     QComboBox *comboBox = static_cast<QComboBox*>(editor);
     QString option = (comboBox->itemData(comboBox->currentIndex(), Qt::DisplayRole)).toString();    
+    model->setData(index, option, Qt::DisplayRole);
+ }else if(md->variable_type == Type_String){
+    QLineEdit * le = static_cast<QLineEdit*>(editor);
+    QString option = le->text();
     model->setData(index, option, Qt::DisplayRole);
   }else if(md->variable_type == Type_Filename){
     QLineEdit * le = static_cast<QLineEdit*>(editor);  
