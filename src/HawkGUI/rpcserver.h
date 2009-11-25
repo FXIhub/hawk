@@ -26,6 +26,7 @@ class RPCServer: public QxtRPCPeer
   void reconstructionStopped(quint64 client);
   void receiveIdentificationKey(quint64 client, int key);
  private:
+  void sendInputImages(quint64 client);
   QMap<quint64,int> m_clientKeyMap;
 };
 

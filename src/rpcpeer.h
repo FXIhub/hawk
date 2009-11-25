@@ -49,6 +49,7 @@ class RPCPeer: public QxtRPCPeer
   void startReconstruction();
   void threadFinished();
   void stopReconstruction();
+  void receiveInputImage(QByteArray data,QString inputType);
   private slots:
   void reconstructionStarted();
  private:

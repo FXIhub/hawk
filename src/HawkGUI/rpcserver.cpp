@@ -1,6 +1,7 @@
 #include "rpcserver.h"
 #include <QtGui>
 #include "configuration.h"
+#include "imagestream.h"
 
 
 RPCServer::RPCServer(int port){
@@ -39,6 +40,7 @@ void RPCServer::sendOptions(quint64 client){
     QByteArray optionsString = file.readAll();
     qDebug("Read %d bytes in the configuration file",optionsString.size());
     call(client,QString("sendOptions(QByteArray)"),optionsString);
+    sendInputImages(client);
   }else{
     qDebug("RPCServer: Failed to create temporary file!");
     return;
@@ -87,4 +89,31 @@ int RPCServer::keyFromClient(quint64 client){
 void RPCServer::stopByKey(int key){
   quint64 client = clientFromKey(key);
   call(client,QString("stopReconstruction()"));
+}
+
+void RPCServer::sendInputImages(quint64 client){
+  if(global_options.diffraction_filename[0]){
+    Image * a = sp_image_read(global_options.diffraction_filename,0);
+    if(!a){
+      qCritical("RPCServer: Could not open amplitudes file!");
+      return;
+    }
+    QByteArray data;
+    ImageStream instream(&data,QIODevice::WriteOnly);
+    instream << a;
+    call(client,QString("inputImageSent(QByteArray,QString)"),data,"amplitudes");
+    sp_image_free(a);
+  }
+  if(global_options.real_image_filename[0]){
+    Image * a = sp_image_read(global_options.real_image_filename,0);
+    if(!a){
+      qCritical("RPCServer: Could not open real image file!");
+      return;
+    }
+    QByteArray data;
+    ImageStream instream(&data,QIODevice::WriteOnly);
+    instream << a;
+    call(client,QString("inputImageSent(QByteArray,QString)"),data,"real_image");
+    sp_image_free(a);
+  }
 }

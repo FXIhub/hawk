@@ -111,6 +111,7 @@ void set_defaults(Options * opt){
   opt->output_precision = sizeof(real);
   opt->error_reduction_iterations_after_loop = 0;
   strcpy(opt->work_dir,".");
+  opt->remote_work_dir[0] = 0;
   sprintf(opt->log_file,"uwrapc.log");
   opt->enforce_positivity = 0;
   opt->genetic_optimization = 0;
@@ -268,17 +269,24 @@ void read_options_file(const char * filename){
 
 int check_options_and_load_images(Options * opts){
  /* Make sure option is set and is not empty */
-  if(opts->diffraction_filename && strcmp(opts->diffraction_filename,"")){    
-    opts->diffraction = sp_image_read(opts->diffraction_filename,0);
-  }else if(opts->real_image_filename  && strcmp(opts->real_image_filename,"")){
-    opts->real_image = sp_image_read(opts->real_image_filename,0);
+  if(!opts->diffraction && !opts->real_image){
+    if(opts->diffraction_filename && strcmp(opts->diffraction_filename,"")){    
+      opts->diffraction = sp_image_read(opts->diffraction_filename,0);
+    }else if(opts->real_image_filename  && strcmp(opts->real_image_filename,"")){
+      opts->real_image = sp_image_read(opts->real_image_filename,0);
+    }else{
+      hawk_fatal("Neither diffraction nor real image specified!");
+      return -1;
+    }
   }else{
-    hawk_fatal("Neither diffraction nor real image specified!");
-    return -1;
+    hawk_info("Read diffraction data from the network");
   }
   
-  if(opts->support_mask_filename  && strcmp(opts->support_mask_filename,"")){
-    opts->support_mask = sp_image_read(opts->support_mask_filename,0);
+  /* we might already have a mask from the network */
+  if(!opts->support_mask){
+    if(opts->support_mask_filename  && strcmp(opts->support_mask_filename,"")){
+      opts->support_mask = sp_image_read(opts->support_mask_filename,0);
+    }
   }
 
   /* transform fixed thresholds in maps */

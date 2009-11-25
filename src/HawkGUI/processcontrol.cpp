@@ -71,8 +71,8 @@ void ProcessControl::startRemoteProcessBySSH(int key){
   process = new QProcess(this);
 
   /* If you want to see the output of the client use startDetached */
-  process->start(command,QIODevice::NotOpen);
-  //QProcess::startDetached(command);  
+  //process->start(command,QIODevice::NotOpen);
+  QProcess::startDetached(command);  
   emit processStarted(NetworkRPC,0,this);  
 }
 
