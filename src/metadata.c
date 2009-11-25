@@ -1892,7 +1892,7 @@ VariableMetadata variable_metadata[201] = {
     .dependencies =  depends_on_phasing_algorithm_with_beta,
     .reserved = NULL
   },
-    {
+  {
     .variable_name = "innerloop_iterations",
     .display_name = "Innerloop Iterations",
     .variable_type = Type_Int,
@@ -1905,6 +1905,20 @@ VariableMetadata variable_metadata[201] = {
     .documentation = "Number of iterations of the phasing basic algorithm which are performed in between the support update steps.",
     .dependencies = NULL,
     .reserved = NULL
+  },
+  {
+    .variable_name = "remote_work_directory",
+    .display_name = "Remote Working Directory",
+    .variable_type = Type_String,
+    .id = Id_Remote_Work_Dir,
+    .parent = &(variable_metadata[16]),
+    .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
+    .list_valid_values = {0},
+    .list_valid_names = {0},
+    .variable_address = &(global_options.remote_work_dir),
+    .documentation = "The directory in the remote host where output is written. If blank a temporary directory is used.",
+    .dependencies = NULL,
+    .reserved = NULL
   }
 
 
@@ -1912,7 +1926,7 @@ VariableMetadata variable_metadata[201] = {
 
 
 /* Don't forget to update this one!! */
-const int number_of_global_options = 132;
+const int number_of_global_options = 133;
 
 
 int get_list_value_from_list_name(VariableMetadata * md,char * name){
