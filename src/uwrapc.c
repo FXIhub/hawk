@@ -234,11 +234,7 @@ void complete_reconstruction_clean(Image * amp, Image * initial_support, Image *
   SpPhaser * ph = sp_phaser_alloc();
   sp_phaser_init(ph,alg,sup_alg,SpEngineAutomatic);
   sp_phaser_set_amplitudes(ph,amp);
-  if(opts->rand_phases == PHASES_RANDOM){
-    sp_phaser_init_model(ph,NULL,SpModelRandomPhases); 
-  }else{
-    sp_phaser_init_model(ph,NULL,SpModelRandomPhases); 
-  }
+  sp_phaser_init_model(ph,opts->image_guess,0);
   sp_phaser_init_support(ph,initial_support,0,0);
   output_initial_images(sp_phaser_model(ph),initial_support);
   while(opts->max_iterations == 0 || opts->cur_iteration < opts->max_iterations){
