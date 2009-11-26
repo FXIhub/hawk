@@ -281,6 +281,10 @@ int check_options_and_load_images(Options * opts){
     }
   }
   
+  if(opts->log_file[0] == 0){
+    /* someone had the really bad idea to set the log file to an empty string*/
+    hawk_fatal("Can't use an empty log file. Please fix your configuration file.");
+  }
   /* we might already have a mask from the network */
   if(!opts->support_mask){
     if(opts->support_mask_filename  && strcmp(opts->support_mask_filename,"")){
