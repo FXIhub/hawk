@@ -50,6 +50,8 @@ int get_config_type(Variable_Type vt){
     return CONFIG_TYPE_INT;
   }else if(vt == Type_Filename){
     return CONFIG_TYPE_STRING;
+  }else if(vt == Type_Existing_Filename){
+    return CONFIG_TYPE_STRING;
   }else if(vt == Type_Directory_Name){
     return CONFIG_TYPE_STRING;
   }else if(vt == Type_String){
@@ -361,6 +363,7 @@ void write_options_file(const char * filename){
       }
       if(variable_metadata[i].variable_type == Type_String || 
 	 variable_metadata[i].variable_type == Type_Filename ||
+	 variable_metadata[i].variable_type == Type_Existing_Filename ||
 	 variable_metadata[i].variable_type == Type_Directory_Name){
 	config_setting_set_string(s,(char *)variable_metadata[i].variable_address);
       }else if(variable_metadata[i].variable_type == Type_Int){
