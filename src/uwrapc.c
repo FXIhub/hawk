@@ -193,6 +193,11 @@ void harmonize_sizes(Options * opts){
   }
 }
 
+void output_initial_images( const Image * real_in,const Image * initial_support){
+  hawk_image_write(initial_support,"initial_support.h5",0);
+  hawk_image_write(real_in,"initial_guess.h5",sizeof(real));
+}
+
 void complete_reconstruction_clean(Image * amp, Image * initial_support, Image * exp_sigma,
 			     Options * opts, char * dir){  
 
@@ -235,6 +240,7 @@ void complete_reconstruction_clean(Image * amp, Image * initial_support, Image *
     sp_phaser_init_model(ph,NULL,SpModelRandomPhases); 
   }
   sp_phaser_init_support(ph,initial_support,0,0);
+  output_initial_images(sp_phaser_model(ph),initial_support);
   while(opts->max_iterations == 0 || opts->cur_iteration < opts->max_iterations){
     char buffer[1024];
     int to_output = opts->output_period-(ph->iteration)%opts->output_period;
