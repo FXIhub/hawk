@@ -22,7 +22,7 @@ ProcessControl::ProcessControl(QWidget * p)
   connect(m_rpcServer,SIGNAL(clientFinished(quint64,int)),this,SLOT(cleanRemoteClient(quint64,int)));
   m_rpcServer->attachSlot(QString("messageSent(int,QString)"),this,SLOT(displayMessage(quint64,int,QString)));
   m_rpcServer->attachSlot(QString("logLineSent(QString)"),this,SLOT(receiveLogLine(quint64,QString)));
-  m_rpcServer->attachSlot(QString("imageOutputNotificationSent(QString)"),m_rpcImageLoader,SLOT(receiveImageOutputNotification(quint64,QString)));
+  m_rpcServer->attachSlot(QString("imageOutputSent(QString,QByteArray)"),m_rpcImageLoader,SLOT(receiveImageOutput(quint64,QString,QByteArray)));
   m_rpcServer->attachSlot(QString("imageLoaded(QString,QByteArray)"),m_rpcImageLoader,SLOT(receiveImage(quint64,QString,QByteArray)));
 }
 
@@ -71,8 +71,8 @@ void ProcessControl::startRemoteProcessBySSH(int key){
   process = new QProcess(this);
 
   /* If you want to see the output of the client use startDetached */
-  //process->start(command,QIODevice::NotOpen);
-  QProcess::startDetached(command);  
+  process->start(command,QIODevice::NotOpen);
+  //QProcess::startDetached(command);  
   emit processStarted(NetworkRPC,0,this);  
 }
 
@@ -234,7 +234,8 @@ void ProcessControl::handleRemoteClient(int key){
     m_keysRunning.append(key);
     qDebug("ProcessControl: Starting reconstruction on client with key %d",key);
     quint64 client = m_rpcServer->clientFromKey(key);
-    m_rpcServer->sendOptions(client);
+    m_rpcServer->sendOptions(client);    
+    m_rpcImageLoader->addClient(client,&global_options);
     m_rpcServer->startReconstruction(client);    
     m_processType = LaunchRemotely;
   }else{
@@ -277,6 +278,12 @@ void ProcessControl::displayMessage(quint64 client,int t, QString msg){
 
 void ProcessControl::receiveLogLine(quint64 client, QString msg){
   if(isRunningClient(client)){
+    QFileInfo fi(m_rpcImageLoader->workDirectoryFromClient(client),m_rpcImageLoader->logFileFromClient(client));
+    QFile fp(fi.filePath());
+    fp.open(QIODevice::Append);
+    fp.write(msg.toAscii());
+    fp.close();
+    
     emit logLineReceived(msg);
   }
 }

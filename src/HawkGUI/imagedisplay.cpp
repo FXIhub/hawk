@@ -102,8 +102,8 @@ void ImageDisplay::onProcessStarted(ProcessControl::ProcessType type, QString pa
     connect(outputWatcher,SIGNAL(initialOutput(QString,QFileInfo)),this,SLOT(loadInitialProcessOutput(QString,QFileInfo)));
     outputWatcher->start(QThread::IdlePriority);
   }else if(type == ProcessControl::NetworkRPC){
-    connect(p->rpcImageLoader(),SIGNAL(imageOutputNotificationReceived(quint64,QString)),this,SLOT(updateLatestOutput(quint64,QString)));
-    connect(p->rpcImageLoader(),SIGNAL(initialImageOutputNotificationReceived(quint64,QString)),this,SLOT(loadInitialProcessOutput(quint64,QString)));
+    connect(p->rpcImageLoader(),SIGNAL(imageOutputReceived(QString,QFileInfo,QFileInfo)),this,SLOT(updateLatestOutput(QString,QFileInfo,QFileInfo)));
+    connect(p->rpcImageLoader(),SIGNAL(initialImageOutputReceived(QString,QFileInfo)),this,SLOT(loadInitialProcessOutput(QString,QFileInfo)));
   }else{
     qWarning("Process type unkown in %s:%d",__FILE__,__LINE__);
   }
@@ -182,15 +182,17 @@ bool ImageDisplay::isProcessRunning(){
 }
 
 void ImageDisplay::loadInitialProcessOutput(QString key, QFileInfo file){
-  qDebug("Initial Output Received!");
+  qDebug("Initial Output Received! %s",file.filePath().toAscii().constData());
   if(file.suffix() == "h5"){
     if(key == "Object"){
       if(imageViewers[0]){
+	qDebug("ImageDisplay: loading initial object");
 	imageViewers[0]->loadImage(file.absoluteFilePath());
       }
     }
     if(key == "Support"){
       if(imageViewers[1]){
+	qDebug("ImageDisplay: loading initial support");
 	imageViewers[1]->loadImage(file.absoluteFilePath());
       }
     }

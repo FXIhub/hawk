@@ -9,6 +9,7 @@
 
 #include "network_communication.h"
 #include "io_utils.h"
+#include "configuration.h"
 const char      prog_name[] = "hawk";
 
 
@@ -121,8 +122,10 @@ void hawk_log(FILE * fp,const char *format, ...){
 
 
 void hawk_image_write(const Image * img, const char * filename, int flags){
-  sp_image_write(img,filename,flags);
-  rpc_send_image_output_notification(filename);
+  if(global_options.save_remote_files){
+    sp_image_write(img,filename,flags);
+  }
+  rpc_send_image_output(filename,img);
 }
 
 void hawk_fatal(const char *format, ...){

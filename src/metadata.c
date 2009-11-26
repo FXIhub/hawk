@@ -1912,11 +1912,25 @@ VariableMetadata variable_metadata[201] = {
     .variable_type = Type_String,
     .id = Id_Remote_Work_Dir,
     .parent = &(variable_metadata[16]),
-    .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
+    .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun|advanced,
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.remote_work_dir),
     .documentation = "The directory in the remote host where output is written. If blank a temporary directory is used.",
+    .dependencies = NULL,
+    .reserved = NULL
+  },
+  {
+    .variable_name = "save_remote_files",
+    .display_name = "Save Remote Files",
+    .variable_type = Type_Bool,
+    .id = Id_Save_Remote_Files,
+    .parent = &(variable_metadata[16]),
+    .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun|advanced,
+    .list_valid_values = {0},
+    .list_valid_names = {0},
+    .variable_address = &(global_options.save_remote_files),
+    .documentation = "If on also save files on the remote host. Otherwise they will just be sent to the local host.",
     .dependencies = NULL,
     .reserved = NULL
   }
@@ -1926,7 +1940,7 @@ VariableMetadata variable_metadata[201] = {
 
 
 /* Don't forget to update this one!! */
-const int number_of_global_options = 133;
+const int number_of_global_options = 134;
 
 
 int get_list_value_from_list_name(VariableMetadata * md,char * name){

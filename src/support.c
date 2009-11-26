@@ -16,13 +16,13 @@ Image * get_updated_support(Image * input, real level , real radius, Options * o
   Image * res;
   long long i;
 
-  sp_image_write(input,"support_input.vtk",0);
+  hawk_image_write(input,"support_input.vtk",0);
   Image * t = sp_image_duplicate(input,SP_COPY_DATA);
   if(opts->support_update_algorithm != COMPLEX_DECREASING_AREA){
     sp_image_dephase(t);
   }
   res = gaussian_blur(t, radius);
-  sp_image_write(res,"support_blur2.vtk",0);
+  hawk_image_write(res,"support_blur2.vtk",0);
   sp_image_free(t);
   sp_image_dephase(res);
 
@@ -77,18 +77,18 @@ Image * get_support_from_patterson(Image * input, Options * opts){
     strcat(buffer,"/");
     strcat(buffer,"autocorrelation.png");
 
-    sp_image_write(patterson,buffer,SpColormapJet|SpColormapLogScale);
+    hawk_image_write(patterson,buffer,SpColormapJet|SpColormapLogScale);
   }
   char buffer[OPTION_STRING_SIZE*2+1];
   strcpy(buffer,opts->work_dir);
   strcat(buffer,"/");
   strcat(buffer,"autocorrelation.vtk");
-  sp_image_write(patterson,buffer,0);
+  hawk_image_write(patterson,buffer,0);
 
   strcpy(buffer,opts->work_dir);
   strcat(buffer,"/");
   strcat(buffer,"autocorrelation.h5");
-  sp_image_write(patterson,buffer,0);
+  hawk_image_write(patterson,buffer,0);
 
   if(opts->patterson_blur_radius){
     tmp_img = gaussian_blur(patterson,opts->patterson_blur_radius);
@@ -136,13 +136,13 @@ Image * get_support_from_patterson(Image * input, Options * opts){
     strcpy(buffer,opts->work_dir);
     strcat(buffer,"/");
     strcat(buffer,"patterson_support.png");
-    sp_image_write(patterson,buffer,SpColormapGrayScale);
+    hawk_image_write(patterson,buffer,SpColormapGrayScale);
   }else if(patterson->num_dimensions == SP_3D){
     char buffer[OPTION_STRING_SIZE*2+1];
     strcpy(buffer,opts->work_dir);
     strcat(buffer,"/");
     strcat(buffer,"patterson_support.vtk");
-    sp_image_write(patterson,buffer,0);
+    hawk_image_write(patterson,buffer,0);
   }
   return patterson;  
 }
@@ -177,8 +177,8 @@ Image * get_filtered_support(Image * input, real level , real radius, Options * 
   }else{
     variance = square_blur(absolute_error,radius,SP_3D);
   }
-  sp_image_write(variance,"variance.vtk",0);
-  sp_image_write(running_average,"r_avg.vtk",0);
+  hawk_image_write(variance,"variance.vtk",0);
+  hawk_image_write(running_average,"r_avg.vtk",0);
   
   sp_image_dephase(res);
 /*  mask = gaussian_blur(previous_support, radius/3);
@@ -407,13 +407,13 @@ void filter_intensities_with_support(Image * amplitudes, Image * real_space_gues
   Image * tmp = gaussian_blur(support_ac,3);
   sp_image_free(support_ac);
   support_ac = tmp;
-  //  sp_image_write(support_ac,"support_ac.h5",0);
+  //  hawk_image_write(support_ac,"support_ac.h5",0);
   Image * ac = sp_image_fft(intensities);
-  //  sp_image_write(ac,"ac.h5",0);
+  //  hawk_image_write(ac,"ac.h5",0);
   sp_image_mul_elements(ac,support_ac);
-  //  sp_image_write(ac,"ac_times_support_ac.h5",0);
+  //  hawk_image_write(ac,"ac_times_support_ac.h5",0);
   Image * filtered_intensities = sp_image_ifft(ac);
-  //  sp_image_write(filtered_intensities,"filtered_intensities.h5",0);
+  //  hawk_image_write(filtered_intensities,"filtered_intensities.h5",0);
   for(int i = 0;i<sp_image_size(amplitudes);i++){
     /* We have to use sp_cabs instead of sp_real because numerical errors will make the filtered_intensities complex */
     sp_real(amplitudes->image->data[i]) = sqrt(sp_cabs(filtered_intensities->image->data[i]) /  sp_image_size(amplitudes));

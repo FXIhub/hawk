@@ -44,9 +44,9 @@ void rpc_send_log_line(const char * s){
   }
 }
 
-void rpc_send_image_output_notification(const char * s){
+void rpc_send_image_output(const char * s,const Image * a){
   if(rpcInfo){
-    rpcInfo->peer->sendImageOutputNotification(s);
+    rpcInfo->peer->sendImageOutput(s,a);
   }
 }
 

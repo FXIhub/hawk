@@ -23,7 +23,7 @@ RPCPeer::RPCPeer(RPCInfo * rpcInfo)
   attachSignal(this,SIGNAL(identificationKeySent(int)),QString("identificationKeySent(int)"));
   attachSignal(this,SIGNAL(messageSent(int,QString)),QString("messageSent(int,QString)"));
   attachSignal(this,SIGNAL(logLineSent(QString)),QString("logLineSent(QString)"));
-  attachSignal(this,SIGNAL(imageOutputNotificationSent(QString)),QString("imageOutputNotificationSent(QString)"));
+  attachSignal(this,SIGNAL(imageOutputSent(QString,QByteArray)),QString("imageOutputSent(QString,QByteArray)"));
   attachSignal(this,SIGNAL(imageLoaded(QString,QByteArray)),QString("imageLoaded(QString,QByteArray)"));
 
 }
@@ -160,14 +160,15 @@ void RPCPeer::sendLogLine(QString s){
   QCoreApplication::processEvents();
 }
 
-void RPCPeer::sendImageOutputNotification(QString s){
-  /* Check if it's a useful image file */
-  if(s.endsWith(".h5") && 
-     (s.contains("real_out-") ||
-      s.contains("support-"))){
-    emit imageOutputNotificationSent(s);
+void RPCPeer::sendImageOutput(QString s,const Image * a){
+  //  if(s.endsWith(".h5")){
+    QByteArray data;
+    ImageStream instream(&data,QIODevice::WriteOnly);
+    instream << a;
+    /* if s is a path make sure to send just the filename*/
+    emit imageOutputSent(QFileInfo(s).fileName(),data);
     QCoreApplication::processEvents();
-  }
+    //  }
 }
 
 bool RPCPeer::isConnected(){

@@ -160,6 +160,7 @@ void set_defaults(Options * opt){
   opt->phases_blur_evolution = sp_smap_alloc(2);
   sp_smap_insert(opt->phases_blur_evolution,0,0);
   sp_smap_insert(opt->phases_blur_evolution,5000,0);
+  opt->save_remote_files = 0;
 }
 
 void read_options_file(const char * filename){
@@ -278,8 +279,6 @@ int check_options_and_load_images(Options * opts){
       hawk_fatal("Neither diffraction nor real image specified!");
       return -1;
     }
-  }else{
-    hawk_info("Read diffraction data from the network");
   }
   
   /* we might already have a mask from the network */

@@ -11,13 +11,13 @@ class ImageStream: public QDataStream{
    :QDataStream(b,mode){
     m_maskCompression = -1;
   }
-  ImageStream & operator<<(Detector * d);
+  ImageStream & operator<<(const Detector * d);
   ImageStream & operator>>(Detector *& d);
-  ImageStream & operator<<(Image * a);
+  ImageStream & operator<<(const Image * a);
   ImageStream & operator>>(Image *& a);
-  ImageStream & operator<<(sp_c3matrix * data);
+  ImageStream & operator<<(const sp_c3matrix * data);
   ImageStream & operator>>(sp_c3matrix *& data);
-  ImageStream & operator<<(sp_i3matrix * mask);
+  ImageStream & operator<<(const sp_i3matrix * mask);
   ImageStream & operator>>(sp_i3matrix *& mask);
   ImageStream & operator>>(int & i){
     QDataStream::operator>>((qint32&)i);
@@ -31,12 +31,6 @@ class ImageStream: public QDataStream{
  private:
   int m_maskCompression;
 };
-
-QDataStream &operator>>(QDataStream &s, Image * &image);
-QDataStream &operator<<(QDataStream &s, Image * image);
-QDataStream &operator>>(QDataStream &s, Detector * & d);
-QDataStream &operator<<(QDataStream &s, Detector * d);
-
 #else
 #error "Someone is including " __FILE__ " from a C file!"
 #endif
