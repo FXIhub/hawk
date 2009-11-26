@@ -175,7 +175,7 @@ VariableMetadata variable_metadata[201] = {
   {
     .variable_name = "amplitudes_file",
     .display_name = "Amplitudes File",
-    .variable_type = Type_Filename,
+    .variable_type = Type_Existing_Filename,
     .id = Id_Diffraction_Filename,
     .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun|deprecated,
@@ -248,7 +248,7 @@ VariableMetadata variable_metadata[201] = {
   {
     .variable_name = "fixed_support_mask",
     .display_name = "Fixed Support Mask",
-    .variable_type = Type_Filename,
+    .variable_type = Type_Existing_Filename,
     .id = Id_Support_Mask_Filename,
     .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun|deprecated,
@@ -265,7 +265,7 @@ VariableMetadata variable_metadata[201] = {
   {
     .variable_name = "initial_support",
     .display_name = "Initial Support",
-    .variable_type = Type_Filename,
+    .variable_type = Type_Existing_Filename,
     .id = Id_Init_Support_Filename,
     .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun|deprecated,
@@ -279,7 +279,7 @@ VariableMetadata variable_metadata[201] = {
   },
   {
     .variable_name = "image_guess",
-    .variable_type = Type_Filename,
+    .variable_type = Type_Existing_Filename,
     .id = Id_Image_Guess_Filename,
     .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun|deprecated,
@@ -871,7 +871,7 @@ VariableMetadata variable_metadata[201] = {
   {
     .variable_name = "solution_file",
     .display_name = "Solution File",
-    .variable_type = Type_Filename,
+    .variable_type = Type_Existing_Filename,
     .id = Id_Solution_File,
     .parent = &(variable_metadata[1]),
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isSettableDuringRun|isGettableDuringRun,
@@ -920,7 +920,7 @@ VariableMetadata variable_metadata[201] = {
   },
   {
     .variable_name = "intensities_std_dev_file",
-    .variable_type = Type_Filename,
+    .variable_type = Type_Existing_Filename,
     .id = Id_Solution_File,
     .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|deprecated,
@@ -933,7 +933,7 @@ VariableMetadata variable_metadata[201] = {
   /* 60 */
   {
     .variable_name = "autocorrelation_support_file",
-    .variable_type = Type_Filename,
+    .variable_type = Type_Existing_Filename,
     .id = Id_Autocorrelation_Support_File,
     .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|deprecated,
@@ -1107,7 +1107,7 @@ VariableMetadata variable_metadata[201] = {
   {
     .variable_name = "fixed_support_mask",
     .display_name = "Fixed Support Mask",
-    .variable_type = Type_Filename,
+    .variable_type = Type_Existing_Filename,
     .id = Id_Support_Mask_Filename,
     .parent = &(variable_metadata[30]),
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun|advanced,
@@ -1124,7 +1124,7 @@ VariableMetadata variable_metadata[201] = {
   {
     .variable_name = "initial_support",
     .display_name = "Initial Support",
-    .variable_type = Type_Filename,
+    .variable_type = Type_Existing_Filename,
     .id = Id_Init_Support_Filename,
     .parent = &(variable_metadata[30]),
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
@@ -1256,7 +1256,7 @@ VariableMetadata variable_metadata[201] = {
   {
     .variable_name = "image_guess",
     .display_name = "Initial Realspace Image",
-    .variable_type = Type_Filename,
+    .variable_type = Type_Existing_Filename,
     .id = Id_Image_Guess_Filename,
     .parent = &(variable_metadata[82]),
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
@@ -1385,7 +1385,7 @@ VariableMetadata variable_metadata[201] = {
   {
     .variable_name = "real_image_file",
     .display_name = "Realspace Image File",
-    .variable_type = Type_Filename,
+    .variable_type = Type_Existing_Filename,
     .id = Id_Real_Image_Filename,
     .parent = &(variable_metadata[0]),
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun|deprecated,
@@ -1683,7 +1683,7 @@ VariableMetadata variable_metadata[201] = {
   {
     .variable_name = "intensities_std_dev_file",
     .display_name = "Intensities Std. Dev. File",
-    .variable_type = Type_Filename,
+    .variable_type = Type_Existing_Filename,
     .id = Id_Solution_File,
     .parent = &(variable_metadata[1]),
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun,
@@ -1697,7 +1697,7 @@ VariableMetadata variable_metadata[201] = {
   {
     .variable_name = "autocorrelation_support_file",
     .display_name = "Autocorrelation Support File",
-    .variable_type = Type_Filename,
+    .variable_type = Type_Existing_Filename,
     .id = Id_Autocorrelation_Support_File,
     .parent = &(variable_metadata[1]),
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun,
@@ -1767,7 +1767,7 @@ VariableMetadata variable_metadata[201] = {
   {
     .variable_name = "amplitudes_file",
     .display_name = "Amplitudes File",
-    .variable_type = Type_Filename,
+    .variable_type = Type_Existing_Filename,
     .id = Id_Diffraction_Filename,
     .parent = &(variable_metadata[1]),
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
@@ -1798,7 +1798,7 @@ VariableMetadata variable_metadata[201] = {
   {
     .variable_name = "real_image_file",
     .display_name = "Realspace Image File",
-    .variable_type = Type_Filename,
+    .variable_type = Type_Existing_Filename,
     .id = Id_Real_Image_Filename,
     .parent = &(variable_metadata[1]),
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,

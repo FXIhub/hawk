@@ -31,7 +31,7 @@ typedef enum{GAUSSIAN_BLUR_REDUCTION=0,GEOMETRICAL_BLUR_REDUCTION} Blur_Reductio
   typedef enum{PHASES_FROM_SUPPORT=0, PHASES_ZERO,PHASES_RANDOM}Initial_Phases;
 
 typedef enum {Type_Real=0, Type_Int, Type_String, 
-	      Type_MultipleChoice,Type_Bool, Type_Group, Type_Image, Type_Slice, Type_Vector_Real, Type_Vector_Int,Type_Filename,Type_Directory_Name,Type_Map_Real}Variable_Type;
+	      Type_MultipleChoice,Type_Bool, Type_Group, Type_Image, Type_Slice, Type_Vector_Real, Type_Vector_Int,Type_Existing_Filename,Type_Filename,Type_Directory_Name,Type_Map_Real}Variable_Type;
 
 typedef enum {Id_Diffraction_Filename=0,Id_Real_Image_Filename,Id_Max_Blur_Radius,Id_Init_Level,
 	      Id_Beta,Id_Iterations,Id_Support_Mask_Filename,Id_Init_Support_Filename,Id_Image_Guess_Filename,

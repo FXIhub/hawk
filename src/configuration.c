@@ -179,6 +179,7 @@ void read_options_file(const char * filename){
       if(config_lookup(&config,path)){	
 	if(variable_metadata[i].variable_type == Type_String||
 	   variable_metadata[i].variable_type == Type_Filename ||
+	   variable_metadata[i].variable_type == Type_Existing_Filename ||
 	   variable_metadata[i].variable_type == Type_Directory_Name){
 	  strcpy((char *)variable_metadata[i].variable_address,config_lookup_string(&config,path));
 	}else if(variable_metadata[i].variable_type == Type_Int){
