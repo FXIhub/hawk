@@ -221,6 +221,9 @@ void complete_reconstruction_clean(Image * amp, Image * initial_support, Image *
   if(get_algorithm(opts,&log) == RAAR){
     alg = sp_phasing_raar_alloc(opts->beta,phasing_constraints);
   }
+  if(get_algorithm(opts,&log) == DIFF_MAP){
+    alg = sp_phasing_diff_map_alloc(opts->beta,get_gamma1(opts),get_gamma2(opts),phasing_constraints);
+  }
   SpSupportAlgorithm * sup_alg = NULL;
   if(opts->support_update_algorithm == FIXED){
     sup_alg = sp_support_threshold_alloc(opts->iterations,opts->support_blur_evolution,opts->threshold_evolution);
@@ -290,7 +293,7 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
   chdir(dir);
 #endif
 
-  if((get_algorithm(opts,&log) == HIO || get_algorithm(opts,&log) == RAAR) &&
+  if((get_algorithm(opts,&log) == HIO || get_algorithm(opts,&log) == RAAR || get_algorithm(opts,&log) == DIFF_MAP) &&
      (opts->support_update_algorithm == FIXED ||
       opts->support_update_algorithm == DECREASING_AREA) && opts->support_image_averaging == 1){ 
     /* use new libspimage backend */
