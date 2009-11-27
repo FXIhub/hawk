@@ -52,7 +52,7 @@ void rescale_image(Image * a);
 void centrosym_break_attempt(Image * a);
 void init_reconstruction(Options * opts);
 void enforce_parsevals_theorem(Image * master, Image * to_scale);
-int uwrapc_start(Options * opts,RPCInfo * rpcInfo);
+int uwrapc_start(Options * opts);
 int uwrapc_network_main(int argc, char ** argv);
 int uwrapc_main(int argc, char ** argv);
 int uwrapc_from_file();

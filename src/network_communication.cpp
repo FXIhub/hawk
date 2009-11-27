@@ -50,10 +50,6 @@ void rpc_send_image_output(const char * s,const Image * a){
   }
 }
 
-void setup_signals_and_slots(RPCInfo * rpcInfo){
-  //  rpcInfo->comm = new RPCCommunicator;
-}
-
 int start_event_loop(){
   /* Start event loop */
   return qapp->exec();

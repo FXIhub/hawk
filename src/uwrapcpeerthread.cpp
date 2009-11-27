@@ -16,7 +16,7 @@ void UwrapcPeerThread::run(){
   /* it's necessary to processEvents for the
      signal to reach its destination */
   QCoreApplication::processEvents();
-  uwrapc_start(&global_options,m_rpcInfo);
+  uwrapc_start(&global_options);
   qDebug("UwrapcPeerThread: finishing run");
 }
 

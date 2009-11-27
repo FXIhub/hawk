@@ -797,13 +797,12 @@ int uwrapc_network_main(int argc, char ** argv){
     return 0;
   }
   attempt_connection(server,server_port,key);  
-  //  setup_signals_and_slots(r);
   return start_event_loop();
 }
 
 
 
-int uwrapc_start(Options * opts,RPCInfo * rpcInfo){
+int uwrapc_start(Options * opts){
   if(check_options_and_load_images(opts)){
     return -1;
   }
@@ -849,7 +848,7 @@ int uwrapc_from_file(){
   }else{
     perror("Could not open uwrapc.conf");
   }
-  return uwrapc_start(opts,NULL);
+  return uwrapc_start(opts);
 }
 
 int uwrapc_main(int argc, char ** argv){

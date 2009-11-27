@@ -15,7 +15,6 @@ extern "C"{
   int start_event_loop();
   void init_qt(int argc, char ** argv);
   void cleanup_and_free_qt();
-  void setup_signals_and_slots(RPCInfo * rpcInfo);
   void rpc_send_message(MessageType type, const char * s);
   void rpc_send_log_line(const char * s);
   void rpc_send_image_output(const char * s,const Image * a);
