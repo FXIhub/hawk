@@ -65,6 +65,9 @@ void cleanup_and_free_qt(){
 
 
 int is_connected(){
-  return rpcInfo->peer->isConnected();
+  if(rpcInfo && rpcInfo->peer){
+    return rpcInfo->peer->isConnected();
+  }
+  return 0;
 }
 #endif

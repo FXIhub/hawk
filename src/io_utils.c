@@ -122,7 +122,9 @@ void hawk_log(FILE * fp,const char *format, ...){
 
 
 void hawk_image_write(const Image * img, const char * filename, int flags){
-  if(global_options.save_remote_files){
+  /* save images if we're not connected to a server
+     of if we have explicitly said to save them */
+  if(!is_connected() || global_options.save_remote_files){
     sp_image_write(img,filename,flags);
   }
   rpc_send_image_output(filename,img);
