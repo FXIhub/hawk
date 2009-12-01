@@ -184,7 +184,7 @@ bool ImageDisplay::isProcessRunning(){
 void ImageDisplay::loadInitialProcessOutput(QString key, QFileInfo file){
   qDebug("Initial Output Received! %s",file.filePath().toAscii().constData());
   if(file.suffix() == "h5"){
-    if(key == "Object"){
+    if(key == "Real Space"){
       if(imageViewers[0]){
 	qDebug("ImageDisplay: loading initial object");
 	imageViewers[0]->loadImage(file.absoluteFilePath());
@@ -204,13 +204,15 @@ void ImageDisplay::loadInitialProcessOutput(quint64 client, QString location){
   qDebug("ImageDisplay: Initial Output Received! %s",location.toAscii().constData());
   if(file.suffix() == "h5"){
     connect(process->rpcImageLoader(),SIGNAL(imageLoaded(quint64, QString,Image *)),this,SLOT(finishLoadRPCImage(quint64, QString,Image *)));
-    if(location.contains("real_out-")){
+    if(ImageCategory::getFileCategory(location)->getName() == "Real Space"){
+    /*location.contains("real_out-")){*/
       if(imageViewers[0]){
 	m_rpcImageToView.insert(QPair<quint64,QString>(client,location),imageViewers[0]);
 	process->rpcImageLoader()->loadImage(client,location);
       }
     }
-    if(location.contains("support-")){
+    if(ImageCategory::getFileCategory(location)->getName() == "Support"){
+      //    if(location.contains("support-")){
       if(imageViewers[1]){
 	m_rpcImageToView.insert(QPair<quint64,QString>(client,location),imageViewers[1]);
 	process->rpcImageLoader()->loadImage(client,location);

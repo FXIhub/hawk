@@ -59,19 +59,19 @@ void get_intensities_noise(Options * opts){
 
 /* continue a reconstruction on this directory */
 /* these will simply set image_guess and initial_support
-   to the last real_out and support_ respectively */
+   to the last real_space and support_ respectively */
 
 /*void continue_reconstruction(Options * opts){
   
   } */
 
 
-void synchronize_image_data(Image **  real_out, Image ** support){
-  if(global_options.current_real_space_image != real_out){
-    sp_image_free(*real_out);
-    *real_out = *global_options.current_real_space_image;
+void synchronize_image_data(Image **  real_space, Image ** support){
+  if(global_options.current_real_space_image != real_space){
+    sp_image_free(*real_space);
+    *real_space = *global_options.current_real_space_image;
     sp_free(global_options.current_real_space_image);
-    global_options.current_real_space_image = real_out;
+    global_options.current_real_space_image = real_space;
   }
   if(global_options.current_support != support){
     sp_image_free(*support);
@@ -251,11 +251,11 @@ void complete_reconstruction_clean(Image * amp, Image * initial_support, Image *
       output_from_phaser(ph,opts,&log);
     }
     if(to_iterate == to_output){
-      sprintf(buffer,"real_out-%07d.h5",ph->iteration-1);
+      sprintf(buffer,"real_space-%07d.h5",ph->iteration-1);
       hawk_image_write(sp_phaser_model(ph),buffer,opts->output_precision);
       sprintf(buffer,"support-%07d.h5",ph->iteration-1);
       hawk_image_write(sp_phaser_support(ph),buffer,opts->output_precision);
-      sprintf(buffer,"pattern-%07d.h5",ph->iteration-1);
+      sprintf(buffer,"fourier_space-%07d.h5",ph->iteration-1);
       hawk_image_write(sp_phaser_fmodel(ph),buffer,opts->output_precision);
     }
   }
@@ -267,13 +267,13 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
   Image * support = NULL;
   Image * prev_support = NULL;
   Image * real_in = NULL;
-  Image * real_out = NULL;
+  Image * real_space = NULL;
   Image * tmp = NULL;
   Image * tmp2;
-  Image * real_out_sum = sp_image_alloc(sp_image_x(initial_support),sp_image_y(initial_support),sp_image_z(initial_support));
-  int real_out_sum_n = 0;
+  Image * real_space_sum = sp_image_alloc(sp_image_x(initial_support),sp_image_y(initial_support),sp_image_z(initial_support));
+  int real_space_sum_n = 0;
   global_options.current_support = &support;
-  global_options.current_real_space_image = &real_out;
+  global_options.current_real_space_image = &real_space;
   char buffer[1024];
   Log log;
   real radius;
@@ -312,11 +312,11 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
     opts->algorithm = HIO;
   }
   
-  /* clear real_out_sum */
-  real_out_sum_n = 0;
-  for(int i = 0;i<sp_image_size(real_out_sum);i++){
-    sp_real(real_out_sum->image->data[i]) = 0;
-    sp_imag(real_out_sum->image->data[i]) = 0;
+  /* clear real_space_sum */
+  real_space_sum_n = 0;
+  for(int i = 0;i<sp_image_size(real_space_sum);i++){
+    sp_real(real_space_sum->image->data[i]) = 0;
+    sp_imag(real_space_sum->image->data[i]) = 0;
   }
 
 
@@ -359,25 +359,25 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
   }
 
   if(get_algorithm(opts,&log) == HIO){     
-    real_out = basic_hio_iteration(amp, real_in, support,opts,&log);
+    real_space = basic_hio_iteration(amp, real_in, support,opts,&log);
   }else if(get_algorithm(opts,&log) == RAAR){
-    real_out = basic_raar_iteration(amp,opts->intensities_std_dev, real_in, support,opts,&log);
+    real_space = basic_raar_iteration(amp,opts->intensities_std_dev, real_in, support,opts,&log);
   }else if(get_algorithm(opts,&log) == HPR){
-    real_out = basic_hpr_iteration(amp, real_in, support,opts,&log);
+    real_space = basic_hpr_iteration(amp, real_in, support,opts,&log);
   }else if(get_algorithm(opts,&log) == CFLIP){
-    real_out = basic_cflip_iteration(amp, real_in, support,opts,&log);
+    real_space = basic_cflip_iteration(amp, real_in, support,opts,&log);
   }else if(get_algorithm(opts,&log) == ESPRESSO) {
-    real_out = basic_espresso_iteration(amp, real_in, support, opts, &log);
+    real_space = basic_espresso_iteration(amp, real_in, support, opts, &log);
   }else if(get_algorithm(opts,&log) == HAAR){
-    real_out = basic_haar_iteration(amp, NULL, real_in, support,opts,&log);
+    real_space = basic_haar_iteration(amp, NULL, real_in, support,opts,&log);
   }else if(get_algorithm(opts,&log) == SO2D){
-    real_out = basic_so2d_iteration(amp, NULL, real_in, support,opts,&log);
+    real_space = basic_so2d_iteration(amp, NULL, real_in, support,opts,&log);
   }else if(get_algorithm(opts,&log) == RAAR_PROJ){
-    real_out = basic_raar_proj_iteration(amp, opts->intensities_std_dev, real_in, support,opts,&log);
+    real_space = basic_raar_proj_iteration(amp, opts->intensities_std_dev, real_in, support,opts,&log);
   }else if(get_algorithm(opts,&log) == HIO_PROJ){
-    real_out = basic_hio_proj_iteration(amp, opts->intensities_std_dev, real_in, support, opts, &log);
+    real_space = basic_hio_proj_iteration(amp, opts->intensities_std_dev, real_in, support, opts, &log);
   }else if(get_algorithm(opts,&log) == DIFF_MAP){
-    real_out = serial_difference_map_iteration(amp,real_in, support,opts,&log);
+    real_space = serial_difference_map_iteration(amp,real_in, support,opts,&log);
   }else{
     hawk_fatal("Error: Undefined algorithm!");
   }
@@ -390,37 +390,37 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
     
   for(;!opts->reconstruction_finished && (!opts->max_iterations || opts->cur_iteration < opts->max_iterations);opts->cur_iteration++){
     /* I'm only going to allow changes to images in the beggining of each iteration */
-    synchronize_image_data(&real_out,&support);
+    synchronize_image_data(&real_space,&support);
 
-    /* Add current real_out to the average real_out*/
+    /* Add current real_space to the average real_space*/
     if(opts->iterations-opts->cur_iteration%opts->iterations <= opts->support_image_averaging){
-      sp_image_add(real_out_sum,real_out);
-      real_out_sum_n++;
+      sp_image_add(real_space_sum,real_space);
+      real_space_sum_n++;
     }
 
     if(opts->image_blur_period && opts->cur_iteration%opts->image_blur_period == opts->image_blur_period-1){
       sp_image_free(real_in);
-      real_in = gaussian_blur(real_out,opts->image_blur_radius);
-      sp_image_memcpy(real_out,real_in);
+      real_in = gaussian_blur(real_space,opts->image_blur_radius);
+      sp_image_memcpy(real_space,real_in);
     }
 
     if(opts->iterations && opts->cur_iteration%opts->iterations == opts->iterations-1){
-      sp_image_scale(real_out_sum,1.0/real_out_sum_n);
+      sp_image_scale(real_space_sum,1.0/real_space_sum_n);
       for(i = 0;i<opts->error_reduction_iterations_after_loop;i++){
 	sp_image_free(real_in);
-	real_in = real_out;
-	real_out = basic_error_reduction_iteration(amp, real_in, support,opts,&log);
+	real_in = real_space;
+	real_space = basic_error_reduction_iteration(amp, real_in, support,opts,&log);
       }
       if(get_phases_blur_radius(opts)){
-	phase_smoothening_iteration(real_out,opts,&log);
+	phase_smoothening_iteration(real_space,opts,&log);
       }
       sp_image_free(prev_support);
       prev_support = sp_image_duplicate(support,SP_COPY_DATA|SP_COPY_MASK);
       sp_image_free(support);
-      support_threshold = get_support_level(real_out_sum,&support_size,radius,&log,opts);
+      support_threshold = get_support_level(real_space_sum,&support_size,radius,&log,opts);
       log.threshold = support_threshold;
       if(support_threshold > 0){
-	support =  get_updated_support(real_out_sum,support_threshold, radius,opts);
+	support =  get_updated_support(real_space_sum,support_threshold, radius,opts);
       }else{
 	if(opts->support_update_algorithm == REAL_ERROR_CAPPED){
 	  exit(0);
@@ -429,16 +429,16 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
 	}
       }
       if(opts->filter_intensities){
-	filter_intensities_with_support(amp,real_out_sum,support,opts);
+	filter_intensities_with_support(amp,real_space_sum,support,opts);
       }
       if(opts->cur_iteration <= opts->iterations_to_min_blur){
 	radius = get_blur_radius(opts);
       }
-      /* clear real_out_sum */
-      real_out_sum_n = 0;
-      for(int i = 0;i<sp_image_size(real_out_sum);i++){
-	sp_real(real_out_sum->image->data[i]) = 0;
- 	sp_imag(real_out_sum->image->data[i]) = 0;
+      /* clear real_space_sum */
+      real_space_sum_n = 0;
+      for(int i = 0;i<sp_image_size(real_space_sum);i++){
+	sp_real(real_space_sum->image->data[i]) = 0;
+ 	sp_imag(real_space_sum->image->data[i]) = 0;
       }
 
       if(/*opts->cur_iteration > 50 ||*/ (opts->automatic && opts->algorithm == RAAR && log.Ereal < 0.2)){
@@ -450,11 +450,11 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
     }
     if(opts->cur_iteration%opts->output_period == opts->output_period-1){
       if(real_in->num_dimensions == SP_2D){
-	sprintf(buffer,"real_out-%07d.png",opts->cur_iteration);
-	hawk_image_write(real_out,buffer,SpColormapJet);
-	sprintf(buffer,"real_out_phase-%07d.png",opts->cur_iteration);
-	//	hawk_image_write(real_out,buffer,SpColormapWheel|COLOR_WEIGHTED_PHASE);
-	hawk_image_write(real_out,buffer,SpColormapWheel|SpColormapPhase);
+	sprintf(buffer,"real_space-%07d.png",opts->cur_iteration);
+	hawk_image_write(real_space,buffer,SpColormapJet);
+	sprintf(buffer,"real_space_phase-%07d.png",opts->cur_iteration);
+	//	hawk_image_write(real_space,buffer,SpColormapWheel|COLOR_WEIGHTED_PHASE);
+	hawk_image_write(real_space,buffer,SpColormapWheel|SpColormapPhase);
 	sprintf(buffer,"support-%07d.png",opts->cur_iteration);
 	hawk_image_write(support,buffer,SpColormapGrayScale);
 	sprintf(buffer,"amplitudes-%07d.png",opts->cur_iteration);
@@ -462,21 +462,21 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
 	
       }
       if(real_in->num_dimensions == SP_3D){
-	sprintf(buffer,"real_out-%07d.vtk",opts->cur_iteration);
-	hawk_image_write(real_out,buffer,0);
+	sprintf(buffer,"real_space-%07d.vtk",opts->cur_iteration);
+	hawk_image_write(real_space,buffer,0);
 	sprintf(buffer,"support-%07d.vtk",opts->cur_iteration);
 	hawk_image_write(support,buffer,0);
 	sprintf(buffer,"amplitudes-%07d.vtk",opts->cur_iteration);
 	hawk_image_write(amp,buffer,0);
       }
-      sprintf(buffer,"real_out-%07d.h5",opts->cur_iteration);
-      hawk_image_write(real_out,buffer,opts->output_precision);
+      sprintf(buffer,"real_space-%07d.h5",opts->cur_iteration);
+      hawk_image_write(real_space,buffer,opts->output_precision);
       sprintf(buffer,"support-%07d.h5",opts->cur_iteration);
       hawk_image_write(support,buffer,opts->output_precision);
       sprintf(buffer,"amplitudes-%07d.h5",opts->cur_iteration);
       hawk_image_write(amp,buffer,0);
 	
-      tmp = sp_image_duplicate(real_out,SP_COPY_DATA|SP_COPY_MASK);
+      tmp = sp_image_duplicate(real_space,SP_COPY_DATA|SP_COPY_MASK);
       for(i = 0;i<sp_c3matrix_size(tmp->image);i++){
 	if(sp_real(support->image->data[i])){
 	  ;
@@ -484,10 +484,10 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
 	  tmp->image->data[i] = sp_cinit(0,0);
 	}
       }
-      sprintf(buffer,"pre_pattern-%07d.h5",opts->cur_iteration);
+      sprintf(buffer,"pre_fourier_space-%07d.h5",opts->cur_iteration);
       /*      tmp = zero_pad_image(tmp,sp_cmatrix_cols(tmp->image)*4,sp_cmatrix_rows(tmp->image)*4,1);
       hawk_image_write(tmp,buffer,opts->output_precision);
-      sprintf(buffer,"pre_pattern-%07d.png",opts->cur_iteration);
+      sprintf(buffer,"pre_fourier_space-%07d.png",opts->cur_iteration);
       hawk_image_write(tmp,buffer,SpColormapJet|LOG_SCALE);
       */
       tmp2 = sp_image_fft(tmp); 
@@ -496,78 +496,78 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
       for(i = 0;i<sp_c3matrix_size(tmp->image);i++){
 	tmp->mask->data[i] = 1;
       }
-      sprintf(buffer,"pattern-%07d.h5",opts->cur_iteration);
+      sprintf(buffer,"fourier_space-%07d.h5",opts->cur_iteration);
       hawk_image_write(tmp,buffer,opts->output_precision);
       tmp2 = sp_image_shift(tmp);
 
       if(tmp2->num_dimensions == SP_2D){
-	sprintf(buffer,"pattern-%07d.png",opts->cur_iteration);
+	sprintf(buffer,"fourier_space-%07d.png",opts->cur_iteration);
 	hawk_image_write(tmp2,buffer,SpColormapJet);
 	sp_image_free(tmp2);
       }
 
-      /*      sprintf(buffer,"pattern-%07d.vtk",opts->cur_iteration);
+      /*      sprintf(buffer,"fourier_space-%07d.vtk",opts->cur_iteration);
       hawk_image_write(tmp,buffer,SP_3D);
       sp_image_free(tmp);*/
 
     }    
     if(opts->break_centrosym_period && 
        opts->cur_iteration%opts->break_centrosym_period == opts->break_centrosym_period-1){
-      centrosym_break_attempt(real_out);
+      centrosym_break_attempt(real_space);
     }
     sp_image_free(real_in);
-    real_in = real_out;
+    real_in = real_space;
     if(get_algorithm(opts,&log) == HIO){     
-      real_out = basic_hio_iteration(amp, real_in, support,opts,&log);
+      real_space = basic_hio_iteration(amp, real_in, support,opts,&log);
     }else if(get_algorithm(opts,&log) == RAAR){     
-      real_out = basic_raar_iteration(amp,exp_sigma, real_in, support,opts,&log);
+      real_space = basic_raar_iteration(amp,exp_sigma, real_in, support,opts,&log);
     }else if(get_algorithm(opts,&log) == HPR){     
-      real_out = basic_hpr_iteration(amp, real_in, support,opts,&log);
+      real_space = basic_hpr_iteration(amp, real_in, support,opts,&log);
     }else if(get_algorithm(opts,&log) == CFLIP){     
-      real_out = basic_cflip_iteration(amp, real_in, support,opts,&log);
+      real_space = basic_cflip_iteration(amp, real_in, support,opts,&log);
     }else if(get_algorithm(opts,&log) == ESPRESSO){
-      real_out = basic_espresso_iteration(amp, real_in, support, opts, &log);
+      real_space = basic_espresso_iteration(amp, real_in, support, opts, &log);
     }else if(get_algorithm(opts,&log) == HAAR){     
-      real_out = basic_haar_iteration(amp, exp_sigma,real_in, support,opts,&log);
+      real_space = basic_haar_iteration(amp, exp_sigma,real_in, support,opts,&log);
     }else if(get_algorithm(opts,&log) == SO2D){     
-      real_out = basic_so2d_iteration(amp, exp_sigma,real_in, support,opts,&log);
+      real_space = basic_so2d_iteration(amp, exp_sigma,real_in, support,opts,&log);
     }else if(get_algorithm(opts,&log) == RAAR_PROJ){ 
-      real_out = basic_raar_proj_iteration(amp, opts->intensities_std_dev,real_in, support,opts,&log);
+      real_space = basic_raar_proj_iteration(amp, opts->intensities_std_dev,real_in, support,opts,&log);
     }else if(get_algorithm(opts,&log) == HIO_PROJ){
-      real_out = basic_hio_proj_iteration(amp, opts->intensities_std_dev, real_in, support, opts, &log);
+      real_space = basic_hio_proj_iteration(amp, opts->intensities_std_dev, real_in, support, opts, &log);
     }else if(get_algorithm(opts,&log) == DIFF_MAP){     
-      real_out = serial_difference_map_iteration(amp,real_in, support,opts,&log);
+      real_space = serial_difference_map_iteration(amp,real_in, support,opts,&log);
     }
 
   }  
 
-  //hawk_image_write(real_out,"real_out_final.h5",opts->output_precision|SP_2D);
-  //hawk_image_write(real_out,"real_out_final.png",SpColormapJet|SP_2D);
-  //  hawk_image_write(real_out,"real_out_final.vtk",0);
-  hawk_image_write(real_out,"real_out_final.h5",0);
+  //hawk_image_write(real_space,"real_space_final.h5",opts->output_precision|SP_2D);
+  //hawk_image_write(real_space,"real_space_final.png",SpColormapJet|SP_2D);
+  //  hawk_image_write(real_space,"real_space_final.vtk",0);
+  hawk_image_write(real_space,"real_space-final.h5",0);
   //sprintf(buffer,"support-final.png");
   //hawk_image_write(support,buffer,SpColormapJet|SP_2D);
   //sprintf(buffer,"support-final.h5");
   hawk_image_write(support,"support-final.h5",0);
   //sprintf(buffer,"support-final.vtk");
   //  hawk_image_write(support,buffer,opts->output_precision);
-  tmp = sp_image_fft(real_out); 
+  tmp = sp_image_fft(real_space); 
   for(i = 0;i<sp_c3matrix_size(tmp->image);i++){
     tmp->mask->data[i] = 1;
   }
-  sprintf(buffer,"pattern-final.h5");
+  sprintf(buffer,"fourier_space-final.h5");
   //hawk_image_write(tmp,buffer,opts->output_precision);
-  //  sprintf(buffer,"pattern-final.png");
+  //  sprintf(buffer,"fourier_space-final.png");
   //hawk_image_write(tmp,buffer,SpColormapJet);
-  //  sprintf(buffer,"pattern-final.vtk");
+  //  sprintf(buffer,"fourier_space-final.vtk");
   hawk_image_write(tmp,buffer,0);
   sp_image_free(tmp);
   
-  //hawk_image_write(real_out,"phases_out_final.png",SpColormapPhase|SpColormapJet);
+  //hawk_image_write(real_space,"phases_out_final.png",SpColormapPhase|SpColormapJet);
   sp_image_free(support);
   sp_image_free(prev_support);
   sp_image_free(real_in);
-  sp_image_free(real_out);
+  sp_image_free(real_space);
   #if defined(_MSC_VER) || defined(__MINGW32__)
   _chdir(dir);
 #else

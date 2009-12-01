@@ -262,8 +262,8 @@ void HawkGUI::connectGUIToControls(){
 
 
 void HawkGUI::createCategories(){
-  imageCategories.append(new ImageCategory("Calculated Pattern","pattern"));
-  imageCategories.append(new ImageCategory("Object","real_out"));
+  imageCategories.append(new ImageCategory("Fourier Space","fourier_space"));
+  imageCategories.append(new ImageCategory("Real Space","real_space"));
   //  imageCategories.append(new ImageCategory("Phase Image","real_out_phase"));
   imageCategories.append(new ImageCategory("Support","support"));
   imageCategories.append(new ImageCategory("Experimental Pattern","amplitudes"));
