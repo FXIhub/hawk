@@ -277,6 +277,19 @@ void StitcherView::drawConstraintFit(geometrically_constrained_system *gc){
       item->setZValue(10000);
       scene()->addItem(item);
       constraintFit.append(item);
+    }else if(type == CircleConstraint){
+      double radius = fit;
+      QGraphicsEllipseItem * item = new QGraphicsEllipseItem(-radius,-radius,2*radius,2*radius);
+      QPen p = item->pen();
+      p.setStyle(Qt::DashLine);
+      QVector<qreal> dashes;
+      dashes << 25 << 15;
+      p.setDashPattern(dashes);
+      p.setColor(Qt::white);
+      item->setPen(p);
+      item->setZValue(10000);
+      scene()->addItem(item);
+      constraintFit.append(item);
     }
     sp_vector ** cp_g = control_point_list_to_global(gc->constraints[i].points,gc->constraints[i].n_points);
     QColor color = QColor::fromHsvF(1.0/3+(double)i/gc->n_constraints,1,1,1);

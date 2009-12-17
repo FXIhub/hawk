@@ -866,7 +866,6 @@ QList<QPointF> ImageItem::getControlPoints(){
 
 
 void ImageItem::moveBy(qreal dx, qreal dy){
-  qDebug("here 2");
   if(dxLocked()){
     dx = 0;
   }
