@@ -12,11 +12,13 @@ SET(EXTRA_PREFIX c:/MinGW/)
 ELSEIF(APPLE)
 SET(EXTRA_PREFIX /sw/)
 ELSE()
+# For some reason they decided to change the location of the include 
+SET(EXTRA_PREFIX /usr/include/qwt-qt4)
 ENDIF()
 
 FIND_PATH(QWT_INCLUDE_DIR qwt.h PATHS ${EXTRA_PREFIX} PATH_SUFFIXES include)
 
-SET(QWT_NAMES ${QWT_NAMES} qwt5 qwt)
+SET(QWT_NAMES ${QWT_NAMES} qwt-qt4 qwt5 qwt)
 FIND_LIBRARY(QWT_LIBRARY NAMES ${QWT_NAMES} PATHS ${EXTRA_PREFIX} PATH_SUFFIXES lib)
 
 # handle the QUIETLY and REQUIRED arguments and set QWT_FOUND to TRUE if 

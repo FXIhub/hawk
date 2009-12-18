@@ -118,7 +118,7 @@ Look::Look(QMainWindow *parent)// : QWidget(parent)
 
   QGridLayout *layout = new QGridLayout;
   //layout->addWidget(imageLabel, 0, 1);
-  layout->addWidget(view, 0, 1);
+  layout->addWidget(view, 0, 1,3,1);
   layout->addWidget(comment, 1, 0);
   //layout->addWidget(filesTable,0,0);
   layout->addWidget(leftTab,0,0);
@@ -169,6 +169,7 @@ void Look::openDirectory()
   currentDir = QDir(dir);
   QStringList filters;
   filters << "*.tif" << "*.TIF" << "*.TIFF" << "*.tiff";
+  filters << "*.h5";
   currentDir.setNameFilters(filters);
   QStringList filenames = currentDir.entryList(QDir::Files);
   noOfImages = filenames.size();
