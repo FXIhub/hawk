@@ -436,6 +436,14 @@ void StitcherWorkspace::onAddConstraintClicked(){
       itemValue = new QStandardItem("");
       parentItem->appendRow(QList<QStandardItem *>() << itemName <<  itemValue);
     }
+    if(d->constraintType() == RadialLineConstraint){
+      itemName = new QStandardItem("Angle");
+    }else{
+      itemName = new QStandardItem("Radius");
+    }
+    itemValue = new QStandardItem("");
+    parentItem->appendRow(QList<QStandardItem *>() << itemName <<  itemValue);
+
     /*    itemName = new QStandardItem("Best Fit");
     itemValue = new QStandardItem("");
     parentItem->appendRow(QList<QStandardItem *>() << itemName <<  itemValue);*/
@@ -539,11 +547,13 @@ void StitcherWorkspace::onOptimizeGeometryClicked(){
   _stitcherView->clearConstraintFits();
   for(int i = 0;i<model->rowCount();i++){
     QStandardItem * it = model->item(i,0);
-    for(int j = 0;j<it->rowCount();j++){
+    for(int j = 0;j<it->rowCount()-1;j++){
       it->child(j,1)->setText(QString("%0").arg(gc->constraints[i].error[j]));      
     }
+    it->child(it->rowCount()-1,1)->setText(QString("%0").arg(gc->constraints[i].best_fit));      
     _stitcherView->drawConstraintFit(gc);
   }  
+
   for(int i = 0;i<gc->n_variables;i++){
     ImageItem * item = pos_image_map.keys(gc->variables[i].parent).first();
     if(gc->variables[i].type == DeltaX){
