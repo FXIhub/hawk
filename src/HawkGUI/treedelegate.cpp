@@ -436,10 +436,13 @@ QVariant ComboBoxDelegate::displayFromMetadata(const VariableMetadata * md,QFont
   if(md->variable_type == Type_Map_Real){
     sp_smap * map = *((sp_smap**)md->variable_address);
     sp_list * values = sp_smap_get_values(map);
+    sp_list * keys = sp_smap_get_keys(map);
     real first = sp_list_get(values,0);
     real last = sp_list_get(values,sp_list_size(values)-1);
+    int last_key = sp_list_get(keys,sp_list_size(keys)-1);
     if(sp_list_size(values) > 1){
-      return QVariant(QString::number(first,'g',2)+QString(" to ")+QString::number(last,'g',2));
+      return QVariant(QString::number(first,'g',2)+QString(" to ")+QString::number(last,'g',2)
+		      +QString(" (at ")+QString::number(last_key,'g',5)+QString(")"));
     }else{
       return QVariant(QString::number(first,'g',2));
     }
