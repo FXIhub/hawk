@@ -29,7 +29,7 @@ ImageView::ImageView(QWidget * parent)
   }
   delayedLoader = new QTimer(this);
   connect(delayedLoader,SIGNAL(timeout()),this,SLOT(loadScheduledImage()));
-  delayedLoader->start(3);
+  delayedLoader->start(300);
   loader = NULL;
   QVBoxLayout * vbox = new QVBoxLayout(this);
   vbox->setContentsMargins(0,0,0,0);
