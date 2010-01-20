@@ -219,8 +219,8 @@ int main(int argc, char ** argv){
       fprintf(stderr,"Could not open %s. Skipping.\n.",argv[i]);
       continue;
     }
-    sp_image_superimpose(avg_img,img,SpEnantiomorph);
-    sp_image_phase_match(avg_img,img,2);
+    //sp_image_superimpose(avg_img,img,SpEnantiomorph);
+    //sp_image_phase_match(avg_img,img,2);
     sp_image_add(avg_img,img);
     char buff2[1024];
     if(img->num_dimensions == SP_2D){

@@ -13,6 +13,7 @@ ImageView::ImageView(QWidget * parent)
   autoUpdate = 1;
   _selected = NULL;
   preserveShift = true;
+  preserveLog = true;
   setup();
   QWidgetList tlwidgets =  QApplication::topLevelWidgets();
   int size = tlwidgets.size();
@@ -204,6 +205,7 @@ void ImageView::setImage(ImageItem * item){
   int display = -1;
   int color = -1;
   bool isShifted = false;
+  bool logScale = false;
   if(selectedImage()){
     // If we already have an image loaded we're gonna preserve the location of the center
     // and the zoom
@@ -215,6 +217,7 @@ void ImageView::setImage(ImageItem * item){
     color = selectedImage()->colormap();
     display = selectedImage()->display();
     isShifted = selectedImage()->isShifted();
+    logScale = selectedImage()->logScale();
   }else{
     // Set pixmap center in the middle of the screen
     QPointF center = sceneRect().center();
@@ -229,6 +232,9 @@ void ImageView::setImage(ImageItem * item){
   _selected = item;
   if(preserveShift && isShifted != selectedImage()->isShifted()){
     selectedImage()->shiftImage();
+  }
+  if(preserveLog  && logScale != selectedImage()->logScale()){
+    selectedImage()->setLogScale(logScale);
   }
   if(color >= 0){
     selectedImage()->setColormap(color);
@@ -521,6 +527,14 @@ void ImageView::setPreserveShift(bool on){
 
 bool ImageView::preservesShift() const{
   return preserveShift;
+}
+
+void ImageView::setPreserveLog(bool on){
+  preserveLog = on;
+}
+
+bool ImageView::preservesLog() const{
+  return preserveLog;
 }
 
 void ImageView::emitImageItemChanged(ImageItem * item){

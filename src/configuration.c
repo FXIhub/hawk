@@ -149,6 +149,7 @@ void set_defaults(Options * opt){
   opt->support_image_averaging = 1;
   opt->random_seed = -1;
   opt->autocorrelation_area = 0.1;
+  opt->template_blur_radius = 5.0;
   opt->beta_evolution = sp_smap_alloc(2);
   sp_smap_insert(opt->beta_evolution,0,0.9);
   sp_smap_insert(opt->beta_evolution,2000,0.9);
@@ -162,6 +163,9 @@ void set_defaults(Options * opt){
   opt->phases_blur_evolution = sp_smap_alloc(2);
   sp_smap_insert(opt->phases_blur_evolution,0,0);
   sp_smap_insert(opt->phases_blur_evolution,5000,0);
+  opt->template_area_evolution = sp_smap_alloc(2);
+  sp_smap_insert(opt->template_area_evolution,0,1.0);
+  sp_smap_insert(opt->template_area_evolution,5000,1.0);
   opt->save_remote_files = 0;
 }
 
@@ -511,6 +515,13 @@ real get_phases_blur_radius(Options * opts){
   if(opts->iterations_to_min_phases_blur){
     a = (3.0*opts->cur_iteration/opts->iterations_to_min_phases_blur)*(3.0*opts->cur_iteration/opts->iterations_to_min_phases_blur)*0.5;
     return (opts->phases_max_blur_radius-opts->phases_min_blur_radius)*exp(-a)+opts->phases_min_blur_radius;
+  }
+  return 0;    
+}
+
+real get_template_area(Options * opts){
+  if(opts->template_area_evolution){
+    return bezier_map_interpolation(opts->template_area_evolution,opts->cur_iteration);
   }
   return 0;    
 }

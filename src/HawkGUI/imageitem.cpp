@@ -276,7 +276,6 @@ void ImageItem::setLogScale(bool on){
 }
 
 bool ImageItem::logScale(){
-  colormap_flags &= ~(SpColormapLogScale);
   if(colormap_flags & SpColormapLogScale){
     return true;
   }

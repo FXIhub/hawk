@@ -231,6 +231,9 @@ void complete_reconstruction_clean(Image * amp, Image * initial_support, Image *
   if(opts->support_update_algorithm == DECREASING_AREA){
     sup_alg = sp_support_area_alloc(opts->iterations,opts->support_blur_evolution,opts->object_area_evolution);
   }
+  if (opts->support_update_algorithm == TEMPLATE_AREA){
+    sup_alg = sp_support_template_alloc(opts->iterations,opts->init_support,opts->template_blur_radius,opts->template_area_evolution);
+  }
   if(!alg || !sup_alg){
     hawk_fatal("Algorithm is NULL!\nBlame the programmer!");
   }
@@ -295,7 +298,8 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
 
   if((get_algorithm(opts,&log) == HIO || get_algorithm(opts,&log) == RAAR || get_algorithm(opts,&log) == DIFF_MAP) &&
      (opts->support_update_algorithm == FIXED ||
-      opts->support_update_algorithm == DECREASING_AREA) && opts->support_image_averaging == 1){ 
+      opts->support_update_algorithm == DECREASING_AREA||
+      opts->support_update_algorithm == TEMPLATE_AREA) && opts->support_image_averaging == 1){ 
     /* use new libspimage backend */
     return complete_reconstruction_clean(amp,initial_support,exp_sigma,
 				  opts,dir);
@@ -417,15 +421,19 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
       sp_image_free(prev_support);
       prev_support = sp_image_duplicate(support,SP_COPY_DATA|SP_COPY_MASK);
       sp_image_free(support);
-      support_threshold = get_support_level(real_space_sum,&support_size,radius,&log,opts);
-      log.threshold = support_threshold;
-      if(support_threshold > 0){
-	support =  get_updated_support(real_space_sum,support_threshold, radius,opts);
-      }else{
-	if(opts->support_update_algorithm == REAL_ERROR_CAPPED){
-	  exit(0);
+      if (opts->support_update_algorithm == TEMPLATE_AREA) {
+	support = get_support_from_initial_support(opts);
+      } else {
+	support_threshold = get_support_level(real_space_sum,&support_size,radius,&log,opts);
+	log.threshold = support_threshold;
+	if(support_threshold > 0){
+	  support =  get_updated_support(real_space_sum,support_threshold, radius,opts);
 	}else{
-	  abort();
+	  if(opts->support_update_algorithm == REAL_ERROR_CAPPED){
+	    exit(0);
+	  }else{
+	    abort();
+	  }
 	}
       }
       if(opts->filter_intensities){

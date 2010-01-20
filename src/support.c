@@ -52,6 +52,47 @@ Image * get_updated_support(Image * input, real level , real radius, Options * o
   return res;
 }
 
+Image * get_support_from_initial_support(Options * opts) {
+  int i;
+  real level;
+
+  Image * initial = sp_image_duplicate(opts->init_support,SP_COPY_DATA|SP_COPY_MASK);
+  const int i_max = sp_image_size(initial);
+
+  for (i = 0; i < i_max; i++) {
+    if (sp_real(initial->image->data[i]) != 0.0 ||
+	sp_imag(initial->image->data[i]) != 0.0) {
+      initial->image->data[i] = sp_cinit(1.0,0.0);
+    }
+  }
+  Image *blured = gaussian_blur(initial,opts->template_blur_radius);
+  sp_image_image_to_image(blured,initial);
+
+  qsort(blured->image->data,sp_c3matrix_size(blured->image),sizeof(Complex),descend_real_compare);
+  /* the level is always a fraction of the maximum value so we divide by the maximum (data[0]) */
+  level = sp_cabs(blured->image->data[(int)(sp_image_size(blured)*get_object_area(opts))])/sp_cabs(blured->image->data[0]);
+  sp_image_free(blured);
+
+  for (i = 0; i < i_max; i++) {
+    if (sp_real(initial->image->data[i]) > level) {
+      initial->image->data[i] = sp_cinit(1.0,0.0);
+      initial->mask->data[i] = 1;
+    } else {
+      initial->image->data[i] = sp_cinit(0.0,0.0);
+      initial->mask->data[i] = 0;
+    }
+  }
+
+  if(opts->support_mask){
+    sp_image_add(initial,opts->support_mask);
+  }
+  for(i = 0;i<sp_c3matrix_size(initial->image);i++){
+    if(sp_cabs(initial->image->data[i])){
+      initial->image->data[i] = sp_cinit(1,0);
+    }
+  }
+  return initial;
+}
 
 Image * get_support_from_patterson(Image * input, Options * opts){
   long long i;

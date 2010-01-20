@@ -126,6 +126,13 @@ static int depends_on_support_algorithm_with_area(const Options * opt){
   return 0;
 }
 
+static int depends_on_support_algorithm_with_template(const Options * opt) {
+  if (opt->support_update_algorithm == TEMPLATE_AREA) {
+    return 1;
+  }
+  return 0;
+}
+
 static int depends_on_support_algorithm_with_changing_area(const Options * opt){  
   if(opt->support_update_algorithm == DECREASING_AREA ||
      opt->support_update_algorithm == COMPLEX_DECREASING_AREA){
@@ -1845,8 +1852,8 @@ VariableMetadata variable_metadata[201] = {
     .id = Id_Support_Update_Algorithm,
     .parent = &(variable_metadata[30]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
-    .list_valid_values = {FIXED,STEPPED,REAL_ERROR_CAPPED,REAL_ERROR_ADAPTATIVE,CONSTANT_AREA,DECREASING_AREA,COMPLEX_DECREASING_AREA,0},
-    .list_valid_names = {"threshold","stepped","real_error_capped","real_error_adaptative","constant_area","decreasing_area","complex_decreasing_area",0},
+    .list_valid_values = {FIXED,STEPPED,REAL_ERROR_CAPPED,REAL_ERROR_ADAPTATIVE,CONSTANT_AREA,DECREASING_AREA,COMPLEX_DECREASING_AREA,TEMPLATE_AREA,0},
+    .list_valid_names = {"threshold","stepped","real_error_capped","real_error_adaptative","constant_area","decreasing_area","complex_decreasing_area","template_area",0},
     .variable_address = &(global_options.support_update_algorithm),
     .dependencies = NULL,
     .reserved = NULL
@@ -1933,14 +1940,41 @@ VariableMetadata variable_metadata[201] = {
     .documentation = "If on also save files on the remote host. Otherwise they will just be sent to the local host.",
     .dependencies = NULL,
     .reserved = NULL
+  },
+  {
+    .variable_name = "template_blur_radius",
+    .display_name = "Template blur radius",
+    .variable_type = Type_Real,
+    .id = Id_Template_Blur_Radius,
+    .parent = &(variable_metadata[30]),
+    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
+    .list_valid_values = {0},
+    .list_valid_names = {0},
+    .variable_address = &(global_options.template_blur_radius),
+    .documentation = "Ammount of blur applied to the initial support before calculating the template support",
+    .dependencies = depends_on_support_algorithm_with_template,
+    .reserved = NULL
+  },
+  {
+    .variable_name = "template_area",
+    .display_name = "Template Area",
+    .variable_type = Type_Map_Real,
+    .id = Id_Template_Area,
+    .parent = &(variable_metadata[30]),
+    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
+    .list_valid_values = {0},
+    .list_valid_names = {0},
+    .variable_address = &(global_options.template_area_evolution),
+    .documentation = "Support area as a ratio to the area of the initial support.",
+    .dependencies = depends_on_support_algorithm_with_template,
+    .reserved = NULL
   }
-
 
 };
 
 
 /* Don't forget to update this one!! */
-const int number_of_global_options = 134;
+const int number_of_global_options = 136; //134 before implementing template
 
 
 int get_list_value_from_list_name(VariableMetadata * md,char * name){

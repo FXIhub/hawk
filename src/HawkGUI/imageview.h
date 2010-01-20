@@ -64,6 +64,8 @@ class ImageView: public QGraphicsView
   void translateItems(QPointF mov);
   void setPreserveShift(bool on);
   bool preservesShift() const;
+  void setPreserveLog(bool on);
+  bool preservesLog() const;
   virtual void saveImage();
   void emitImageItemChanged(ImageItem * item);
   void setSelectedImage(ImageItem * item);
@@ -109,6 +111,7 @@ class ImageView: public QGraphicsView
   QString currentIteration;
   ImageViewPanel * panel;
   bool preserveShift;
+  bool preserveLog;
   bool _backgroundDraggable;
 };
 
