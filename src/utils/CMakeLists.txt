@@ -81,6 +81,7 @@ ADD_EXECUTABLE(stitch_images stitch_images.c ../geometry_constraints.c)
 ADD_EXECUTABLE(xcam_denoise xcam_denoise.c ../xcam.c)
 ADD_EXECUTABLE(image_edit image_edit.c)
 ADD_EXECUTABLE(pnccd_split pnccd_split.c)
+ADD_EXECUTABLE(pnccd_integrate pnccd_integrate.c)
 
 #IF(CUDA_FOUND)
 #CUDA_ADD_EXECUTABLE(enhance_reflections enhance_reflections.c enhance_reflections.cu)
@@ -147,6 +148,7 @@ TARGET_LINK_LIBRARIES(stitch_images ${LIBRARY_LIST} ${GSL_LIBRARIES})
 TARGET_LINK_LIBRARIES(xcam_denoise ${LIBRARY_LIST})
 TARGET_LINK_LIBRARIES(image_edit ${LIBRARY_LIST})
 TARGET_LINK_LIBRARIES(pnccd_split ${LIBRARY_LIST})
+TARGET_LINK_LIBRARIES(pnccd_integrate ${LIBRARY_LIST})
 #TARGET_LINK_LIBRARIES(enhance_reflections ${LIBRARY_LIST})
 
 SET_TARGET_PROPERTIES(analyse_mask PROPERTIES
