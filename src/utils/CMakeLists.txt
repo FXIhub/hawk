@@ -66,6 +66,7 @@ ADD_EXECUTABLE(in_plane_common_lines in_plane_common_lines.c)
 if(GSL_FOUND)
   ADD_EXECUTABLE(circular_averaging circular_averaging.c)
   ADD_EXECUTABLE(recover_shanon_mpi2 recover_shanon_mpi2.c)
+  ADD_EXECUTABLE(common_mode_removal common_mode_removal.c)
 endif(GSL_FOUND)
 
 #IF(MATHEVAL_FOUND)
@@ -80,6 +81,7 @@ ADD_EXECUTABLE(stitch_images stitch_images.c ../geometry_constraints.c)
 ADD_EXECUTABLE(xcam_denoise xcam_denoise.c ../xcam.c)
 ADD_EXECUTABLE(image_edit image_edit.c)
 ADD_EXECUTABLE(pnccd_split pnccd_split.c)
+ADD_EXECUTABLE(pnccd_integrate pnccd_integrate.c)
 
 #IF(CUDA_FOUND)
 #CUDA_ADD_EXECUTABLE(enhance_reflections enhance_reflections.c enhance_reflections.cu)
@@ -138,6 +140,7 @@ TARGET_LINK_LIBRARIES(in_plane_common_lines ${LIBRARY_LIST})
 if(GSL_FOUND)
   TARGET_LINK_LIBRARIES(circular_averaging ${LIBRARY_LIST} ${GSL_LIBRARIES})
   TARGET_LINK_LIBRARIES(recover_shanon_mpi2 ${LIBRARY_LIST} ${GSL_LIBRARIES})
+  TARGET_LINK_LIBRARIES(common_mode_removal ${LIBRARY_LIST} ${GSL_LIBRARIES})
 endif(GSL_FOUND)
 TARGET_LINK_LIBRARIES(localized_blur ${LIBRARY_LIST})
 TARGET_LINK_LIBRARIES(read_metadata ${LIBRARY_LIST})
@@ -145,13 +148,14 @@ TARGET_LINK_LIBRARIES(stitch_images ${LIBRARY_LIST} ${GSL_LIBRARIES})
 TARGET_LINK_LIBRARIES(xcam_denoise ${LIBRARY_LIST})
 TARGET_LINK_LIBRARIES(image_edit ${LIBRARY_LIST})
 TARGET_LINK_LIBRARIES(pnccd_split ${LIBRARY_LIST})
+TARGET_LINK_LIBRARIES(pnccd_integrate ${LIBRARY_LIST})
 #TARGET_LINK_LIBRARIES(enhance_reflections ${LIBRARY_LIST})
 
 SET_TARGET_PROPERTIES(analyse_mask PROPERTIES
   INSTALL_NAME_DIR "@loader_path/../lib"
   )
 
-LIST(APPEND BINS tiff2h5 image_to_vtk gif2h5image image_to_png png_to_image tiff2png autocorrelate prtf denoise background_subtract propagate matrix2image rs_r_factor average_h5 r_factor shell_plot separate_channel fft_bench manual_merge image_fft spot_integrate image_to_reflections multi_shot_exposure localized_blur analyse_mask image_superimpose image_gaussian_filter xcam_denoise stitch_images image_edit)
+LIST(APPEND BINS tiff2h5 image_to_vtk gif2h5image image_to_png png_to_image tiff2png autocorrelate prtf denoise background_subtract propagate matrix2image rs_r_factor average_h5 r_factor shell_plot separate_channel fft_bench manual_merge image_fft spot_integrate image_to_reflections multi_shot_exposure localized_blur analyse_mask image_superimpose image_gaussian_filter xcam_denoise stitch_images image_edit pnccd_split)
 # combine_phases_and_amplitudes)
 
 INSTALL(TARGETS ${BINS}
