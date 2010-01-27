@@ -159,7 +159,7 @@ void phase_smoothening_iteration(Image * real_in, Options * opts, Log * log){
     sp_real(out->image->data[i]) /= amps[i];
     sp_imag(out->image->data[i]) /= amps[i];
   }
-  Image * tmp = gaussian_blur(out,radius);
+  Image * tmp = sp_gaussian_blur(out,radius);
   sp_image_free(out);
   for(i = 0;i<sp_image_size(tmp);i++){
     sp_real(real_in->image->data[i]) = sp_real(tmp->image->data[i])*amps[i];
