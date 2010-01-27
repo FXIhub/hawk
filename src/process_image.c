@@ -193,7 +193,7 @@ real max_square_edge(Image * in, int x1, int y1, int x2, int y2){
 Image * limit_sampling(Image * img, real oversampling_factor, real cutoff){
   /* The space limiting criteria will be everything 10x smaller than the patterson cutoff */
   /* I'm gonna take the patterson of a blurred version of the diffraction pattern due to "hot pixels" and "blue spots" */
-  Image * blur_pat = sp_image_patterson(gaussian_blur(img,5));
+  Image * blur_pat = sp_image_patterson(sp_gaussian_blur(img,5));
   Image * pat = sp_image_patterson(img);
   Image * resampled;
   Image * s_pat;

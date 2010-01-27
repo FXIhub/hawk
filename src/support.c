@@ -21,7 +21,7 @@ Image * get_updated_support(Image * input, real level , real radius, Options * o
   if(opts->support_update_algorithm != COMPLEX_DECREASING_AREA){
     sp_image_dephase(t);
   }
-  res = gaussian_blur(t, radius);
+  res = sp_gaussian_blur(t, radius);
   hawk_image_write(res,"support_blur2.vtk",0);
   sp_image_free(t);
   sp_image_dephase(res);
@@ -132,7 +132,7 @@ Image * get_support_from_patterson(Image * input, Options * opts){
   hawk_image_write(patterson,buffer,0);
 
   if(opts->patterson_blur_radius){
-    tmp_img = gaussian_blur(patterson,opts->patterson_blur_radius);
+    tmp_img = sp_gaussian_blur(patterson,opts->patterson_blur_radius);
     sp_image_free(patterson);
     patterson = tmp_img;
   }
@@ -197,11 +197,11 @@ Image * get_filtered_support(Image * input, real level , real radius, Options * 
   real avg_int = 0;
   Image * res;
   Image * running_average;
-  res = gaussian_blur(input, radius);
+  res = sp_gaussian_blur(input, radius);
   if(sp_image_z(res) == 1){
-    running_average = square_blur(res, radius, SP_2D);
+    running_average = sp_square_blur(res, radius, SP_2D);
   }else{
-    running_average = square_blur(res, radius, SP_3D);
+    running_average = sp_square_blur(res, radius, SP_3D);
   }
   Image * absolute_error = sp_image_duplicate(input,SP_COPY_DATA|SP_COPY_MASK);
   Image * variance;
@@ -214,17 +214,17 @@ Image * get_filtered_support(Image * input, real level , real radius, Options * 
     sp_imag(absolute_error->image->data[i]) = 0;
   }
   if(sp_image_z(absolute_error) == 1){
-    variance = square_blur(absolute_error,radius,SP_2D);
+    variance = sp_square_blur(absolute_error,radius,SP_2D);
   }else{
-    variance = square_blur(absolute_error,radius,SP_3D);
+    variance = sp_square_blur(absolute_error,radius,SP_3D);
   }
   hawk_image_write(variance,"variance.vtk",0);
   hawk_image_write(running_average,"r_avg.vtk",0);
   
   sp_image_dephase(res);
-/*  mask = gaussian_blur(previous_support, radius/3);
+/*  mask = sp_gaussian_blur(previous_support, radius/3);
   sp_image_dephase(mask);
-  patterson_mask = gaussian_blur(patterson, radius);
+  patterson_mask = sp_gaussian_blur(patterson, radius);
   sp_image_dephase(patterson_mask);*/
 
   for(i = 0;i<sp_c3matrix_size(res->image);i++){
@@ -314,7 +314,7 @@ real get_support_level(Image * input, real * previous_size , real radius, Log * 
 
     reduction = 1-(real_error_threshold-log->Ereal)/10.0;
 
-    res = gaussian_blur(input, radius);
+    res = sp_gaussian_blur(input, radius);
     sp_image_dephase(res);
     
     for(i = 0;i<sp_c3matrix_size(res->image);i++){
@@ -340,7 +340,7 @@ real get_support_level(Image * input, real * previous_size , real radius, Log * 
     /* Keeps a constant area for the support */    
     Image * t = sp_image_duplicate(input,SP_COPY_DATA);
     sp_image_dephase(t);
-    res = gaussian_blur(t, radius);
+    res = sp_gaussian_blur(t, radius);
     sp_image_free(t);
     qsort(res->image->data,sp_c3matrix_size(res->image),sizeof(Complex),descend_complex_compare);
     /* the level is always a fraction of the maximum value so we divide by the maximum (data[0]) */
@@ -353,7 +353,7 @@ real get_support_level(Image * input, real * previous_size , real radius, Log * 
     if(opts->support_update_algorithm == DECREASING_AREA){
       sp_image_dephase(t);
     }
-    res = gaussian_blur(t, radius);
+    res = sp_gaussian_blur(t, radius);
     sp_image_free(t);
     qsort(res->image->data,sp_c3matrix_size(res->image),sizeof(Complex),descend_complex_compare);
     /* the level is always a fraction of the maximum value so we divide by the maximum (data[0]) */
@@ -382,7 +382,7 @@ real get_patterson_level(Image * input, real radius, Options * opts){
   }else if(opts->patterson_level_algorithm == CONSTANT_AREA){
     /* Keeps a constant area for the support */    
     if(radius){
-      res = gaussian_blur(input, radius);
+      res = sp_gaussian_blur(input, radius);
     }else{
       res = sp_image_duplicate(input,SP_COPY_DATA|SP_COPY_MASK);
     }
@@ -445,7 +445,7 @@ void filter_intensities_with_support(Image * amplitudes, Image * real_space_gues
     }
   }
   /*  Lets blur it a bit to prevent hard edge effects */ 
-  Image * tmp = gaussian_blur(support_ac,3);
+  Image * tmp = sp_gaussian_blur(support_ac,3);
   sp_image_free(support_ac);
   support_ac = tmp;
   //  hawk_image_write(support_ac,"support_ac.h5",0);

@@ -404,7 +404,7 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
 
     if(opts->image_blur_period && opts->cur_iteration%opts->image_blur_period == opts->image_blur_period-1){
       sp_image_free(real_in);
-      real_in = gaussian_blur(real_space,opts->image_blur_radius);
+      real_in = sp_gaussian_blur(real_space,opts->image_blur_radius);
       sp_image_memcpy(real_space,real_in);
     }
 
