@@ -80,6 +80,9 @@ void OptionsTree::createGUI(){
     if(variable_metadata[i].variable_properties & advanced){	
       advancedOptions.append(nameItem);
     }
+    if(variable_metadata[i].variable_properties & experimental){	
+      experimentalOptions.append(nameItem);
+    }
     allOptions.append(nameItem);
     defaultOptions.append(nameItem->clone());
   }
@@ -93,18 +96,21 @@ void OptionsTree::createGUI(){
   QGridLayout *layout = new QGridLayout;
   layout->addWidget(tree, 0, 0,1,3);
   
-  QCheckBox * advancedButton = new QCheckBox(tr("Advanced"),this);
-  showAdvancedOptionsToggled = false;
+  showOptionsCombo = new QComboBox(this);
+  showOptionsCombo->setToolTip("Change the type of options you want to configure");
+  showOptionsCombo->addItem("Basic");
+  showOptionsCombo->addItem("Advanced");
+  showOptionsCombo->addItem("Experimental");
   QPushButton * saveOptionsButton = new QPushButton(QIcon(":images/config_save.png"),tr("Save"),this);
   QPushButton * loadOptionsButton = new QPushButton(QIcon(":images/config_open.png"),tr("Load"),this);
   QPushButton * resetOptionButton = new QPushButton("Reset Option",this);
   QPushButton * resetAllOptionsButton = new QPushButton("Reset All",this);
   connect(saveOptionsButton, SIGNAL(clicked()), this, SLOT(saveOptions()));
   connect(loadOptionsButton, SIGNAL(clicked()), this, SLOT(loadOptions()));
-  connect(advancedButton, SIGNAL(toggled(bool)), this, SLOT(showAdvancedOptions(bool)));
+  connect(showOptionsCombo,SIGNAL(currentIndexChanged(int)),this,SLOT(rebuildTree()));
   connect(resetOptionButton, SIGNAL(clicked()), this, SLOT(resetSelectedOption()));
   connect(resetAllOptionsButton, SIGNAL(clicked()), this, SLOT(resetAllOptions()));
-  layout->addWidget(advancedButton, 1, 0);
+  layout->addWidget(showOptionsCombo, 1, 0);
   layout->addWidget(saveOptionsButton, 1, 1);
   layout->addWidget(loadOptionsButton, 1, 2);
   layout->addWidget(resetOptionButton, 2, 0);
@@ -120,7 +126,7 @@ void OptionsTree::createGUI(){
 }
 
 void OptionsTree::showAdvancedOptions(bool show){
-  showAdvancedOptionsToggled = show;
+  //  showAdvancedOptionsToggled = show;
   rebuildTree();
 }
 
@@ -187,7 +193,12 @@ void OptionsTree::rebuildTree(){
 	hidden_flag = 1;
       }
     }
-    if(vm->variable_properties & advanced && showAdvancedOptionsToggled == false){
+    if((vm->variable_properties & advanced) && showOptionsCombo->currentIndex() < 1){
+      //    if(vm->variable_properties & advanced && showAdvancedOptionsToggled == false){
+      hidden_flag = 1;
+    }
+    if((vm->variable_properties & experimental) && showOptionsCombo->currentIndex() < 2){
+      //    if(vm->variable_properties & experimental){
       hidden_flag = 1;
     }
     if(hidden_flag){

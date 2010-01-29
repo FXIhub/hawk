@@ -7,7 +7,7 @@
 
 
 class ComboBoxDelegate;
-
+class QComboBox;
 
 class OptionsTree : public QWidget
 {
@@ -31,7 +31,8 @@ private:
     QList<QTreeWidgetItem *>allOptions;
     QList<QTreeWidgetItem *>defaultOptions;
     QList<QTreeWidgetItem *>advancedOptions;
-    bool showAdvancedOptionsToggled;
+    QList<QTreeWidgetItem *>experimentalOptions;
+    QComboBox * showOptionsCombo;
     QTreeWidget * tree;
     ComboBoxDelegate * delegate;
 };
