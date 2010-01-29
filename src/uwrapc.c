@@ -299,6 +299,9 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
     /* use new libspimage backend */
     return complete_reconstruction_clean(amp,initial_support,exp_sigma,
 				  opts,dir);
+  }else if(sp_cuda_get_device_type() == SpCUDAHardwareDevice  ||
+	   sp_cuda_get_device_type() == SpCUDAEmulatedDevice){
+    hawk_warning("Cannot use CUDA for this particular configuration.");
   }
 
 
