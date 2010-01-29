@@ -163,6 +163,7 @@ void set_defaults(Options * opt){
   sp_smap_insert(opt->phases_blur_evolution,0,0);
   sp_smap_insert(opt->phases_blur_evolution,5000,0);
   opt->save_remote_files = 0;
+  opt->debug_level = 0;
 }
 
 void read_options_file(const char * filename){

@@ -1933,6 +1933,20 @@ VariableMetadata variable_metadata[201] = {
     .documentation = "If on also save files on the remote host. Otherwise they will just be sent to the local host.",
     .dependencies = NULL,
     .reserved = NULL
+  },
+  {
+    .variable_name = "debug_level",
+    .display_name = "Debug Level",
+    .variable_type = Type_Int,
+    .id = Id_Debug_Level,
+    .parent = &(variable_metadata[0]),
+    .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun|advanced,
+    .list_valid_values = {0},
+    .list_valid_names = {0},
+    .variable_address = &(global_options.debug_level),
+    .documentation = "Sets the amount of debug output. At the moment 0 means no output and any positive value means debug output, but this will likely change in the future.",
+    .dependencies = NULL,
+    .reserved = NULL
   }
 
 
@@ -1940,7 +1954,7 @@ VariableMetadata variable_metadata[201] = {
 
 
 /* Don't forget to update this one!! */
-const int number_of_global_options = 134;
+const int number_of_global_options = 135;
 
 
 int get_list_value_from_list_name(VariableMetadata * md,char * name){

@@ -685,18 +685,20 @@ void init_reconstruction(Options * opts){
 /*  if(opts->rescale_amplitudes){
     rescale_image(opts->amplitudes);
   }*/
-  char buffer[OPTION_STRING_SIZE*2+1];
-  strcpy(buffer,opts->work_dir);
-  strcat(buffer,"/");
-  strcat(buffer,"diffraction.vtk");
+  if(opts->debug_level > 0){
+    char buffer[OPTION_STRING_SIZE*2+1];
+    strcpy(buffer,opts->work_dir);
+    strcat(buffer,"/");
+    strcat(buffer,"diffraction.vtk");
+    
+    hawk_image_write(opts->amplitudes,buffer,0);
+    
+    strcpy(buffer,opts->work_dir);
+    strcat(buffer,"/");
+    strcat(buffer,"debug_diffraction.h5");
   
-  hawk_image_write(opts->amplitudes,buffer,0);
-
-  strcpy(buffer,opts->work_dir);
-  strcat(buffer,"/");
-  strcat(buffer,"debug_diffraction.h5");
-  
-  hawk_image_write(opts->amplitudes,buffer,0);
+    hawk_image_write(opts->amplitudes,buffer,0);
+  }
 
   if(!opts->init_support_filename[0]){
     opts->init_support = get_support_from_patterson(opts->amplitudes,opts);
