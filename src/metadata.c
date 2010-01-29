@@ -182,7 +182,7 @@ VariableMetadata variable_metadata[201] = {
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.diffraction_filename),
-    .documentation = "The input h5 file that contains the experimental diffraction amplitudes (not the intensities), with the center determined and with the quadrants shifted.",
+    .documentation = "The input h5 file that contains the experimental diffraction amplitudes(not intensities), with the center determined.",
     .dependencies = NULL,
     .reserved = NULL
   },
@@ -1765,8 +1765,8 @@ VariableMetadata variable_metadata[201] = {
     .reserved = NULL
   },
   {
-    .variable_name = "amplitudes_file",
-    .display_name = "Amplitudes File",
+    .variable_name = "intensities_file",
+    .display_name = "Intensities File",
     .variable_type = Type_Existing_Filename,
     .id = Id_Diffraction_Filename,
     .parent = &(variable_metadata[1]),
@@ -1774,7 +1774,7 @@ VariableMetadata variable_metadata[201] = {
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.diffraction_filename),
-    .documentation = "The input h5 file that contains the experimental diffraction amplitudes (not the intensities), with the center determined and with the quadrants shifted.",
+    .documentation = "The input h5 file that contains the experimental diffraction intensities, with the center determined.",
     .dependencies = depends_on_no_realspace_image_file,
     .reserved = NULL
   },

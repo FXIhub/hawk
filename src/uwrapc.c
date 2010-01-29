@@ -143,7 +143,7 @@ void harmonize_sizes(Options * opts){
   int i;
   Image * exp;
   Image * tmp;
-  exp = opts->diffraction;
+  exp = opts->amplitudes;
   tmp = opts->support_mask;
   if(tmp &&
      (sp_c3matrix_x(tmp->image) != sp_c3matrix_x(exp->image) ||
@@ -666,11 +666,15 @@ void init_reconstruction(Options * opts){
     sp_image_dephase(opts->diffraction);
   }
   if(opts->diffraction){
-    opts->amplitudes = sp_image_duplicate(opts->diffraction,SP_COPY_DATA|SP_COPY_MASK);
+    if(opts->diffraction->shifted == 0){
+      opts->amplitudes = sp_image_shift(opts->diffraction);
+    }else{
+      opts->amplitudes = sp_image_duplicate(opts->diffraction,SP_COPY_DATA|SP_COPY_MASK);
+    }
     sp_image_dephase(opts->diffraction);
     sp_image_to_amplitudes(opts->amplitudes);
   }else{
-    hawk_fatal("Error: either real_image_file or amplitudes_file have to be specified!");
+    hawk_fatal("Error: either real_image_file or intensities_file have to be specified!");
   }
   if(sp_image_z(opts->amplitudes) == 1){
     sp_image_high_pass(opts->amplitudes, opts->beamstop, SP_2D);
@@ -685,6 +689,12 @@ void init_reconstruction(Options * opts){
   strcpy(buffer,opts->work_dir);
   strcat(buffer,"/");
   strcat(buffer,"diffraction.vtk");
+  
+  hawk_image_write(opts->amplitudes,buffer,0);
+
+  strcpy(buffer,opts->work_dir);
+  strcat(buffer,"/");
+  strcat(buffer,"debug_diffraction.h5");
   
   hawk_image_write(opts->amplitudes,buffer,0);
 
