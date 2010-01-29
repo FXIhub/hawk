@@ -1345,7 +1345,7 @@ void Look::recalculateImage(int i){
       if(temporary){
 	sp_image_free(temporary);
       }
-      temporary = gaussian_blur(sorted_autocorrelation_cache,supportBlur[current]);
+      temporary = sp_gaussian_blur(sorted_autocorrelation_cache,supportBlur[current]);
       sp_image_free(sorted_autocorrelation_cache);
       sorted_autocorrelation_cache = temporary;
       temporary = NULL;

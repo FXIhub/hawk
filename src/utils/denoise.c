@@ -126,7 +126,7 @@ int main(int argc, char ** argv){
     exit(0);
   }
   in = sp_image_read(argv[1],0);
-  out = gaussian_blur(in,3);
+  out = sp_gaussian_blur(in,3);
 
 
 
