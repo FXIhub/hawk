@@ -1948,6 +1948,22 @@ VariableMetadata variable_metadata[201] = {
     .dependencies = NULL,
     .reserved = NULL
   }
+  /*,
+  {
+    .variable_name = "initial_support",
+    .display_name = "Input Support",
+    .variable_type = Type_Group,
+    .id = Id_Initial_Support_Group,
+    .parent = &(variable_metadata[0]),
+    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
+    .list_valid_values = {0},
+    .list_valid_names = {0},
+    .variable_address = NULL,
+    .documentation = "The group that contains the options relevant to the starting support.",
+    .dependencies = NULL,
+    .reserved = NULL
+  }
+  */
 
 
 };
