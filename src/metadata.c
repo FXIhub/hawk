@@ -11,8 +11,9 @@ static int depends_on_diff_map(const Options * opt){
 }
 
 
-static int depends_on_initial_guess_from_autocorrelation(const Options * opt){
-  if(opt->image_guess_filename[0] == 0){
+
+static int depends_on_initial_support_from_autocorrelation(const Options * opt){
+  if(opt->init_support_filename[0] == 0){
     return 1;
   }
   return 0;
@@ -40,7 +41,7 @@ static int depends_on_no_realspace_image_file(const Options * opt){
 }
 
 static int depends_on_patterson_algorithm_fixed(const Options * opt){  
-  if(depends_on_initial_guess_from_autocorrelation(opt)
+  if(depends_on_initial_support_from_autocorrelation(opt)
      && opt->patterson_level_algorithm == FIXED){
     return 1;
   }
@@ -48,7 +49,7 @@ static int depends_on_patterson_algorithm_fixed(const Options * opt){
 }
 
 static int depends_on_patterson_algorithm_constant_area(const Options * opt){  
-  if(depends_on_initial_guess_from_autocorrelation(opt)
+  if(depends_on_initial_support_from_autocorrelation(opt)
      && opt->patterson_level_algorithm == CONSTANT_AREA){
     return 1;
   }
@@ -187,19 +188,16 @@ VariableMetadata variable_metadata[201] = {
     .reserved = NULL
   },
   {
-    .variable_name = "max_blur_radius",
-    .display_name = "Max Blur Radius",
-    .variable_type = Type_Real,
-    .id = Id_Max_Blur_Radius,
+    .variable_name = "initial_support",
+    .display_name = "Initial Support",
+    .variable_type = Type_Group,
+    .id = Id_Initial_Support_Group,
     .parent = &(variable_metadata[0]),
-    .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun|deprecated,
+    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.max_blur_radius),
-    .documentation = "Correponds to 3 times the maximum standard deviation of the gaussian blur applied before doing any further processing to the real space image guess."
-    " The real space image guess is then passed on to the rest of the computing chain that calculates the new support."
-    " This option only affects the support calculation routines."
-    " Typically there is a maximum and a minimum blur radius which the program smoothly interpolates in between during the first iterations_to_min_blur iterations",
+    .variable_address = NULL,
+    .documentation = "The group that contains the options relevant to the starting support.",
     .dependencies = NULL,
     .reserved = NULL
   },
@@ -1123,10 +1121,10 @@ VariableMetadata variable_metadata[201] = {
   },
   {
     .variable_name = "initial_support",
-    .display_name = "Initial Support",
+    .display_name = "Initial Support Image",
     .variable_type = Type_Existing_Filename,
     .id = Id_Init_Support_Filename,
-    .parent = &(variable_metadata[30]),
+    .parent = &(variable_metadata[3]),
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
@@ -1279,12 +1277,12 @@ VariableMetadata variable_metadata[201] = {
     .list_valid_names = {"support","zero","random"},
     .variable_address = &(global_options.rand_phases),
     .documentation = "The initial image is created by taking the back fourier transform of the amplitudes using random phases",
-    .dependencies = depends_on_initial_guess_from_autocorrelation,
+    .dependencies = depends_on_no_realspace_image_file,
     .reserved = NULL
   },
   {
     .variable_name = "random_initial_intensities",
-    .display_name = "Random Initial Intensities",
+    .display_name = "Random Initial Values",
     .variable_type = Type_Bool,
     .id = Id_Rand_Intensities,
     .parent = &(variable_metadata[82]),
@@ -1293,7 +1291,7 @@ VariableMetadata variable_metadata[201] = {
     .list_valid_names = {0},
     .variable_address = &(global_options.rand_intensities),
     .documentation = "Each pixel of the initial image is replaced by a complex random number.",
-    .dependencies = depends_on_initial_guess_from_autocorrelation,
+    .dependencies = depends_on_no_realspace_image_file,
     .reserved = NULL
   },
 
@@ -1444,13 +1442,13 @@ VariableMetadata variable_metadata[201] = {
     .display_name = "Autocorrelation Selection Algorithm",
     .variable_type = Type_MultipleChoice,
     .id = Id_Patterson_Level_Algorithm,
-    .parent = &(variable_metadata[82]),
+    .parent = &(variable_metadata[3]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {FIXED,CONSTANT_AREA,0},
     .list_valid_names = {"threshold","area",0},
     .variable_address = &(global_options.patterson_level_algorithm),
     .documentation = "Defines the algorithm that is used to determine the boundaries of the autocorrelation.",
-    .dependencies = depends_on_initial_guess_from_autocorrelation,
+    .dependencies = depends_on_initial_support_from_autocorrelation,
     .reserved = NULL
   },
   {
@@ -1784,7 +1782,7 @@ VariableMetadata variable_metadata[201] = {
     .display_name = "Autocorrelation Threshold",
     .variable_type = Type_Real,
     .id = Id_Init_Level,
-    .parent = &(variable_metadata[82]),
+    .parent = &(variable_metadata[3]),
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
@@ -1920,6 +1918,7 @@ VariableMetadata variable_metadata[201] = {
     .dependencies = NULL,
     .reserved = NULL
   },
+  /* 130 */
   {
     .variable_name = "save_remote_files",
     .display_name = "Save Remote Files",
@@ -1947,30 +1946,29 @@ VariableMetadata variable_metadata[201] = {
     .documentation = "Sets the amount of debug output. At the moment 0 means no output and any positive value means debug output, but this will likely change in the future.",
     .dependencies = NULL,
     .reserved = NULL
-  }
-  /*,
+  },
   {
-    .variable_name = "initial_support",
-    .display_name = "Input Support",
-    .variable_type = Type_Group,
-    .id = Id_Initial_Support_Group,
+    .variable_name = "max_blur_radius",
+    .display_name = "Max Blur Radius",
+    .variable_type = Type_Real,
+    .id = Id_Max_Blur_Radius,
     .parent = &(variable_metadata[0]),
-    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
+    .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun|deprecated,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = NULL,
-    .documentation = "The group that contains the options relevant to the starting support.",
+    .variable_address = &(global_options.max_blur_radius),
+    .documentation = "Correponds to 3 times the maximum standard deviation of the gaussian blur applied before doing any further processing to the real space image guess."
+    " The real space image guess is then passed on to the rest of the computing chain that calculates the new support."
+    " This option only affects the support calculation routines."
+    " Typically there is a maximum and a minimum blur radius which the program smoothly interpolates in between during the first iterations_to_min_blur iterations",
     .dependencies = NULL,
     .reserved = NULL
   }
-  */
-
-
 };
 
 
 /* Don't forget to update this one!! */
-const int number_of_global_options = 135;
+const int number_of_global_options = 133;
 
 
 int get_list_value_from_list_name(VariableMetadata * md,char * name){
