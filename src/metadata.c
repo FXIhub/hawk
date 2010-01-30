@@ -261,8 +261,8 @@ VariableMetadata variable_metadata[201] = {
     .reserved = NULL
   },
   {
-    .variable_name = "initial_support",
-    .display_name = "Initial Support",
+    .variable_name = "initial_support_image",
+    .display_name = "Initial Support Image",
     .variable_type = Type_Existing_Filename,
     .id = Id_Init_Support_Filename,
     .parent = &(variable_metadata[0]),
@@ -1120,7 +1120,7 @@ VariableMetadata variable_metadata[201] = {
     .reserved = NULL
   },
   {
-    .variable_name = "initial_support",
+    .variable_name = "initial_support_image",
     .display_name = "Initial Support Image",
     .variable_type = Type_Existing_Filename,
     .id = Id_Init_Support_Filename,
