@@ -68,9 +68,9 @@ set(GUI_MOC_HDRS
   hawkgui.h 
   imagedisplay.h 
   imageview.h 
-  ${LOCAL_INCLUDE}/HawkGUI/treedelegate.h 
+  treedelegate.h 
   ${LOCAL_INCLUDE}/HawkGUI/mapeditordialog.h 
-  ${LOCAL_INCLUDE}/HawkGUI/optionstree.h 
+  optionstree.h 
   ${LOCAL_INCLUDE}/HawkGUI/processdisplay.h 
   processcontrol.h 
   outputwatcher.h 

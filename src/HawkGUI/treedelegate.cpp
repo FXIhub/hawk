@@ -49,9 +49,10 @@
 #include "mapeditordialog.h"
 
 
-ComboBoxDelegate::ComboBoxDelegate(QObject *parent)
+ComboBoxDelegate::ComboBoxDelegate(QObject *parent,QComboBox * showOptionsCombo)
     : QItemDelegate(parent)
 {
+  m_showOptionsCombo = showOptionsCombo;
 }
 
 QWidget *ComboBoxDelegate::createEditor(QWidget *parent,
@@ -70,7 +71,11 @@ QWidget *ComboBoxDelegate::createEditor(QWidget *parent,
     editor->setMinimumHeight(editor->sizeHint().height());
     QStringList options;
     for(int i = 0;md->list_valid_names[i] != 0;i++){
-      options << md->list_valid_names[i];
+      if((md->list_properties[i] & (advanced|experimental)) == 0 || 
+	 md->list_properties[i] & advanced && m_showOptionsCombo->currentIndex() > 0 ||
+	 md->list_properties[i] & experimental && m_showOptionsCombo->currentIndex() > 1){
+	options << md->list_valid_names[i];
+      }
     }
     for (int i = 0; i < options.size(); ++i) {
       editor->insertItem(i, options[i]);

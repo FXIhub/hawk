@@ -1817,6 +1817,7 @@ VariableMetadata variable_metadata[201] = {
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {HIO,RAAR,DIFF_MAP,HPR,CFLIP,RAAR_CFLIP,ESPRESSO,HAAR,SO2D,RAAR_PROJ,HIO_PROJ,0},
     .list_valid_names = {"hio","raar","diff_map","hpr","cflip","raar_cflip","espresso","haar","so2d","raar_proj", "hio_proj",0},
+    .list_properties = {0,0,0,experimental,experimental,experimental,experimental,experimental,experimental,experimental,experimental,0},
     .variable_address = &(global_options.algorithm),
     .documentation = "The type of algorithm used during the phase retrieval. A few other options then depend on the type of algorithm chosen.",
     .dependencies = NULL,

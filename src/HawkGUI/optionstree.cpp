@@ -23,8 +23,9 @@ void OptionsTree::setDefaultOptions(Options * opt){
 }
 
 void OptionsTree::createGUI(){
+  showOptionsCombo = new QComboBox(this);
   tree = new QTreeWidget(this);
-  delegate = new ComboBoxDelegate(tree);
+  delegate = new ComboBoxDelegate(tree,showOptionsCombo);
   connect(delegate,SIGNAL(modelDataUpdated()),this,SLOT(rebuildTree()));
   tree->setEditTriggers(QAbstractItemView::AllEditTriggers);
   tree->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -96,7 +97,6 @@ void OptionsTree::createGUI(){
   QGridLayout *layout = new QGridLayout;
   layout->addWidget(tree, 0, 0,1,3);
   
-  showOptionsCombo = new QComboBox(this);
   showOptionsCombo->setToolTip("Change the type of options you want to configure");
   showOptionsCombo->addItem("Basic");
   showOptionsCombo->addItem("Advanced");
