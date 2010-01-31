@@ -109,6 +109,8 @@ EditorTools::EditorTools(EditorWorkspace * parent)
   fillEmpty->setIcon(QIcon(":images/magic.png"));
   fillEmpty->setToolTip(tr("Fill data on the missing regions by interpolation"));
   fillEmpty->setIconSize(iconSize);
+  fillEmpty->setCheckable(true);
+  fillEmpty->setAutoExclusive(true);
   connect(fillEmpty,SIGNAL(clicked(bool)),this,SLOT(onFillEmptyClicked()));
   layout->addWidget(fillEmpty,1,4);
 
