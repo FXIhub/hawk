@@ -164,6 +164,7 @@ ImageViewPanel::ImageViewPanel(ImageView * parent)
 
   connect(imageView,SIGNAL(imageLoaded(QString)),this,SLOT(onImageLoaded()));
   setSticky(false);
+  setCursor(QCursor(Qt::ArrowCursor));
 }
 
 

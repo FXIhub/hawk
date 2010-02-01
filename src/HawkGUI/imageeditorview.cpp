@@ -159,7 +159,7 @@ void ImageEditorView::mouseReleaseEvent( QMouseEvent *  event){
       }
     }
   }else if(mode == EditorSelectionMode){
-    EditorTools * tools = editorWorkspace->editorTools();
+    EditorTools * tools = editorTools();
     if(tools->selectionMode() == EditorTools::SelectionUnite){
       /*select region in image coordinates */
       if(selectedImage() && selectedImage()->getImage()){
@@ -191,6 +191,8 @@ void ImageEditorView::mouseReleaseEvent( QMouseEvent *  event){
       new LineOutPlot(selectedImage()->getImage(),line);
     }
     scene()->update();
+  }else if(mode == EditorEditMaskMode){
+    editMaskAt(event->pos());
   }
 }
 
@@ -270,7 +272,9 @@ void ImageEditorView::setBullseyeMode(bool on){
       selectedImage()->setCenterIndicatorsVisible(true);
     }
   }else{
-    selectedImage()->setCenterIndicatorsVisible(false);
+    if(selectedImage()){
+      selectedImage()->setCenterIndicatorsVisible(false);
+    }
   }
 }
 
@@ -289,7 +293,7 @@ void ImageEditorView::setDefaultMode(){
   setCursor(QCursor(Qt::ArrowCursor));
 }
 
-EditorMode ImageEditorView::editorMode(){
+ImageEditorView::EditorMode ImageEditorView::editorMode(){
   return mode;
 }
 
@@ -319,10 +323,11 @@ Image * ImageEditorView::getBlurKernel(){
 
 void ImageEditorView::generateDropCursor(){
   dropCursor = QPixmap((dropBrushRadius+dropBlurRadius)*2+2,(dropBrushRadius+dropBlurRadius)*2+2);
+  dropCursor.fill(Qt::transparent);
+
   QPainter painter(&dropCursor);
   painter.setRenderHints(QPainter::Antialiasing);
-  dropCursor.fill(Qt::transparent);
-  painter.drawEllipse(QRect(1+dropBlurRadius,1+dropBlurRadius,(dropBrushRadius)*2,(dropBrushRadius)*2));
+    painter.drawEllipse(QRect(1+dropBlurRadius,1+dropBlurRadius,(dropBrushRadius)*2,(dropBrushRadius)*2));
   painter.setPen(Qt::DashLine);
   painter.drawEllipse(QRect(1,1,(dropBrushRadius+dropBlurRadius)*2,(dropBrushRadius+dropBlurRadius)*2));
   if(editorMode() == EditorBlurMode){
@@ -396,7 +401,7 @@ QRegion ImageEditorView::selectedRegion(){
 }
 
 void ImageEditorView::selectRegion(QRegion region){
-  EditorTools * tools = editorWorkspace->editorTools();
+  EditorTools * tools = editorTools();
   if(tools->selectionMode() == EditorTools::SelectionUnite){
     _selectedRegion += region;
   }
@@ -405,5 +410,58 @@ void ImageEditorView::selectRegion(QRegion region){
   }
   if(tools->selectionMode() == EditorTools::SelectionSubtract){
     _selectedRegion -= region;
+  }
+}
+
+
+void ImageEditorView::setEditorMode(ImageEditorView::EditorMode new_mode){
+  mode = new_mode;
+  if(mode == EditorEditMaskMode){
+    setCursor(QCursor(editMaskCursor));
+  }
+}
+
+EditorTools * ImageEditorView::editorTools(){
+  if(editorWorkspace){
+    return editorWorkspace->editorTools();
+  }
+  return NULL;
+}
+
+
+void ImageEditorView::editMaskAt(QPoint pos){
+  qDebug("Here");
+  int radius = editorTools()->editMaskBrushRadius();
+  /* Blur the area around the press */
+  QList<QGraphicsItem *> it = items(pos);
+  for(int i = 0; i < it.size(); i++){
+    ImageItem * ii = qgraphicsitem_cast<ImageItem *>(it.at(i));
+    if(ii){
+      QList<QPoint> points = ii->imagePointsAround(mapToScene(pos),radius);
+      if(editorTools()->editMaskMode() == EditorTools::IncludeInMask){
+	for(int i = 0;i<points.size();i++){
+	  ii->setImageMask(points.at(i),1);
+	}
+      }else if(editorTools()->editMaskMode() ==  EditorTools::ExcludeFromMask){
+	for(int i = 0;i<points.size();i++){
+	  ii->setImageMask(points.at(i),0);
+	}
+      }
+      ii->updateImage();
+      emit imageItemChanged(ii);  
+    }
+  }
+}
+
+
+void ImageEditorView::updateEditMaskCursor(int radius){
+  editMaskCursor = QPixmap((radius)*2+2,(radius)*2+2);
+  editMaskCursor.fill(Qt::transparent);
+
+  QPainter painter(&editMaskCursor);
+  painter.setRenderHints(QPainter::Antialiasing);
+  painter.drawEllipse(QRect(1,1,(radius)*2,(radius)*2));
+  if(editorMode() == EditorEditMaskMode){
+    setCursor(QCursor(editMaskCursor));
   }
 }

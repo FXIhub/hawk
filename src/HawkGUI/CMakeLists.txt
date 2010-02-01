@@ -80,12 +80,12 @@ set(GUI_MOC_HDRS
   ${LOCAL_INCLUDE}/HawkGUI/imageloader.h
   ${LOCAL_INCLUDE}/HawkGUI/imageviewpanel.h
   ${LOCAL_INCLUDE}/HawkGUI/editorworkspace.h
-  ${LOCAL_INCLUDE}/HawkGUI/imageeditorview.h
+  imageeditorview.h
   ${LOCAL_INCLUDE}/HawkGUI/lineoutplot.h
-  ${LOCAL_INCLUDE}/HawkGUI/editortools.h
+  editortools.h
   ${LOCAL_INCLUDE}/HawkGUI/stitcherworkspace.h
   ${LOCAL_INCLUDE}/HawkGUI/stitcherview.h
-  ${LOCAL_INCLUDE}/HawkGUI/imageitem.h
+  imageitem.h
   ${LOCAL_INCLUDE}/HawkGUI/addconstraintdialog.h
   ${LOCAL_INCLUDE}/HawkGUI/addvariabledialog.h
   ${LOCAL_INCLUDE}/communicator.h

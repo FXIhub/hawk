@@ -21,7 +21,7 @@ EditorTools::EditorTools(EditorWorkspace * parent)
   pointer->setIconSize(iconSize);
   pointer->setCheckable(true);
   pointer->setAutoExclusive(true);
-  if(editor->editorView()->editorMode() == EditorDefaultMode){
+  if(editor->editorView()->editorMode() == ImageEditorView::EditorDefaultMode){
     pointer->setChecked(true);
   }
   connect(pointer,SIGNAL(clicked(bool)),this,SLOT(onPointerClicked()));
@@ -40,7 +40,7 @@ EditorTools::EditorTools(EditorWorkspace * parent)
   drop->setIconSize(iconSize);
   drop->setCheckable(true);
   drop->setAutoExclusive(true);
-  if(editor->editorView()->editorMode() == EditorBlurMode){
+  if(editor->editorView()->editorMode() == ImageEditorView::EditorBlurMode){
     drop->setChecked(true);
   }
   connect(drop,SIGNAL(clicked(bool)),this,SLOT(onDropClicked()));
@@ -51,12 +51,26 @@ EditorTools::EditorTools(EditorWorkspace * parent)
   mathEdit->setIconSize(iconSize);
   connect(mathEdit,SIGNAL(clicked(bool)),this,SLOT(onMathEdit()));
   layout->addWidget(mathEdit,0,3);
-  QToolButton * filter = new QToolButton(this);
+
+
+  QToolButton * editMask = new QToolButton(this);
+  editMask->setIcon(QIcon(":images/mask_happy.png"));
+  editMask->setToolTip(tr("Edit image mask"));
+  editMask->setIconSize(iconSize);
+  editMask->setCheckable(true);
+  editMask->setAutoExclusive(true);
+  connect(editMask,SIGNAL(clicked(bool)),this,SLOT(onEditMaskClicked()));
+  layout->addWidget(editMask,0,4);
+
+  /*  QToolButton * filter = new QToolButton(this);
   filter->setIcon(QIcon(":images/optical_filter.png"));
   filter->setToolTip(tr("Filter Image"));
   filter->setIconSize(iconSize);
+  filter->setCheckable(true);
+  filter->setAutoExclusive(true);
   connect(filter,SIGNAL(clicked(bool)),this,SLOT(onFilterClicked()));
-  layout->addWidget(filter,0,4);
+  layout->addWidget(filter,0,4);*/
+
   QToolButton * selection = new QToolButton(this);
   selection->setIcon(QIcon(":images/selection.png"));
   selection->setToolTip(tr("Select image section"));
@@ -121,7 +135,6 @@ EditorTools::EditorTools(EditorWorkspace * parent)
   connect(crop,SIGNAL(clicked(bool)),this,SLOT(onCropClicked()));
   layout->addWidget(crop,1,5);
 
-
   //  connect(mathEdit,SIGNAL(clicked(bool)),this,SLOT(onMathEdit()));
   
   toolOptions = new QWidget(this);
@@ -155,6 +168,40 @@ EditorTools::EditorTools(EditorWorkspace * parent)
   grid->addWidget(spinBox,1,1);
   toolOptionsLayout->addWidget(dropToolOptions);
 
+  
+  editMaskToolOptions = new QWidget(toolOptions);
+  grid = new QGridLayout(editMaskToolOptions);
+  editMaskToolOptions->setLayout(grid);
+  QLabel * label = new QLabel(tr("Mode:"),editMaskToolOptions);
+  label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
+  grid->addWidget(label,0,0);
+  editMaskIncludeButton = new QToolButton(editMaskToolOptions);
+  editMaskIncludeButton->setIcon(QIcon(":images/mask_happy.png"));
+  editMaskIncludeButton->setToolTip("Include in mask");
+  editMaskIncludeButton->setCheckable(true);
+  editMaskIncludeButton->setChecked(true);
+  editMaskIncludeButton->setAutoExclusive(true);
+  grid->addWidget(editMaskIncludeButton,0,1);
+  editMaskExcludeButton = new QToolButton(editMaskToolOptions);
+  editMaskExcludeButton->setIcon(QIcon(":images/mask_sad.png"));
+  editMaskExcludeButton->setToolTip("Exclude from mask");
+  editMaskExcludeButton->setCheckable(true);
+  editMaskExcludeButton->setAutoExclusive(true);
+  grid->addWidget(editMaskExcludeButton,0,2);
+  label = new QLabel(tr("Brush Radius:"),editMaskToolOptions);
+  label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
+  grid->addWidget(label,1,0);
+
+  m_editMaskBrushRadius =  new QSpinBox(editMaskToolOptions);
+  connect(m_editMaskBrushRadius,SIGNAL(valueChanged(int)),editor->editorView(),SLOT(updateEditMaskCursor(int)));
+  m_editMaskBrushRadius->setValue(5);
+
+  
+  grid->addWidget(m_editMaskBrushRadius,1,1,1,2);
+  grid->setRowStretch(5,100);
+  grid->setColumnStretch(5,100);
+  toolOptionsLayout->addWidget(editMaskToolOptions);
+
   filterToolOptions = new QWidget(toolOptions);
   grid = new QGridLayout(filterToolOptions);
   filterToolOptions->setLayout(grid);
@@ -172,7 +219,7 @@ EditorTools::EditorTools(EditorWorkspace * parent)
   selectionToolOptions = new QWidget(toolOptions);
   grid = new QGridLayout(selectionToolOptions);
   selectionToolOptions->setLayout(grid);
-  QLabel * label = new QLabel("Mode:",selectionToolOptions);
+  label = new QLabel("Mode:",selectionToolOptions);
   label->setAlignment(Qt::AlignRight);
   grid->addWidget(label,0,0);
   QToolButton *  button = new QToolButton(selectionToolOptions);
@@ -422,3 +469,26 @@ void EditorTools::onCropClicked(){
     editor->editorView()->selectedImage()->cropImage(editor->editorView()->selectedRegion());
   }  
 }
+
+void EditorTools::onEditMaskClicked(){
+  editor->editorView()->setEditorMode(ImageEditorView::EditorEditMaskMode);
+  toolOptionsLayout->setCurrentWidget(editMaskToolOptions);
+  toolOptions->show();
+}
+
+EditorTools::EditMaskMode EditorTools::editMaskMode(){
+  if(toolOptionsLayout->currentWidget() == editMaskToolOptions){
+    if(editMaskIncludeButton->isChecked()){
+      return IncludeInMask;
+    }else if(editMaskExcludeButton->isChecked()){
+      return ExcludeFromMask;
+    }
+  }
+  return Inactive;
+}
+
+int EditorTools::editMaskBrushRadius(){
+  return m_editMaskBrushRadius->value();
+}
+
+

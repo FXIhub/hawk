@@ -9,8 +9,9 @@
 class QMouseEvent;
 class QRubberBand;
 class EditorWorkspace;
+class EditorTools;
 
-typedef enum{EditorDefaultMode = 0,EditorBlurMode = 1,EditorSelectionMode,EditorLineoutMode,EditorBullseyeMode} EditorMode;
+
 
 class ImageEditorView: public ImageView
 {
@@ -25,6 +26,9 @@ class ImageEditorView: public ImageView
   Q_PROPERTY(double HawkImage_wavelength READ wavelength WRITE setWavelength)
     public:
   ImageEditorView(QWidget * parent,EditorWorkspace * workspace);
+
+  enum EditorMode{EditorDefaultMode = 0,EditorBlurMode = 1,EditorSelectionMode,EditorLineoutMode,EditorBullseyeMode,EditorEditMaskMode};
+
   void setImageCenter(QPointF center);
   QPointF imageCenter() const;
   QSize imageSize() const;
@@ -52,8 +56,10 @@ class ImageEditorView: public ImageView
   void setSelectionMode();
   void setLineoutMode();
   void setDefaultMode();
+  void setEditorMode(EditorMode mode);
   void setDropBrushRadius(double d);
   void setDropBlurRadius(double d);
+  void updateEditMaskCursor(int radius);
  protected:
   void paintEvent(QPaintEvent * e);
   void mouseReleaseEvent(QMouseEvent * e);
@@ -61,12 +67,15 @@ class ImageEditorView: public ImageView
   void mouseMoveEvent(QMouseEvent * e);
   void wheelEvent(QWheelEvent * e);
  private:
+  void editMaskAt(QPoint pos);
+  EditorTools * editorTools();
   Image * getBlurKernel();
   void generateDropCursor();
   EditorMode mode;
   double dropBrushRadius;
   double dropBlurRadius;
   QPixmap dropCursor;
+  QPixmap editMaskCursor;
   QRubberBand * rubberBand;
   QPoint rubberBandOrigin;  
   QPoint lineOutOrigin;
