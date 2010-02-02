@@ -949,3 +949,17 @@ void ImageItem::setMaskFromImage(const Image * mask){
     }
   }
 }
+
+void ImageItem::invertMask(){
+  if(!image){
+    return;
+  }
+  addToStack(InvertMask);
+  for(int i = 0;i<sp_image_size(image);i++){
+    if(image->mask->data[i] == 0){
+      image->mask->data[i] = 1;
+    }else{
+      image->mask->data[i] = 0;
+    }
+  }
+}

@@ -46,6 +46,7 @@ class EditorTools: public QGroupBox
   void onInterpolateEmptyClicked();
   void onCropClicked();
   void onLoadMaskFromFile();
+  void onInvertMask();
  private:
   EditorWorkspace * editor;
   QWidget * dropToolOptions;

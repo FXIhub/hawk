@@ -176,37 +176,45 @@ EditorTools::EditorTools(EditorWorkspace * parent)
   editMaskToolOptions->setLayout(grid);
   QLabel * label = new QLabel(tr("Mode:"),editMaskToolOptions);
   label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
-  grid->addWidget(label,0,0);
+  grid->addWidget(label,1,1);
   editMaskIncludeButton = new QToolButton(editMaskToolOptions);
   editMaskIncludeButton->setIcon(QIcon(":images/mask_happy.png"));
   editMaskIncludeButton->setToolTip("Include in mask");
   editMaskIncludeButton->setCheckable(true);
   editMaskIncludeButton->setChecked(true);
   editMaskIncludeButton->setAutoExclusive(true);
-  grid->addWidget(editMaskIncludeButton,0,1);
+  grid->addWidget(editMaskIncludeButton,1,2);
   editMaskExcludeButton = new QToolButton(editMaskToolOptions);
   editMaskExcludeButton->setIcon(QIcon(":images/mask_sad.png"));
   editMaskExcludeButton->setToolTip("Exclude from mask");
   editMaskExcludeButton->setCheckable(true);
   editMaskExcludeButton->setAutoExclusive(true);
-  grid->addWidget(editMaskExcludeButton,0,2);
+  grid->addWidget(editMaskExcludeButton,1,3);
   label = new QLabel(tr("Brush Radius:"),editMaskToolOptions);
   label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
-  grid->addWidget(label,1,0);
+  grid->addWidget(label,2,1);
 
   m_editMaskBrushRadius =  new QSpinBox(editMaskToolOptions);
   connect(m_editMaskBrushRadius,SIGNAL(valueChanged(int)),editor->editorView(),SLOT(updateEditMaskCursor(int)));
   m_editMaskBrushRadius->setValue(5);
   
-  grid->addWidget(m_editMaskBrushRadius,1,1,1,2);
+  grid->addWidget(m_editMaskBrushRadius,2,2,1,2);
 
   QPushButton * loadMaskFromFile = new QPushButton("Load mask from file",
 						   editMaskToolOptions);
   loadMaskFromFile->setToolTip("Load a mask from a black and white png file.\n"
 			       "White is included in the mask and black excluded.");
   connect(loadMaskFromFile,SIGNAL(clicked()),this,SLOT(onLoadMaskFromFile()));
-  grid->addWidget(loadMaskFromFile,2,0,1,3);
+  grid->addWidget(loadMaskFromFile,3,1,1,3);
 
+  QPushButton * invertMask = new QPushButton("Invert mask",
+					     editMaskToolOptions);
+  invertMask->setToolTip("Inverts the mask of the current image.");
+  connect(invertMask,SIGNAL(clicked()),this,SLOT(onInvertMask()));
+  grid->addWidget(invertMask,4,1,1,3);
+
+  grid->setRowStretch(0,100);
+  grid->setColumnStretch(0,100);
   grid->setRowStretch(5,100);
   grid->setColumnStretch(5,100);
   toolOptionsLayout->addWidget(editMaskToolOptions);
@@ -342,7 +350,6 @@ void EditorTools::onLineoutClicked(){
 }
 
 void EditorTools::onMathEdit(){
-  qDebug("here");
   bool ok;
   QString text = QInputDialog::getText(this, tr("Apply expression to image"),
 				       tr("\"A\" represents the current image. Examples:\n"
@@ -524,4 +531,13 @@ void EditorTools::onLoadMaskFromFile(){
   }else{
     QMessageBox::information(this,"HawkGUI","No image is selected");
   }
+}
+
+void EditorTools::onInvertMask(){
+ if(!editor->editorView()->selectedImage()){
+   QMessageBox::information(this,"HawkGUI","No image is selected");
+   return;
+ }
+ editor->editorView()->selectedImage()->invertMask();
+ editor->editorView()->selectedImage()->updateImage();
 }

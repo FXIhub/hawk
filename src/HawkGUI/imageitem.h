@@ -121,13 +121,14 @@ class ImageItem: public QObject, public QGraphicsPixmapItem
   QTransform transformFromParameters();
   QList<QPoint> imagePointsAround(QPointF scenePos,int sceneRadius);
   void setMaskFromImage(const Image * mask);
+  void invertMask();
  private:
-  enum EditType{ImageSize,Phased,Shifted,Wavelength,DetectorDistance,PointConvolute,Scaled,PixelSize,ImageCenter,CheckPoint,ImageMask,MaskFromImage};
+  enum EditType{ImageSize,Phased,Shifted,Wavelength,DetectorDistance,PointConvolute,Scaled,PixelSize,ImageCenter,CheckPoint,ImageMask,MaskFromImage,InvertMask};
   struct EditStep{
     EditType type;
     QVector<QVariant> arguments;
   };
-  void addToStack(EditType type,QVariant arg1,QVariant arg2 = QVariant());
+  void addToStack(EditType type,QVariant arg1 = QVariant(),QVariant arg2 = QVariant());
   void applyEditStep(EditStep step);
   void repositionCenterIndicators();
   double overallScale() const;
