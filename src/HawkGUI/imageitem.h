@@ -120,8 +120,9 @@ class ImageItem: public QObject, public QGraphicsPixmapItem
   void moveBy(qreal dx, qreal dy);
   QTransform transformFromParameters();
   QList<QPoint> imagePointsAround(QPointF scenePos,int sceneRadius);
+  void setMaskFromImage(const Image * mask);
  private:
-  enum EditType{ImageSize,Phased,Shifted,Wavelength,DetectorDistance,PointConvolute,Scaled,PixelSize,ImageCenter,CheckPoint,ImageMask};
+  enum EditType{ImageSize,Phased,Shifted,Wavelength,DetectorDistance,PointConvolute,Scaled,PixelSize,ImageCenter,CheckPoint,ImageMask,MaskFromImage};
   struct EditStep{
     EditType type;
     QVector<QVariant> arguments;

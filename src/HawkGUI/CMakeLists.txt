@@ -81,7 +81,7 @@ set(GUI_MOC_HDRS
   ${LOCAL_INCLUDE}/HawkGUI/imageviewpanel.h
   ${LOCAL_INCLUDE}/HawkGUI/editorworkspace.h
   imageeditorview.h
-  ${LOCAL_INCLUDE}/HawkGUI/lineoutplot.h
+  lineoutplot.h
   editortools.h
   ${LOCAL_INCLUDE}/HawkGUI/stitcherworkspace.h
   ${LOCAL_INCLUDE}/HawkGUI/stitcherview.h

@@ -93,6 +93,7 @@ EditorTools::EditorTools(EditorWorkspace * parent)
   undo->setIcon(QIcon(":images/undo.png"));
   undo->setToolTip(tr("Undo last edit"));
   undo->setIconSize(iconSize);
+  undo->setEnabled(false);
   connect(undo,SIGNAL(clicked(bool)),this,SLOT(onUndoClicked()));
   layout->addWidget(undo,1,0);
 
@@ -100,6 +101,7 @@ EditorTools::EditorTools(EditorWorkspace * parent)
   redo->setIcon(QIcon(":images/redo.png"));
   redo->setToolTip(tr("Redo last undone edit"));
   redo->setIconSize(iconSize);
+  redo->setEnabled(false);
   connect(redo,SIGNAL(clicked(bool)),this,SLOT(onRedoClicked()));
   layout->addWidget(redo,1,1);
 
@@ -195,9 +197,16 @@ EditorTools::EditorTools(EditorWorkspace * parent)
   m_editMaskBrushRadius =  new QSpinBox(editMaskToolOptions);
   connect(m_editMaskBrushRadius,SIGNAL(valueChanged(int)),editor->editorView(),SLOT(updateEditMaskCursor(int)));
   m_editMaskBrushRadius->setValue(5);
-
   
   grid->addWidget(m_editMaskBrushRadius,1,1,1,2);
+
+  QPushButton * loadMaskFromFile = new QPushButton("Load mask from file",
+						   editMaskToolOptions);
+  loadMaskFromFile->setToolTip("Load a mask from a black and white png file.\n"
+			       "White is included in the mask and black excluded.");
+  connect(loadMaskFromFile,SIGNAL(clicked()),this,SLOT(onLoadMaskFromFile()));
+  grid->addWidget(loadMaskFromFile,2,0,1,3);
+
   grid->setRowStretch(5,100);
   grid->setColumnStretch(5,100);
   toolOptionsLayout->addWidget(editMaskToolOptions);
@@ -254,6 +263,7 @@ EditorTools::EditorTools(EditorWorkspace * parent)
   grid->addWidget(evalExpression,2,0,1,4);
   grid->setRowStretch(5,100);
   grid->setColumnStretch(5,100);
+  _selectionMode = SelectionSet;
   toolOptionsLayout->addWidget(selectionToolOptions);
 
   electronicsToolOptions = new QWidget(toolOptions);
@@ -492,3 +502,26 @@ int EditorTools::editMaskBrushRadius(){
 }
 
 
+void EditorTools::onLoadMaskFromFile(){
+  if(editor->editorView()->selectedImage()){
+    
+    QString file = QFileDialog::getOpenFileName(this, tr("Open Mask Image"),QString(),tr("Image Files (*.png)"));
+    if(file.isEmpty()){
+      return;
+    }
+    Image * mask = sp_image_read(file.toAscii().constData(),0);
+    if(!mask){
+      return;
+    }
+    const Image * img = editor->editorView()->selectedImage()->getImage();
+    if(sp_image_size(mask) != sp_image_size(img)){
+      QMessageBox::warning(this,"HawkGUI","Image sizes don't match");
+      sp_image_free(mask);
+      return;
+    }    
+    editor->editorView()->selectedImage()->setMaskFromImage(mask);
+    editor->editorView()->selectedImage()->updateImage();
+  }else{
+    QMessageBox::information(this,"HawkGUI","No image is selected");
+  }
+}

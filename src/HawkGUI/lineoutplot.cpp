@@ -7,13 +7,16 @@
 LineOutPlot::LineOutPlot(const Image * a, QLineF line)
   :QWidget(0)
 {
-  setLayout(new QGridLayout);
+  QGridLayout * grid = new QGridLayout;
+  setLayout(grid);
   image = a;
   npoints = 100;
   xData = (double *)malloc(sizeof(double)*npoints);
   yData = (double *)malloc(sizeof(double)*npoints);
   sampleImage(line);
-  plotLineOut();
+  QWidget * plot = plotLineOut();
+  grid->addWidget(plot,0,0);
+  grid->addWidget(new QLabel(QString("Length: %1 pixels\t Angle: %2 degrees").arg(line.length()).arg(line.angle()),this),1,0);
   resize(600,400);
   show();
 }
@@ -22,7 +25,7 @@ void LineOutPlot::sampleImage(QLineF line){
   for(int i = 0;i<npoints;i++){
     real x = line.x1() + i*(line.x2()-line.x1())/npoints;
     real y = line.y1() + i*(line.y2()-line.y1())/npoints;
-    xData[i] = i;
+    xData[i] = line.length()*i/npoints;
     if(sp_image_contains_coordinates(image,x,y,0)){
       yData[i] = sp_image_interp(image,x,y,0);
     }else{
@@ -31,7 +34,7 @@ void LineOutPlot::sampleImage(QLineF line){
   }
 }
 
-void LineOutPlot::plotLineOut(){
+QWidget * LineOutPlot::plotLineOut(){
   QwtPlot * plot = new QwtPlot(this);
   plot->setTitle("Image Line Out");
   plot->setAxisTitle(QwtPlot::yLeft, "Magnitude");
@@ -42,5 +45,6 @@ void LineOutPlot::plotLineOut(){
   curve->setPen(QPen(Qt::black));
   curve->attach(plot);
   curve->setRawData(xData,yData,npoints);
-  layout()->addWidget(plot);
+  plot->setCanvasBackground(Qt::white);
+  return plot;
 }

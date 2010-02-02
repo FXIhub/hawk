@@ -933,3 +933,19 @@ QList<QPoint> ImageItem::imagePointsAround(QPointF scenePos,int sceneRadius){
   }
   return ret;
 }
+
+void ImageItem::setMaskFromImage(const Image * mask){
+  if(!image){
+    return;
+  }
+  QVariant img_var;
+  qVariantSetValue(img_var,mask);
+  addToStack(MaskFromImage,img_var);
+  for(int i = 0;i<sp_image_size(mask);i++){
+    if(sp_real(mask->image->data[i]) == 0){
+      image->mask->data[i] = 0;
+    }else{
+      image->mask->data[i] = 1;
+    }
+  }
+}
