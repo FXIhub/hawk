@@ -9,11 +9,12 @@ int main(int argc, char ** argv){
   if(!a){
     sp_error_fatal("Error reading %s",argv[1]);
   }
-  if(sp_image_x(a) != 2048 || sp_image_y(a) != 1024){
-    sp_error_fatal("Expecting a 2048x1024 input image");
+  if(sp_image_x(a) % 1024 || sp_image_y(a) != 1024){
+    sp_error_fatal("Expecting a nframes*1024x1024 input image");
   }
+  int nframes = sp_image_x(a) / 1024;
   Image * out[2][2];
-  for(int frame = 0;frame<2;frame++){
+  for(int frame = 0;frame<nframes;frame++){
     for(int position = 0;position<2;position++){
       out[frame][position] = sp_image_alloc(1024,512,1);
       for(int x = 0;x<1024;x++){
@@ -33,13 +34,20 @@ int main(int argc, char ** argv){
       break;
     }
   }
-  sprintf(buffer,"%s_front_top.h5",basename);
-  sp_image_write(out[0][0],buffer,0);
-  sprintf(buffer,"%s_front_bottom.h5",basename);
-  sp_image_write(out[0][1],buffer,0);
-  sprintf(buffer,"%s_back_top.h5",basename);
-  sp_image_write(out[1][0],buffer,0);
-  sprintf(buffer,"%s_back_bottom.h5",basename);
-  sp_image_write(out[1][1],buffer,0);
+  if(nframes == 1){
+    sprintf(buffer,"%s_back_top.h5",basename);
+    sp_image_write(out[0][0],buffer,0);
+    sprintf(buffer,"%s_back_bottom.h5",basename);
+    sp_image_write(out[0][1],buffer,0);
+  }else if(nframes == 2){
+    sprintf(buffer,"%s_front_top.h5",basename);
+    sp_image_write(out[0][0],buffer,0);
+    sprintf(buffer,"%s_front_bottom.h5",basename);
+    sp_image_write(out[0][1],buffer,0);
+    sprintf(buffer,"%s_back_top.h5",basename);
+    sp_image_write(out[1][0],buffer,0);
+    sprintf(buffer,"%s_back_bottom.h5",basename);
+    sp_image_write(out[1][1],buffer,0);
+  }
   return 0;
 }

@@ -452,6 +452,7 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
       }
     }
     if(opts->cur_iteration%opts->output_period == opts->output_period-1){
+	
       if(real_in->num_dimensions == SP_2D){
 	sprintf(buffer,"real_space-%07d.png",opts->cur_iteration);
 	hawk_image_write(real_space,buffer,SpColormapJet);
@@ -460,25 +461,18 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
 	hawk_image_write(real_space,buffer,SpColormapWheel|SpColormapPhase);
 	sprintf(buffer,"support-%07d.png",opts->cur_iteration);
 	hawk_image_write(support,buffer,SpColormapGrayScale);
-	sprintf(buffer,"amplitudes-%07d.png",opts->cur_iteration);
-	hawk_image_write(amp,buffer,SpColormapJet);
-	
       }
       if(real_in->num_dimensions == SP_3D){
 	sprintf(buffer,"real_space-%07d.vtk",opts->cur_iteration);
 	hawk_image_write(real_space,buffer,0);
 	sprintf(buffer,"support-%07d.vtk",opts->cur_iteration);
 	hawk_image_write(support,buffer,0);
-	sprintf(buffer,"amplitudes-%07d.vtk",opts->cur_iteration);
-	hawk_image_write(amp,buffer,0);
       }
       sprintf(buffer,"real_space-%07d.h5",opts->cur_iteration);
       hawk_image_write(real_space,buffer,opts->output_precision);
       sprintf(buffer,"support-%07d.h5",opts->cur_iteration);
       hawk_image_write(support,buffer,opts->output_precision);
-      sprintf(buffer,"amplitudes-%07d.h5",opts->cur_iteration);
-      hawk_image_write(amp,buffer,0);
-	
+		
       tmp = sp_image_duplicate(real_space,SP_COPY_DATA|SP_COPY_MASK);
       for(i = 0;i<sp_c3matrix_size(tmp->image);i++){
 	if(sp_real(support->image->data[i])){

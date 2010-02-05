@@ -263,6 +263,12 @@ void ImageDisplay::displayMask(){
   }
 }
 
+void ImageDisplay::displayShadedMask(){
+  if(selected){
+    selected->setDisplay(SpColormapShadedMask);
+  }
+}
+
 void ImageDisplay::setColorGray(){
   if(selected){
     selected->setColormap(SpColormapGrayScale);

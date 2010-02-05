@@ -44,6 +44,7 @@ public slots:
   void displayAmplitudes();
   void displayPhases();
   void displayMask();
+  void displayShadedMask();
   void setDisplay(int);
   void setColorGray();
   void setColorJet();

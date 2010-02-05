@@ -216,14 +216,14 @@ int ImageItem::colormap(){
 void ImageItem::setDisplay(int display){
  // clear display bits
   if(image){
-    colormap_flags &= ~(SpColormapPhase|SpColormapMask);
+    colormap_flags &= ~(SpColormapPhase|SpColormapMask|SpColormapShadedMask);
     colormap_flags |= display;
     updateImage();
   }
 }
 
 int ImageItem::display(){
-  return colormap_flags & (SpColormapPhase|SpColormapMask);
+  return colormap_flags & (SpColormapPhase|SpColormapMask|SpColormapShadedMask);
 }
 
 void ImageItem::maxContrast(QRectF area){
