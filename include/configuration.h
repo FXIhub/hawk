@@ -56,14 +56,9 @@ typedef enum {Id_Diffraction_Filename=0,Id_Real_Image_Filename,Id_Max_Blur_Radiu
 }Variable_Id;
   
   
-<<<<<<< HEAD
-  typedef enum {isSettableBeforeRun = 1, isSettableDuringRun = 2, isGettableBeforeRun = 4,
-	      isGettableDuringRun = 8, isMandatory = 16, deprecated = 32,advanced = 64,withSpecialValue = 128} Variable_Properties;
-=======
 typedef enum {isSettableBeforeRun = 1, isSettableDuringRun = 2, isGettableBeforeRun = 4,
 	      isGettableDuringRun = 8, isMandatory = 16, deprecated = 32,advanced = 64,
 	      withSpecialValue = 128,experimental = 256} Variable_Properties;
->>>>>>> f10904f411aee73c041aa604a561f425fe92cade
 
 
 

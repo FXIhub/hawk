@@ -1851,14 +1851,9 @@ VariableMetadata variable_metadata[201] = {
     .id = Id_Support_Update_Algorithm,
     .parent = &(variable_metadata[30]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
-<<<<<<< HEAD
     .list_valid_values = {FIXED,STEPPED,REAL_ERROR_CAPPED,REAL_ERROR_ADAPTATIVE,CONSTANT_AREA,DECREASING_AREA,COMPLEX_DECREASING_AREA,TEMPLATE_AREA,0},
+    .list_properties = {0,experimental,experimental,experimental,experimental,0,experimental,experimental,0},
     .list_valid_names = {"threshold","stepped","real_error_capped","real_error_adaptative","constant_area","decreasing_area","complex_decreasing_area","template_area",0},
-=======
-    .list_valid_values = {FIXED,STEPPED,REAL_ERROR_CAPPED,REAL_ERROR_ADAPTATIVE,CONSTANT_AREA,DECREASING_AREA,COMPLEX_DECREASING_AREA,0},
-    .list_valid_names = {"threshold","stepped","real_error_capped","real_error_adaptative","constant_area","area","complex_decreasing_area",0},
-    .list_properties = {0,experimental,experimental,experimental,experimental,0,experimental,0},
->>>>>>> f10904f411aee73c041aa604a561f425fe92cade
     .variable_address = &(global_options.support_update_algorithm),
     .dependencies = NULL,
     .reserved = NULL
@@ -1948,7 +1943,6 @@ VariableMetadata variable_metadata[201] = {
     .reserved = NULL
   },
   {
-<<<<<<< HEAD
     .variable_name = "template_blur_radius",
     .display_name = "Template blur radius",
     .variable_type = Type_Real,
@@ -1975,9 +1969,8 @@ VariableMetadata variable_metadata[201] = {
     .documentation = "Support area as a ratio to the area of the initial support.",
     .dependencies = depends_on_support_algorithm_with_template,
     .reserved = NULL
-  }
-
-=======
+  },
+  {
     .variable_name = "debug_level",
     .display_name = "Debug Level",
     .variable_type = Type_Int,
@@ -2008,17 +2001,11 @@ VariableMetadata variable_metadata[201] = {
     .dependencies = NULL,
     .reserved = NULL
   }
->>>>>>> f10904f411aee73c041aa604a561f425fe92cade
 };
 
 
 /* Don't forget to update this one!! */
-<<<<<<< HEAD
-const int number_of_global_options = 136; //134 before implementing template
-=======
-const int number_of_global_options = 133;
->>>>>>> f10904f411aee73c041aa604a561f425fe92cade
-
+const int number_of_global_options = 135; //134 before implementing template
 
 int get_list_value_from_list_name(VariableMetadata * md,char * name){
   int i = 0;
