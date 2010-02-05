@@ -65,7 +65,7 @@ Image * get_support_from_initial_support(Options * opts) {
       initial->image->data[i] = sp_cinit(1.0,0.0);
     }
   }
-  Image *blured = gaussian_blur(initial,opts->template_blur_radius);
+  Image *blured = sp_gaussian_blur(initial,opts->template_blur_radius);
   sp_image_image_to_image(blured,initial);
 
   qsort(blured->image->data,sp_c3matrix_size(blured->image),sizeof(Complex),descend_real_compare);
