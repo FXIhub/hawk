@@ -63,6 +63,7 @@ ImageViewPanel::ImageViewPanel(ImageView * parent)
   displayCombo->addItem("Amplitudes",0);
   displayCombo->addItem("Phases",SpColormapPhase);
   displayCombo->addItem("Mask",SpColormapMask);
+  displayCombo->addItem("Shaded Mask",SpColormapShadedMask);
   displayCombo->view()->setAutoScrollMargin(0);
   displayCombo->view()->setAutoScroll(false);
   connect(displayCombo,SIGNAL(currentIndexChanged(int)),this,SLOT(onDisplayComboChanged(int)));
@@ -164,6 +165,7 @@ ImageViewPanel::ImageViewPanel(ImageView * parent)
 
   connect(imageView,SIGNAL(imageLoaded(QString)),this,SLOT(onImageLoaded()));
   setSticky(false);
+  setCursor(QCursor(Qt::ArrowCursor));
 }
 
 

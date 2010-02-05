@@ -12,7 +12,7 @@ class LineOutPlot: public QWidget
   LineOutPlot(const Image * a, QLineF line);
  private:
   void sampleImage(QLineF line);
-  void plotLineOut();
+  QWidget * plotLineOut();
   double * xData;
   double * yData;
   int npoints;

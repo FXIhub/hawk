@@ -11,8 +11,9 @@ static int depends_on_diff_map(const Options * opt){
 }
 
 
-static int depends_on_initial_guess_from_autocorrelation(const Options * opt){
-  if(opt->image_guess_filename[0] == 0){
+
+static int depends_on_initial_support_from_autocorrelation(const Options * opt){
+  if(opt->init_support_filename[0] == 0){
     return 1;
   }
   return 0;
@@ -40,7 +41,7 @@ static int depends_on_no_realspace_image_file(const Options * opt){
 }
 
 static int depends_on_patterson_algorithm_fixed(const Options * opt){  
-  if(depends_on_initial_guess_from_autocorrelation(opt)
+  if(depends_on_initial_support_from_autocorrelation(opt)
      && opt->patterson_level_algorithm == FIXED){
     return 1;
   }
@@ -48,7 +49,7 @@ static int depends_on_patterson_algorithm_fixed(const Options * opt){
 }
 
 static int depends_on_patterson_algorithm_constant_area(const Options * opt){  
-  if(depends_on_initial_guess_from_autocorrelation(opt)
+  if(depends_on_initial_support_from_autocorrelation(opt)
      && opt->patterson_level_algorithm == CONSTANT_AREA){
     return 1;
   }
@@ -189,24 +190,21 @@ VariableMetadata variable_metadata[201] = {
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.diffraction_filename),
-    .documentation = "The input h5 file that contains the experimental diffraction amplitudes (not the intensities), with the center determined and with the quadrants shifted.",
+    .documentation = "The input h5 file that contains the experimental diffraction amplitudes(not intensities), with the center determined.",
     .dependencies = NULL,
     .reserved = NULL
   },
   {
-    .variable_name = "max_blur_radius",
-    .display_name = "Max Blur Radius",
-    .variable_type = Type_Real,
-    .id = Id_Max_Blur_Radius,
+    .variable_name = "initial_support",
+    .display_name = "Initial Support",
+    .variable_type = Type_Group,
+    .id = Id_Initial_Support_Group,
     .parent = &(variable_metadata[0]),
-    .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun|deprecated,
+    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.max_blur_radius),
-    .documentation = "Correponds to 3 times the maximum standard deviation of the gaussian blur applied before doing any further processing to the real space image guess."
-    " The real space image guess is then passed on to the rest of the computing chain that calculates the new support."
-    " This option only affects the support calculation routines."
-    " Typically there is a maximum and a minimum blur radius which the program smoothly interpolates in between during the first iterations_to_min_blur iterations",
+    .variable_address = NULL,
+    .documentation = "The group that contains the options relevant to the starting support.",
     .dependencies = NULL,
     .reserved = NULL
   },
@@ -270,8 +268,8 @@ VariableMetadata variable_metadata[201] = {
     .reserved = NULL
   },
   {
-    .variable_name = "initial_support",
-    .display_name = "Initial Support",
+    .variable_name = "initial_support_image",
+    .display_name = "Initial Support Image",
     .variable_type = Type_Existing_Filename,
     .id = Id_Init_Support_Filename,
     .parent = &(variable_metadata[0]),
@@ -720,7 +718,7 @@ VariableMetadata variable_metadata[201] = {
     .variable_type = Type_Int,
     .id = Id_Nthreads,
     .parent = &(variable_metadata[0]),
-    .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
+    .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun|advanced,
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.nthreads),
@@ -770,7 +768,7 @@ VariableMetadata variable_metadata[201] = {
     .variable_type = Type_Int,
     .id = Id_Max_Iterations,
     .parent = &(variable_metadata[0]),
-    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun|withSpecialValue,
+    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun|withSpecialValue|advanced,
     .list_valid_values = {0,0},
     .list_valid_names = {"Infinity",0},
     .variable_address = &(global_options.max_iterations),
@@ -881,7 +879,7 @@ VariableMetadata variable_metadata[201] = {
     .variable_type = Type_Existing_Filename,
     .id = Id_Solution_File,
     .parent = &(variable_metadata[1]),
-    .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isSettableDuringRun|isGettableDuringRun,
+    .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isSettableDuringRun|isGettableDuringRun|experimental,
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.solution_filename),
@@ -1072,7 +1070,7 @@ VariableMetadata variable_metadata[201] = {
     .variable_type = Type_Real,
     .id = Id_Noise,
     .parent = &(variable_metadata[1]),
-    .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun|advanced|withSpecialValue,
+    .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun|experimental|withSpecialValue,
     .list_valid_values = {0,0},
     .list_valid_names = {"off",0},
     .variable_address = &(global_options.noise),
@@ -1086,7 +1084,7 @@ VariableMetadata variable_metadata[201] = {
     .variable_type = Type_Real,
     .id = Id_Beamstop,
     .parent = &(variable_metadata[1]),
-    .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun|advanced|withSpecialValue,
+    .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun|experimental|withSpecialValue,
     .list_valid_values = {0,0},
     .list_valid_names = {"off",0},
     .variable_address = &(global_options.beamstop),
@@ -1129,11 +1127,11 @@ VariableMetadata variable_metadata[201] = {
     .reserved = NULL
   },
   {
-    .variable_name = "initial_support",
-    .display_name = "Initial Support",
+    .variable_name = "initial_support_image",
+    .display_name = "Initial Support Image",
     .variable_type = Type_Existing_Filename,
     .id = Id_Init_Support_Filename,
-    .parent = &(variable_metadata[30]),
+    .parent = &(variable_metadata[3]),
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
@@ -1165,7 +1163,7 @@ VariableMetadata variable_metadata[201] = {
     .variable_type = Type_Bool,
     .id = Id_Adapt_Thres,
     .parent = &(variable_metadata[20]),
-    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun|advanced,
+    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun|experimental,
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.adapt_thres),
@@ -1222,7 +1220,7 @@ VariableMetadata variable_metadata[201] = {
     .variable_type = Type_Real,
     .id = Id_Exp_Sigma,
     .parent = &(variable_metadata[20]),
-    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun|advanced,
+    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun|experimental,
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.exp_sigma),
@@ -1286,12 +1284,12 @@ VariableMetadata variable_metadata[201] = {
     .list_valid_names = {"support","zero","random"},
     .variable_address = &(global_options.rand_phases),
     .documentation = "The initial image is created by taking the back fourier transform of the amplitudes using random phases",
-    .dependencies = depends_on_initial_guess_from_autocorrelation,
+    .dependencies = depends_on_no_realspace_image_file,
     .reserved = NULL
   },
   {
     .variable_name = "random_initial_intensities",
-    .display_name = "Random Initial Intensities",
+    .display_name = "Random Initial Values",
     .variable_type = Type_Bool,
     .id = Id_Rand_Intensities,
     .parent = &(variable_metadata[82]),
@@ -1300,7 +1298,7 @@ VariableMetadata variable_metadata[201] = {
     .list_valid_names = {0},
     .variable_address = &(global_options.rand_intensities),
     .documentation = "Each pixel of the initial image is replaced by a complex random number.",
-    .dependencies = depends_on_initial_guess_from_autocorrelation,
+    .dependencies = depends_on_no_realspace_image_file,
     .reserved = NULL
   },
 
@@ -1310,7 +1308,7 @@ VariableMetadata variable_metadata[201] = {
     .variable_type = Type_Real,
     .id = Id_Real_Error_Threshold,
     .parent = &(variable_metadata[30]),
-    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun|withSpecialValue,
+    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun|withSpecialValue|experimental,
     .list_valid_values = {-1,0},
     .list_valid_names = {"auto",0},
     .variable_address = &(global_options.real_error_threshold),
@@ -1324,7 +1322,7 @@ VariableMetadata variable_metadata[201] = {
     .variable_type = Type_Int,
     .id = Id_Error_Reduction_Iterations_After_Loop,
     .parent = &(variable_metadata[20]),
-    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun|advanced,
+    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun|experimental,
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.error_reduction_iterations_after_loop),
@@ -1338,7 +1336,7 @@ VariableMetadata variable_metadata[201] = {
     .variable_type = Type_Bool,
     .id = Id_Enforce_Positivity,
     .parent = &(variable_metadata[20]),
-    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun|advanced,
+    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.enforce_positivity),
@@ -1352,7 +1350,7 @@ VariableMetadata variable_metadata[201] = {
     .variable_type = Type_Bool,
     .id = Id_Enforce_Real,
     .parent = &(variable_metadata[20]),
-    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun|advanced,
+    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.enforce_real),
@@ -1367,7 +1365,7 @@ VariableMetadata variable_metadata[201] = {
     .variable_type = Type_Real,
     .id = Id_Charge_Flip_Sigma,
     .parent = &(variable_metadata[20]),
-    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
+    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun|experimental,
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.charge_flip_sigma),
@@ -1381,7 +1379,7 @@ VariableMetadata variable_metadata[201] = {
     .variable_type = Type_Real,
     .id = Id_Espresso_Tau,
     .parent = &(variable_metadata[20]),
-    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
+    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun|experimental,
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.espresso_tau),
@@ -1410,7 +1408,7 @@ VariableMetadata variable_metadata[201] = {
     .variable_type = Type_Bool,
     .id = Id_Rescale_Amplitudes,
     .parent = &(variable_metadata[82]),
-    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun|advanced,
+    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun|experimental,
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.rescale_amplitudes),
@@ -1424,7 +1422,7 @@ VariableMetadata variable_metadata[201] = {
     .variable_type = Type_Bool,
     .id = Id_Remove_Central_Pixel_phase,
     .parent = &(variable_metadata[20]),
-    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun|advanced,
+    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun|experimental,
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.remove_central_pixel_phase),
@@ -1451,13 +1449,13 @@ VariableMetadata variable_metadata[201] = {
     .display_name = "Autocorrelation Selection Algorithm",
     .variable_type = Type_MultipleChoice,
     .id = Id_Patterson_Level_Algorithm,
-    .parent = &(variable_metadata[82]),
+    .parent = &(variable_metadata[3]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {FIXED,CONSTANT_AREA,0},
     .list_valid_names = {"threshold","area",0},
     .variable_address = &(global_options.patterson_level_algorithm),
     .documentation = "Defines the algorithm that is used to determine the boundaries of the autocorrelation.",
-    .dependencies = depends_on_initial_guess_from_autocorrelation,
+    .dependencies = depends_on_initial_support_from_autocorrelation,
     .reserved = NULL
   },
   {
@@ -1494,7 +1492,7 @@ VariableMetadata variable_metadata[201] = {
     .variable_type = Type_Real,
     .id = Id_Patterson_Blur_Radius,
     .parent = &(variable_metadata[82]),
-    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun|withSpecialValue,
+    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun|advanced|withSpecialValue,
     .list_valid_values = {0,0},
     .list_valid_names = {"off",0},
     .variable_address = &(global_options.patterson_blur_radius),
@@ -1509,7 +1507,7 @@ VariableMetadata variable_metadata[201] = {
     .variable_type = Type_Real,
     .id = Id_Real_Error_Tolerance,
     .parent = &(variable_metadata[20]),
-    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun|advanced|withSpecialValue,
+    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun|experimental|withSpecialValue,
     .list_valid_values = {-1,0},
     .list_valid_names = {"off",0},
     .variable_address = &(global_options.real_error_tolerance),
@@ -1635,7 +1633,7 @@ VariableMetadata variable_metadata[201] = {
     .variable_type = Type_MultipleChoice,
     .id = Id_Output_Precision,
     .parent = &(variable_metadata[16]),
-    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun|advanced,
+    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun|experimental,
     .list_valid_values = {4,8,0},
     .list_valid_names = {"32","64",0},
     .variable_address = &(global_options.output_precision),
@@ -1678,7 +1676,7 @@ VariableMetadata variable_metadata[201] = {
     .variable_type = Type_Map_Real,
     .id = Id_Iterations_To_Min_Phases_Blur,
     .parent = &(variable_metadata[20]),
-    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun|advanced,
+    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun|experimental,
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.phases_blur_evolution),
@@ -1693,7 +1691,7 @@ VariableMetadata variable_metadata[201] = {
     .variable_type = Type_Existing_Filename,
     .id = Id_Solution_File,
     .parent = &(variable_metadata[1]),
-    .variable_properties = isSettableBeforeRun|isGettableBeforeRun,
+    .variable_properties = isSettableBeforeRun|isGettableBeforeRun|experimental,
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.intensities_std_dev_filename),
@@ -1707,7 +1705,7 @@ VariableMetadata variable_metadata[201] = {
     .variable_type = Type_Existing_Filename,
     .id = Id_Autocorrelation_Support_File,
     .parent = &(variable_metadata[1]),
-    .variable_properties = isSettableBeforeRun|isGettableBeforeRun,
+    .variable_properties = isSettableBeforeRun|isGettableBeforeRun|experimental,
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.autocorrelation_support_filename),
@@ -1763,7 +1761,7 @@ VariableMetadata variable_metadata[201] = {
     .variable_type = Type_Int,
     .id = Id_Support_Image_Averaging,
     .parent = &(variable_metadata[30]),
-    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun|withSpecialValue,
+    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun|withSpecialValue|experimental,
     .list_valid_values = {1,0},
     .list_valid_names = {"off",0},
     .variable_address = &(global_options.support_image_averaging),
@@ -1772,8 +1770,8 @@ VariableMetadata variable_metadata[201] = {
     .reserved = NULL
   },
   {
-    .variable_name = "amplitudes_file",
-    .display_name = "Amplitudes File",
+    .variable_name = "intensities_file",
+    .display_name = "Intensities File",
     .variable_type = Type_Existing_Filename,
     .id = Id_Diffraction_Filename,
     .parent = &(variable_metadata[1]),
@@ -1781,7 +1779,7 @@ VariableMetadata variable_metadata[201] = {
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.diffraction_filename),
-    .documentation = "The input h5 file that contains the experimental diffraction amplitudes (not the intensities), with the center determined and with the quadrants shifted.",
+    .documentation = "The input h5 file that contains the experimental diffraction intensities, with the center determined.",
     .dependencies = depends_on_no_realspace_image_file,
     .reserved = NULL
   },
@@ -1791,7 +1789,7 @@ VariableMetadata variable_metadata[201] = {
     .display_name = "Autocorrelation Threshold",
     .variable_type = Type_Real,
     .id = Id_Init_Level,
-    .parent = &(variable_metadata[82]),
+    .parent = &(variable_metadata[3]),
     .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
@@ -1808,7 +1806,7 @@ VariableMetadata variable_metadata[201] = {
     .variable_type = Type_Existing_Filename,
     .id = Id_Real_Image_Filename,
     .parent = &(variable_metadata[1]),
-    .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
+    .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun|experimental,
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.real_image_filename),
@@ -1826,6 +1824,7 @@ VariableMetadata variable_metadata[201] = {
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {HIO,RAAR,DIFF_MAP,HPR,CFLIP,RAAR_CFLIP,ESPRESSO,HAAR,SO2D,RAAR_PROJ,HIO_PROJ,0},
     .list_valid_names = {"hio","raar","diff_map","hpr","cflip","raar_cflip","espresso","haar","so2d","raar_proj", "hio_proj",0},
+    .list_properties = {0,0,0,experimental,experimental,experimental,experimental,experimental,experimental,experimental,experimental,0},
     .variable_address = &(global_options.algorithm),
     .documentation = "The type of algorithm used during the phase retrieval. A few other options then depend on the type of algorithm chosen.",
     .dependencies = NULL,
@@ -1852,8 +1851,14 @@ VariableMetadata variable_metadata[201] = {
     .id = Id_Support_Update_Algorithm,
     .parent = &(variable_metadata[30]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
+<<<<<<< HEAD
     .list_valid_values = {FIXED,STEPPED,REAL_ERROR_CAPPED,REAL_ERROR_ADAPTATIVE,CONSTANT_AREA,DECREASING_AREA,COMPLEX_DECREASING_AREA,TEMPLATE_AREA,0},
     .list_valid_names = {"threshold","stepped","real_error_capped","real_error_adaptative","constant_area","decreasing_area","complex_decreasing_area","template_area",0},
+=======
+    .list_valid_values = {FIXED,STEPPED,REAL_ERROR_CAPPED,REAL_ERROR_ADAPTATIVE,CONSTANT_AREA,DECREASING_AREA,COMPLEX_DECREASING_AREA,0},
+    .list_valid_names = {"threshold","stepped","real_error_capped","real_error_adaptative","constant_area","area","complex_decreasing_area",0},
+    .list_properties = {0,experimental,experimental,experimental,experimental,0,experimental,0},
+>>>>>>> f10904f411aee73c041aa604a561f425fe92cade
     .variable_address = &(global_options.support_update_algorithm),
     .dependencies = NULL,
     .reserved = NULL
@@ -1905,7 +1910,7 @@ VariableMetadata variable_metadata[201] = {
     .variable_type = Type_Int,
     .id = Id_Iterations,
     .parent = &(variable_metadata[30]),
-    .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
+    .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableBeforeRun|isGettableDuringRun|advanced,
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.iterations),
@@ -1927,6 +1932,7 @@ VariableMetadata variable_metadata[201] = {
     .dependencies = NULL,
     .reserved = NULL
   },
+  /* 130 */
   {
     .variable_name = "save_remote_files",
     .display_name = "Save Remote Files",
@@ -1942,6 +1948,7 @@ VariableMetadata variable_metadata[201] = {
     .reserved = NULL
   },
   {
+<<<<<<< HEAD
     .variable_name = "template_blur_radius",
     .display_name = "Template blur radius",
     .variable_type = Type_Real,
@@ -1970,11 +1977,47 @@ VariableMetadata variable_metadata[201] = {
     .reserved = NULL
   }
 
+=======
+    .variable_name = "debug_level",
+    .display_name = "Debug Level",
+    .variable_type = Type_Int,
+    .id = Id_Debug_Level,
+    .parent = &(variable_metadata[0]),
+    .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun|advanced,
+    .list_valid_values = {0},
+    .list_valid_names = {0},
+    .variable_address = &(global_options.debug_level),
+    .documentation = "Sets the amount of debug output. At the moment 0 means no output and any positive value means debug output, but this will likely change in the future.",
+    .dependencies = NULL,
+    .reserved = NULL
+  },
+  {
+    .variable_name = "max_blur_radius",
+    .display_name = "Max Blur Radius",
+    .variable_type = Type_Real,
+    .id = Id_Max_Blur_Radius,
+    .parent = &(variable_metadata[0]),
+    .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun|deprecated,
+    .list_valid_values = {0},
+    .list_valid_names = {0},
+    .variable_address = &(global_options.max_blur_radius),
+    .documentation = "Correponds to 3 times the maximum standard deviation of the gaussian blur applied before doing any further processing to the real space image guess."
+    " The real space image guess is then passed on to the rest of the computing chain that calculates the new support."
+    " This option only affects the support calculation routines."
+    " Typically there is a maximum and a minimum blur radius which the program smoothly interpolates in between during the first iterations_to_min_blur iterations",
+    .dependencies = NULL,
+    .reserved = NULL
+  }
+>>>>>>> f10904f411aee73c041aa604a561f425fe92cade
 };
 
 
 /* Don't forget to update this one!! */
+<<<<<<< HEAD
 const int number_of_global_options = 136; //134 before implementing template
+=======
+const int number_of_global_options = 133;
+>>>>>>> f10904f411aee73c041aa604a561f425fe92cade
 
 
 int get_list_value_from_list_name(VariableMetadata * md,char * name){

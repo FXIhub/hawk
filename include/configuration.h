@@ -52,12 +52,18 @@ typedef enum {Id_Diffraction_Filename=0,Id_Real_Image_Filename,Id_Max_Blur_Radiu
 	      Id_Object_Area_Checkpoints,Id_Object_Area_at_Checkpoints,Id_Autocorrelation_Support_File,
 	      Id_Filter_Intensities,Id_Beta_Checkpoints,Id_Beta_at_Checkpoints,Id_Gamma1,Id_Gamma2,Id_Support_Image_Averaging,
 	      Id_Random_Seed,Id_Input_Files,Id_Input_Files_Amplitudes,Id_Initialization,Id_Input,Id_Logging,Id_Phasing,Id_Support,
-	      Id_Autocorrelation_Area,Id_Remote_Work_Dir,Id_Save_Remote_Files
+	      Id_Autocorrelation_Area,Id_Remote_Work_Dir,Id_Save_Remote_Files,Id_Debug_Level, Id_Initial_Support_Group
 }Variable_Id;
   
   
+<<<<<<< HEAD
   typedef enum {isSettableBeforeRun = 1, isSettableDuringRun = 2, isGettableBeforeRun = 4,
 	      isGettableDuringRun = 8, isMandatory = 16, deprecated = 32,advanced = 64,withSpecialValue = 128} Variable_Properties;
+=======
+typedef enum {isSettableBeforeRun = 1, isSettableDuringRun = 2, isGettableBeforeRun = 4,
+	      isGettableDuringRun = 8, isMandatory = 16, deprecated = 32,advanced = 64,
+	      withSpecialValue = 128,experimental = 256} Variable_Properties;
+>>>>>>> f10904f411aee73c041aa604a561f425fe92cade
 
 
 
@@ -155,6 +161,7 @@ typedef struct {
   sp_smap * phases_blur_evolution;
   sp_smap * template_area_evolution;
   int save_remote_files;
+  int debug_level;
 }Options;
 
 typedef struct _VariableMetadata{
@@ -167,6 +174,7 @@ typedef struct _VariableMetadata{
   const int list_valid_values[20];
   /* No more than 20 possible values per list */
   const char * list_valid_names[20];
+  const Variable_Properties list_properties[20];
   void * variable_address;
   /* No more than 10240 characters in the documentation */
   const char documentation[10240];

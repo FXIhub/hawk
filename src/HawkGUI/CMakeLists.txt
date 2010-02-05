@@ -68,9 +68,9 @@ set(GUI_MOC_HDRS
   hawkgui.h 
   imagedisplay.h 
   imageview.h 
-  ${LOCAL_INCLUDE}/HawkGUI/treedelegate.h 
+  treedelegate.h 
   ${LOCAL_INCLUDE}/HawkGUI/mapeditordialog.h 
-  ${LOCAL_INCLUDE}/HawkGUI/optionstree.h 
+  optionstree.h 
   ${LOCAL_INCLUDE}/HawkGUI/processdisplay.h 
   processcontrol.h 
   outputwatcher.h 
@@ -80,12 +80,12 @@ set(GUI_MOC_HDRS
   ${LOCAL_INCLUDE}/HawkGUI/imageloader.h
   ${LOCAL_INCLUDE}/HawkGUI/imageviewpanel.h
   ${LOCAL_INCLUDE}/HawkGUI/editorworkspace.h
-  ${LOCAL_INCLUDE}/HawkGUI/imageeditorview.h
-  ${LOCAL_INCLUDE}/HawkGUI/lineoutplot.h
-  ${LOCAL_INCLUDE}/HawkGUI/editortools.h
+  imageeditorview.h
+  lineoutplot.h
+  editortools.h
   ${LOCAL_INCLUDE}/HawkGUI/stitcherworkspace.h
   ${LOCAL_INCLUDE}/HawkGUI/stitcherview.h
-  ${LOCAL_INCLUDE}/HawkGUI/imageitem.h
+  imageitem.h
   ${LOCAL_INCLUDE}/HawkGUI/addconstraintdialog.h
   ${LOCAL_INCLUDE}/HawkGUI/addvariabledialog.h
   ${LOCAL_INCLUDE}/communicator.h

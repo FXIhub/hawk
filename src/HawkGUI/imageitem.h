@@ -67,6 +67,9 @@ class ImageItem: public QObject, public QGraphicsPixmapItem
   void setPixelSize(QSizeF size);
   QSizeF pixelSize() const;
   void pointConvolute(QPointF scenePos, const Image * kernel);
+
+  void setImageMask(QPoint pos, int value);
+
   void setDetectorDistance(double distance);
   double detectorDistance()const;
   void setWavelength(double distance);
@@ -116,14 +119,16 @@ class ImageItem: public QObject, public QGraphicsPixmapItem
   QList<QPointF> getControlPoints();
   void moveBy(qreal dx, qreal dy);
   QTransform transformFromParameters();
-
+  QList<QPoint> imagePointsAround(QPointF scenePos,int sceneRadius);
+  void setMaskFromImage(const Image * mask);
+  void invertMask();
  private:
-  enum EditType{ImageSize,Phased,Shifted,Wavelength,DetectorDistance,PointConvolute,Scaled,PixelSize,ImageCenter,CheckPoint};
+  enum EditType{ImageSize,Phased,Shifted,Wavelength,DetectorDistance,PointConvolute,Scaled,PixelSize,ImageCenter,CheckPoint,ImageMask,MaskFromImage,InvertMask};
   struct EditStep{
     EditType type;
     QVector<QVariant> arguments;
   };
-  void addToStack(EditType type,QVariant arg1,QVariant arg2 = QVariant());
+  void addToStack(EditType type,QVariant arg1 = QVariant(),QVariant arg2 = QVariant());
   void applyEditStep(EditStep step);
   void repositionCenterIndicators();
   double overallScale() const;

@@ -442,7 +442,7 @@ MapEditorPopup::MapEditorPopup(QPoint pos,QPointF value, int i,QWidget * parent)
   pos.rx() += 5;
   pos.ry() -= 5;
   QGridLayout * layout = new QGridLayout;
-  layout->addWidget(new QLabel("x:"),0,0);
+  layout->addWidget(new QLabel("Iteration:"),1,0);
   xEdit = new QLineEdit;
   xEdit->setText(QString::number(value.x(),'g',6));
   xEdit->setMaximumWidth(80);
@@ -450,8 +450,8 @@ MapEditorPopup::MapEditorPopup(QPoint pos,QPointF value, int i,QWidget * parent)
   sv->setNotation(QDoubleValidator::ScientificNotation);
   xEdit->setValidator(sv);
 
-  layout->addWidget(xEdit,0,1);
-  layout->addWidget(new QLabel("y:"),1,0);
+  layout->addWidget(xEdit,1,1);
+  layout->addWidget(new QLabel("Value:"),0,0);
   yEdit = new QLineEdit;
   yEdit->setText(QString::number(value.y(),'g',6));
   yEdit->setMaximumWidth(80);
@@ -459,7 +459,7 @@ MapEditorPopup::MapEditorPopup(QPoint pos,QPointF value, int i,QWidget * parent)
   sv->setNotation(QDoubleValidator::ScientificNotation);
   yEdit->setValidator(sv);
 
-  layout->addWidget(yEdit,1,1);
+  layout->addWidget(yEdit,0,1);
   setLayout(layout);
   pos.ry() -= sizeHint().height()/2;
   //  move(parent->mapToGlobal(pos));

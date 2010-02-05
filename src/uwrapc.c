@@ -143,7 +143,7 @@ void harmonize_sizes(Options * opts){
   int i;
   Image * exp;
   Image * tmp;
-  exp = opts->diffraction;
+  exp = opts->amplitudes;
   tmp = opts->support_mask;
   if(tmp &&
      (sp_c3matrix_x(tmp->image) != sp_c3matrix_x(exp->image) ||
@@ -303,6 +303,9 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
     /* use new libspimage backend */
     return complete_reconstruction_clean(amp,initial_support,exp_sigma,
 				  opts,dir);
+  }else if(sp_cuda_get_device_type() == SpCUDAHardwareDevice  ||
+	   sp_cuda_get_device_type() == SpCUDAEmulatedDevice){
+    hawk_warning("Cannot use CUDA for this particular configuration.");
   }
 
 
@@ -457,6 +460,7 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
       }
     }
     if(opts->cur_iteration%opts->output_period == opts->output_period-1){
+	
       if(real_in->num_dimensions == SP_2D){
 	sprintf(buffer,"real_space-%07d.png",opts->cur_iteration);
 	hawk_image_write(real_space,buffer,SpColormapJet);
@@ -465,25 +469,18 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
 	hawk_image_write(real_space,buffer,SpColormapWheel|SpColormapPhase);
 	sprintf(buffer,"support-%07d.png",opts->cur_iteration);
 	hawk_image_write(support,buffer,SpColormapGrayScale);
-	sprintf(buffer,"amplitudes-%07d.png",opts->cur_iteration);
-	hawk_image_write(amp,buffer,SpColormapJet);
-	
       }
       if(real_in->num_dimensions == SP_3D){
 	sprintf(buffer,"real_space-%07d.vtk",opts->cur_iteration);
 	hawk_image_write(real_space,buffer,0);
 	sprintf(buffer,"support-%07d.vtk",opts->cur_iteration);
 	hawk_image_write(support,buffer,0);
-	sprintf(buffer,"amplitudes-%07d.vtk",opts->cur_iteration);
-	hawk_image_write(amp,buffer,0);
       }
       sprintf(buffer,"real_space-%07d.h5",opts->cur_iteration);
       hawk_image_write(real_space,buffer,opts->output_precision);
       sprintf(buffer,"support-%07d.h5",opts->cur_iteration);
       hawk_image_write(support,buffer,opts->output_precision);
-      sprintf(buffer,"amplitudes-%07d.h5",opts->cur_iteration);
-      hawk_image_write(amp,buffer,0);
-	
+		
       tmp = sp_image_duplicate(real_space,SP_COPY_DATA|SP_COPY_MASK);
       for(i = 0;i<sp_c3matrix_size(tmp->image);i++){
 	if(sp_real(support->image->data[i])){
@@ -674,11 +671,15 @@ void init_reconstruction(Options * opts){
     sp_image_dephase(opts->diffraction);
   }
   if(opts->diffraction){
-    opts->amplitudes = sp_image_duplicate(opts->diffraction,SP_COPY_DATA|SP_COPY_MASK);
+    if(opts->diffraction->shifted == 0){
+      opts->amplitudes = sp_image_shift(opts->diffraction);
+    }else{
+      opts->amplitudes = sp_image_duplicate(opts->diffraction,SP_COPY_DATA|SP_COPY_MASK);
+    }
     sp_image_dephase(opts->diffraction);
     sp_image_to_amplitudes(opts->amplitudes);
   }else{
-    hawk_fatal("Error: either real_image_file or amplitudes_file have to be specified!");
+    hawk_fatal("Error: either real_image_file or intensities_file have to be specified!");
   }
   if(sp_image_z(opts->amplitudes) == 1){
     sp_image_high_pass(opts->amplitudes, opts->beamstop, SP_2D);
@@ -689,12 +690,20 @@ void init_reconstruction(Options * opts){
 /*  if(opts->rescale_amplitudes){
     rescale_image(opts->amplitudes);
   }*/
-  char buffer[OPTION_STRING_SIZE*2+1];
-  strcpy(buffer,opts->work_dir);
-  strcat(buffer,"/");
-  strcat(buffer,"diffraction.vtk");
+  if(opts->debug_level > 0){
+    char buffer[OPTION_STRING_SIZE*2+1];
+    strcpy(buffer,opts->work_dir);
+    strcat(buffer,"/");
+    strcat(buffer,"diffraction.vtk");
+    
+    hawk_image_write(opts->amplitudes,buffer,0);
+    
+    strcpy(buffer,opts->work_dir);
+    strcat(buffer,"/");
+    strcat(buffer,"debug_diffraction.h5");
   
-  hawk_image_write(opts->amplitudes,buffer,0);
+    hawk_image_write(opts->amplitudes,buffer,0);
+  }
 
   if(!opts->init_support_filename[0]){
     opts->init_support = get_support_from_patterson(opts->amplitudes,opts);
