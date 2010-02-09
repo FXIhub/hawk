@@ -258,7 +258,8 @@ void complete_reconstruction_clean(Image * amp, Image * initial_support, Image *
     }
     if(to_iterate == to_output){
       sprintf(buffer,"real_space-%07d.h5",ph->iteration-1);
-      hawk_image_write(sp_phaser_model(ph),buffer,opts->output_precision);
+      //hawk_image_write(sp_phaser_model(ph),buffer,opts->output_precision);
+      hawk_image_write(sp_phaser_model_with_support(ph),buffer,opts->output_precision);
       sprintf(buffer,"support-%07d.h5",ph->iteration-1);
       hawk_image_write(sp_phaser_support(ph),buffer,opts->output_precision);
       sprintf(buffer,"fourier_space-%07d.h5",ph->iteration-1);
