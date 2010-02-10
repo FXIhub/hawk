@@ -234,6 +234,9 @@ void complete_reconstruction_clean(Image * amp, Image * initial_support, Image *
   if (opts->support_update_algorithm == TEMPLATE_AREA){
     sup_alg = sp_support_template_alloc(opts->iterations,opts->init_support,opts->template_blur_radius,opts->template_area_evolution);
   }
+  if (opts->support_update_algorithm == STATIC){
+    sup_alg = sp_support_static_alloc(opts->iterations);
+  }
   if(!alg || !sup_alg){
     hawk_fatal("Algorithm is NULL!\nBlame the programmer!");
   }
@@ -255,11 +258,12 @@ void complete_reconstruction_clean(Image * amp, Image * initial_support, Image *
     }
     if(to_iterate == to_output){
       sprintf(buffer,"real_space-%07d.h5",ph->iteration-1);
-      hawk_image_write(sp_phaser_model(ph),buffer,opts->output_precision);
+      //hawk_image_write(sp_phaser_model(ph),buffer,opts->output_precision);
+      hawk_image_write(sp_phaser_model_with_support(ph),buffer,opts->output_precision);
       sprintf(buffer,"support-%07d.h5",ph->iteration-1);
       hawk_image_write(sp_phaser_support(ph),buffer,opts->output_precision);
       sprintf(buffer,"fourier_space-%07d.h5",ph->iteration-1);
-      hawk_image_write(sp_phaser_fmodel(ph),buffer,opts->output_precision);
+      hawk_image_write(sp_phaser_fmodel_with_mask(ph),buffer,opts->output_precision);
     }
   }
   
@@ -298,8 +302,9 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
 
   if((get_algorithm(opts,&log) == HIO || get_algorithm(opts,&log) == RAAR || get_algorithm(opts,&log) == DIFF_MAP) &&
      (opts->support_update_algorithm == FIXED ||
-      opts->support_update_algorithm == DECREASING_AREA||
-      opts->support_update_algorithm == TEMPLATE_AREA) && opts->support_image_averaging == 1){ 
+      opts->support_update_algorithm == DECREASING_AREA ||
+      opts->support_update_algorithm == TEMPLATE_AREA ||
+      opts->support_update_algorithm == STATIC) && opts->support_image_averaging == 1){ 
     /* use new libspimage backend */
     return complete_reconstruction_clean(amp,initial_support,exp_sigma,
 				  opts,dir);

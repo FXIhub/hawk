@@ -150,6 +150,13 @@ static int depends_on_support_algorithm_with_real_error_threshold(const Options 
   return 0;
 }
 
+static int depends_on_support_algorithm_with_blur(const Options * opt){
+  if (opt->support_update_algorithm == TEMPLATE_AREA) {
+    return 0;
+  }
+  return 1;
+}
+
 
 VariableMetadata variable_metadata[201] = {
   /*  0 */
@@ -1181,7 +1188,7 @@ VariableMetadata variable_metadata[201] = {
     .list_valid_names = {0},
     .variable_address = &(global_options.support_blur_evolution),
     .documentation = "Determines how much the image is blurred before the support is calculated from it. The value corresponds to 3 times the standard deviation of the gaussian kernel used to blur the image.",
-    .dependencies =  NULL,
+    .dependencies =  depends_on_support_algorithm_with_blur,
     .reserved = NULL
   },
   {
@@ -1851,9 +1858,9 @@ VariableMetadata variable_metadata[201] = {
     .id = Id_Support_Update_Algorithm,
     .parent = &(variable_metadata[30]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
-    .list_valid_values = {FIXED,STEPPED,REAL_ERROR_CAPPED,REAL_ERROR_ADAPTATIVE,CONSTANT_AREA,DECREASING_AREA,COMPLEX_DECREASING_AREA,TEMPLATE_AREA,0},
-    .list_properties = {0,experimental,experimental,experimental,experimental,0,experimental,experimental,0},
-    .list_valid_names = {"threshold","stepped","real_error_capped","real_error_adaptative","constant_area","area","complex_decreasing_area","template_area",0},
+    .list_valid_values = {FIXED,STATIC,STEPPED,REAL_ERROR_CAPPED,REAL_ERROR_ADAPTATIVE,CONSTANT_AREA,DECREASING_AREA,COMPLEX_DECREASING_AREA,TEMPLATE_AREA,0},
+    .list_properties = {0,0,experimental,experimental,experimental,experimental,0,experimental,0,0},
+    .list_valid_names = {"threshold","static","stepped","real_error_capped","real_error_adaptative","constant_area","area","complex_decreasing_area","template_area",0},
     .variable_address = &(global_options.support_update_algorithm),
     .dependencies = NULL,
     .reserved = NULL
