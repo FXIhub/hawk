@@ -637,7 +637,15 @@ int main(int argc, char ** argv){
   }
   sp_image_free(img);
   if(opts->resolution){
-    img = sp_image_low_pass(out, opts->resolution,SP_2D);
+    if(!out->shifted){
+      Image * tmp = sp_image_shift(out);
+      Image * tmp2 = sp_image_low_pass(tmp, opts->resolution,SP_2D);
+      sp_image_free(tmp);
+      img = sp_image_shift(tmp2);
+      sp_image_free(tmp2);
+    }else{
+      img = sp_image_low_pass(out, opts->resolution,SP_2D);
+    }
   }else{
     img = sp_image_duplicate(out,SP_COPY_DATA|SP_COPY_MASK);
   }
