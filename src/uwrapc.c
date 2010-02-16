@@ -216,13 +216,13 @@ void complete_reconstruction_clean(Image * amp, Image * initial_support, Image *
     phasing_constraints = SpPositiveComplexObject;
   }
   if(get_algorithm(opts,&log) == HIO){
-    alg = sp_phasing_hio_alloc(opts->beta,phasing_constraints);
+    alg = sp_phasing_hio_alloc(opts->beta_evolution,phasing_constraints);
   }
   if(get_algorithm(opts,&log) == RAAR){
-    alg = sp_phasing_raar_alloc(opts->beta,phasing_constraints);
+    alg = sp_phasing_raar_alloc(opts->beta_evolution,phasing_constraints);
   }
   if(get_algorithm(opts,&log) == DIFF_MAP){
-    alg = sp_phasing_diff_map_alloc(opts->beta,get_gamma1(opts),get_gamma2(opts),phasing_constraints);
+    alg = sp_phasing_diff_map_alloc(opts->beta_evolution,get_gamma1(opts),get_gamma2(opts),phasing_constraints);
   }
   SpSupportAlgorithm * sup_alg = NULL;
   if(opts->support_update_algorithm == FIXED){

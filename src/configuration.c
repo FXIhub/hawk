@@ -305,6 +305,10 @@ int check_options_and_load_images(Options * opts){
     opts->threshold_evolution = sp_smap_alloc(1);
     sp_smap_insert(opts->threshold_evolution,0,opts->new_level);
   }
+  /* transform the fixed beta into a map */
+  if(!opts->beta_evolution && opts->beta){
+    opts->beta_evolution = sp_smap_create_from_pair(0,opts->beta);
+  }
   return 0;
 }
 
