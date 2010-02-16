@@ -23,7 +23,7 @@ int main(int argc, char ** argv){
     for(i = 0;i<sp_c3matrix_size(a->image);i++){
       a->image->data[i] = sp_cinit(a->mask->data[i],0);
     }
-    sp_image_write(a,argv[4],SpColormapJet);
+    sp_image_write(a,argv[4],SpColormapGrayScale);
   }
   return 0;
 }
