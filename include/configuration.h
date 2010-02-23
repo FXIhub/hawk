@@ -52,7 +52,7 @@ typedef enum {Id_Diffraction_Filename=0,Id_Real_Image_Filename,Id_Max_Blur_Radiu
 	      Id_Object_Area_Checkpoints,Id_Object_Area_at_Checkpoints,Id_Autocorrelation_Support_File,
 	      Id_Filter_Intensities,Id_Beta_Checkpoints,Id_Beta_at_Checkpoints,Id_Gamma1,Id_Gamma2,Id_Support_Image_Averaging,
 	      Id_Random_Seed,Id_Input_Files,Id_Input_Files_Amplitudes,Id_Initialization,Id_Input,Id_Logging,Id_Phasing,Id_Support,
-	      Id_Autocorrelation_Area,Id_Remote_Work_Dir,Id_Save_Remote_Files,Id_Debug_Level, Id_Initial_Support_Group
+	      Id_Autocorrelation_Area,Id_Remote_Work_Dir,Id_Save_Remote_Files,Id_Debug_Level, Id_Initial_Support_Group, Id_Enforce_Centrosymmetry
 }Variable_Id;
   
   
@@ -157,6 +157,7 @@ typedef struct {
   sp_smap * template_area_evolution;
   int save_remote_files;
   int debug_level;
+  int enforce_centrosymmetry;
 }Options;
 
 typedef struct _VariableMetadata{

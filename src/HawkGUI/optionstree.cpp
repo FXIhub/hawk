@@ -100,7 +100,7 @@ void OptionsTree::createGUI(){
   showOptionsCombo->setToolTip("Change the type of options you want to configure");
   showOptionsCombo->addItem("Basic");
   showOptionsCombo->addItem("Advanced");
-  showOptionsCombo->addItem("Experimental");
+  showOptionsCombo->addItem("In Testing");
   QPushButton * saveOptionsButton = new QPushButton(QIcon(":images/config_save.png"),tr("Save"),this);
   QPushButton * loadOptionsButton = new QPushButton(QIcon(":images/config_open.png"),tr("Load"),this);
   QPushButton * resetOptionButton = new QPushButton("Reset Option",this);

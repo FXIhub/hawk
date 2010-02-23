@@ -2007,12 +2007,27 @@ VariableMetadata variable_metadata[201] = {
     " Typically there is a maximum and a minimum blur radius which the program smoothly interpolates in between during the first iterations_to_min_blur iterations",
     .dependencies = NULL,
     .reserved = NULL
+  },
+  {
+    .variable_name = "enforce_centrosymmetry",
+    .display_name = "Enforce Centrosymmetry",
+    .variable_type = Type_Bool,
+    .id = Id_Enforce_Centrosymmetry,
+    .parent = &(variable_metadata[20]),
+    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun|experimental,
+    .list_valid_values = {0},
+    .list_valid_names = {0},
+    .variable_address = &(global_options.enforce_centrosymmetry),
+    .documentation = "The imaginary parts of the phased amplitudes are set to zero on every iteration.",
+    .dependencies = depends_on_phasing_algorithm_with_positivity,
+    .reserved = NULL
   }
+
 };
 
 
 /* Don't forget to update this one!! */
-const int number_of_global_options = 135; //134 before implementing template
+const int number_of_global_options = 136; //134 before implementing template
 
 int get_list_value_from_list_name(VariableMetadata * md,char * name){
   int i = 0;
