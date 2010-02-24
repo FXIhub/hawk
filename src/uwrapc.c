@@ -215,6 +215,9 @@ void complete_reconstruction_clean(Image * amp, Image * initial_support, Image *
   }else if(opts->enforce_positivity){
     phasing_constraints = SpPositiveComplexObject;
   }
+  if(opts->enforce_centrosymmetry){
+    phasing_constraints |= SpCentrosymmetricObject;
+  }
   if(get_algorithm(opts,&log) == HIO){
     alg = sp_phasing_hio_alloc(opts->beta_evolution,phasing_constraints);
   }
