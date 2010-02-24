@@ -209,11 +209,11 @@ void complete_reconstruction_clean(Image * amp, Image * initial_support, Image *
 
   SpPhasingConstraints phasing_constraints = SpNoConstraints;
   if(opts->enforce_real && opts->enforce_positivity){
-    phasing_constraints = SpPositiveRealObject;
+    phasing_constraints |= SpPositiveRealObject;
   }else if(opts->enforce_real){
-    phasing_constraints = SpRealObject;
+    phasing_constraints |= SpRealObject;
   }else if(opts->enforce_positivity){
-    phasing_constraints = SpPositiveComplexObject;
+    phasing_constraints |= SpPositiveComplexObject;
   }
   if(opts->enforce_centrosymmetry){
     phasing_constraints |= SpCentrosymmetricObject;
