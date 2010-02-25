@@ -227,18 +227,21 @@ void complete_reconstruction_clean(Image * amp, Image * initial_support, Image *
   if(get_algorithm(opts,&log) == DIFF_MAP){
     alg = sp_phasing_diff_map_alloc(opts->beta_evolution,get_gamma1(opts),get_gamma2(opts),phasing_constraints);
   }
-  SpSupportAlgorithm * sup_alg = NULL;
+  SpSupportArray * sup_alg = NULL;
   if(opts->support_update_algorithm == FIXED){
-    sup_alg = sp_support_threshold_alloc(opts->iterations,opts->support_blur_evolution,opts->threshold_evolution);
+    sup_alg = sp_support_array_init(sp_support_threshold_alloc(opts->support_blur_evolution,opts->threshold_evolution),
+				    opts->iterations);
   }
   if(opts->support_update_algorithm == DECREASING_AREA){
-    sup_alg = sp_support_area_alloc(opts->iterations,opts->support_blur_evolution,opts->object_area_evolution);
+    sup_alg = sp_support_array_init(sp_support_area_alloc(opts->support_blur_evolution,opts->object_area_evolution),
+				    opts->iterations);;
   }
   if (opts->support_update_algorithm == TEMPLATE_AREA){
-    sup_alg = sp_support_template_alloc(opts->iterations,opts->init_support,opts->template_blur_radius,opts->template_area_evolution);
+    sup_alg = sp_support_array_init(sp_support_template_alloc(opts->init_support,opts->template_blur_radius,
+							      opts->template_area_evolution),opts->iterations);
   }
   if (opts->support_update_algorithm == STATIC){
-    sup_alg = sp_support_static_alloc(opts->iterations);
+    sup_alg = sp_support_array_init(sp_support_static_alloc(),opts->iterations);
   }
   if(!alg || !sup_alg){
     hawk_fatal("Algorithm is NULL!\nBlame the programmer!");
