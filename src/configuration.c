@@ -107,6 +107,7 @@ void set_defaults(Options * opt){
   opt->adapt_thres = 0;
   opt->automatic = 0;
   opt->support_update_algorithm = DECREASING_AREA;
+  opt->close_support = 0;
   opt->real_error_threshold = -1;
   opt->iterations_to_min_blur = 7000;
   opt->blur_radius_reduction_method = GAUSSIAN_BLUR_REDUCTION;
