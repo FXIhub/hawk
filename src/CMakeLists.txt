@@ -10,7 +10,7 @@ LIST(APPEND INCLUDE_LIST ${LOCAL_INCLUDE} ${LOCAL_INCLUDE}/saddle ${LOCAL_INCLUD
 INCLUDE_DIRECTORIES(${INCLUDE_LIST})
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 
-SET(UWRAPC_OBJ main.c uwrapc.c configuration.c support.c algorithms.c log.c)
+SET(UWRAPC_OBJ main.c uwrapc.c configuration.c support.c algorithms.c log.c metadata.c)
 LIST(APPEND UWRAPC_OBJ io_utils.c saddle/minmaxtau.c saddle/minmaxL.c)
 LIST(APPEND UWRAPC_OBJ libconfig/libconfig.c libconfig/scanner.c libconfig/grammar.c)
 
@@ -20,7 +20,7 @@ QT_WRAP_CPP(uwrapc project_moc_files  ${LOCAL_INCLUDE}/communicator.h ${LOCAL_IN
 QT_WRAP_CPP(uwrapc qxt_moc_files qxt/qxtboundfunction.h qxt/qxtrpcservice.h qxt/qxtrpcservice_p.h qxt/qxtabstractconnectionmanager.h qxt/qxtrpcpeer.h qxt/qxttcpconnectionmanager.h qxt/qxttcpconnectionmanager_p.h)
 SET(QXT_OBJS ${CMAKE_CURRENT_SOURCE_DIR}/qxt/qxtrpcservice.cpp ${CMAKE_CURRENT_SOURCE_DIR}/qxt/qxtabstractconnectionmanager.cpp ${CMAKE_CURRENT_SOURCE_DIR}/qxt/qxtmetaobject.cpp ${CMAKE_CURRENT_SOURCE_DIR}/qxt/qxtdatastreamsignalserializer.cpp ${CMAKE_CURRENT_SOURCE_DIR}/qxt/qxtrpcpeer.cpp ${CMAKE_CURRENT_SOURCE_DIR}/qxt/qxttcpconnectionmanager.cpp ${qxt_moc_files})
 LIST(APPEND UWRAPC_OBJ communicator.cpp network_communication.cpp imagestream.cpp)
-LIST(APPEND UWRAPC_OBJ client_decoder.cpp decoder.cpp metadata.c sender.cpp rpcpeer.cpp uwrapcpeerthread.cpp)
+LIST(APPEND UWRAPC_OBJ client_decoder.cpp decoder.cpp sender.cpp rpcpeer.cpp uwrapcpeerthread.cpp)
 LIST(APPEND UWRAPC_OBJ ${QXT_OBJS})
 LIST(APPEND UWRAPC_OBJ ${project_moc_files})
 ENDIF(QT4_FOUND)
