@@ -178,6 +178,9 @@ void StitcherWorkspace::onStitchClicked(){
       if(mask){
 	sp_cscale(value,1.0/mask);
       }
+      a->detector->image_center[0] = -combined.x();
+      a->detector->image_center[1] = -combined.y();
+      a->detector->image_center[2] = 0;
       sp_image_set(a,x,y,0,value);
       sp_image_mask_set(a,x,y,0,mask);
     }
