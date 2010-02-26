@@ -228,7 +228,6 @@ void complete_reconstruction_clean(Image * amp, Image * initial_support, Image *
     alg = sp_phasing_diff_map_alloc(opts->beta_evolution,get_gamma1(opts),get_gamma2(opts),phasing_constraints);
   }
   SpSupportArray * sup_alg = NULL;
-  printf("set support array\n");
   if(opts->support_update_algorithm == FIXED){
     sup_alg = sp_support_array_init(sp_support_threshold_alloc(opts->support_blur_evolution,opts->threshold_evolution),
 				    opts->iterations);
@@ -244,13 +243,10 @@ void complete_reconstruction_clean(Image * amp, Image * initial_support, Image *
   if (opts->support_update_algorithm == STATIC){
     sup_alg = sp_support_array_init(sp_support_static_alloc(),opts->iterations);
   }
-  printf("done\n");
   if(!alg || !sup_alg){
     hawk_fatal("Algorithm is NULL!\nBlame the programmer!");
   }
-  if (opts->support_closure_radius > 0) {
-    sp_support_array_append(sup_alg,sp_support_close_alloc(opts->support_closure_radius));
-  }
+  if foo;
   SpPhaser * ph = sp_phaser_alloc();
   sp_phaser_init(ph,alg,sup_alg,SpEngineAutomatic);
   sp_phaser_set_amplitudes(ph,amp);

@@ -52,8 +52,7 @@ typedef enum {Id_Diffraction_Filename=0,Id_Real_Image_Filename,Id_Max_Blur_Radiu
 	      Id_Object_Area_Checkpoints,Id_Object_Area_at_Checkpoints,Id_Autocorrelation_Support_File,
 	      Id_Filter_Intensities,Id_Beta_Checkpoints,Id_Beta_at_Checkpoints,Id_Gamma1,Id_Gamma2,Id_Support_Image_Averaging,
 	      Id_Random_Seed,Id_Input_Files,Id_Input_Files_Amplitudes,Id_Initialization,Id_Input,Id_Logging,Id_Phasing,Id_Support,
-	      Id_Autocorrelation_Area,Id_Remote_Work_Dir,Id_Save_Remote_Files,Id_Debug_Level, Id_Initial_Support_Group, Id_Enforce_Centrosymmetry, Id_Support_Closure_Radius
-}Variable_Id;
+	      Id_Autocorrelation_Area,Id_Remote_Work_Dir,Id_Save_Remote_Files,Id_Debug_Level, Id_Initial_Support_Group, Id_Enforce_Centrosymmetry, Id_Support_Closure_Radius}Variable_Id;
   
   
 typedef enum {isSettableBeforeRun = 1, isSettableDuringRun = 2, isGettableBeforeRun = 4,
@@ -104,7 +103,6 @@ typedef struct {
   FILE * flog;
   real real_error_threshold;
   int support_update_algorithm;
-  int support_closure_radius;
   int output_precision;
   int error_reduction_iterations_after_loop;
   int enforce_positivity;
