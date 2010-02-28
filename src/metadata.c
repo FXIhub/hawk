@@ -2021,13 +2021,26 @@ VariableMetadata variable_metadata[201] = {
     .documentation = "The imaginary parts of the phased amplitudes are set to zero on every iteration.",
     .dependencies = depends_on_phasing_algorithm_with_positivity,
     .reserved = NULL
+  },
+  {
+    .variable_name = "support_closure_radius",
+    .display_name = "Support Closure Radius",
+    .variable_type = Type_Int,
+    .id = Id_Enforce_Centrosymmetry,
+    .parent = &(variable_metadata[30]),
+    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun|experimental,
+    .list_valid_values = {1,0},
+    .list_valid_names = {"off",0},
+    .variable_address = &(global_options.support_closure_radius),
+    .documentation = "Close the support by first growing it and then shrinking it after update.",
+    .dependencies = NULL,
+    .reserved = NULL
   }
-
 };
 
 
 /* Don't forget to update this one!! */
-const int number_of_global_options = 136; //134 before implementing template
+const int number_of_global_options = 137; //134 before implementing template
 
 int get_list_value_from_list_name(VariableMetadata * md,char * name){
   int i = 0;

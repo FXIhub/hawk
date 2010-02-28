@@ -107,6 +107,7 @@ void set_defaults(Options * opt){
   opt->adapt_thres = 0;
   opt->automatic = 0;
   opt->support_update_algorithm = DECREASING_AREA;
+  opt->support_closure_radius = 0;
   opt->real_error_threshold = -1;
   opt->iterations_to_min_blur = 7000;
   opt->blur_radius_reduction_method = GAUSSIAN_BLUR_REDUCTION;
@@ -224,7 +225,6 @@ void read_options_file(const char * filename){
 	  }else{
 	    *((int *)variable_metadata[i].variable_address) = config_lookup_int(&config,path);
 	  }
-
 	}else if(variable_metadata[i].variable_type == Type_MultipleChoice){
 	  /* Change string to lowercase for comparison */
 	  char buffer[OPTION_STRING_SIZE];
