@@ -19,8 +19,10 @@ extern "C"{
   void rpc_send_log_line(const char * s);
   void rpc_send_image_output(const char * s,const Image * a);
   int is_connected();
-
+#else
+#define is_connected() 0
 #endif /* NETWORK_SUPPORT */
+
 
 #ifdef __cplusplus
 }
