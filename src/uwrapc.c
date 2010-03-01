@@ -228,7 +228,6 @@ void complete_reconstruction_clean(Image * amp, Image * initial_support, Image *
     alg = sp_phasing_diff_map_alloc(opts->beta_evolution,get_gamma1(opts),get_gamma2(opts),phasing_constraints);
   }
   SpSupportArray * sup_alg = NULL;
-  printf("set support array\n");
   if(opts->support_update_algorithm == FIXED){
     sup_alg = sp_support_array_init(sp_support_threshold_alloc(opts->support_blur_evolution,opts->threshold_evolution),
 				    opts->iterations);
@@ -244,7 +243,6 @@ void complete_reconstruction_clean(Image * amp, Image * initial_support, Image *
   if (opts->support_update_algorithm == STATIC){
     sup_alg = sp_support_array_init(sp_support_static_alloc(),opts->iterations);
   }
-  printf("done\n");
   if(!alg || !sup_alg){
     hawk_fatal("Algorithm is NULL!\nBlame the programmer!");
   }
@@ -255,7 +253,12 @@ void complete_reconstruction_clean(Image * amp, Image * initial_support, Image *
   sp_phaser_init(ph,alg,sup_alg,SpEngineAutomatic);
   sp_phaser_set_amplitudes(ph,amp);
   sp_phaser_init_model(ph,opts->image_guess,0);
-  sp_phaser_init_support(ph,initial_support,0,0);
+  //sp_phaser_init_support(ph,initial_support,0,0);
+  if (opts->init_support == NULL) {
+    sp_phaser_init_support(ph,initial_support,SpSupportFromPatterson,opts->init_level);
+  } else {
+    sp_phaser_init_support(ph,initial_support,0,0);
+  }
   output_initial_images(sp_phaser_model(ph),initial_support);
   while(opts->max_iterations == 0 || opts->cur_iteration < opts->max_iterations){
     char buffer[1024];
@@ -317,6 +320,7 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
       opts->support_update_algorithm == TEMPLATE_AREA ||
       opts->support_update_algorithm == STATIC) && opts->support_image_averaging == 1){ 
     /* use new libspimage backend */
+    printf("use clean reconstruction\n");
     return complete_reconstruction_clean(amp,initial_support,exp_sigma,
 				  opts,dir);
   }else if(sp_cuda_get_device_type() == SpCUDAHardwareDevice  ||
