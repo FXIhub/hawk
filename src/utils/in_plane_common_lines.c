@@ -1,6 +1,6 @@
 #include <spimage.h>
 
-Image * rotate_image(const Image * a, const Rotation * rot){
+Image * rotate_image(const Image * a, const SpRotation * rot){
   sp_vector * pos = sp_vector_alloc(3);
   Image * ret = sp_image_duplicate(a,SP_COPY_DETECTOR);
   sp_image_fill(ret,sp_cinit(0,0));
@@ -10,7 +10,7 @@ Image * rotate_image(const Image * a, const Rotation * rot){
       sp_vector_set(pos,1,y-a->detector->image_center[1]);
       for(int x = 0;x<sp_image_x(a);x++){
 	sp_vector_set(pos,0,x-a->detector->image_center[0]);
-	sp_vector * rot_pos = sp_matrix_vector_prod(rot->R,pos);
+	sp_vector * rot_pos = sp_matrix_vector_prod(rot,pos);
 	float new_x = sp_vector_get(rot_pos,0)+a->detector->image_center[0];
 	if(new_x < 0 || new_x >= sp_image_x(ret)){
 	  continue;
@@ -43,7 +43,7 @@ int main(int argc, char ** argv){
   /* We have to use the inverse rotation because we need to transform gridded coordinates from
      the output image to floating point coordinates in the input image which we can then use
      to interpolate and get a nice value */
-    Rotation * rot = sp_rot_euler(-i*2.0*M_PI/steps,0,0);
+    SpRotation * rot = sp_rot_euler(-i*2.0*M_PI/steps,0,0);
     Image * rot_a = rotate_image(a,rot);
     char buffer[1024];
     sp_rot_free(rot);
