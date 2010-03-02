@@ -51,12 +51,14 @@
 
 #include "configuration.h"
 
+class QComboBox;
+
 class ComboBoxDelegate : public QItemDelegate
 {
     Q_OBJECT
 
 public:
-    ComboBoxDelegate(QObject *parent = 0);
+  ComboBoxDelegate(QObject *parent = 0,QComboBox * showOptionsCombo = 0);
 
     QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option,
                           const QModelIndex &index) const;
@@ -84,6 +86,7 @@ public:
     QMap<QFileDialog *,QString> editorResult;
     int fileEditorReturn;
     QString fileEditorValue;
+    QComboBox * m_showOptionsCombo;
 };
 
 typedef QMap<double,double> DoubleMap;

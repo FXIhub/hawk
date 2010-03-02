@@ -11,6 +11,8 @@
 #include "plotdisplay.h"
 #include "editorworkspace.h"
 #include "stitcherworkspace.h"
+#include "rpcserver.h"
+#include "remotelaunchdialog.h"
 
 HawkGUI::HawkGUI()
   :QMainWindow()
@@ -45,6 +47,7 @@ void HawkGUI::createGUI(){
   createActions();
   createToolBars();
   createStatusBar();
+  createMenuBar();
 }
 
 QWidget * HawkGUI::createPhaserWorkspace(){
@@ -69,9 +72,7 @@ QWidget * HawkGUI::createLeftPanel(){
   QWidget * leftPanel = new QWidget(this);
   
   /* Build left panel */
-  //  optionsTree = new QLabel("Options Tree",centralWidget());
   optionsTree = new OptionsTree(this);
-  //  processButtons = new QLabel("processButtons",centralWidget());
   processDisplay = new ProcessDisplay(this);
   
   QVBoxLayout *vlayout = new QVBoxLayout;
@@ -85,15 +86,7 @@ QWidget * HawkGUI::createLeftPanel(){
 QWidget * HawkGUI::createRightPanel(){
   imageDisplay = new ImageDisplay(this);
   imageDisplay->setImageCategories(&imageCategories);
-  //  plotDisplay = new QLabel("Plot Display",centralWidget());
   plotDisplay = new PlotDisplay(this);
-  /*    PlotDisplay::DatasetId id = plotDisplay->createDataset("Test");
-    if(plotDisplay->appendData(id,1,1)){
-    qDebug("Failled to append data");
-  }
-  if(plotDisplay->appendData(id,2,10)){
-    qDebug("Failled to append data");
-    }*/
   
   QSplitter * rightPanel = new QSplitter(Qt::Vertical,centralWidget());
   rightPanel->addWidget(imageDisplay);
@@ -127,59 +120,60 @@ void HawkGUI::createToolBars(){
   imageDisplayToolBar->addAction(lockTransformation);
   imageDisplayToolBar->addAction(lockBrowse);
   imageDisplayToolBar->addAction(autoUpdateView);
-  /*
-    imageDisplayToolBar->addSeparator();
-    imageDisplayToolBar->addAction(loadImage);
-  imageDisplayToolBar->addAction(shiftImage);
-  imageDisplayToolBar->addAction(fourierTransformImage);
-  imageDisplayToolBar->addAction(fourierTransformSquaredImage);
-  imageDisplayToolBar->addAction(maxContrastImage);
-  imageDisplayToolBar->addAction(logScaleImage);
-
-  displayBox = new QComboBox;  
-  displayBox->addItem("Amplitudes",0);
-  displayBox->addItem("Phases",SpColormapPhase);
-  displayBox->addItem("Mask",SpColormapMask);
-
-  imageDisplayToolBar->addWidget(displayBox);
-  */
-  
-  /*  
-      imageDisplayToolBar->addAction(displayAmplitudes);
-      imageDisplayToolBar->addAction(displayPhases);
-      imageDisplayToolBar->addAction(displayMask);
-  */
-    
-  /*  
-  colorBox = new QComboBox;
-  colorBox->addItem("Gray",SpColormapGrayScale);
-  colorBox->addItem("Jet",SpColormapJet);
-  colorBox->addItem("Hot",SpColormapHot);
-  colorBox->addItem("Rainbow",SpColormapRainbow);
-  colorBox->addItem("Traditional",SpColormapTraditional);
-  colorBox->addItem("Wheel",SpColormapWheel);
-
-  imageDisplayToolBar->addWidget(colorBox);
-  */
   stretcher = new QWidget(imageDisplayToolBar);
   stretcher->setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred));
 
   imageDisplayToolBar->addWidget(stretcher);
-
-    /*
-  imageDisplayToolBar->addAction(colorGray);
-  imageDisplayToolBar->addAction(colorJet);
-
-  imageDisplayToolBar->addAction(colorHot);
-  imageDisplayToolBar->addAction(colorRainbow);
-  imageDisplayToolBar->addAction(colorTraditional);
-  imageDisplayToolBar->addAction(colorWheel);
-    */
-
 }
 
 void HawkGUI::createStatusBar(){
   statusBar()->showMessage(tr("Ready"));
+}
+
+void HawkGUI::createMenuBar(){
+  QAction *action;
+  QSettings settings;
+  m_fileMenu = menuBar()->addMenu(tr("&File"));
+  action = new QAction("&Quit", this);
+  action->setShortcut(tr("CTRL+Q"));
+  connect(action, SIGNAL(triggered()), QApplication::instance(), SLOT(quit()));
+  m_fileMenu->addAction(action);
+
+
+  QActionGroup * actionGroup = new QActionGroup(this);
+  actionGroup->setExclusive(true);
+
+  m_settingsMenu = menuBar()->addMenu(tr("&Settings"));
+  m_settingsRunMenu = m_settingsMenu->addMenu(tr("&Launch runs"));
+  action = new QAction("&Locally", this);
+  action->setCheckable(true);
+  if(settings.value("ProcessControl/launchMethod").toInt() == ProcessControl::LaunchLocally){
+    action->setChecked(true);
+  }
+  actionGroup->addAction(action);
+  connect(action, SIGNAL(triggered()), this, SLOT(settingsRunLocally()));
+  m_settingsRunMenu->addAction(action);
+  action = new QAction("&Remotely (RPC)", this);
+  action->setCheckable(true);
+  if(settings.value("ProcessControl/launchMethod").toInt() == ProcessControl::LaunchRemotely){
+    action->setChecked(true);
+  }
+  actionGroup->addAction(action);
+  connect(action, SIGNAL(triggered()), this, SLOT(settingsRunRemotely()));
+  m_settingsRunMenu->addAction(action);
+
+  action = new QAction("&Remote Launch...", this);
+  m_settingsMenu->addAction(action);
+  connect(action, SIGNAL(triggered()), this, SLOT(settingsRemoteLaunch()));
+
+  m_helpMenu = menuBar()->addMenu(tr("&Help"));
+  action = new QAction("&About...", this);
+  connect(action, SIGNAL(triggered()), this, SLOT(helpAbout()));  
+  m_helpMenu->addAction(action);
+  action = new QAction("&About Qt...", this);
+  connect(action, SIGNAL(triggered()), this, SLOT(helpAboutQt()));
+  m_helpMenu->addAction(action);
+
 }
 
 void HawkGUI::createActions(){
@@ -206,64 +200,6 @@ void HawkGUI::createActions(){
   autoUpdateView->setCheckable(true);
   connect(autoUpdateView,SIGNAL(toggled(bool)),imageDisplay,SLOT(setAutoUpdate(bool)));
   autoUpdateView->setChecked(true);
-
-  /*
-  loadImage = new QAction(QIcon(":images/image_open.png"),tr("&Load Image"), this);
-  loadImage->setStatusTip(tr("Load image file."));
-  connect(loadImage,SIGNAL(triggered(bool)),imageDisplay,SLOT(loadUserSelectedImage()));
-  shiftImage = new QAction(QIcon(":images/image_shift.png"),tr("&Shift Image"), this);
-  shiftImage->setStatusTip(tr("Shifts the quadrants of the selected image."));
-  connect(shiftImage,SIGNAL(triggered(bool)),imageDisplay,SLOT(shiftSelectedImage()));
-  fourierTransformImage = new QAction(QIcon(":images/fourier_transform.png"),tr("&Fourier Transform Image"), this);
-  fourierTransformImage->setStatusTip(tr("Fourier Transforms the part of the image currently visible."));
-  connect(fourierTransformImage,SIGNAL(triggered(bool)),imageDisplay,SLOT(fourierTransformSelectedImage()));
-  fourierTransformSquaredImage = new QAction(QIcon(":images/fourier_transform_squared.png"),tr("&Fourier Transform the square of the Image"), this);
-  fourierTransformSquaredImage->setStatusTip(tr("Fourier Transform of the square of the absolute value of the part of the image currently visible."));
-  connect(fourierTransformSquaredImage,SIGNAL(triggered(bool)),imageDisplay,SLOT(fourierTransformSquaredSelectedImage()));
-
-
-  maxContrastImage = new QAction(QIcon(":images/bricontrast.png"),tr("&Maximize Contrast"), this);
-  maxContrastImage->setStatusTip(tr("Maximizes the contrast of the selected image."));
-  connect(maxContrastImage,SIGNAL(triggered(bool)),imageDisplay,SLOT(maxContrastSelectedImage()));
-  logScaleImage = new QAction(QIcon(":images/log_scale.png"),tr("&Log Scale"), this);
-  logScaleImage->setStatusTip(tr("Toggles log scale on the selected image."));
-  logScaleImage->setCheckable(true);
-  connect(logScaleImage,SIGNAL(toggled(bool)),imageDisplay,SLOT(logScaleSelectedImage(bool)));
-
-  displayGroup = new QActionGroup(this);
-  displayAmplitudes = new QAction(tr("&Amplitudes"), this);
-  displayAmplitudes->setCheckable(true);
-  displayAmplitudes->setChecked(true);
-  displayPhases = new QAction(tr("&Phases"), this);
-  displayPhases->setCheckable(true);
-  displayMask = new QAction(tr("&Mask"), this);
-  displayMask->setCheckable(true);
-  displayGroup->addAction(displayAmplitudes);
-  displayGroup->addAction(displayPhases);
-  displayGroup->addAction(displayMask);
-
-
-  colorGroup = new QActionGroup(this);
-  colorGray = new QAction(tr("Gray"),this);
-  colorGray->setCheckable(true);
-  colorGroup->addAction(colorGray);
-  colorJet = new QAction(tr("Jet"),this);
-  colorJet->setCheckable(true);
-  colorJet->setChecked(true);
-  colorGroup->addAction(colorJet);
-  colorHot = new QAction(tr("Hot"),this);
-  colorHot->setCheckable(true);
-  colorGroup->addAction(colorHot);
-  colorRainbow = new QAction(tr("Rainbow"),this);
-  colorRainbow->setCheckable(true);
-  colorGroup->addAction(colorRainbow);
-  colorTraditional = new QAction(tr("Traditional"),this);
-  colorTraditional->setCheckable(true);
-  colorGroup->addAction(colorTraditional);
-  colorWheel = new QAction(tr("Wheel"),this);
-  colorWheel->setCheckable(true);
-  colorGroup->addAction(colorWheel);
-  */
 
   loadLog = new QAction(QIcon(":images/log_open.png"),tr("&Load Log"), this);
   loadLog->setStatusTip(tr("Load log file."));
@@ -313,36 +249,21 @@ void HawkGUI::connectGUIToControls(){
   connect(runProcess,SIGNAL(toggled(bool)),this,SLOT(onRunProcessToggled(bool)));
   connect(optionsTree,SIGNAL(optionsTreeUpdated(Options *)),processControl,SLOT(setOptions(Options *)));
   connect(processControl,SIGNAL(processFinished()),this,SLOT(onProcessFinished()));
-  connect(processControl,SIGNAL(processStarted(QString,QString,ProcessControl *)),imageDisplay,SLOT(onProcessStarted(QString,QString,ProcessControl *)));
-  connect(processControl,SIGNAL(processStarted(QString,QString,ProcessControl *)),plotDisplay,SLOT(onProcessStarted(QString,QString,ProcessControl *)));
+  connect(processControl,SIGNAL(processStarted(ProcessControl::ProcessType,QString,ProcessControl *)),imageDisplay,SLOT(onProcessStarted(ProcessControl::ProcessType,QString,ProcessControl *)));
+  connect(processControl,SIGNAL(processStarted(ProcessControl::ProcessType,QString,ProcessControl *)),plotDisplay,SLOT(onProcessStarted(ProcessControl::ProcessType,QString,ProcessControl *)));
 
   connect(imageDisplay,SIGNAL(focusedViewChanged(ImageView *)),this,SLOT(onFocusedViewChanged(ImageView *)));
 
   connect(deleteOutput,SIGNAL(triggered()),this,SLOT(onDeleteOutputTriggered()));
 
-  /*
-  connect(displayAmplitudes,SIGNAL(triggered()),imageDisplay,SLOT(displayAmplitudes()));
-  connect(displayPhases,SIGNAL(triggered()),imageDisplay,SLOT(displayPhases()));
-  connect(displayMask,SIGNAL(triggered()),imageDisplay,SLOT(displayMask()));
-  
-  connect(colorGray,SIGNAL(triggered()),imageDisplay,SLOT(setColorGray()));
-  connect(colorJet,SIGNAL(triggered()),imageDisplay,SLOT(setColorJet()));
-  connect(colorHot,SIGNAL(triggered()),imageDisplay,SLOT(setColorHot()));
-  connect(colorWheel,SIGNAL(triggered()),imageDisplay,SLOT(setColorWheel()));
-  connect(colorRainbow,SIGNAL(triggered()),imageDisplay,SLOT(setColorRainbow()));
-  connect(colorTraditional,SIGNAL(triggered()),imageDisplay,SLOT(setColorTraditional()));
-
-  connect(colorBox,SIGNAL(currentIndexChanged(int)),this,SLOT(onColorBoxChanged(int)));
-  connect(displayBox,SIGNAL(currentIndexChanged(int)),this,SLOT(onDisplayBoxChanged(int)));
-  */
   // force initial signal
   optionsTree->rebuildTree();
 }
 
 
 void HawkGUI::createCategories(){
-  imageCategories.append(new ImageCategory("Calculated Pattern","pattern"));
-  imageCategories.append(new ImageCategory("Object","real_out"));
+  imageCategories.append(new ImageCategory("Fourier Space","fourier_space"));
+  imageCategories.append(new ImageCategory("Real Space","real_space"));
   //  imageCategories.append(new ImageCategory("Phase Image","real_out_phase"));
   imageCategories.append(new ImageCategory("Support","support"));
   imageCategories.append(new ImageCategory("Experimental Pattern","amplitudes"));
@@ -351,45 +272,10 @@ void HawkGUI::createCategories(){
   imageCategories.append(new ImageCategory("Initial Support","initial_support",false));
 }
 
+
+
 void HawkGUI::onFocusedViewChanged(ImageView * view){
   autoUpdateView->setChecked(view->getAutoUpdate());
-  /*
-  int color = view->colormap();
-  int index = colorBox->findData(color);
-  if(index >= 0){
-    colorBox->setCurrentIndex(index);    
-  }
-  int display = view->display();
-  index = displayBox->findData(display);
-  if(index >= 0){
-    displayBox->setCurrentIndex(index);    
-  }
-  if(color & SpColormapGrayScale){
-    colorGray->setChecked(true);
-  }
-  if(color & SpColormapJet){
-    colorJet->setChecked(true);
-  }
-  if(color & SpColormapHot){
-    colorHot->setChecked(true);
-  }
-  if(color & SpColormapTraditional){
-    colorTraditional->setChecked(true);
-  }
-  if(color & SpColormapRainbow){
-    colorRainbow->setChecked(true);
-  }
-  if(color & SpColormapWheel){
-    colorWheel->setChecked(true);
-  }
-  logScaleImage->blockSignals(true);
-  if(color & SpColormapLogScale){
-    logScaleImage->setChecked(true);
-  }else{
-    logScaleImage->setChecked(false);
-  }
-  logScaleImage->blockSignals(false);
-  */
 }
 
 
@@ -430,13 +316,6 @@ void HawkGUI::onDisplayBoxChanged(int index){
 }
 
 void HawkGUI::onLockTransformationToggled(bool on){
-  /*  if(on){
-    lockTransformation->setIcon(QIcon(":/images/unlock_zoom.png"));
-    lockTransformation->setText("Unlock Transformation");
-  }else{
-    lockTransformation->setIcon(QIcon(":/images/lock_zoom.png"));
-  }
-  */
   imageDisplay->setLockedTransformation(on);
 }
 
@@ -484,4 +363,31 @@ void HawkGUI::showEditorWorkspace(){
 
 void HawkGUI::showStitcherWorkspace(){
   centralLayout->setCurrentWidget(stitcherWorkspace);
+}
+
+void HawkGUI::helpAbout(){
+  QMessageBox::about(this, "About HawkGUI",
+		     "HawkGUI is a graphical interface for the Hawk Image Reconstruction package");
+}
+
+void HawkGUI::helpAboutQt(){
+  QMessageBox::aboutQt(this);
+}
+
+void HawkGUI::settingsRunLocally(){
+  QSettings settings;
+  settings.setValue("ProcessControl/launchMethod",ProcessControl::LaunchLocally);
+  qDebug("Running reconstructions locally");
+}
+
+void HawkGUI::settingsRunRemotely(){
+  QSettings settings;
+  settings.setValue("ProcessControl/launchMethod",ProcessControl::LaunchRemotely);
+  qDebug("Running reconstructions remotely");
+}
+
+void HawkGUI::settingsRemoteLaunch(){
+  qDebug("Remote launch settings opened");
+  RemoteLaunchDialog dialog(this);
+  dialog.exec();
 }

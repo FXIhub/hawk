@@ -216,14 +216,14 @@ int ImageItem::colormap(){
 void ImageItem::setDisplay(int display){
  // clear display bits
   if(image){
-    colormap_flags &= ~(SpColormapPhase|SpColormapMask);
+    colormap_flags &= ~(SpColormapPhase|SpColormapMask|SpColormapShadedMask);
     colormap_flags |= display;
     updateImage();
   }
 }
 
 int ImageItem::display(){
-  return colormap_flags & (SpColormapPhase|SpColormapMask);
+  return colormap_flags & (SpColormapPhase|SpColormapMask|SpColormapShadedMask);
 }
 
 void ImageItem::maxContrast(QRectF area){
@@ -276,7 +276,6 @@ void ImageItem::setLogScale(bool on){
 }
 
 bool ImageItem::logScale(){
-  colormap_flags &= ~(SpColormapLogScale);
   if(colormap_flags & SpColormapLogScale){
     return true;
   }
@@ -595,8 +594,12 @@ void ImageItem::repositionCenterIndicators(){
 }
 
 void ImageItem::setCenterIndicatorsVisible(bool show){
-  centerVerticalIndicator->setVisible(show);
-  centerHorizontalIndicator->setVisible(show);
+  if(centerVerticalIndicator){
+    centerVerticalIndicator->setVisible(show);
+  }
+  if(centerHorizontalIndicator){
+    centerHorizontalIndicator->setVisible(show);
+  }
 }
 
 void ImageItem::setSelected(bool selected){
@@ -866,7 +869,6 @@ QList<QPointF> ImageItem::getControlPoints(){
 
 
 void ImageItem::moveBy(qreal dx, qreal dy){
-  qDebug("here 2");
   if(dxLocked()){
     dx = 0;
   }
@@ -887,4 +889,76 @@ QTransform ImageItem::transformFromParameters(){
   //  t = QTransform(t.m11(), t.m12(), t.m13()+dz()/1024, t.m21(), t.m22(), t.m23()+dz()/1024, t.m31(), t.m32(),1);
   t.translate(-pixmap().width()/2,-pixmap().height()/2);  
   return t;
+}
+
+
+void ImageItem::setImageMask(QPoint pos,int value){
+  if(!image){
+    return;
+  }
+  addToStack(ImageMask,pos,value);
+  int x = pos.x();
+  int y = pos.y();
+  if(sp_image_contains_coordinates(image,x,y,0)){
+    sp_image_mask_set(image,x,y,0,value);
+  }
+}
+
+
+QList<QPoint> ImageItem::imagePointsAround(QPointF scenePos,int sceneRadius){
+  QList<QPoint> ret;
+  if(!image){
+    return ret;
+  }
+  QPoint center(mapFromScene(scenePos).x(),mapFromScene(scenePos).y());
+  QPoint topLeft(mapFromScene(scenePos-QPointF(sceneRadius,sceneRadius)).x(),
+		    mapFromScene(scenePos-QPointF(sceneRadius,sceneRadius)).y());
+  QPoint bottomRight(mapFromScene(scenePos+QPointF(sceneRadius,sceneRadius)).x(),
+		     mapFromScene(scenePos+QPointF(sceneRadius,sceneRadius)).y());
+  QPointF tmp = mapFromScene(scenePos)-mapFromScene(scenePos+QPointF(sceneRadius,0));
+  real radius = sqrt(tmp.x()*tmp.x()+tmp.y()*tmp.y());
+  for(int x = topLeft.x();x<=bottomRight.x()+1;x++){
+    for(int y = topLeft.y();y<=bottomRight.y()+1;y++){
+      if(!sp_image_contains_coordinates(image,x,y,0)){
+	continue;
+      }
+      QPoint aroundPos(x,y);      
+      QPointF diff = center-aroundPos;
+      if(diff.x()*diff.x() + diff.y()*diff.y() > radius*radius){
+	continue;
+      }
+      ret.append(aroundPos);
+    }
+  }
+  return ret;
+}
+
+void ImageItem::setMaskFromImage(const Image * mask){
+  if(!image){
+    return;
+  }
+  QVariant img_var;
+  qVariantSetValue(img_var,mask);
+  addToStack(MaskFromImage,img_var);
+  for(int i = 0;i<sp_image_size(mask);i++){
+    if(sp_real(mask->image->data[i]) == 0){
+      image->mask->data[i] = 0;
+    }else{
+      image->mask->data[i] = 1;
+    }
+  }
+}
+
+void ImageItem::invertMask(){
+  if(!image){
+    return;
+  }
+  addToStack(InvertMask);
+  for(int i = 0;i<sp_image_size(image);i++){
+    if(image->mask->data[i] == 0){
+      image->mask->data[i] = 1;
+    }else{
+      image->mask->data[i] = 0;
+    }
+  }
 }

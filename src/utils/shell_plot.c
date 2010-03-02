@@ -93,7 +93,7 @@ Binned_Data * image_std_deviation_by_r(Image * a, int nshells){
 
 
 int main(int argc, char ** argv){
-  int nshells = 141;
+  int nshells = 1024;
   Binned_Data * out;
   real * shell_res;
   if(argc != 3){
@@ -105,7 +105,8 @@ int main(int argc, char ** argv){
   if(max_res){
     shell_res = malloc(sizeof(real)*nshells);
     for(int i = 0;i<nshells;i++){
-      shell_res[i] = 1.0/((1.0/max_res)*((i+0.5)/nshells));
+      //      shell_res[i] = 1.0/((1.0/max_res)*((i+0.5)/nshells));
+      shell_res[i] = i;
     }
   }
   Image * a= sp_image_read(argv[1],0);
@@ -117,5 +118,15 @@ int main(int argc, char ** argv){
     shell_res[i] = (real)i/nshells*1.0/max_res;
   }
   write_array_file("shells_std_dev.data",nshells,std_dev,shell_res);
+  Image * b = sp_image_alloc(sp_image_x(a),sp_image_y(a),sp_image_z(a));
+  real max_dist = sqrt(sp_image_x(a)*sp_image_x(a)+sp_image_y(a)*sp_image_y(a)+
+		       sp_image_z(a)*sp_image_z(a));
+  for(int i = 0;i<sp_image_size(b);i++){
+    real dist = sp_image_dist(a,i,SP_TO_CENTER);
+    int bin = sp_min(dist*nshells/max_dist,nshells-1);
+    sp_real(b->image->data[i]) = out->f[bin];
+    sp_imag(b->image->data[i]) = 0;
+  }
+  sp_image_write(b,"shells_image.h5",0);
   return 0;
 }

@@ -5,6 +5,7 @@
 #include "algorithms.h"
 #include "support.h"
 #include "saddle/minmaxL.h"
+#include "io_utils.h"
 
 int real_compare(const void * a, const void * b){
   if((*(real *)a) <(*(real *)b)){
@@ -158,7 +159,7 @@ void phase_smoothening_iteration(Image * real_in, Options * opts, Log * log){
     sp_real(out->image->data[i]) /= amps[i];
     sp_imag(out->image->data[i]) /= amps[i];
   }
-  Image * tmp = gaussian_blur(out,radius);
+  Image * tmp = sp_gaussian_blur(out,radius);
   sp_image_free(out);
   for(i = 0;i<sp_image_size(tmp);i++){
     sp_real(real_in->image->data[i]) = sp_real(tmp->image->data[i])*amps[i];
@@ -668,7 +669,7 @@ Image * basic_cflip_iteration(Image * exp_amp, Image * real_in, Image * support,
     qsort(tmp,sp_c3matrix_size(exp_amp->image),sizeof(real),descend_complex_compare);
     /* get the weak reflections threshold */
     max = tmp[(int)(sp_c3matrix_size(exp_amp->image)*opts->perturb_weak_reflections)];
-    fprintf(stderr,"max - %f\nindex - %d\n",max,(int)(sp_c3matrix_size(exp_amp->image)*opts->perturb_weak_reflections));
+    hawk_info("max - %f\nindex - %d\n",max,(int)(sp_c3matrix_size(exp_amp->image)*opts->perturb_weak_reflections));
     sp_free(tmp);
     j = 0;
     for(i = 0;i<sp_c3matrix_size(exp_amp->image);i++){
@@ -679,7 +680,7 @@ Image * basic_cflip_iteration(Image * exp_amp, Image * real_in, Image * support,
 	weak_reflections[i] = 0;
       }
     }
-    fprintf(stderr,"marked %d reflections\n",j);  
+    hawk_info("marked %d reflections\n",j);  
   }
 
   
@@ -753,7 +754,7 @@ Image * basic_espresso_iteration(Image * exp_amp, Image * real_in, Image * suppo
     qsort(tmp,sp_c3matrix_size(exp_amp->image),sizeof(real),descend_complex_compare);
     /* get the weak reflections threshold */
     max = tmp[(int)(sp_c3matrix_size(exp_amp->image)*opts->perturb_weak_reflections)];
-    fprintf(stderr,"max - %f\nindex - %d\n",max,(int)(sp_c3matrix_size(exp_amp->image)*opts->perturb_weak_reflections));
+    hawk_info("max - %f\nindex - %d\n",max,(int)(sp_c3matrix_size(exp_amp->image)*opts->perturb_weak_reflections));
     sp_free(tmp);
     j = 0;
     for(i = 0;i<sp_c3matrix_size(exp_amp->image);i++){
@@ -764,7 +765,7 @@ Image * basic_espresso_iteration(Image * exp_amp, Image * real_in, Image * suppo
 	weak_reflections[i] = 0;
       }
     }
-    fprintf(stderr,"marked %d reflections\n",j);  
+    hawk_info("marked %d reflections\n",j);  
   }
 
   
@@ -919,8 +920,7 @@ static Image * Q_operator(Image * x, Image * y, Image *z){
     sp_c3matrix_free(z_minus_y);
     return sp_image_duplicate(y,SP_COPY_DATA|SP_COPY_MASK);
   }else{
-    fprintf(stderr,"Cannot reach here!\n");
-    abort();
+    hawk_fatal("Cannot reach here!\n");
   }
   return NULL;
 }

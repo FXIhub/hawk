@@ -19,7 +19,7 @@
 #include "spimage.h"
 
 #include "configuration.h"
-
+#include "io_utils.h"
 
 Options global_options;
 
@@ -50,6 +50,8 @@ int get_config_type(Variable_Type vt){
     return CONFIG_TYPE_INT;
   }else if(vt == Type_Filename){
     return CONFIG_TYPE_STRING;
+  }else if(vt == Type_Existing_Filename){
+    return CONFIG_TYPE_STRING;
   }else if(vt == Type_Directory_Name){
     return CONFIG_TYPE_STRING;
   }else if(vt == Type_String){
@@ -67,8 +69,7 @@ int get_config_type(Variable_Type vt){
   }else if(vt == Type_Map_Real){
     return CONFIG_TYPE_LIST;
   }
-  fprintf(stderr,"Unkown variable type\n");
-  abort();
+  hawk_fatal("Unkown variable type");
   return -1;
 }
 
@@ -106,12 +107,14 @@ void set_defaults(Options * opt){
   opt->adapt_thres = 0;
   opt->automatic = 0;
   opt->support_update_algorithm = DECREASING_AREA;
+  opt->support_closure_radius = 0;
   opt->real_error_threshold = -1;
   opt->iterations_to_min_blur = 7000;
   opt->blur_radius_reduction_method = GAUSSIAN_BLUR_REDUCTION;
   opt->output_precision = sizeof(real);
   opt->error_reduction_iterations_after_loop = 0;
   strcpy(opt->work_dir,".");
+  opt->remote_work_dir[0] = 0;
   sprintf(opt->log_file,"uwrapc.log");
   opt->enforce_positivity = 0;
   opt->genetic_optimization = 0;
@@ -147,6 +150,7 @@ void set_defaults(Options * opt){
   opt->support_image_averaging = 1;
   opt->random_seed = -1;
   opt->autocorrelation_area = 0.1;
+  opt->template_blur_radius = 5.0;
   opt->beta_evolution = sp_smap_alloc(2);
   sp_smap_insert(opt->beta_evolution,0,0.9);
   sp_smap_insert(opt->beta_evolution,2000,0.9);
@@ -160,15 +164,19 @@ void set_defaults(Options * opt){
   opt->phases_blur_evolution = sp_smap_alloc(2);
   sp_smap_insert(opt->phases_blur_evolution,0,0);
   sp_smap_insert(opt->phases_blur_evolution,5000,0);
+  opt->template_area_evolution = sp_smap_alloc(2);
+  sp_smap_insert(opt->template_area_evolution,0,1.0);
+  sp_smap_insert(opt->template_area_evolution,5000,1.0);
+  opt->save_remote_files = 0;
+  opt->debug_level = 0;
 }
 
 void read_options_file(const char * filename){
   config_t config;
   config_init(&config);
   if(!config_read_file(&config,filename)){
-    fprintf(stderr,"Error parsing %s on line %d:\n,%s\n",
-	    filename,config_error_line(&config),config_error_text(&config));
-    exit(1);
+    hawk_fatal("Error parsing %s on line %d:\n,%s",
+	       filename,config_error_line(&config),config_error_text(&config));
   }
 
 
@@ -179,6 +187,7 @@ void read_options_file(const char * filename){
       if(config_lookup(&config,path)){	
 	if(variable_metadata[i].variable_type == Type_String||
 	   variable_metadata[i].variable_type == Type_Filename ||
+	   variable_metadata[i].variable_type == Type_Existing_Filename ||
 	   variable_metadata[i].variable_type == Type_Directory_Name){
 	  strcpy((char *)variable_metadata[i].variable_address,config_lookup_string(&config,path));
 	}else if(variable_metadata[i].variable_type == Type_Int){
@@ -216,7 +225,6 @@ void read_options_file(const char * filename){
 	  }else{
 	    *((int *)variable_metadata[i].variable_address) = config_lookup_int(&config,path);
 	  }
-
 	}else if(variable_metadata[i].variable_type == Type_MultipleChoice){
 	  /* Change string to lowercase for comparison */
 	  char buffer[OPTION_STRING_SIZE];
@@ -227,10 +235,9 @@ void read_options_file(const char * filename){
 	  /* Compare with list of known good strings */
 	  for(int j = 0;;j++){
 	    if(variable_metadata[i].list_valid_names[j] == NULL){
-	      fprintf(stderr,"Error invalid list value %s for option %s\n",
-		      config_lookup_string(&config,path),
-		      variable_metadata[i].variable_name);
-	      abort();
+	      hawk_fatal("Error invalid list value %s for option %s",
+			 config_lookup_string(&config,path),
+			 variable_metadata[i].variable_name);
 	    }
 	    if(strcmp(variable_metadata[i].list_valid_names[j],buffer) == 0){
 	      *((int *)variable_metadata[i].variable_address) = variable_metadata[i].list_valid_values[j];
@@ -253,15 +260,14 @@ void read_options_file(const char * filename){
 		  sp_smap_insert(m, config_setting_get_float_elem(keys,j),config_setting_get_float_elem(values,j));
 		}
 	      }else{
-		sp_error_fatal("Map datatype not supported!");
+		hawk_fatal("Map datatype not supported!");
 	      }
 	    }
 	  }else{
-	    sp_error_fatal("Keys field missing in Map Type!");	    
+	    hawk_fatal("Keys field missing in Map Type!");	    
 	  }
 	}else{
-	  fprintf(stderr,"Variable type not yet supported!\n");	
-	  abort();
+	  hawk_fatal("Variable type not yet supported!");	
 	}
       }
       sp_free(path);
@@ -270,18 +276,28 @@ void read_options_file(const char * filename){
 }
 
 
-void check_options_and_load_images(Options * opts){
+int check_options_and_load_images(Options * opts){
  /* Make sure option is set and is not empty */
-  if(opts->diffraction_filename && strcmp(opts->diffraction_filename,"")){    
-    opts->diffraction = sp_image_read(opts->diffraction_filename,0);
-  }else if(opts->real_image_filename  && strcmp(opts->real_image_filename,"")){
-    opts->real_image = sp_image_read(opts->real_image_filename,0);
-  }else{
-    sp_error_fatal("Neither diffraction nor real image specified!");
+  if(!opts->diffraction && !opts->real_image){
+    if(opts->diffraction_filename && strcmp(opts->diffraction_filename,"")){    
+      opts->diffraction = sp_image_read(opts->diffraction_filename,0);
+    }else if(opts->real_image_filename  && strcmp(opts->real_image_filename,"")){
+      opts->real_image = sp_image_read(opts->real_image_filename,0);
+    }else{
+      hawk_fatal("Neither diffraction nor real image specified!");
+      return -1;
+    }
   }
   
-  if(opts->support_mask_filename  && strcmp(opts->support_mask_filename,"")){
-    opts->support_mask = sp_image_read(opts->support_mask_filename,0);
+  if(opts->log_file[0] == 0){
+    /* someone had the really bad idea to set the log file to an empty string*/
+    hawk_fatal("Can't use an empty log file. Please fix your configuration file.");
+  }
+  /* we might already have a mask from the network */
+  if(!opts->support_mask){
+    if(opts->support_mask_filename  && strcmp(opts->support_mask_filename,"")){
+      opts->support_mask = sp_image_read(opts->support_mask_filename,0);
+    }
   }
 
   /* transform fixed thresholds in maps */
@@ -289,6 +305,11 @@ void check_options_and_load_images(Options * opts){
     opts->threshold_evolution = sp_smap_alloc(1);
     sp_smap_insert(opts->threshold_evolution,0,opts->new_level);
   }
+  /* transform the fixed beta into a map */
+  if(!opts->beta_evolution && opts->beta){
+    opts->beta_evolution = sp_smap_create_from_pair(0,opts->beta);
+  }
+  return 0;
 }
 
 /*
@@ -343,15 +364,15 @@ void write_options_file(const char * filename){
 	parent = config_lookup(&config,variable_metadata[i].parent->variable_name);
       }
       if(!parent){
-	fprintf(stderr,"Could not find parent of %s\n",variable_metadata[i].variable_name);
-	abort();
+	hawk_fatal("Could not find parent of %s",variable_metadata[i].variable_name);
       }
       s = config_setting_add(parent,variable_metadata[i].variable_name,get_config_type(variable_metadata[i].variable_type));
       if(!s){
-	sp_error_fatal("Could not add config setting");
+	hawk_fatal("Could not add config setting");
       }
       if(variable_metadata[i].variable_type == Type_String || 
 	 variable_metadata[i].variable_type == Type_Filename ||
+	 variable_metadata[i].variable_type == Type_Existing_Filename ||
 	 variable_metadata[i].variable_type == Type_Directory_Name){
 	config_setting_set_string(s,(char *)variable_metadata[i].variable_address);
       }else if(variable_metadata[i].variable_type == Type_Int){
@@ -377,8 +398,7 @@ void write_options_file(const char * filename){
       }else if(variable_metadata[i].variable_type == Type_MultipleChoice){
 	for(int j = 0;;j++){
 	  if(variable_metadata[i].list_valid_names[j] == NULL){
-	    fprintf(stderr,"Error invalid list value\n");
-	    abort();
+	    hawk_fatal("Error invalid list value");
 	  }
 	  if(*((int *)variable_metadata[i].variable_address) == variable_metadata[i].list_valid_values[j]){
 	    config_setting_set_string(s,variable_metadata[i].list_valid_names[j]);
@@ -399,8 +419,7 @@ void write_options_file(const char * filename){
 	  config_setting_set_float_elem(s,-1,sp_list_get(values,i));
 	}
       }else{
-	fprintf(stderr,"Variable type not yet supported!\n");	
-	abort();
+	hawk_fatal("Variable type not yet supported!");	
       }
     }
   }
@@ -415,7 +434,7 @@ static real interpolate_on_checkpoints(sp_vector * values,sp_vector * checkpoint
   int right = INT_MAX;
   int right_i;    
   if(sp_vector_size(values) != sp_vector_size(checkpoints)){
-    sp_error_fatal("Number of checkpoint elements doesn't match number of values!");
+    hawk_fatal("Number of checkpoint elements doesn't match number of values!");
   }
   for(unsigned int i = 0;i<sp_vector_size(checkpoints);i++){
     real iter = sp_vector_get(checkpoints,i);
@@ -429,7 +448,7 @@ static real interpolate_on_checkpoints(sp_vector * values,sp_vector * checkpoint
     }
   }
   if(left == INT_MIN && right == INT_MAX){
-    sp_error_fatal("Cannot find boundaries on object area!");
+    hawk_fatal("Cannot find boundaries on object area!");
   }else if(left == INT_MIN){
     /* cur_iteration is before first checkpoint */
     return sp_vector_get(values,right_i);
@@ -452,7 +471,7 @@ static real interpolate_on_checkpoints(sp_vector * values,sp_vector * checkpoint
       return (delta)*(n)+sp_vector_get(values,right_i);
     }    
   }
-  sp_error_fatal("Cannot reach here!");
+  hawk_fatal("Cannot reach here!");
   return -1;
 }
 
@@ -463,7 +482,7 @@ real get_beta(Options * opts){
   }
   if(opts->beta_checkpoints){
     if(!opts->beta_at_checkpoints){
-      sp_error_fatal("When you specify beta_checkpoints you also need to specify the corresponding beta_at_checkpoints!");
+      hawk_fatal("When you specify beta_checkpoints you also need to specify the corresponding beta_at_checkpoints!");
     }
     return interpolate_on_checkpoints(opts->beta_at_checkpoints,opts->beta_checkpoints,opts,1);
   }
@@ -505,6 +524,13 @@ real get_phases_blur_radius(Options * opts){
   return 0;    
 }
 
+real get_template_area(Options * opts){
+  if(opts->template_area_evolution){
+    return bezier_map_interpolation(opts->template_area_evolution,opts->cur_iteration);
+  }
+  return 0;    
+}
+
 
 real get_object_area(Options * opts){
   real a;
@@ -517,10 +543,10 @@ real get_object_area(Options * opts){
     int right = INT_MAX;
     int right_i = -1;
     if(!opts->object_area_at_checkpoints){
-      sp_error_fatal("When you specify object_area_checkpoints you also need to specify the corresponding object_area_at_checkpoints!");
+      hawk_fatal("When you specify object_area_checkpoints you also need to specify the corresponding object_area_at_checkpoints!");
     }
     if(sp_vector_size(opts->object_area_checkpoints) != sp_vector_size(opts->object_area_at_checkpoints)){
-      sp_error_fatal("Number of elements of object_area_at_checkpoints does not match object_area_checkpoints!");
+      hawk_fatal("Number of elements of object_area_at_checkpoints does not match object_area_checkpoints!");
     }
     for(unsigned int i = 0;i<sp_vector_size(opts->object_area_checkpoints);i++){
       real value = sp_vector_get(opts->object_area_checkpoints,i);
@@ -534,7 +560,7 @@ real get_object_area(Options * opts){
       }
     }
     if(left == INT_MIN && right == INT_MAX){
-      sp_error_fatal("Cannot find boundaries on object area!");
+      hawk_fatal("Cannot find boundaries on object area!");
     }else if(left == INT_MIN){
       /* cur_iteration is before first checkpoint */
       return sp_vector_get(opts->object_area_at_checkpoints,right_i);

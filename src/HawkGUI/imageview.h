@@ -6,6 +6,7 @@
 #include <QPointF>
 #include <QList>
 #include <QGraphicsView>
+#include <spimage.h>
 
 class ImageItem;
 class QGraphicsScene;
@@ -52,6 +53,7 @@ class ImageView: public QGraphicsView
   void scheduleImageLoad(QString file);
   virtual bool loadImage(QString file);
   void loadImage(QPixmap pix);
+  void loadImageFromMemory(Image * image,QString name=QString());
   void setPos(QPointF pos);
   void setTransform(QTransform t);
   void setLogScale(bool on);
@@ -62,6 +64,8 @@ class ImageView: public QGraphicsView
   void translateItems(QPointF mov);
   void setPreserveShift(bool on);
   bool preservesShift() const;
+  void setPreserveLog(bool on);
+  bool preservesLog() const;
   virtual void saveImage();
   void emitImageItemChanged(ImageItem * item);
   void setSelectedImage(ImageItem * item);
@@ -107,6 +111,7 @@ class ImageView: public QGraphicsView
   QString currentIteration;
   ImageViewPanel * panel;
   bool preserveShift;
+  bool preserveLog;
   bool _backgroundDraggable;
 };
 

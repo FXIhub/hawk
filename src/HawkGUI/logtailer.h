@@ -13,13 +13,13 @@ class LogTailer: public QFileSystemWatcher
   void tailLogFile(QString path);
  public slots:
   void readLine(QString path);
+  void parseLine(QString line);  
  signals:
   void dataLineRead(QList<double> data);
   void headerRead(QString title, int column);
   private slots:
   void tryAddingPath();
  private:
-  void parseLine(QString line);
   QFile log;
   qint64 pos;
   QTextStream reader;

@@ -45,15 +45,15 @@ void OutputWatcher::checkForNewFiles(){
   QFileInfo previousFile;
   qDebug("checkForNewFiles");
   while(1){
-    if(newestFiles.contains("Object")){
-      fi = newestFiles.value("Object");
+    if(newestFiles.contains("Real Space")){
+      fi = newestFiles.value("Real Space");
       if(previousFile == fi){
 	return;
       }
       /* We have a previous object, lets use the increment to check for the next */
       file = incrementFilename(fi.absoluteFilePath(),increment);    
     }else{
-      QString baseIter = "real_out-0000000.h5";
+      QString baseIter = "real_space-0000000.h5";
       fi = QFileInfo(dir,baseIter);
       file = incrementFilename(fi.absoluteFilePath(),increment-1);    
     }

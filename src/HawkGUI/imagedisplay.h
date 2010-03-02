@@ -3,6 +3,8 @@
 
 #include <QFrame>
 #include <QFileInfo>
+#include <QMap>
+#include "processcontrol.h"
 
 class GeometryControl;
 class ImageView;
@@ -12,7 +14,6 @@ class QFocusFrame;
 class OutputWatcher;
 class ImageCategory;
 class ImageFrame;
-class ProcessControl;
 
 class ImageDisplay : public QFrame
 {
@@ -29,18 +30,21 @@ public slots:
   void setLockedBrowse(bool locked);
   void translateView(QPointF ammount);
   void scaleView(qreal scale);
-  void onProcessStarted(QString type,QString path,ProcessControl * process);
+  void onProcessStarted(ProcessControl::ProcessType type,QString path,ProcessControl * process);
   void onProcessStopped();
   void updateLatestOutput(QString type,QFileInfo file,QFileInfo old);
+  void updateLatestOutput(quint64 client,QString location);
   void setAutoUpdate(bool update);
   void loadUserSelectedImage();
   void loadInitialProcessOutput(QString key, QFileInfo file);
+  void loadInitialProcessOutput(quint64 client, QString location);
   void shiftSelectedImage();
   void fourierTransformSelectedImage();
   void fourierTransformSquaredSelectedImage();
   void displayAmplitudes();
   void displayPhases();
   void displayMask();
+  void displayShadedMask();
   void setDisplay(int);
   void setColorGray();
   void setColorJet();
@@ -57,6 +61,9 @@ public slots:
   void stopOutputWatcher();
   private slots:
   void onImageLoaded(QString image);
+  private slots:
+  void finishLoadRPCImage(quint64 client, QString location,Image * a);
+  
 private:
   void initImageViewers();
   GeometryControl * geometryControl;
@@ -72,5 +79,6 @@ private:
   bool processRunning;  
   ProcessControl * process;
   bool lockedBrowse;
+  QMap<QPair<quint64,QString>,ImageView *> m_rpcImageToView;
 };
 #endif

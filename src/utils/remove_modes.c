@@ -2,7 +2,7 @@
 
 int main(int argc, char ** argv){
   if(argc < 5){
-    printf("Usage: %s <object_with_modes> <masked_amplitudes> <threshold> <output>\n",argv[0]);
+    printf("Usage: %s <object_with_modes> <masked_amplitudes> <threshold> <output> [use constraints]\n",argv[0]);
     exit(0);
   }
   Image * obj = sp_image_read(argv[1],0);
@@ -19,7 +19,12 @@ int main(int argc, char ** argv){
   }
   sp_image_write(sup,"input_support.h5",0);
   real beta = 0.9;
-    SpPhasingAlgorithm * alg = sp_phasing_er_alloc(SpNoConstraints);
+  SpPhasingAlgorithm * alg;
+  if(argv > 5){
+    alg = sp_phasing_er_alloc(SpPositiveRealObject);
+  }else{
+    alg = sp_phasing_er_alloc(SpNoConstraints);
+  }
   //  SpPhasingAlgorithm * alg = sp_phasing_raar_alloc(beta,SpNoConstraints);
   SpSupportAlgorithm * sup_alg = NULL;
   SpPhaser * ph = sp_phaser_alloc();

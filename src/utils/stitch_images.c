@@ -124,8 +124,10 @@ Image * stitch_images(ImageGeometry * geom, Image ** images, int n_images){
       sp_image_mask_set(ret,x-x0,y-y0,0,mask);
     }
   }
-  ret->detector->image_center[0] = -(x0-1);
-  ret->detector->image_center[1] = -(y0-1);
+  ret->detector->image_center[0] = -(x0);
+  ret->detector->image_center[1] = -(y0);
+  ret->detector->image_center[2] = 0;
+
   return ret;
 }
 

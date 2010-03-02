@@ -5,6 +5,7 @@
 #include "configuration.h"
 #include "log.h"
 #include "algorithms.h"
+#include "io_utils.h"
 #ifdef _USE_DMALLOC
 #include <dmalloc.h>
 #endif
@@ -201,50 +202,50 @@ void output_to_log(const Image * exp_amp,const Image * real_in, const Image * re
   }
   if(!opts->flog){
     opts->flog = fopen(opts->log_file,"w");
-    fprintf(opts->flog,"# Uwrapc version %s compiled on %s at %s\n",VERSION,__DATE__,__TIME__);
+    hawk_log(opts->flog,"# Uwrapc version %s compiled on %s at %s\n",VERSION,__DATE__,__TIME__);
     time(&t);
     
-    fprintf(opts->flog,"# Date: %s\n",ctime(&t));
-    fprintf(opts->flog,"# Command line:\n# %s\n#\n",opts->commandline);
-    fprintf(opts->flog,"# It(in) - Number of iterations of the inner loop\n");
-    fprintf(opts->flog,"# It(out) - Number of iterations of the outer loop\n");
-    fprintf(opts->flog,"# Ereal - Real Space error. Eq 16 in Ref 1\n");
-    fprintf(opts->flog,"# Efourier - Fourier Space error. Eq 17 in Ref 1.\n"
+    hawk_log(opts->flog,"# Date: %s\n",ctime(&t));
+    hawk_log(opts->flog,"# Command line:\n# %s\n#\n",opts->commandline);
+    hawk_log(opts->flog,"# It(in) - Number of iterations of the inner loop\n");
+    hawk_log(opts->flog,"# It(out) - Number of iterations of the outer loop\n");
+    hawk_log(opts->flog,"# Ereal - Real Space error. Eq 16 in Ref 1\n");
+    hawk_log(opts->flog,"# Efourier - Fourier Space error. Eq 17 in Ref 1.\n"
 	    "#\t   Basically Xray R factor\n");
-    fprintf(opts->flog,"# <Fc/Fo> - Simply the average of calculated\n"
+    hawk_log(opts->flog,"# <Fc/Fo> - Simply the average of calculated\n"
 	    "#\t  amplitude divided by experimental one\n");
-    fprintf(opts->flog,"# SupSize - Support size in relation to image size (%%)\n");
-    fprintf(opts->flog,"# Ref 1.  High-resolution ab initio three-dimensional\n"
+    hawk_log(opts->flog,"# SupSize - Support size in relation to image size (%%)\n");
+    hawk_log(opts->flog,"# Ref 1.  High-resolution ab initio three-dimensional\n"
 	    "#\tX-ray diffraction microscopy\n\n");
     
-    fprintf(opts->flog,"#It(in)\tIt(out)\tEreal\t\tEfourier\t<Fc/Fo>\t\tSupSize\n");        
+    hawk_log(opts->flog,"#It(in)\tIt(out)\tEreal\t\tEfourier\t<Fc/Fo>\t\tSupSize\n");        
 
-    fprintf(opts->flog,"@TYPE xy\n");
-    fprintf(opts->flog,"@ view 0.15, 0.15, 0.75, 0.8\n");
-    fprintf(opts->flog,"@ legend on\n");
-    fprintf(opts->flog,"@ legend box on\n");
-    fprintf(opts->flog,"@ legend loctype view\n");
-    fprintf(opts->flog,"@ legend 0.78, 0.8\n");
-    fprintf(opts->flog,"@ legend length 2\n");
-    fprintf(opts->flog,"@ s0 legend \"It(out) \\N\"\n");
-/*    fprintf(log,"@ s0 legend \"It(in) \\N\"\n");*/
-    fprintf(opts->flog,"@ s1 legend \"Ereal \\N\"\n");
-    fprintf(opts->flog,"@ s2 legend \"Efourier \\N\"\n");
-    fprintf(opts->flog,"@ s3 legend \"<Fc/Fo> \\N\"\n");
-    fprintf(opts->flog,"@ s4 legend \"SupSize(%%) \\N\"\n");
-    fprintf(opts->flog,"@ s5 legend \"Beta \\N\"\n");
-    fprintf(opts->flog,"@ s6 legend \"Threshold \\N\"\n");
-    fprintf(opts->flog,"@ s7 legend \"Algorithm \\N\"\n");
-    fprintf(opts->flog,"@ s8 legend \"dEreal \\N\"\n");
-    fprintf(opts->flog,"@ s9 legend \"dSupSize \\N\"\n");
-    fprintf(opts->flog,"@ s10 legend \"Blur Radius \\N\"\n");
-    fprintf(opts->flog,"@ s11 legend \"Int Cum Fluct \\N\"\n");
-    fprintf(opts->flog,"@ s12 legend \"Object Area \\N\"\n");
-    fprintf(opts->flog,"@ s13 legend \"Phase Relation Error \\N\"\n");
-    fprintf(opts->flog,"@ s14 legend \"Correlation with solution \\N\"\n");
-    fprintf(opts->flog,"@ s15 legend \"Phase Blur Radius \\N\"\n");
-    fprintf(opts->flog,"@ s16 legend \"Delta Rho \\N\"\n");
-    fprintf(opts->flog,"@ s17 legend \"Iterations/s \\N\"\n");
+    hawk_log(opts->flog,"@TYPE xy\n");
+    hawk_log(opts->flog,"@ view 0.15, 0.15, 0.75, 0.8\n");
+    hawk_log(opts->flog,"@ legend on\n");
+    hawk_log(opts->flog,"@ legend box on\n");
+    hawk_log(opts->flog,"@ legend loctype view\n");
+    hawk_log(opts->flog,"@ legend 0.78, 0.8\n");
+    hawk_log(opts->flog,"@ legend length 2\n");
+    hawk_log(opts->flog,"@ s0 legend \"It(out) \\N\"\n");
+/*    hawk_log(log,"@ s0 legend \"It(in) \\N\"\n");*/
+    hawk_log(opts->flog,"@ s1 legend \"Ereal \\N\"\n");
+    hawk_log(opts->flog,"@ s2 legend \"Efourier \\N\"\n");
+    hawk_log(opts->flog,"@ s3 legend \"<Fc/Fo> \\N\"\n");
+    hawk_log(opts->flog,"@ s4 legend \"SupSize(%%) \\N\"\n");
+    hawk_log(opts->flog,"@ s5 legend \"Beta \\N\"\n");
+    hawk_log(opts->flog,"@ s6 legend \"Threshold \\N\"\n");
+    hawk_log(opts->flog,"@ s7 legend \"Algorithm \\N\"\n");
+    hawk_log(opts->flog,"@ s8 legend \"dEreal \\N\"\n");
+    hawk_log(opts->flog,"@ s9 legend \"dSupSize \\N\"\n");
+    hawk_log(opts->flog,"@ s10 legend \"Blur Radius \\N\"\n");
+    hawk_log(opts->flog,"@ s11 legend \"Int Cum Fluct \\N\"\n");
+    hawk_log(opts->flog,"@ s12 legend \"Object Area \\N\"\n");
+    hawk_log(opts->flog,"@ s13 legend \"Phase Relation Error \\N\"\n");
+    hawk_log(opts->flog,"@ s14 legend \"Correlation with solution \\N\"\n");
+    hawk_log(opts->flog,"@ s15 legend \"Phase Blur Radius \\N\"\n");
+    hawk_log(opts->flog,"@ s16 legend \"Delta Rho \\N\"\n");
+    hawk_log(opts->flog,"@ s17 legend \"Iterations/s \\N\"\n");
 
   }
   for(i = 0;i<sp_c3matrix_size(exp_amp->image);i++){
@@ -297,10 +298,11 @@ void output_to_log(const Image * exp_amp,const Image * real_in, const Image * re
     sol_superimpose_counter++;
     log->sol_correlation = sp_image_correlation_coefficient(opts->solution_image,real_out);
   }
-  fprintf(opts->flog,"%d\t%d\t%f\t%f\t%f\t%f\t%f\t%f\t%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",iter,it_outer,
-	  Ereal,Efourier,FcFo,SupSize,get_beta(opts),log->threshold,get_algorithm(opts,log),
-	  log->dEreal,log->dSupSize,get_blur_radius(opts),log->int_cum_fluctuation,get_object_area(opts),0.0,
-	  log->sol_correlation,get_phases_blur_radius(opts),log->dRho,iter*1.0e6/sp_timer_elapsed(log->timer));
+  hawk_log(opts->flog,"%d\t%d\t%f\t%f\t%f\t%f\t%f\t%f\t%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",iter,it_outer,
+	   Ereal,Efourier,FcFo,SupSize,get_beta(opts),log->threshold,get_algorithm(opts,log),
+	   log->dEreal,log->dSupSize,get_blur_radius(opts),log->int_cum_fluctuation,get_object_area(opts),0.0,
+	   log->sol_correlation,get_phases_blur_radius(opts),log->dRho,iter*1.0e6/sp_timer_elapsed(log->timer));
+  
   fflush(opts->flog);
 
   if(Ereal < opts->real_error_tolerance){

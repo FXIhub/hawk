@@ -49,9 +49,10 @@
 #include "mapeditordialog.h"
 
 
-ComboBoxDelegate::ComboBoxDelegate(QObject *parent)
+ComboBoxDelegate::ComboBoxDelegate(QObject *parent,QComboBox * showOptionsCombo)
     : QItemDelegate(parent)
 {
+  m_showOptionsCombo = showOptionsCombo;
 }
 
 QWidget *ComboBoxDelegate::createEditor(QWidget *parent,
@@ -67,9 +68,14 @@ QWidget *ComboBoxDelegate::createEditor(QWidget *parent,
   QWidget * ret;
   if(md->variable_type == Type_MultipleChoice){
     QComboBox *editor = new QComboBox(parent);
+    editor->setMinimumHeight(editor->sizeHint().height());
     QStringList options;
     for(int i = 0;md->list_valid_names[i] != 0;i++){
-      options << md->list_valid_names[i];
+      if((md->list_properties[i] & (advanced|experimental)) == 0 || 
+	 ((md->list_properties[i] & advanced) && m_showOptionsCombo->currentIndex() > 0) ||
+	 ((md->list_properties[i] & experimental) && m_showOptionsCombo->currentIndex() > 1)){
+	options << md->list_valid_names[i];
+      }
     }
     for (int i = 0; i < options.size(); ++i) {
       editor->insertItem(i, options[i]);
@@ -78,6 +84,7 @@ QWidget *ComboBoxDelegate::createEditor(QWidget *parent,
   }else if(md->variable_type == Type_Real){    
     if(md->variable_properties & withSpecialValue){
       QComboBox * editor = new QComboBox(parent);
+      editor->setMinimumHeight(editor->sizeHint().height());
       QDoubleValidator * sv = new QDoubleValidator(editor);
       sv->setNotation(QDoubleValidator::ScientificNotation);
       editor->setEditable(true);
@@ -87,6 +94,7 @@ QWidget *ComboBoxDelegate::createEditor(QWidget *parent,
       ret = editor;
     }else{
       QLineEdit * editor = new QLineEdit(parent);
+      editor->setMinimumHeight(editor->sizeHint().height());
       QDoubleValidator * sv = new QDoubleValidator(editor);
       sv->setNotation(QDoubleValidator::ScientificNotation);
       editor->setValidator(sv);
@@ -97,6 +105,7 @@ QWidget *ComboBoxDelegate::createEditor(QWidget *parent,
   }else if(md->variable_type == Type_Int){    
     if(md->variable_properties & withSpecialValue){
       QComboBox * editor = new QComboBox(parent);
+      editor->setMinimumHeight(editor->sizeHint().height());
       QIntValidator * sv = new QIntValidator(editor);
       editor->setEditable(true);
       editor->setValidator(sv);
@@ -105,6 +114,7 @@ QWidget *ComboBoxDelegate::createEditor(QWidget *parent,
       ret = editor;
     }else{
       QSpinBox * editor = new QSpinBox(parent);
+      editor->setMinimumHeight(editor->sizeHint().height());
       editor->setRange(INT_MIN,INT_MAX);
       int v = *((int *)md->variable_address);
       editor->setValue(v);
@@ -112,6 +122,7 @@ QWidget *ComboBoxDelegate::createEditor(QWidget *parent,
     }
   }else if(md->variable_type == Type_Bool){    
     QComboBox *editor = new QComboBox(parent);
+    editor->setMinimumHeight(editor->sizeHint().height());
     QStringList options;
     options << "true";
     options << "false";
@@ -119,11 +130,21 @@ QWidget *ComboBoxDelegate::createEditor(QWidget *parent,
       editor->insertItem(i, options[i]);
     }
     ret = editor;
+  }else if(md->variable_type == Type_Existing_Filename){  
+    QLineEdit * editor = new QLineEdit(parent);
+    editor->setMinimumHeight(editor->sizeHint().height());
+    ret = editor;
   }else if(md->variable_type == Type_Filename){  
     QLineEdit * editor = new QLineEdit(parent);
+    editor->setMinimumHeight(editor->sizeHint().height());
     ret = editor;
   }else if(md->variable_type == Type_Directory_Name){  
     QLineEdit * editor = new QLineEdit(parent);
+    editor->setMinimumHeight(editor->sizeHint().height());
+    ret = editor;
+  }else if(md->variable_type == Type_String){  
+    QLineEdit * editor = new QLineEdit(parent);
+    editor->setMinimumHeight(editor->sizeHint().height());
     ret = editor;
   }else if(md->variable_type == Type_Map_Real){  
     MapEditorDialog * editor = new MapEditorDialog(parent);
@@ -181,12 +202,28 @@ void ComboBoxDelegate::setEditorData(QWidget *editor,
     QComboBox *comboBox = static_cast<QComboBox*>(editor);  
     QString option = index.model()->data(index, Qt::DisplayRole).toString();
     comboBox->setCurrentIndex(comboBox->findData(option, int(Qt::DisplayRole)));
-  }else if(md->variable_type == Type_Filename){      
+  }else if(md->variable_type == Type_String){    
+    QLineEdit *le = static_cast<QLineEdit*>(editor);  
+    QString option = index.model()->data(index, Qt::DisplayRole).toString();
+    le->setText(option);
+  }else if(md->variable_type == Type_Existing_Filename){      
     QFileInfo fi = QFileInfo((char *)md->variable_address);
     QLineEdit * le = static_cast<QLineEdit*>(editor);  
     /* This is necessary otherwise setEditorData is called multiple times */
     if(!le->isReadOnly()){
       le->setText(QFileDialog::getOpenFileName(NULL, md->variable_name,
+					     fi.fileName()));
+      // Simulate key press
+      QCoreApplication::postEvent(le,new QKeyEvent(QEvent::KeyPress,Qt::Key_Return,Qt::NoModifier));
+      QCoreApplication::postEvent(le,new QKeyEvent(QEvent::KeyRelease,Qt::Key_Return,Qt::NoModifier));
+      le->setReadOnly(true);
+    }
+  }else if(md->variable_type == Type_Filename){      
+    QFileInfo fi = QFileInfo((char *)md->variable_address);
+    QLineEdit * le = static_cast<QLineEdit*>(editor);  
+    /* This is necessary otherwise setEditorData is called multiple times */
+    if(!le->isReadOnly()){
+      le->setText(QFileDialog::getSaveFileName(NULL, md->variable_name,
 					     fi.fileName()));
       // Simulate key press
       QCoreApplication::postEvent(le,new QKeyEvent(QEvent::KeyPress,Qt::Key_Return,Qt::NoModifier));
@@ -255,6 +292,17 @@ void ComboBoxDelegate::setModelData(QWidget *editor, QAbstractItemModel *model,
     QComboBox *comboBox = static_cast<QComboBox*>(editor);
     QString option = (comboBox->itemData(comboBox->currentIndex(), Qt::DisplayRole)).toString();    
     model->setData(index, option, Qt::DisplayRole);
+ }else if(md->variable_type == Type_String){
+    QLineEdit * le = static_cast<QLineEdit*>(editor);
+    QString option = le->text();
+    model->setData(index, option, Qt::DisplayRole);
+  }else if(md->variable_type == Type_Existing_Filename){
+    QLineEdit * le = static_cast<QLineEdit*>(editor);  
+    if(!le->text().isEmpty()){
+      QFileInfo fi(le->text());
+      model->setData(index, fi.fileName(), Qt::DisplayRole);
+      model->setData(index, fi.absoluteFilePath(), Qt::ToolTipRole);     
+    }
   }else if(md->variable_type == Type_Filename){
     QLineEdit * le = static_cast<QLineEdit*>(editor);  
     if(!le->text().isEmpty()){
@@ -314,6 +362,13 @@ QVariant ComboBoxDelegate::displayFromMetadata(const VariableMetadata * md,QFont
     return QVariant((char *)md->variable_address);
   }
   if(md->variable_type == Type_Filename){
+    QFileInfo f = QFileInfo((char *)md->variable_address);
+    if(f.fileName().isEmpty()){
+      return QVariant("<none>");
+    }
+    return QVariant(f.fileName());
+  }
+  if(md->variable_type == Type_Existing_Filename){
     QFileInfo f = QFileInfo((char *)md->variable_address);
     if(f.fileName().isEmpty()){
       return QVariant("<none>");
@@ -386,10 +441,13 @@ QVariant ComboBoxDelegate::displayFromMetadata(const VariableMetadata * md,QFont
   if(md->variable_type == Type_Map_Real){
     sp_smap * map = *((sp_smap**)md->variable_address);
     sp_list * values = sp_smap_get_values(map);
+    sp_list * keys = sp_smap_get_keys(map);
     real first = sp_list_get(values,0);
     real last = sp_list_get(values,sp_list_size(values)-1);
+    int last_key = sp_list_get(keys,sp_list_size(keys)-1);
     if(sp_list_size(values) > 1){
-      return QVariant(QString::number(first,'g',2)+QString(" to ")+QString::number(last,'g',2));
+      return QVariant(QString::number(first,'g',2)+QString(" to ")+QString::number(last,'g',2)
+		      +QString(" (at ")+QString::number(last_key,'g',5)+QString(")"));
     }else{
       return QVariant(QString::number(first,'g',2));
     }
@@ -490,6 +548,12 @@ QVariant ComboBoxDelegate::tooltipFromMetadata(const VariableMetadata * vm,
       return f.absoluteFilePath();
     }
   }
+  if(vm->variable_type == Type_Existing_Filename){
+    QFileInfo f = QFileInfo((char *)vm->variable_address);
+    if(!QString((char *)vm->variable_address).isEmpty()){
+      return f.absoluteFilePath();
+    }
+  }
   if(vm->variable_type == Type_Directory_Name){
     QFileInfo f = QFileInfo((char *)vm->variable_address);	
     return f.absoluteFilePath();
@@ -577,6 +641,9 @@ void ComboBoxDelegate::setMetadataFromModel(const QModelIndex &index) const{
   }else if(md->variable_type == Type_Filename){
     QString option = index.data(Qt::ToolTipRole).toString();
     strcpy((char *)md->variable_address,option.toLatin1().data());
+  }else if(md->variable_type == Type_Existing_Filename){
+    QString option = index.data(Qt::ToolTipRole).toString();
+    strcpy((char *)md->variable_address,option.toLatin1().data());
   }else if(md->variable_type == Type_Directory_Name ){
     QString option = index.data(Qt::ToolTipRole).toString();
     strcpy((char *)md->variable_address,option.toLatin1().data());
@@ -636,6 +703,9 @@ void ComboBoxDelegate::setMetadataFromItem(const QTreeWidgetItem * item) const{
       (*(int *)md->variable_address) = 0;
     }
   }else if(md->variable_type == Type_Filename){
+    QString option = item->data(1,Qt::ToolTip).toString();
+    strcpy((char *)md->variable_address,option.toLatin1().data());
+  }else if(md->variable_type == Type_Existing_Filename){
     QString option = item->data(1,Qt::ToolTip).toString();
     strcpy((char *)md->variable_address,option.toLatin1().data());
   }else if(md->variable_type == Type_Directory_Name ){

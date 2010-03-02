@@ -2,6 +2,7 @@
 #include <float.h>
 #include <hdf5.h>
 #include <fftw3.h>
+#include <getopt.h>
 #include "spimage.h"
 
 /* Calculates the Phase Retrieval Transfer Function of a bunch of images */
@@ -186,11 +187,26 @@ int main(int argc, char ** argv){
   char buffer2[1024] = "";
   char * output;
   FILE * f;
-  if(argc < 3){
-    printf("Usage: %s <output file>  <image1> [image2] ...\n",argv[0]);
+  int no_translation = 0;
+
+  int c;
+  int opterr = 0;
+  while((c = getopt(argc,argv,"tT")) != -1) {
+    switch(c) {
+    case('T'):
+      no_translation = 1;
+      break;
+    case('t'):
+      no_translation = 0;
+      break;
+    }
+  }
+
+  if((argc - optind) < 2){
+    printf("Usage: %s [options] <output file>  <image1> [image2] ...\navailable options are:\n  -t   Translate the images to match densities (default)\n  -T   Do not translate images\n",argv[0]);
     exit(0);
   }
-  output = argv[1];
+  output = argv[optind];
   sprintf(buffer2,"%s.log",output);
   f = fopen(buffer2,"w");
   for(i = 0;i<argc;i++){
@@ -199,7 +215,7 @@ int main(int argc, char ** argv){
   fprintf(f,"\n");
   fclose(f);
 
-  img = sp_image_read(argv[2],0);
+  img = sp_image_read(argv[optind+1],0);
   /*  sp_image_dephase(img);*/
   avg_img = sp_image_duplicate(img,SP_COPY_ALL);
   sum = sp_image_fft(img);
@@ -213,14 +229,16 @@ int main(int argc, char ** argv){
   }
 
   sp_image_free(img);
-  for(i = 3;i<argc;i++){
+  for(i = optind+2;i<argc;i++){
     img = sp_image_read(argv[i],0);
     if(!img){
       fprintf(stderr,"Could not open %s. Skipping.\n.",argv[i]);
       continue;
     }
-    sp_image_superimpose(avg_img,img,SpEnantiomorph);
-    sp_image_phase_match(avg_img,img,2);
+    if (no_translation == 0) {
+      sp_image_superimpose(avg_img,img,SpEnantiomorph);
+      sp_image_phase_match(avg_img,img,2);
+    }
     sp_image_add(avg_img,img);
     char buff2[1024];
     if(img->num_dimensions == SP_2D){

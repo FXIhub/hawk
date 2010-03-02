@@ -5,36 +5,65 @@
 #include "client_decoder.h"
 #include <QCoreApplication>
 #include <QTcpSocket>
+#include "qxtrpcpeer.h"
+#include <QHostInfo>
+#include "rpcpeer.h"
+#include <QTimer>
+
 static QCoreApplication * qapp;
+
+/*
+  This is to be been as a member variable of this file
+  It's just not inside a class because is had to be accessed
+  by functions called from the C side of the code.
+ */
+static RPCInfo * rpcInfo = 0;
 
 void init_qt(int argc, char ** argv){
   qapp = new QCoreApplication(argc,argv);
 }
 
-void * attempt_connection(char * server, int server_port){
-  QTcpSocket * socket = new QTcpSocket;
-  socket->connectToHost(server,server_port);
-  if(socket->waitForConnected()){
-    printf("Valid socket!\n");
-    return socket;
-  }
-  delete socket;
-  return NULL;
+void attempt_connection(char * server, int server_port,int key){
+  rpcInfo = new RPCInfo;
+  rpcInfo->serverInfo = QString(server);
+  rpcInfo->serverPort = server_port;
+  rpcInfo->key = key;
+  rpcInfo->peer = new RPCPeer(rpcInfo);
+  rpcInfo->peer->connect(server, server_port);
 }
 
-void wait_for_server_instructions(void * _socket){
-  QTcpSocket * socket = reinterpret_cast<QTcpSocket *>(_socket);
-  /* We're using ClientDecoder because this is the client part of the code */
-  ClientDecoder * factory = new ClientDecoder(NULL);
-  Sender * sender = new Sender(socket);
-  Communicator communicator(socket,factory,sender);  
+void rpc_send_message(MessageType type, const char * s){
+  if(rpcInfo){
+    rpcInfo->peer->sendMessage(type,s);
+  }
+}
+
+void rpc_send_log_line(const char * s){
+  if(rpcInfo){
+    rpcInfo->peer->sendLogLine(s);
+  }
+}
+
+void rpc_send_image_output(const char * s,const Image * a){
+  if(rpcInfo){
+    rpcInfo->peer->sendImageOutput(s,a);
+  }
+}
+
+int start_event_loop(){
   /* Start event loop */
-  qapp->exec();
-  
+  return qapp->exec();
 }
 
 void cleanup_and_free_qt(){
   delete qapp;
 }
 
+
+int is_connected(){
+  if(rpcInfo && rpcInfo->peer){
+    return rpcInfo->peer->isConnected();
+  }
+  return 0;
+}
 #endif

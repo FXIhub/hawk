@@ -8,6 +8,10 @@ int descend_complex_compare(const void * a,const  void * b);
  */
 Image * get_updated_support(Image * input, real level , real radius, Options * opts);
 
+/*! Calculate an enlarged or reduced version of the initial support
+ */
+Image * get_support_from_initial_image(Options *opts);
+
 /*! Returns an initial support by calculating the patterson from an input image.
  *
  * The support is calculated from the patterson by using all the points above a certain

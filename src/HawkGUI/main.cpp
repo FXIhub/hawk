@@ -3,48 +3,44 @@
 #include "hawkgui.h"
 #include "configuration.h"
 #include "uwrapc.h"
+#include "rpcdefaultport.h"
+#include "processcontrol.h"
 
-void uwrapc_main(){
-  FILE * f;
-  Options * opts = &global_options;
-  void * socket = 0;
-  set_defaults(opts);
-
-  f = fopen("uwrapc.conf","rb");
-  if(f){
-    fclose(f);
-    read_options_file("uwrapc.conf");
-    check_options_and_load_images(opts);
-    write_options_file("uwrapc.confout");
-  }else if(!socket){
-    perror("Could not open uwrapc.conf");
+void initSettings(){
+  QSettings settings;
+  QStringList profiles = settings.value("RemoteLaunchDialog/profileList").toStringList();
+  if(profiles.isEmpty()){
+    /*
+      There are no stored settings. 
+      Set some defaults.
+    */
+    profiles << QString("default");
+    settings.setValue("RemoteLaunchDialog/profileList",profiles);
+    settings.setValue("RemoteLaunchDialog/default/remoteHost",QString("localhost"));
+    settings.setValue("RemoteLaunchDialog/default/remotePort",22);
+    settings.setValue("RemoteLaunchDialog/default/localHost",QString("localhost"));
+    settings.setValue("RemoteLaunchDialog/default/autoLocalPort",true);
+    settings.setValue("RemoteLaunchDialog/default/localPort",rpcDefaultPort);
+    settings.setValue("RemoteLaunchDialog/default/sshPath","/usr/bin/ssh");
+    settings.setValue("RemoteLaunchDialog/default/uwrapcPath","/usr/bin/uwrapc");
+    settings.setValue("RemoteLaunchDialog/selectedProfile",QString("default"));
   }
-  srand(get_random_seed(opts));
-  
-  init_reconstruction(opts);
-  /* cleanup stuff */
-  if(opts->init_support){
-    sp_image_free(opts->init_support);
-  }
-  if(opts->diffraction){
-    sp_image_free(opts->diffraction);
-  }
-  if(opts->amplitudes){
-    sp_image_free(opts->amplitudes);
-  }
-  if(opts->intensities_std_dev){
-    sp_image_free(opts->intensities_std_dev);
+  bool ok = false;
+  settings.value("ProcessControl/launchMethod").toInt(&ok);
+  if(!ok){
+    settings.setValue("ProcessControl/launchMethod",ProcessControl::LaunchLocally);
   }
 }
 
+
 int main(int argc, char **argv)
 {
-  if(argc == 2 && strcmp(argv[1] ,"uwrapc") == 0){
-    uwrapc_main();
+  if(argc >= 2 && strcmp(argv[1] ,"uwrapc") == 0){
+    uwrapc_main(argc-1,argv+1);
     return 0;
   }
 
-  QApplication app(argc, argv);
+  QApplication app(argc, argv);  
   QStringList libPaths = app.libraryPaths();
   QDir dir(QApplication::applicationDirPath());
   dir.cdUp();
@@ -52,10 +48,12 @@ int main(int argc, char **argv)
   libPaths.prepend(dir.absolutePath());
   // don't go around loading plugins i don't want
   QApplication::setLibraryPaths(QStringList(dir.absolutePath()));
-  //QApplication::setLibraryPaths(libPaths);
-  //  for(int i = 0;i<libPaths.size();i++){
-  //qDebug("%s",libPaths.at(i).toAscii().constData());
-  //  }
+
+  QCoreApplication::setOrganizationName("Hawk");
+  QCoreApplication::setOrganizationDomain("xray.bmc.uu.se");
+  QCoreApplication::setApplicationName("HawkGUI");
+  initSettings();
+
   HawkGUI hawkgui;
   hawkgui.show();
     

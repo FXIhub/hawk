@@ -16,6 +16,7 @@
 #include <QCheckBox>
 #include <QFileDialog>
 #include "logtailer.h"
+#include "processcontrol.h"
 
 class Zoomer: public QwtPlotZoomer
 {
@@ -42,8 +43,11 @@ public:
 };
 
 CurveData::CurveData()
+  :m_sampled_x(20),m_sampled_y(20),m_n_samples(20)
 {
   d_count = 0;
+  m_sampled_count = 0;
+  m_sampling_stride = 1;
 }
 
 void CurveData::append(double *newX, double *newY, int newCount)
@@ -61,6 +65,23 @@ void CurveData::append(double *newX, double *newY, int newCount)
       d_y[count() + i] = newY[i];
     }
     d_count += newCount;
+    if(d_count/m_n_samples != (d_count-newCount)/m_n_samples){
+      /* we have to recalculate things */
+      m_sampled_count = 0;
+      m_sampling_stride = d_count/m_n_samples+1;
+      for(int i =0 ;i<d_count;i+=m_sampling_stride){
+	m_sampled_x[i/m_sampling_stride] = d_x[i];
+	m_sampled_y[i/m_sampling_stride] = d_y[i];
+	m_sampled_count++;	
+      }
+    }else{
+      /* just add the new points*/
+      for (int i = d_count-newCount; i < d_count; i+=m_sampling_stride ){
+	m_sampled_x[i/m_sampling_stride] = d_x[i];
+	m_sampled_y[i/m_sampling_stride] = d_y[i];
+	m_sampled_count++;	
+      }
+    }
 }
 
 int CurveData::count() const
@@ -81,6 +102,22 @@ const double *CurveData::x() const
 const double *CurveData::y() const
 {
     return d_y.data();
+}
+
+
+const double *CurveData::sampled_y() const
+{
+    return m_sampled_y.data();
+}
+
+const double *CurveData::sampled_x() const
+{
+    return m_sampled_x.data();
+}
+
+int CurveData::sampled_count() const
+{
+    return m_sampled_count;
 }
 
 PlotDisplay::PlotDisplay(QWidget * parent)
@@ -120,7 +157,7 @@ PlotDisplay::PlotDisplay(QWidget * parent)
   connect(this,SIGNAL(legendChecked(QwtPlotItem *,bool)),this,SLOT(setCurveVisible(QwtPlotItem *,bool)));
   dirty = false;
   connect(&updateTimer,SIGNAL(timeout()),this,SLOT(updateCurves()));
-  updateTimer.start(6000);
+  updateTimer.start(1000);
 }
 
 PlotDisplay::~PlotDisplay(){
@@ -235,7 +272,7 @@ int PlotDisplay::setCurveVisible(QwtPlotItem *plotItem, bool visible){
 }
 
 
-void PlotDisplay::onProcessStarted(QString type, QString path,ProcessControl * p){    
+void PlotDisplay::onProcessStarted(ProcessControl::ProcessType type, QString path,ProcessControl * p){    
   //  qDebug("creating log tailer");
   if(logTailer){
     delete logTailer;
@@ -245,9 +282,12 @@ void PlotDisplay::onProcessStarted(QString type, QString path,ProcessControl * p
   clearPlot();
   replot();
   
-  logTailer->tailLogFile(path+"/uwrapc.log");
+  if(type == ProcessControl::Local || type == ProcessControl::Embedded){
+    logTailer->tailLogFile(path+"/uwrapc.log");
+  }
   connect(logTailer,SIGNAL(dataLineRead(QList<double>)),this,SLOT(addDataLine(QList<double>)));
   connect(logTailer,SIGNAL(headerRead(QString,int)),this,SLOT(addHeader(QString,int)));
+  connect(p,SIGNAL(logLineReceived(QString)),logTailer,SLOT(parseLine(QString)));
 }
 
 void PlotDisplay::addDataLine(QList<double> data){
@@ -310,15 +350,39 @@ void PlotDisplay::updateZoomBase(){
       zoomer_at_top = 1;
     }
 
-    if(rect.contains(zoomer->zoomBase())){
-      //      qDebug("Normal update rect");
-      zoomer->setZoomBase(rect);      
-    }else{
-      //      qDebug("Shrinking rect");
-      zoomer->zoom(rect);
-      zoomer->setZoomBase(rect);
+
+    /* the options are
+       1 - The current height fits the data -> Keep height
+       2 - The current height does not fit data (it's either too big or too small) -> Change height to be the same as data but with twice the height
+       3 - The current width fits the data -> Keep width
+       4 - The current width does not fit data (it's either too big or too small) -> Change width to be the same as data but with twice the width
+     */
+    double fraction = 2.0/3.0;
+    QwtDoubleRect leftPart = zoomer->zoomBase();
+    QwtDoubleRect bottomPart = zoomer->zoomBase();
+    leftPart.setWidth(fraction*leftPart.width());
+    bottomPart.setHeight(fraction*bottomPart.height());
+    QwtDoubleRect newZoomBase = zoomer->zoomBase();
+    if(leftPart.width() > rect.width()){
+      newZoomBase.setWidth(rect.width());
+    }else if(newZoomBase.width() < rect.width()){
+      newZoomBase.setWidth(rect.width()/fraction);
     }
+
+    if(bottomPart.height() > rect.height()){
+      newZoomBase.setHeight(rect.height()*1.1);
+    }else if(newZoomBase.height() < rect.height()){
+      newZoomBase.setHeight(rect.height()*1.1);
+    }
+    /* This will not work for shrinking because scaleRect()
+       will be united with newZoomBase */
+    zoomer->setZoomBase(newZoomBase);
     if(zoomer_at_top){
+      /* This will change scaleRect() to be the same as newZoomBase() */
+      zoomer->zoom(newZoomBase);
+      /* This will finally set the right newZoomBase */
+      zoomer->setZoomBase(newZoomBase);
+      /* This makes sure we zoom out to were we where */
       zoomer->zoom(0);
     }
   }else{
@@ -339,6 +403,7 @@ void PlotDisplay::updateCurves(){
 	continue;
       }
       curve->setRawData(data->x(), data->y(), data->count());
+      //      curve->setRawData(data->sampled_x(), data->sampled_y(), data->sampled_count());
       
       const bool cacheMode = 
 	canvas()->testPaintAttribute(QwtPlotCanvas::PaintCached);

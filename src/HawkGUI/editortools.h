@@ -11,6 +11,7 @@ class QDoubleSpinBox;
 class QSpinBox;
 class QListWidget;
 class QComboBox;
+class QToolButton;
 
 class EditorTools: public QGroupBox
 {
@@ -19,12 +20,16 @@ class EditorTools: public QGroupBox
   EditorTools(EditorWorkspace * parent);
   enum SelectionMode{SelectionSet,SelectionUnite,SelectionSubtract};
   SelectionMode selectionMode();
+  enum EditMaskMode{Inactive=0,IncludeInMask,ExcludeFromMask};
+  EditMaskMode editMaskMode();
+  int editMaskBrushRadius();
  private slots:
   void onMathEdit();
   void onFilterClicked();
   void onPointerClicked();
   void onBullseyeToggled(bool checked);
   void onDropClicked();
+  void onEditMaskClicked();
   void onSelectionClicked();
   void onLineoutClicked();
   void onUndoClicked();
@@ -40,6 +45,8 @@ class EditorTools: public QGroupBox
   void onFillEmptyClicked();
   void onInterpolateEmptyClicked();
   void onCropClicked();
+  void onLoadMaskFromFile();
+  void onInvertMask();
  private:
   EditorWorkspace * editor;
   QWidget * dropToolOptions;
@@ -48,12 +55,16 @@ class EditorTools: public QGroupBox
   QWidget * electronicsToolOptions;
   QWidget * fillEmptyToolOptions;
   QWidget * toolOptions;
+  QWidget * editMaskToolOptions;
   QLineEdit * selectExpression;
   QStackedLayout * toolOptionsLayout;
   SelectionMode _selectionMode;
   QDoubleSpinBox * fillBlurRadius;
+  QSpinBox * m_editMaskBrushRadius;
   QComboBox * fillBlurKernel;
   QSpinBox * fillIterations;
+  QToolButton * editMaskIncludeButton;
+  QToolButton * editMaskExcludeButton;
 };
 
 #else

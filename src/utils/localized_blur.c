@@ -57,7 +57,7 @@ Image * localized_blur_fourier(Image * in, Image * mask, double blur,int iter){
     }
   }
   for(int i = 0;i<iter;i++){
-    Image * tmp = gaussian_blur(out,blur);
+    Image * tmp = sp_gaussian_blur(out,blur);
     for(int j = 0;j<sp_image_size(in);j++){
       if(sp_real(mask->image->data[j]) == 0){
 	out->image->data[j] = tmp->image->data[j];

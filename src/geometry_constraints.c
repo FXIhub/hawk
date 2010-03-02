@@ -270,11 +270,22 @@ sp_vector * project_point_on_line_through_origin(sp_vector * p,real theta){
   return sp_matrix_vector_prod(proj_m,p);
 }
 
+/* projects the point p onto the circle through the origin with given radius */
+sp_vector * project_point_on_centered_circle(sp_vector * p,real radius){
+  if(sp_vector_size(p) != 2){
+    return NULL;
+  }
+  sp_vector * ret = sp_vector_alloc(2);
+  real dist = sqrt(sp_vector_get(p,0)*sp_vector_get(p,0)+sp_vector_get(p,1)*sp_vector_get(p,1));
+  sp_vector_set(ret,0,sp_vector_get(p,0)*radius/dist);
+  sp_vector_set(ret,1,sp_vector_get(p,1)*radius/dist);
+  return ret;
+}
 
 
 
 
-int evaluate_radial_line(const gsl_vector * x, void * params, gsl_vector * f){
+int evaluate_constraints(const gsl_vector * x, void * params, gsl_vector * f){
   geometrically_constrained_system * gc = (geometrically_constrained_system *)params;
   /* apply the current best parameters to the geometry constraints */  
   for(int i = 0;i<gc->n_variables;i++){
@@ -302,6 +313,12 @@ int evaluate_radial_line(const gsl_vector * x, void * params, gsl_vector * f){
 	gsl_vector_set(f,index,sp_vector_norm(proj));
 	index++;
 	sp_vector_free(proj);
+      }else if(gc->constraints[i].type == CircleConstraint){
+	sp_vector * proj = project_point_on_centered_circle(cp[j],gc->constraints[i].best_fit);
+	sp_vector_sub(proj,cp[j]);
+	gsl_vector_set(f,index,sp_vector_norm(proj));
+	index++;
+	sp_vector_free(proj);
       }
     }
   }
@@ -309,7 +326,9 @@ int evaluate_radial_line(const gsl_vector * x, void * params, gsl_vector * f){
 }
 
 
-int evaluate_radial_line_df(const gsl_vector * x, void * params, gsl_matrix * J){
+
+
+int evaluate_constraints_df(const gsl_vector * x, void * params, gsl_matrix * J){
   /* numerically calculate derivatives using central difference */
   gsl_vector * f1 = gsl_vector_alloc(J->size1);
   gsl_vector * f2 = gsl_vector_alloc(J->size1);
@@ -320,9 +339,9 @@ int evaluate_radial_line_df(const gsl_vector * x, void * params, gsl_matrix * J)
   double delta = 1e-4;
   for(unsigned int i = 0;i<x->size;i++){
     gsl_vector_set(x1,i,gsl_vector_get(x1,i)-delta);
-    evaluate_radial_line(x1,params,f1);
+    evaluate_constraints(x1,params,f1);
     gsl_vector_set(x2,i,gsl_vector_get(x2,i)+delta);
-    evaluate_radial_line(x2,params,f2);
+    evaluate_constraints(x2,params,f2);
     gsl_vector_sub(f2,f1);
     gsl_vector_scale(f2,1.0/(2*delta));
     gsl_matrix_set_col(J,i,f2);
@@ -330,11 +349,12 @@ int evaluate_radial_line_df(const gsl_vector * x, void * params, gsl_matrix * J)
   return GSL_SUCCESS;
 }
 
-int evaluate_radial_line_fdf(const gsl_vector * x, void * params,gsl_vector * f, gsl_matrix * J){
-  evaluate_radial_line(x,params,f);
-  evaluate_radial_line_df(x,params,J);
+int evaluate_constraints_fdf(const gsl_vector * x, void * params,gsl_vector * f, gsl_matrix * J){
+  evaluate_constraints(x,params,f);
+  evaluate_constraints_df(x,params,J);
   return GSL_SUCCESS;
 }
+
 
 void
 print_state (int iter, gsl_multifit_fdfsolver * s)
@@ -358,9 +378,9 @@ int minimize_geometry_contraint_error(geometrically_constrained_system * gc){
   /* the variables are the degrees of freedom of the image and the contraints 
      represent the single parameter best fit for each constraint */
   my_func.p = gc->n_variables+gc->n_constraints;
-  my_func.f = &evaluate_radial_line;
-  my_func.df = &evaluate_radial_line_df;
-  my_func.fdf = &evaluate_radial_line_fdf;
+  my_func.f = &evaluate_constraints;
+  my_func.df = &evaluate_constraints_df;
+  my_func.fdf = &evaluate_constraints_fdf;
   my_func.params = gc;
 
   gsl_multifit_fdfsolver * s = gsl_multifit_fdfsolver_alloc (T, my_func.n,my_func.p);

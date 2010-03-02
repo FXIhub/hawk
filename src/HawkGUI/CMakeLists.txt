@@ -4,6 +4,10 @@ project(uwrapc)
 
 INCLUDE_DIRECTORIES(${LOCAL_INCLUDE}/HawkGUI)
 INCLUDE_DIRECTORIES(${QWT_INCLUDE_DIR})
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
+
+QT_WRAP_CPP(HawkGUI hawkgui_qxt_moc_files ../qxt/qxtboundfunction.h ../qxt/qxtrpcservice.h ../qxt/qxtrpcservice_p.h ../qxt/qxtabstractconnectionmanager.h ../qxt/qxtrpcpeer.h ../qxt/qxttcpconnectionmanager.h ../qxt/qxttcpconnectionmanager_p.h)
+SET(QXT_OBJS ../qxt/qxtrpcservice.cpp ../qxt/qxtabstractconnectionmanager.cpp ../qxt/qxtmetaobject.cpp ../qxt/qxtdatastreamsignalserializer.cpp ../qxt/qxtrpcpeer.cpp ../qxt/qxttcpconnectionmanager.cpp ${hawkgui_qxt_moc_files})
 
 set(GUI_SRCS
   ../algorithms.c
@@ -25,6 +29,10 @@ set(GUI_SRCS
   ../saddle/minmaxtau.c
   ../xcam.c
   ../geometry_constraints.c
+  ../rpcpeer.cpp
+  ../uwrapcpeerthread.cpp
+  ../io_utils.c
+  ../imagestream.cpp
   geometrycontrol.cpp
   hawkgui.cpp
   imagecategory.cpp
@@ -51,36 +59,44 @@ set(GUI_SRCS
   stitcherview.cpp
   addconstraintdialog.cpp
   addvariabledialog.cpp
+  rpcserver.cpp
+  remotelaunchdialog.cpp
+  rpcimageloader.cpp
 )
 
 set(GUI_MOC_HDRS
-  ${LOCAL_INCLUDE}/HawkGUI/hawkgui.h 
-  ${LOCAL_INCLUDE}/HawkGUI/imagedisplay.h 
-  ${LOCAL_INCLUDE}/HawkGUI/imageview.h 
-  ${LOCAL_INCLUDE}/HawkGUI/treedelegate.h 
+  hawkgui.h 
+  imagedisplay.h 
+  imageview.h 
+  treedelegate.h 
   ${LOCAL_INCLUDE}/HawkGUI/mapeditordialog.h 
-  ${LOCAL_INCLUDE}/HawkGUI/optionstree.h 
+  optionstree.h 
   ${LOCAL_INCLUDE}/HawkGUI/processdisplay.h 
-  ${LOCAL_INCLUDE}/HawkGUI/processcontrol.h 
-  ${LOCAL_INCLUDE}/HawkGUI/outputwatcher.h 
+  processcontrol.h 
+  outputwatcher.h 
   ${LOCAL_INCLUDE}/HawkGUI/imageframe.h 
-  ${LOCAL_INCLUDE}/HawkGUI/plotdisplay.h 
-  ${LOCAL_INCLUDE}/HawkGUI/logtailer.h 
+  plotdisplay.h 
+  logtailer.h   
   ${LOCAL_INCLUDE}/HawkGUI/imageloader.h
   ${LOCAL_INCLUDE}/HawkGUI/imageviewpanel.h
   ${LOCAL_INCLUDE}/HawkGUI/editorworkspace.h
-  ${LOCAL_INCLUDE}/HawkGUI/imageeditorview.h
-  ${LOCAL_INCLUDE}/HawkGUI/lineoutplot.h
-  ${LOCAL_INCLUDE}/HawkGUI/editortools.h
+  imageeditorview.h
+  lineoutplot.h
+  editortools.h
   ${LOCAL_INCLUDE}/HawkGUI/stitcherworkspace.h
   ${LOCAL_INCLUDE}/HawkGUI/stitcherview.h
-  ${LOCAL_INCLUDE}/HawkGUI/imageitem.h
+  imageitem.h
   ${LOCAL_INCLUDE}/HawkGUI/addconstraintdialog.h
   ${LOCAL_INCLUDE}/HawkGUI/addvariabledialog.h
   ${LOCAL_INCLUDE}/communicator.h
   ${LOCAL_INCLUDE}/client_decoder.h 
   ${LOCAL_INCLUDE}/decoder.h 
   ${LOCAL_INCLUDE}/sender.h
+  ../rpcpeer.h
+  ../uwrapcpeerthread.h
+  rpcserver.h
+  remotelaunchdialog.h
+  rpcimageloader.h
 )
 
 
@@ -88,7 +104,7 @@ QT4_ADD_RESOURCES(HAWK_QRC_FILES hawk.qrc)
 
 QT_WRAP_CPP(HawkGUI GUI_MOC_FILES ${GUI_MOC_HDRS})
 
-LIST(APPEND GUI_OBJ ${GUI_SRCS} ${GUI_MOC_FILES} ${HAWK_QRC_FILES})
+LIST(APPEND GUI_OBJ ${GUI_SRCS} ${GUI_MOC_FILES} ${HAWK_QRC_FILES} ${QXT_OBJS})
 
 ADD_EXECUTABLE(HawkGUI ${GUI_OBJ})
 

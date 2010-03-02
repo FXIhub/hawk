@@ -13,6 +13,7 @@ ImageView::ImageView(QWidget * parent)
   autoUpdate = 1;
   _selected = NULL;
   preserveShift = true;
+  preserveLog = true;
   setup();
   QWidgetList tlwidgets =  QApplication::topLevelWidgets();
   int size = tlwidgets.size();
@@ -205,6 +206,7 @@ void ImageView::setImage(ImageItem * item){
   int display = -1;
   int color = -1;
   bool isShifted = false;
+  bool logScale = false;
   if(selectedImage()){
     // If we already have an image loaded we're gonna preserve the location of the center
     // and the zoom
@@ -216,6 +218,7 @@ void ImageView::setImage(ImageItem * item){
     color = selectedImage()->colormap();
     display = selectedImage()->display();
     isShifted = selectedImage()->isShifted();
+    logScale = selectedImage()->logScale();
   }else{
     // Set pixmap center in the middle of the screen
     QPointF center = sceneRect().center();
@@ -230,6 +233,9 @@ void ImageView::setImage(ImageItem * item){
   _selected = item;
   if(preserveShift && isShifted != selectedImage()->isShifted()){
     selectedImage()->shiftImage();
+  }
+  if(preserveLog  && logScale != selectedImage()->logScale()){
+    selectedImage()->setLogScale(logScale);
   }
   if(color >= 0){
     selectedImage()->setColormap(color);
@@ -317,6 +323,7 @@ bool ImageView::loadImage(QString file){
     return true;
   }else{
     scheduledImage = file;
+    delayedLoader->start(1000);
     qDebug("Loader busy...");
     return false;
   }
@@ -429,16 +436,34 @@ void ImageView::finishLoadImage(){
   setImage(item);    
   item->update();
   emit imageLoaded(filename);
+  if(scheduledImage.isEmpty()){
+    delayedLoader->stop();    
+  }
+}
+
+void ImageView::loadImageFromMemory(Image * image,QString name){
+  qDebug("ImageView: Loading image from memory %p",image);
+  if(!image){
+    qDebug(("Failed to read image " + loader->getFile()).toAscii());
+    return;
+  }
+  filename = name;
+  ImageItem * item = new ImageItem(image,name,this,NULL);
+  setImage(item);    
+  item->update();
+  emit imageLoaded(name);
 }
 
 void ImageView::scheduleImageLoad(QString file){
   scheduledImage = file;
+    delayedLoader->start(300);
 }
 
 void ImageView::loadScheduledImage(){
-  //  qDebug("Checking scheduled image");
+  qDebug("Checking scheduled image");
   if(!scheduledImage.isEmpty()){
     if(loader == NULL){
+      qDebug("Trying scheduled image");
       QString file = scheduledImage;
       currentlyLoading = file;
       scheduledImage.clear();
@@ -505,6 +530,14 @@ bool ImageView::preservesShift() const{
   return preserveShift;
 }
 
+void ImageView::setPreserveLog(bool on){
+  preserveLog = on;
+}
+
+bool ImageView::preservesLog() const{
+  return preserveLog;
+}
+
 void ImageView::emitImageItemChanged(ImageItem * item){
   emit imageItemChanged(item);
 }
@@ -569,3 +602,5 @@ void ImageView::setSelectedImage(ImageItem * item){
     selectedImage()->setSelected(true);
   }
 }
+
+

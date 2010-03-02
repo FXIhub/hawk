@@ -2,3 +2,11 @@
 *~
 \#*#
 .#*
+doc/CodingStandards.aux
+doc/CodingStandards.log
+doc/CodingStandards.pdf
+doc/CodingStandards.out
+doc/_whizzy_CodingStandards_d/
+src/HawkGUI/images/crystal_project
+build*
+Linux_x86_64

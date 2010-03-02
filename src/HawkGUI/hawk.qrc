@@ -50,6 +50,10 @@
      <file>images/add_point.png</file>
      <file>images/delete_point.png</file>
      <file>images/edit-delete.png</file>
+     <file>images/edit_add.png</file>
+     <file>images/edit_remove.png</file>
+     <file>images/mask_happy.png</file>
+     <file>images/mask_sad.png</file>
      <file>stylesheet/style.qss</file>
      <file>stylesheet/style_mac.qss</file>
      <file>stylesheet/style_x11.qss</file>

@@ -193,7 +193,7 @@ real max_square_edge(Image * in, int x1, int y1, int x2, int y2){
 Image * limit_sampling(Image * img, real oversampling_factor, real cutoff){
   /* The space limiting criteria will be everything 10x smaller than the patterson cutoff */
   /* I'm gonna take the patterson of a blurred version of the diffraction pattern due to "hot pixels" and "blue spots" */
-  Image * blur_pat = sp_image_patterson(gaussian_blur(img,5));
+  Image * blur_pat = sp_image_patterson(sp_gaussian_blur(img,5));
   Image * pat = sp_image_patterson(img);
   Image * resampled;
   Image * s_pat;
@@ -243,7 +243,7 @@ Image * downsample(Image * img, real downsample_factor){
 /* Search and mask overexposure */
 void mask_overexposure(Image * img,real saturation){
   long long i;
-
+  
   for(i = 0;i<sp_c3matrix_size(img->image);i++){
     /* 16 bit detector apparently */
     /* mask over 20k */
@@ -314,7 +314,7 @@ Options * parse_options(int argc, char ** argv){
     -C: Use centrosymetry average\n\
     -c: User set image center (300x300)\n\
     -d: Dark image file\n\
-    -S: Do not shift quadrants\n\
+    -S: Shift quadrants\n\
     -n: Noise image file\n\
     -f: High pass filter of a given radius\n\
     -t: Smoothness of the transition zone between 0 and 1 in the high\n\
@@ -391,7 +391,7 @@ Options * parse_options(int argc, char ** argv){
       break;
 
     case 'S':
-      res->shift_quadrants = 0;
+      res->shift_quadrants = 1;
       break;
     case 'h':
       printf("%s",help_text);
@@ -428,7 +428,7 @@ void set_defaults(Options * opt){
   opt->high_pass_radius = 0;
   opt->high_pass_transition_smoothness = 1;
   opt->centrosymetry = 0;
-  opt->shift_quadrants = 1;
+  opt->shift_quadrants = 0;
   opt->user_center_x = -1;
   opt->user_center_y = -1;
 }
@@ -491,9 +491,6 @@ int main(int argc, char ** argv){
 
   img = sp_image_read(opts->input,0);
   printf("1 (%i,%i,%i)\n",sp_image_x(img),sp_image_y(img),sp_image_z(img));
-  if(img->shifted){
-    img = sp_image_shift(img);
-  }
   if(opts->dark[0]){
     if(opts->verbose){
       sp_image_write(img,"before_minus_dark.png",SpColormapJet|SpColormapLogScale);
@@ -588,9 +585,9 @@ int main(int argc, char ** argv){
   printf("max - %f\n",max);
 
   remove_background(img,opts);
-  if(!img->scaled){
+  /*  if(!img->scaled){
     intensity_to_amplitudes(img);
-  }
+    }*/
 
   printf("(%i,%i,%i)\n",sp_image_x(img),sp_image_y(img),sp_image_z(img));
   if(opts->user_center_x > 0){
@@ -640,7 +637,15 @@ int main(int argc, char ** argv){
   }
   sp_image_free(img);
   if(opts->resolution){
-    img = sp_image_low_pass(out, opts->resolution,SP_2D);
+    if(!out->shifted){
+      Image * tmp = sp_image_shift(out);
+      Image * tmp2 = sp_image_low_pass(tmp, opts->resolution,SP_2D);
+      sp_image_free(tmp);
+      img = sp_image_shift(tmp2);
+      sp_image_free(tmp2);
+    }else{
+      img = sp_image_low_pass(out, opts->resolution,SP_2D);
+    }
   }else{
     img = sp_image_duplicate(out,SP_COPY_DATA|SP_COPY_MASK);
   }
