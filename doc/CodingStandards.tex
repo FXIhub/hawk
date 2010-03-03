@@ -6,6 +6,7 @@
 \usepackage{hyperref}
 \usepackage{wrapfig}
 
+
 \def\sourcetabsize{4}
 \newenvironment{sourcestyle}{}{}%{\begin{scriptsize}}{\end{scriptsize}}
 \def\sourceinput#1{\par\begin{sourcestyle}\verbatimtabinput[\sourcetabsize]{#1}\end{sourcestyle}\par}
@@ -77,13 +78,22 @@ from both C and C++.
 All code should be valid C99 as much as possible. Certain features of C99 should not yet 
 be used such as complex numbers (unfortunately) as they are not widely supported.
 
-\subsection{Variables and functions}
+\subsection{Variables, functions and structures}
 All variables and functions should be all lowercase with words separated by underscores, 
 for example:
 \begin{sourcestyle}
 \begin{verbatim}
 int ignore_space_change_flag;
 int remove_spaces(char * string_with_spaces);
+\end{verbatim}
+\end{sourcestyle}
+
+Structures should use CamelCase and should be prefix in libspimage by Sp, e.g.:
+\begin{sourcestyle}
+\begin{verbatim}
+typedef struct{
+  SpPhasingConstraints constraints;
+}SpPhasingERParameters;
 \end{verbatim}
 \end{sourcestyle}
 

@@ -811,7 +811,7 @@ void init_reconstruction(Options * opts){
 int uwrapc_network_main(int argc, char ** argv){
 #ifndef NETWORK_SUPPORT
   hawk_fatal("uwrapc_network_main reached without network support!");
-#endif
+#else
   init_qt(argc,argv);
   char * server = 0;
   int server_port = 0;
@@ -838,6 +838,7 @@ int uwrapc_network_main(int argc, char ** argv){
   }
   attempt_connection(server,server_port,key);  
   return start_event_loop();
+#endif
 }
 
 

@@ -59,11 +59,13 @@ void cleanup_and_free_qt(){
   delete qapp;
 }
 
-
 int is_connected(){
   if(rpcInfo && rpcInfo->peer){
     return rpcInfo->peer->isConnected();
   }
   return 0;
 }
+
 #endif
+
+

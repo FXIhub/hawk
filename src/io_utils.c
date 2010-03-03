@@ -36,7 +36,9 @@ static void hawk_report(const char * file, int line, int status, MessageType typ
   vsnprintf(buffer+size[0],size[1]+1 , format, ap);
   snprintf(buffer+size[0]+size[1],size[2]+1, " in %s:%d\n",file,line);
   fprintf(stderr,"%s",buffer);
+#ifdef NETWORK_SUPPORT
   rpc_send_message(type,buffer);
+#endif
   free(buffer);  
   /* I can't abort in network more or the critical message never gets to the server */
   if(!is_connected()){
@@ -60,7 +62,9 @@ static void hawk_report2(int status, MessageType type,const char *format,va_list
   vsnprintf(buffer+size[0],size[1]+1 , format, ap);
   snprintf(buffer+size[0]+size[1],size[2]+1, "\n");
   fprintf(stderr,"%s",buffer);
+#ifdef NETWORK_SUPPORT
   rpc_send_message(type,buffer);
+#endif
   free(buffer);
   if (status >= 0){
     exit(status);
@@ -116,7 +120,9 @@ void hawk_log(FILE * fp,const char *format, ...){
   vsnprintf(buffer,size+1 , format, ap);
   va_end(ap); 
   fprintf(fp,"%s",buffer);
+#ifdef NETWORK_SUPPORT
   rpc_send_log_line(buffer);
+#endif
   free(buffer);
 }
 
@@ -127,7 +133,9 @@ void hawk_image_write(const Image * img, const char * filename, int flags){
   if(!is_connected() || global_options.save_remote_files){
     sp_image_write(img,filename,flags);
   }
+#ifdef NETWORK_SUPPORT
   rpc_send_image_output(filename,img);
+#endif
 }
 
 void hawk_fatal(const char *format, ...){
