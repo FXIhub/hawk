@@ -123,7 +123,8 @@ void ImageView::mouseOverValue(QMouseEvent * event){
 	    y = sp_image_y(image)-1;
 	  }
 	  Complex v = sp_image_get(image,x,y,0);
-	  QString message = QString("Pixel %1,%2 Value=%3 + %4i Amp=%5 Phase=%6%7").arg(x).arg(y).arg(sp_real(v)).arg(sp_imag(v)).arg(sp_cabs(v)).arg(180/3.1415*sp_carg(v)).arg(QChar(0x00B0));
+	  int m = sp_image_mask_get(image,x,y,0);
+	  QString message = QString("Pixel %1,%2 Value=%3 + %4i Amp=%5 Phase=%6%7 Mask=%8").arg(x).arg(y).arg(sp_real(v)).arg(sp_imag(v)).arg(sp_cabs(v)).arg(180/3.1415*sp_carg(v)).arg(QChar(0x00B0)).arg(m);
 	  mainWindow->statusBar()->showMessage(message);
 	  //	qDebug("Hovering over image at %dx%d",x,y);
 	}
