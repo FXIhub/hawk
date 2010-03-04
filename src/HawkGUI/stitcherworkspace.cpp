@@ -51,14 +51,14 @@ QWidget * StitcherWorkspace::createToolBar(){
   layout->addWidget(stitch,0,3);
 
   QToolButton * saveGeometry = new QToolButton(this);
-  saveGeometry->setIcon(QIcon(":images/filesave.png"));
+  saveGeometry->setIcon(QIcon(":images/save_geometry.png"));
   saveGeometry->setToolTip(tr("Save current geometry to a file"));
   saveGeometry->setIconSize(iconSize);
   connect(saveGeometry,SIGNAL(clicked(bool)),this,SLOT(onSaveGeometryClicked()));
   layout->addWidget(saveGeometry,0,4);
 
   QToolButton * saveControlPoints = new QToolButton(this);
-  saveControlPoints->setIcon(QIcon(":images/filesave.png"));
+  saveControlPoints->setIcon(QIcon(":images/save_controlpoints.png"));
   saveControlPoints->setToolTip(tr("Save control points to a file"));
   saveControlPoints->setIconSize(iconSize);
   connect(saveControlPoints,SIGNAL(clicked(bool)),this,SLOT(onSaveControlPointsClicked()));
@@ -66,14 +66,14 @@ QWidget * StitcherWorkspace::createToolBar(){
 
 
   QToolButton * loadGeometry = new QToolButton(this);
-  loadGeometry->setIcon(QIcon(":images/fileopen.png"));
+  loadGeometry->setIcon(QIcon(":images/load_geometry.png"));
   loadGeometry->setToolTip(tr("Load geometry from a file"));
   loadGeometry->setIconSize(iconSize);
   connect(loadGeometry,SIGNAL(clicked(bool)),this,SLOT(onLoadGeometryClicked()));
   layout->addWidget(loadGeometry,0,5);
 
   QToolButton * loadControlPoints = new QToolButton(this);
-  loadControlPoints->setIcon(QIcon(":images/fileload.png"));
+  loadControlPoints->setIcon(QIcon(":images/load_controlpoints.png"));
   loadControlPoints->setToolTip(tr("Load control points from a file"));
   loadControlPoints->setIconSize(iconSize);
   connect(loadControlPoints,SIGNAL(clicked(bool)),this,SLOT(onLoadControlPointsClicked()));

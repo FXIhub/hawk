@@ -54,6 +54,10 @@
      <file>images/edit_remove.png</file>
      <file>images/mask_happy.png</file>
      <file>images/mask_sad.png</file>
+     <file>images/load_geometry.png</file>
+     <file>images/save_geometry.png</file>
+     <file>images/load_controlpoints.png</file>
+     <file>images/save_controlpoints.png</file>
      <file>stylesheet/style.qss</file>
      <file>stylesheet/style_mac.qss</file>
      <file>stylesheet/style_x11.qss</file>
