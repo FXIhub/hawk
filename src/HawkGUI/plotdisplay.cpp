@@ -420,7 +420,7 @@ void PlotDisplay::updateCurves(){
       if ( pe->type() == QPaintEngine::X11 ){
 	// Even if not recommended by TrollTech, Qt::WA_PaintOutsidePaintEvent 
 	// works on X11. This has an tremendous effect on the performance..
-	directPaint = true;
+	//	directPaint = true;
       }
       canvas()->setAttribute(Qt::WA_PaintOutsidePaintEvent, directPaint);
       
