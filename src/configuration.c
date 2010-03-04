@@ -169,6 +169,7 @@ void set_defaults(Options * opt){
   sp_smap_insert(opt->template_area_evolution,5000,1.0);
   opt->save_remote_files = 0;
   opt->debug_level = 0;
+  opt->realspace_starting_point = 0;
 }
 
 void read_options_file(const char * filename){

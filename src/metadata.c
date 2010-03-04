@@ -1286,7 +1286,7 @@ VariableMetadata variable_metadata[201] = {
     .variable_type = Type_MultipleChoice,
     .id = Id_Rand_Phases,
     .parent = &(variable_metadata[82]),
-    .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
+    .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun|deprecated,
     .list_valid_values = {PHASES_FROM_SUPPORT,PHASES_ZERO,PHASES_RANDOM,0},
     .list_valid_names = {"support","zero","random"},
     .variable_address = &(global_options.rand_phases),
@@ -1300,7 +1300,7 @@ VariableMetadata variable_metadata[201] = {
     .variable_type = Type_Bool,
     .id = Id_Rand_Intensities,
     .parent = &(variable_metadata[82]),
-    .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
+    .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun|deprecated,
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.rand_intensities),
@@ -2026,7 +2026,7 @@ VariableMetadata variable_metadata[201] = {
     .variable_name = "support_closure_radius",
     .display_name = "Support Closure Radius",
     .variable_type = Type_Int,
-    .id = Id_Enforce_Centrosymmetry,
+    .id = Id_Support_Closure_Radius,
     .parent = &(variable_metadata[30]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun|experimental,
     .list_valid_values = {1,0},
@@ -2035,12 +2035,27 @@ VariableMetadata variable_metadata[201] = {
     .documentation = "Close the support by first growing it and then shrinking it after update.",
     .dependencies = NULL,
     .reserved = NULL
+  },
+  {
+    .variable_name = "realspace_starting_point",
+    .display_name = "Starting Guess",
+    .variable_type = Type_MultipleChoice,
+    .id = Id_Starting_Guess,
+    .parent = &(variable_metadata[82]),
+    .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun,
+    .list_valid_values = {0,1,2,3,0},
+    .list_valid_names = {"random phases","random density","zero phases","starting support",0},
+    .variable_address = &(global_options.realspace_starting_point),
+    .documentation = "When no starting image is specified this option defines the starting point of the reconstruction",
+    .dependencies = depends_on_no_realspace_image_file,
+    .reserved = NULL
   }
+
 };
 
 
 /* Don't forget to update this one!! */
-const int number_of_global_options = 137; //134 before implementing template
+const int number_of_global_options = 138;
 
 int get_list_value_from_list_name(VariableMetadata * md,char * name){
   int i = 0;

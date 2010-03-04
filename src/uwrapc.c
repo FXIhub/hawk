@@ -759,11 +759,22 @@ void init_reconstruction(Options * opts){
     opts->image_guess = sp_image_read(opts->image_guess_filename,0);
   }else{
     opts->image_guess = sp_image_duplicate(opts->init_support,SP_COPY_DATA|SP_COPY_MASK);
+    if(opts->realspace_starting_point == 0){
+      set_rand_phases(opts->image_guess,opts->amplitudes);
+    }else if(opts->realspace_starting_point == 1){
+      set_rand_ints(opts->image_guess,opts->amplitudes);
+    }else if(opts->realspace_starting_point == 2){
+      set_zero_phases(opts->image_guess,opts->amplitudes);
+    }else if(opts->realspace_starting_point == 3){
+      /* no need to do anything */
+    }else{
+      hawk_fatal("Error: unexpected option value");
+    }
   }
 
 
   /* Set random phases if needed */
-  if(opts->rand_intensities){
+  /*  if(opts->rand_intensities){
     set_rand_ints(opts->image_guess,opts->amplitudes);
     if(opts->image_guess_filename[0]){
       hawk_warning("Warning: Using random intensities, with image guess. Think about it...");
@@ -780,7 +791,7 @@ void init_reconstruction(Options * opts){
       hawk_warning("Warning: Using zero phases, with image guess. Think about it...");
     }
   }
-
+  */
 
   if(opts->rescale_amplitudes){
     enforce_parsevals_theorem(opts->amplitudes,opts->image_guess);
