@@ -460,7 +460,7 @@ void ImageView::scheduleImageLoad(QString file){
 }
 
 void ImageView::loadScheduledImage(){
-  qDebug("Checking scheduled image");
+  //  qDebug("Checking scheduled image");
   if(!scheduledImage.isEmpty()){
     if(loader == NULL){
       qDebug("Trying scheduled image");
