@@ -315,6 +315,16 @@ void StitcherWorkspace::loadGeometry(){
 	    itemValue->setEnabled(false);
 	  }
 	}
+	/* Temporarily disable Dz and Alpha */
+	if(itemName->text() == "Dz" || 
+	   itemName->text() == "Alpha"){
+	  itemName->setEnabled(false);
+	  itemValue->setEnabled(false);
+	  itemLocked->setEnabled(false);
+	  itemName->setToolTip("Currently disabled");
+	  itemValue->setToolTip("Currently disabled");
+	  itemLocked->setToolTip("Currently disabled");
+	}
 	parentItem->appendRow(QList<QStandardItem *>() << itemName << itemValue << itemLocked);
       }
     }
