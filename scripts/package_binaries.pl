@@ -2,7 +2,6 @@
 
 # This script assumes no intervention is necessary on cmake
 
-
 use strict;
 use Cwd 'abs_path';
 use File::Basename;
@@ -28,10 +27,13 @@ sub get_dependencies{
       $line =~ /.*? => (.*?) \(0x[0-9abcdef]+\)/;
       $lib = $1;
     }else{
-      if($line =~ /\s*(.*dylib)/){
+      if($line =~ /\@rpath\/(libcu.*dylib)/ || $line =~ /\@rpath\/(libtlshook.dylib)/){
+	# Assumes that CUDA is installed in /usr/local/cuda and that
+	# cuda libraries set rpath and no one else does, which at the moment is true
+	$lib = "/usr/local/cuda/lib/".$1;
+      }elsif($line =~ /\s*(.*dylib)/){
 	$lib = $1;
-      }
-      if($line =~ /\s*(Qt.*?)\s/){
+      }elsif($line =~ /\s*(Qt.*?)\s/){
 	$lib = "/Library/Frameworks/".$1;
       }
     }
@@ -114,7 +116,8 @@ unless(`uname -s` =~ /MINGW32/){
 	unless($dep =~ /Qt/ || $dep =~ /libtiff/ ||  $dep =~ /libpng/ || $dep =~ /libgsl/ || 
 	       $dep =~ /libgsl/ || $dep =~ /libaudio\./ || $dep =~ /libhdf5/  ||
 	       $dep =~ /libjpeg/ || $dep =~ /libqwt/ || $dep =~ /libspimage/ || $dep =~  /libz\.so/ ||
-	       $dep =~ /libfftw/ || $dep =~ /libsz\./ || $dep =~ /libssl\./ || $dep =~ /libcrypto\./){
+	       $dep =~ /libfftw/ || $dep =~ /libsz\./ || $dep =~ /libssl\./ || $dep =~ /libcrypto\./ ||
+	       $dep =~ /libcufft/ || $dep =~ /libcuda/ || $dep =~ /libcudart/ || $dep =~ /libtlshook/){
 	    next;
 	}
 	if(-f $dep){

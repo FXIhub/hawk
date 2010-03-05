@@ -23,6 +23,7 @@ sub change_install_name{
     my @lines = split("\n",$libs);
     foreach my $line (@lines){
       my $old;
+#      $line =~ s/\@rpath/\/usr\/local\/cuda\/lib/;
       if($line =~ /\s*(.*\.dylib)/){
 	$old = $1;
       }
