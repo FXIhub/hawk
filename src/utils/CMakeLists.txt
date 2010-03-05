@@ -155,7 +155,7 @@ SET_TARGET_PROPERTIES(analyse_mask PROPERTIES
   INSTALL_NAME_DIR "@loader_path/../lib"
   )
 
-LIST(APPEND BINS tiff2h5 image_to_vtk gif2h5image image_to_png png_to_image tiff2png autocorrelate prtf denoise background_subtract propagate matrix2image rs_r_factor average_h5 r_factor shell_plot separate_channel fft_bench manual_merge image_fft spot_integrate image_to_reflections multi_shot_exposure localized_blur analyse_mask image_superimpose image_gaussian_filter xcam_denoise stitch_images image_edit pnccd_split)
+LIST(APPEND BINS tiff2h5 image_to_vtk gif2h5image image_to_png png_to_image tiff2png autocorrelate prtf denoise background_subtract propagate matrix2image rs_r_factor average_h5 r_factor shell_plot separate_channel fft_bench manual_merge image_fft spot_integrate image_to_reflections multi_shot_exposure localized_blur analyse_mask image_superimpose image_gaussian_filter xcam_denoise stitch_images image_edit pnccd_split pnccd_integrate common_mode_removal)
 # combine_phases_and_amplitudes)
 
 INSTALL(TARGETS ${BINS}
@@ -163,4 +163,7 @@ INSTALL(TARGETS ${BINS}
             LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
             ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 
-INSTALL(PROGRAMS EOS300D_CRW2H5.pl DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
+#INSTALL(PROGRAMS EOS300D_CRW2H5.pl DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
+INSTALL(PROGRAMS repeat_reconstruction.pl DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
+INSTALL(PROGRAMS select_by_error.pl DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
+
