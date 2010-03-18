@@ -192,7 +192,7 @@ void PlotDisplay::createDataset(QString name,int id){
   int size = curves.size();
   for(int i = 0;i<size;i++){
     QPen pen = QPen(colors.at(i),2);
-    switch(i%5){
+    switch(i%3){
     case 0:
       pen.setStyle(Qt::SolidLine);
       break;
