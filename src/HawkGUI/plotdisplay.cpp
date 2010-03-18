@@ -398,6 +398,7 @@ void PlotDisplay::updateCurves(){
     int size = curves.size();
     for(int i = 0;i<size;i++){
       QwtPlotCurve * curve = curves.at(i);
+      int previousSize = curve->dataSize();
       CurveData * data = datas.at(i);
       if(!curve->isVisible()){
 	continue;
@@ -408,27 +409,28 @@ void PlotDisplay::updateCurves(){
       const bool cacheMode = 
 	canvas()->testPaintAttribute(QwtPlotCanvas::PaintCached);
       
-      const bool oldDirectPaint = 
-	canvas()->testAttribute(Qt::WA_PaintOutsidePaintEvent);
+      //      const bool oldDirectPaint = 
+      //	canvas()->testAttribute(Qt::WA_PaintOutsidePaintEvent);
       
       const QPaintEngine *pe = canvas()->paintEngine();
       if(!pe){	
 	/* For some reason there's no paintEngine still? */
 	return;
       }
-      bool directPaint = pe->hasFeature(QPaintEngine::PaintOutsidePaintEvent);
-      if ( pe->type() == QPaintEngine::X11 ){
-	// Even if not recommended by TrollTech, Qt::WA_PaintOutsidePaintEvent 
-	// works on X11. This has an tremendous effect on the performance..
-	//	directPaint = true;
-      }
-      canvas()->setAttribute(Qt::WA_PaintOutsidePaintEvent, directPaint);
+      //      bool directPaint = pe->hasFeature(QPaintEngine::PaintOutsidePaintEvent);
+      //      if ( pe->type() == QPaintEngine::X11 ){
+      // Even if not recommended by TrollTech, Qt::WA_PaintOutsidePaintEvent 
+      // works on X11. This has an tremendous effect on the performance..
+      //	directPaint = true;
+      //      }
+      //      canvas()->setAttribute(Qt::WA_PaintOutsidePaintEvent, directPaint);
       
       canvas()->setPaintAttribute(QwtPlotCanvas::PaintCached, false);
-      curve->draw(curve->dataSize() - size, curve->dataSize() - 1);
+      curve->draw(previousSize, curve->dataSize() - 1);
+	    //curve->draw(0, curve->dataSize() - 1);
       canvas()->setPaintAttribute(QwtPlotCanvas::PaintCached, cacheMode);
       
-      canvas()->setAttribute(Qt::WA_PaintOutsidePaintEvent, oldDirectPaint);
+      //      canvas()->setAttribute(Qt::WA_PaintOutsidePaintEvent, oldDirectPaint);
       
 
     }
