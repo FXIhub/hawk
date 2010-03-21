@@ -265,7 +265,9 @@ void complete_reconstruction_clean(Image * amp, Image * initial_support, Image *
     int to_output = opts->output_period-(ph->iteration)%opts->output_period;
     int to_log = opts->log_output_period-(ph->iteration)%opts->log_output_period;
     int to_iterate = sp_min(to_output,to_log);
+    int timer = sp_timer_start();
     sp_phaser_iterate(ph,to_iterate);
+    printf("hawk - %d iterations in %f ms\n",to_iterate,sp_timer_stop(timer));
     opts->cur_iteration = ph->iteration;
     if(to_iterate == to_log){
       output_from_phaser(ph,opts,&log);
