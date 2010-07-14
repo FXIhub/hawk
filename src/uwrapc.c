@@ -198,8 +198,7 @@ void output_initial_images( const Image * real_in,const Image * initial_support)
   hawk_image_write(real_in,"initial_guess.h5",sizeof(real));
 }
 
-void complete_reconstruction_clean(Image * amp, Image * initial_support, Image * exp_sigma,
-			     Options * opts, char * dir){  
+void complete_reconstruction_clean(Image * amp, Image * initial_support,Options * opts){  
 
   SpPhasingAlgorithm * alg = NULL;
   Log log;
@@ -267,7 +266,7 @@ void complete_reconstruction_clean(Image * amp, Image * initial_support, Image *
     int to_iterate = sp_min(to_output,to_log);
     int timer = sp_timer_start();
     sp_phaser_iterate(ph,to_iterate);
-    printf("hawk - %d iterations in %f ms\n",to_iterate,sp_timer_stop(timer));
+    printf("hawk - %d iterations in %d ms\n",to_iterate,(int)sp_timer_stop(timer));
     opts->cur_iteration = ph->iteration;
     if(to_iterate == to_log){
       output_from_phaser(ph,opts,&log);
@@ -323,8 +322,7 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
       opts->support_update_algorithm == STATIC) && opts->support_image_averaging == 1){ 
     /* use new libspimage backend */
     printf("use clean reconstruction\n");
-    return complete_reconstruction_clean(amp,initial_support,exp_sigma,
-				  opts,dir);
+    return complete_reconstruction_clean(amp,initial_support,opts);
   }else if(sp_cuda_get_device_type() == SpCUDAHardwareDevice  ||
 	   sp_cuda_get_device_type() == SpCUDAEmulatedDevice){
     hawk_warning("Cannot use CUDA for this particular configuration.");

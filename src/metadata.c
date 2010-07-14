@@ -160,7 +160,7 @@ static int depends_on_support_algorithm_with_blur(const Options * opt){
 
 /* All list_valid_names must be in lower case as this is currently 
    assumed in configuration.c! */
-VariableMetadata variable_metadata[201] = {
+VariableMetadata variable_metadata[] = {
   /*  0 */
   {
     .variable_name = "ROOT",
@@ -2070,8 +2070,8 @@ VariableMetadata variable_metadata[201] = {
 };
 
 
-/* Don't forget to update this one!! */
-const int number_of_global_options = 139;
+/* number_of_global_options updated automatically from now on */
+const int number_of_global_options = sizeof(variable_metadata)/sizeof(VariableMetadata);
 
 int get_list_value_from_list_name(VariableMetadata * md,char * name){
   int i = 0;

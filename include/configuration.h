@@ -188,7 +188,7 @@ typedef struct _VariableMetadata{
 
 extern Options global_options;
 extern const int number_of_global_options;
-extern VariableMetadata variable_metadata[201];
+extern VariableMetadata variable_metadata[];
 
   void init_options_metadata(Options * opt);
   void read_options_file(const char * filename);
