@@ -250,7 +250,7 @@ void complete_reconstruction_clean(Image * amp, Image * initial_support, Image *
     sp_support_array_append(sup_alg,sp_support_close_alloc(opts->support_closure_radius));
   }
   SpPhaser * ph = sp_phaser_alloc();
-  sp_phaser_init(ph,alg,sup_alg,SpEngineAutomatic);
+  sp_phaser_init(ph,alg,sup_alg,opts->phasing_engine);
   sp_phaser_set_amplitudes(ph,amp);
   sp_phaser_init_model(ph,opts->image_guess,0);
   //sp_phaser_init_support(ph,initial_support,0,0);

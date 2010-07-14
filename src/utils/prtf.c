@@ -251,9 +251,9 @@ int main(int argc, char ** argv){
     //    maximize_overlap(sum,tmp);
 
     /* Do Normalize */
-    for(int j = 0;j<sp_image_size(tmp);j++){
+        for(int j = 0;j<sp_image_size(tmp);j++){
       tmp->image->data[j] = sp_cscale(tmp->image->data[j],1.0/sp_cabs(tmp->image->data[j]));
-    }
+      }
     
     sp_image_add(sum,tmp);
     sp_image_dephase(tmp);

@@ -158,6 +158,8 @@ static int depends_on_support_algorithm_with_blur(const Options * opt){
 }
 
 
+/* All list_valid_names must be in lower case as this is currently 
+   assumed in configuration.c! */
 VariableMetadata variable_metadata[201] = {
   /*  0 */
   {
@@ -2049,13 +2051,27 @@ VariableMetadata variable_metadata[201] = {
     .documentation = "When no starting image is specified this option defines the starting point of the reconstruction",
     .dependencies = depends_on_no_realspace_image_file,
     .reserved = NULL
+  },
+  {
+    .variable_name = "phasing_engine",
+    .display_name = "Phasing Engine",
+    .variable_type = Type_MultipleChoice,
+    .id = Id_Phasing_Engine,
+    .parent = &(variable_metadata[0]),
+    .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun|advanced,
+    .list_valid_values = {SpEngineAutomatic,SpEngineCPU,SpEngineCUDA,0},
+    .list_valid_names = {"automatic","cpu","cuda",0},
+    .variable_address = &(global_options.phasing_engine),
+    .documentation = "Decides what resources to use for the phasing calculations. If automatic then GPU/CUDA will be used if it's available.",
+    .dependencies = NULL,
+    .reserved = NULL
   }
 
 };
 
 
 /* Don't forget to update this one!! */
-const int number_of_global_options = 138;
+const int number_of_global_options = 139;
 
 int get_list_value_from_list_name(VariableMetadata * md,char * name){
   int i = 0;
