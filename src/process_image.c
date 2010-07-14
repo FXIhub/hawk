@@ -594,7 +594,7 @@ int main(int argc, char ** argv){
     img->detector->image_center[0] = opts->user_center_x;
     img->detector->image_center[1] = opts->user_center_y;
   }else{
-    find_center(img,&(img->detector->image_center[0]),&(img->detector->image_center[1]),&(img->detector->image_center[2]));
+    sp_find_center(img,&(img->detector->image_center[0]),&(img->detector->image_center[1]),&(img->detector->image_center[2]));
   }
   tmp = MIN(img->detector->image_center[0],(sp_c3matrix_x(img->image)-img->detector->image_center[0]));
   tmp = MIN(tmp,img->detector->image_center[1]);
