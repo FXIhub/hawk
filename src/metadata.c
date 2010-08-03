@@ -158,6 +158,11 @@ static int depends_on_support_algorithm_with_blur(const Options * opt){
 }
 
 
+
+static const char autocorrelation_algorithm_treshold_doc[] = "Apply a threshold on the autocorrelation as a way to define the initial support. <p>The value of the threshold is set in <em>Autocorrelation Threshold</em>.</p>";
+static const char autocorrelation_algorithm_area_doc[] = "Use as initial support the most intense pixels in the autocorrelation up to a certain fraction the total number of pixels. <p>The fraction is set in <em>Autocorrelation Area</em>.</p>";
+
+
 /* All list_valid_names must be in lower case as this is currently 
    assumed in configuration.c! */
 VariableMetadata variable_metadata[] = {
@@ -1465,6 +1470,7 @@ VariableMetadata variable_metadata[] = {
     .variable_address = &(global_options.patterson_level_algorithm),
     .documentation = "Defines the algorithm that is used to determine the boundaries of the autocorrelation.",
     .dependencies = depends_on_initial_support_from_autocorrelation,
+    .list_documentation = {autocorrelation_algorithm_treshold_doc,autocorrelation_algorithm_area_doc,0},
     .reserved = NULL
   },
   {
@@ -1500,7 +1506,7 @@ VariableMetadata variable_metadata[] = {
     .display_name = "Autocorrelation Blur Radius",
     .variable_type = Type_Real,
     .id = Id_Patterson_Blur_Radius,
-    .parent = &(variable_metadata[82]),
+    .parent = &(variable_metadata[3]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun|advanced|withSpecialValue,
     .list_valid_values = {0,0},
     .list_valid_names = {"off",0},
@@ -1885,7 +1891,7 @@ VariableMetadata variable_metadata[] = {
     .display_name = "Autocorrelation Area",
     .variable_type = Type_Real,
     .id = Id_Autocorrelation_Area,
-    .parent = &(variable_metadata[82]),
+    .parent = &(variable_metadata[3]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
@@ -2066,7 +2072,6 @@ VariableMetadata variable_metadata[] = {
     .dependencies = NULL,
     .reserved = NULL
   }
-
 };
 
 

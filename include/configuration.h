@@ -15,6 +15,7 @@ extern "C"
 
 
 
+#define MAX_LIST_VALUES_PER_OPTION 20
 
 #define OPTION_STRING_SIZE 10026 //was 10024 before implementing template are.
 
@@ -171,13 +172,17 @@ typedef struct _VariableMetadata{
   const Variable_Id id;
   const struct _VariableMetadata * parent;
   const Variable_Properties variable_properties;
-  const int list_valid_values[20];
-  /* No more than 20 possible values per list */
-  const char * list_valid_names[20];
-  const Variable_Properties list_properties[20];
+  const int list_valid_values[MAX_LIST_VALUES_PER_OPTION];
+  /* No more than MAX_LIST_VALUES_PER_OPTION possible values per list */
+  const char * list_valid_names[MAX_LIST_VALUES_PER_OPTION];
+  const Variable_Properties list_properties[MAX_LIST_VALUES_PER_OPTION];
   void * variable_address;
   /* No more than 10240 characters in the documentation */
   const char documentation[10240];
+  /* Documentation for individual items. 
+     Should be defined as const static char [] externally.
+  */
+  const char * list_documentation[MAX_LIST_VALUES_PER_OPTION];
   /* Pointer to a function that determines if the option
      makes sense in the current configuration */
   int (* dependencies)(const Options *);
