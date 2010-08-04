@@ -162,6 +162,31 @@ static int depends_on_support_algorithm_with_blur(const Options * opt){
 static const char autocorrelation_algorithm_treshold_doc[] = "Apply a threshold on the autocorrelation as a way to define the initial support. <p>The value of the threshold is set in <em>Autocorrelation Threshold</em>.</p>";
 static const char autocorrelation_algorithm_area_doc[] = "Use as initial support the most intense pixels in the autocorrelation up to a certain fraction the total number of pixels. <p>The fraction is set in <em>Autocorrelation Area</em>.</p>";
 
+static const char phasing_algorithm_hio_doc[] = "<p>Use the Hybrid Input-Output(<b>HIO</b>) algorithm for phasing.</p>"
+"<p><b>HIO</b> is defined in <b>Fienup, J. R. </b> Reconstruction of an object from the modulus of its mfourier transform. <em>Opt. Lett.</em> (1978) as:</p>"
+"<p><center><img src=\":/images/hio_formula.png\"></center></p>";
+
+/* Latex code for the HIO formula 
+
+$\rho^{(n+1)}(r) = \begin{cases} 
+{\textbf{\em P}}_m \rho^{(n)}(r)  & \mbox{if } r \in S \\ 
+({\textbf{\em I}} - \beta {\textbf{\em P}}_m) \rho^{(n)}(r)  & \mbox{if }  r  \notin  S 
+\end{cases}
+$
+\begin{itemize}
+\item $\rho^{(n)}$ is the reconstructed image after $n$ iterations.
+\item $S$ is the support
+\item ${\textbf{\em I}}$ is the identity operator
+\item ${\textbf{\em P}}_m$ is the modulus projection operator
+\item $\beta$ is a relaxation parameter
+\end{itemize}
+
+*/
+
+//static const char phasing_algorithm_hio_doc[] = 
+  //  "<img src='doc.trolltech.com/4.6/images/qt-logo.png'>";
+//"<img src=\":images/hio_formula.png\" height=50px>";
+
 
 /* All list_valid_names must be in lower case as this is currently 
    assumed in configuration.c! */
@@ -1843,6 +1868,7 @@ VariableMetadata variable_metadata[] = {
     .variable_address = &(global_options.algorithm),
     .documentation = "The type of algorithm used during the phase retrieval. A few other options then depend on the type of algorithm chosen.",
     .dependencies = NULL,
+    .list_documentation = {phasing_algorithm_hio_doc,0},
     .reserved = NULL
   },
   {
