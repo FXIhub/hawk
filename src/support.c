@@ -106,9 +106,11 @@ Image * get_support_from_patterson(Image * input, Options * opts){
   sp_image_free(tmp_img); 
   sp_image_dephase(patterson);
 
+  /*
   tmp_img = sp_image_shift(patterson);
   sp_image_free(patterson);
   patterson = tmp_img;
+  */
 
   level =  get_patterson_level(patterson, opts->patterson_blur_radius,opts);
 

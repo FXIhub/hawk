@@ -170,6 +170,7 @@ void set_defaults(Options * opt){
   opt->save_remote_files = 0;
   opt->debug_level = 0;
   opt->realspace_starting_point = 0;
+  opt->enforce_ramp = 0;
 }
 
 void read_options_file(const char * filename){

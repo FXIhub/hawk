@@ -243,7 +243,7 @@ int main(int argc, char ** argv){
     char buff2[1024];
     if(img->num_dimensions == SP_2D){
       sprintf(buff2,"%s-super.png",argv[i+1]);
-      sp_image_write(img,buff2,SpColormapWheel|SpColormapPhase);
+      sp_image_write(img,buff2,SpColormapWheel|SpColormapInvertedPosNeg);
     }
     tmp = sp_image_fft(img);
     //    sprintf(buff2,"%s.png",argv[i+1]);
@@ -299,7 +299,7 @@ int main(int argc, char ** argv){
   sp_image_write(avg_img,buffer2,sizeof(real));
   if(avg_img->num_dimensions == SP_2D){
     sprintf(buffer2,"%s-avg_image-phase.png",output);
-    sp_image_write(avg_img,buffer2,SpColormapWheel|SpColormapPhase);
+    sp_image_write(avg_img,buffer2,SpColormapWheel|SpColormapInvertedPosNeg);
     sprintf(buffer2,"%s-avg_image.png",output);
     sp_image_write(avg_img,buffer2,SpColormapJet);
   }
