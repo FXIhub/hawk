@@ -287,6 +287,10 @@ static const char support_update_algorithm_static_doc[] = "<p>Do not update the 
 
 static const char undocumented_doc[] = "<p>Currently undocumented</p>";
 
+static const char output_projection_intensities_doc[] = "<p>Substitute the absolute squared value of the fourier transform of the current image by the experimental intensities, for those pixels where experimental data exist.</p>";
+
+  static const char output_projection_no_doc[] = "<p>Output the image as is.</p>";
+
 /* All list_valid_names must be in lower case as this is currently 
    assumed in configuration.c! */
 VariableMetadata variable_metadata[] = {
@@ -2198,6 +2202,22 @@ VariableMetadata variable_metadata[] = {
     .variable_address = &(global_options.phasing_engine),
     .documentation = "Decides what resources to use for the phasing calculations. If automatic then GPU/CUDA will be used if it's available.",
     .dependencies = NULL,
+    .reserved = NULL
+  },
+  {
+    .variable_name = "output_projection",
+    .display_name = "Output Projection",
+    .variable_type = Type_MultipleChoice,
+    .id = Id_Output_Projection,
+    .parent = &(variable_metadata[20]),
+    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
+    .list_valid_values = {IntensitiesProjection,NoProjection,0},
+    .list_valid_names = {"project_intensities","no_projection",0},
+    .list_properties = {0,0,0},
+    .variable_address = &(global_options.output_projection),
+    .documentation = "<p>Before outputing the real space image apply the selected projection on it.</p><p>This is useful because the iterates of several algorithms don't necessarily correspond to the recovered image (notably in the case of HIO).</p>",
+    .dependencies = NULL,
+    .list_documentation = {output_projection_intensities_doc,output_projection_no_doc,0},
     .reserved = NULL
   }
 };
