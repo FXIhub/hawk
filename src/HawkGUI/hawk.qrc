@@ -59,9 +59,13 @@
      <file>images/load_controlpoints.png</file>
      <file>images/save_controlpoints.png</file>
      <file>images/hio_formula.png</file>
+     <file>images/raar_formula.png</file>
+     <file>images/dm_formula.png</file>
+     <file>images/area_support_update_formula.png</file>
+     <file>images/threshold_support_update_formula.png</file>
      <file>stylesheet/style.qss</file>
      <file>stylesheet/style_mac.qss</file>
      <file>stylesheet/style_x11.qss</file>
- </qresource>
+  </qresource>
  </RCC>
  

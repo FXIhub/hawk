@@ -163,10 +163,11 @@ static const char autocorrelation_algorithm_treshold_doc[] = "Apply a threshold 
 static const char autocorrelation_algorithm_area_doc[] = "Use as initial support the most intense pixels in the autocorrelation up to a certain fraction the total number of pixels. <p>The fraction is set in <em>Autocorrelation Area</em>.</p>";
 
 static const char phasing_algorithm_hio_doc[] = "<p>Use the Hybrid Input-Output(<b>HIO</b>) algorithm for phasing.</p>"
-"<p><b>HIO</b> is defined in <b>Fienup, J. R. </b> Reconstruction of an object from the modulus of its mfourier transform. <em>Opt. Lett.</em> (1978) as:</p>"
+"<p><b>HIO</b> is defined in <b>Fienup, J. R. </b> Reconstruction of an object from the modulus of its fourier transform. <em>Opt. Lett.</em> (1978) as:</p>"
 "<p><center><img src=\":/images/hio_formula.png\"></center></p>";
-
-/* Latex code for the HIO formula 
+/*
+ HIO formula 
+##LaTeX code begin for file HawkGUI/images/hio_formula.png##
 
 $\rho^{(n+1)}(r) = \begin{cases} 
 {\textbf{\em P}}_m \rho^{(n)}(r)  & \mbox{if } r \in S \\ 
@@ -174,19 +175,117 @@ $\rho^{(n+1)}(r) = \begin{cases}
 \end{cases}
 $
 \begin{itemize}
-\item $\rho^{(n)}$ is the reconstructed image after $n$ iterations.
+\item $\rho^{(n)}$ is the real space image after $n$ iterations.
 \item $S$ is the support
 \item ${\textbf{\em I}}$ is the identity operator
 \item ${\textbf{\em P}}_m$ is the modulus projection operator
 \item $\beta$ is a relaxation parameter
 \end{itemize}
-
+##LaTeX code end##
 */
 
-//static const char phasing_algorithm_hio_doc[] = 
-  //  "<img src='doc.trolltech.com/4.6/images/qt-logo.png'>";
-//"<img src=\":images/hio_formula.png\" height=50px>";
+static const char phasing_algorithm_dm_doc[] = "<p>Use the Difference Map(<b>DM</b>) algorithm for phasing.</p>"
+"<p><b>DM</b> is defined in <b>Elser, V.</b> Phase retrieval by iterated projections "
+"<em>J. Opt. Soc. Am. A</em> <b>20</b>, 40 (2003) as:</p>"
+"<p><center><img src=\":/images/dm_formula.png\"></center></p>";
+/*
+DM formula 
+ ##LaTeX code begin for file HawkGUI/images/dm_formula.png##
 
+$\rho^{(n+1)}(r) = \left\{{\textbf{\em I}} + \beta {\textbf{\em P}}_s \left[(1+\gamma_s) {\textbf{\em P}}_m-\gamma_s I\right] - \beta {\textbf{\em P}}_m\left[(1+\gamma_m){\textbf{\em P}}_s-\gamma_m {\textbf{\em I}}\right]\right\} \rho^{(n)}
+$
+\begin{itemize}
+\item $\rho^{(n)}$ is the real space image after $n$ iterations.
+\item ${\textbf{\em I}}$ is the identity operator
+\item ${\textbf{\em P}}_m$ is the modulus projection operator
+\item ${\textbf{\em P}}_s$ is the support projection operator
+\item $\gamma_s$ and $\gamma_m$ are tuning parameters
+\item $\beta$ is a relaxation parameter
+\end{itemize}
+
+##LaTeX code end##
+*/
+
+
+static const char phasing_algorithm_raar_doc[] = "<p>Use the Relaxed Averaged Alternating Reflectors"
+"(<b>RAAR</b>) algorithm for phasing.</p>"
+"<p><b>RAAR</b> is defined in <b>Luke, D. R.</b> Relaxed averaged alternating reflections for diffraction imaging <em>Inverse Probl.</em> <b>21</b>, 37 (2005) as:</p>"
+"<p><center><img src=\":/images/raar_formula.png\"></center></p>";
+/*  RAAR formula 
+##LaTeX code begin for file HawkGUI/images/raar_formula.png##
+
+$\rho^{(n+1)}(r) = \left[\beta \left({\textbf{\em R}}_s{\textbf{\em R}}_m+{\textbf{\em I}}\right)+\left(1-\beta \right){\textbf{\em P}}_m\right]\rho^{(n)}
+$
+\begin{itemize}
+\item $\rho^{(n)}$ is the real space image after $n$ iterations.
+\item ${\textbf{\em I}}$ is the identity operator
+\item ${\textbf{\em P}}_m$ is the modulus projection operator
+\item ${\textbf{\em P}}_s$ is the support projection operator
+\item ${\textbf{\em R}}_m = 2{\textbf{\em P}}_m - {\textbf{\em I}}$
+\item ${\textbf{\em R}}_s = 2{\textbf{\em P}}_s - {\textbf{\em I}}$
+\item $\beta$ is a relaxation parameter
+\end{itemize}
+##LaTeX code end##
+*/
+
+
+static const char support_update_algorithm_area_doc[] = "<p>Constrain the area of"
+" support to always match the <em>Object Area<\em>.</p>"
+"<p>The update rule is given by the following equation:</p>"
+"<p><center><img src=\":/images/area_support_update_formula.png\"></center></p>";
+/* Area Support Update formula 
+##LaTeX code begin for file HawkGUI/images/area_support_update_formula.png##
+\begin{align*}
+\phi &= \rho \convolution G(\sigma)\\
+\psi & = \text{sort}(\phi) \\
+i & = \lfloor a N \rfloor \\
+ \Pi_r & = \begin{cases}
+0 & \mbox{if } \phi_r < \psi_i \\
+1 & \mbox{if } \phi_r \ge \psi_i
+\end{cases}
+\end{align*}
+\begin{itemize}
+\item $\rho$ is the current real space image.
+\item $G(\sigma)$ is a normalized gaussian function with standard deviation $\sigma$.
+\item $\sigma$ is given by the current value of {\em Blur}
+\item sort$(x)$ sorts the vector $x$ in decreasing order
+\item $a$ is given by the current value of {\em Object Area}
+\item $N$ is the length of $\rho$
+\item $\Pi$ is the new support.
+\end{itemize}
+
+##LaTeX code end##
+*/
+
+static const char support_update_algorithm_threshold_doc[] = "<p>Define the support as those"
+  " pixels which have a value higher than a certain fraction of the maximum pixel."
+" This fraction is given by <em>Intensity Threshold<\em>.</p>"
+"<p>The update rule is given by the following equation:</p>"
+"<p><center><img src=\":/images/threshold_support_update_formula.png\"></center></p>";
+/* Area Support Update formula 
+##LaTeX code begin for file HawkGUI/images/threshold_support_update_formula.png##
+
+\begin{align*}
+\phi &= \rho \convolution G(\sigma)\\
+ \Pi_r & = \begin{cases}
+0 & \mbox{if } \phi_r < \max(\phi) \cdot t \\
+1 & \mbox{if } \phi_r \ge \max(\phi) \cdot t
+\end{cases}
+\end{align*}
+\begin{itemize}
+\item $\rho$ is the current real space image.
+\item $G(\sigma)$ is a normalized gaussian function with standard deviation $\sigma$.
+\item $\sigma$ is given by the current value of {\em Blur}
+\item $t$ is given by the current value of {\em Intensity Threshold}
+\item $\Pi$ is the new support.
+\end{itemize}
+
+##LaTeX code end##
+*/
+
+static const char support_update_algorithm_static_doc[] = "<p>Do not update the support</p>";
+
+static const char undocumented_doc[] = "<p>Currently undocumented</p>";
 
 /* All list_valid_names must be in lower case as this is currently 
    assumed in configuration.c! */
@@ -1866,9 +1965,10 @@ VariableMetadata variable_metadata[] = {
     .list_valid_names = {"hio","raar","diff_map","hpr","cflip","raar_cflip","espresso","haar","so2d","raar_proj", "hio_proj",0},
     .list_properties = {0,0,0,experimental,experimental,experimental,experimental,experimental,experimental,experimental,experimental,0},
     .variable_address = &(global_options.algorithm),
-    .documentation = "The type of algorithm used during the phase retrieval. A few other options then depend on the type of algorithm chosen.",
+    .documentation = "<p>The type of algorithm used during the phase retrieval. A few other options then depend on the type of algorithm chosen.</p><p>Please check the individual algorithm documentation for more information.</p>",
     .dependencies = NULL,
-    .list_documentation = {phasing_algorithm_hio_doc,0},
+    .list_documentation = {phasing_algorithm_hio_doc,phasing_algorithm_raar_doc,
+			   phasing_algorithm_dm_doc,0},
     .reserved = NULL
   },
   {
@@ -1897,6 +1997,8 @@ VariableMetadata variable_metadata[] = {
     .list_valid_names = {"threshold","static","stepped","real_error_capped","real_error_adaptative","constant_area","area","complex_decreasing_area","template_area",0},
     .variable_address = &(global_options.support_update_algorithm),
     .dependencies = NULL,
+    .list_documentation = {support_update_algorithm_threshold_doc, support_update_algorithm_static_doc, undocumented_doc, undocumented_doc, undocumented_doc, undocumented_doc,support_update_algorithm_area_doc,undocumented_doc,undocumented_doc,0},
+    .documentation = "<p>The type of algorithm used for updating the support.</p><p> Please check the individual algorithms documentation for more information.</p>",
     .reserved = NULL
   },
   {
