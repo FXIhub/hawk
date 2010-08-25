@@ -31,6 +31,8 @@ sub get_dependencies{
 	# Assumes that CUDA is installed in /usr/local/cuda and that
 	# cuda libraries set rpath and no one else does, which at the moment is true
 	$lib = "/usr/local/cuda/lib/".$1;
+      }elsif($line =~ /\s*(libqwt.*?)\s/){
+	$lib = "/usr/local/lib/".$1;
       }elsif($line =~ /\s*(.*dylib)/){
 	$lib = $1;
       }elsif($line =~ /\s*(Qt.*?)\s/){
@@ -131,7 +133,12 @@ unless(`uname -s` =~ /MINGW32/){
     }
 # remove debug libs and strip the rest of the libs
     system("rm $libdir/*.debug");
-    system("strip -s $libdir/*");
+    if(`uname -s` =~ /Darwin/){
+      system("strip -x $libdir/*");
+    }
+    if(`uname -s` =~ /Linux/){
+      system("strip -s $libdir/*");
+    }
 }
 
 
