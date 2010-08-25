@@ -123,14 +123,19 @@ unless(`uname -s` =~ /MINGW32/){
 	    next;
 	}
 	if(-f $dep){
-	    if($dep =~ s/libQt.*/libQt\*/){
-		#copy all Qt libs
-		system("cp -d $dep $libdir");
-	    }else{
-		system("cp $dep $libdir");
-	    }
+	  if($dep =~ /(.*\.framework)/){
+	    system("cp -R $1 $libdir");
+	    $dep =~ /([^\/]*\.framework)/;
+	    my $fw = $1;
+	    system("find $libdir/$fw -name \'\*_debug*\' -exec rm -rf {} \\;");
+	  }elsif($dep =~ s/libQt.*/libQt\*/){
+	    #copy all Qt libs
+	    system("cp -d $dep $libdir");
+	  }else{
+	    system("cp $dep $libdir");
+	  }
 	}
-    }
+      }
 # remove debug libs and strip the rest of the libs
     system("rm $libdir/*.debug");
     if(`uname -s` =~ /Darwin/){
