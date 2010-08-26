@@ -218,9 +218,9 @@ void complete_reconstruction_clean(Image * amp, Image * initial_support, Image *
   if(opts->enforce_centrosymmetry){
     phasing_constraints |= SpCentrosymmetricObject;
   }
-  if (opts->enforce_ramp) {
-    phasing_constraints |= SpRampObject;
-  }
+  //  if (opts->enforce_ramp) {
+  //    phasing_constraints |= SpRampObject;
+  //  }
   if(get_algorithm(opts,&log) == HIO){
     alg = sp_phasing_hio_alloc(opts->beta_evolution,phasing_constraints);
   }
