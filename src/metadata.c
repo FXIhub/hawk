@@ -2049,13 +2049,26 @@ VariableMetadata variable_metadata[201] = {
     .documentation = "When no starting image is specified this option defines the starting point of the reconstruction",
     .dependencies = depends_on_no_realspace_image_file,
     .reserved = NULL
+  },
+  {
+    .variable_name = "enforce_ramp",
+    .display_name = "Enforce Ramp",
+    .variable_type = Type_Bool,
+    .id = Id_Enforce_Ramp,
+    .parent = &(variable_metadata[20]),
+    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
+    .list_valid_values = {0},
+    .list_valid_names = {0},
+    .variable_address = &(global_options.enforce_ramp),
+    .documentation = "Like realspace constraint but with a non-fixed center",
+    .dependencies = depends_on_phasing_algorithm_with_enforce_real,
+    .reserved = NULL
   }
-
 };
 
 
 /* Don't forget to update this one!! */
-const int number_of_global_options = 138;
+const int number_of_global_options = 139;
 
 int get_list_value_from_list_name(VariableMetadata * md,char * name){
   int i = 0;
