@@ -175,11 +175,11 @@ $\rho^{(n+1)}(r) = \begin{cases}
 \end{cases}
 $
 \begin{itemize}
-\item $\rho^{(n)}$ is the real space image after $n$ iterations.
+\item $\rho^{(n)}$ is the real space image after $n$ iterations
 \item $S$ is the support
 \item ${\textbf{\em I}}$ is the identity operator
 \item ${\textbf{\em P}}_m$ is the modulus projection operator
-\item $\beta$ is a relaxation parameter
+\item $\beta$ is a relaxation parameter defined in {\em Beta}
 \end{itemize}
 ##LaTeX code end##
 */
@@ -195,12 +195,12 @@ DM formula
 $\rho^{(n+1)}(r) = \left\{{\textbf{\em I}} + \beta {\textbf{\em P}}_s \left[(1+\gamma_s) {\textbf{\em P}}_m-\gamma_s I\right] - \beta {\textbf{\em P}}_m\left[(1+\gamma_m){\textbf{\em P}}_s-\gamma_m {\textbf{\em I}}\right]\right\} \rho^{(n)}
 $
 \begin{itemize}
-\item $\rho^{(n)}$ is the real space image after $n$ iterations.
+\item $\rho^{(n)}$ is the real space image after $n$ iterations
 \item ${\textbf{\em I}}$ is the identity operator
 \item ${\textbf{\em P}}_m$ is the modulus projection operator
 \item ${\textbf{\em P}}_s$ is the support projection operator
-\item $\gamma_s$ and $\gamma_m$ are tuning parameters
-\item $\beta$ is a relaxation parameter
+\item $\gamma_s$ and $\gamma_m$ are tuning parameters defined in {\em Gamma 1} and {\em Gamma 2} 
+\item $\beta$ is a relaxation parameter defined in {\em Beta}
 \end{itemize}
 
 ##LaTeX code end##
@@ -223,7 +223,7 @@ $
 \item ${\textbf{\em P}}_s$ is the support projection operator
 \item ${\textbf{\em R}}_m = 2{\textbf{\em P}}_m - {\textbf{\em I}}$
 \item ${\textbf{\em R}}_s = 2{\textbf{\em P}}_s - {\textbf{\em I}}$
-\item $\beta$ is a relaxation parameter
+\item $\beta$ is a relaxation parameter defined in {\em Beta}
 \end{itemize}
 ##LaTeX code end##
 */
@@ -278,6 +278,34 @@ static const char support_update_algorithm_threshold_doc[] = "<p>Define the supp
 \item $\sigma$ is given by the current value of {\em Blur}
 \item $t$ is given by the current value of {\em Intensity Threshold}
 \item $\Pi$ is the new support.
+\end{itemize}
+
+##LaTeX code end##
+*/
+
+
+
+/* Phasing algorithms projections description 
+##LaTeX code begin for file HawkGUI/images/phasing_projections_formula.png##
+${\textbf{\em P}}_m(\rho) = \mathcal{F}^{-1}\left(\frac{\mathcal{F}(\rho)}{|\mathcal{F}(\rho)|} \cdot \sqrt I\right)$
+
+\begin{itemize}
+\item $\rho$ is the real space image
+\item $I$ are the experimental intensities
+\item ${\mathcal{F}}$ is the Fourier transform
+\item ${\textbf{\em P}}_m$ is the modulus projection operator
+\end{itemize}
+
+${\textbf{\em P}}_s\left(\rho\left(r\right)\right) = \begin{cases}
+\rho(r)  & \mbox{if } r \in S \\ \\
+0  & \mbox{if } r \notin S \\
+\end{cases}
+$
+\begin{itemize}
+\item $r$ is a position in real space
+\item $\rho$ is the real space image
+\item $S$ is the support
+\item ${\textbf{\em P}}_s$ is the support projection operator
 \end{itemize}
 
 ##LaTeX code end##
@@ -1969,7 +1997,9 @@ VariableMetadata variable_metadata[] = {
     .list_valid_names = {"hio","raar","diff_map","hpr","cflip","raar_cflip","espresso","haar","so2d","raar_proj", "hio_proj",0},
     .list_properties = {0,0,0,experimental,experimental,experimental,experimental,experimental,experimental,experimental,experimental,0},
     .variable_address = &(global_options.algorithm),
-    .documentation = "<p>The type of algorithm used during the phase retrieval. A few other options then depend on the type of algorithm chosen.</p><p>Please check the individual algorithm documentation for more information.</p>",
+    .documentation = "<p>The type of algorithm used during the phase retrieval. A few other options then depend on the type of algorithm chosen.</p><p>The following projections are used in the description of the algorithms:</p>"
+    "<p><center><img src=\":/images/phasing_projections_formula.png\"></center></p>"
+    "<p>Please check the individual algorithm documentation for more information.</p>",
     .dependencies = NULL,
     .list_documentation = {phasing_algorithm_hio_doc,phasing_algorithm_raar_doc,
 			   phasing_algorithm_dm_doc,0},
@@ -2210,7 +2240,7 @@ VariableMetadata variable_metadata[] = {
     .variable_type = Type_MultipleChoice,
     .id = Id_Output_Projection,
     .parent = &(variable_metadata[20]),
-    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
+    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun|advanced,
     .list_valid_values = {IntensitiesProjection,NoProjection,0},
     .list_valid_names = {"project_intensities","no_projection",0},
     .list_properties = {0,0,0},
