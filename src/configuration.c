@@ -171,6 +171,8 @@ void set_defaults(Options * opt){
   opt->debug_level = 0;
   opt->realspace_starting_point = 0;
   opt->enforce_ramp = 0;
+  opt->phasing_engine = SpEngineAutomatic;
+  opt->output_projection = IntensitiesProjection;
 }
 
 void read_options_file(const char * filename){

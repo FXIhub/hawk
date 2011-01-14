@@ -15,6 +15,7 @@ extern "C"
 
 
 
+#define MAX_LIST_VALUES_PER_OPTION 20
 
 #define OPTION_STRING_SIZE 10026 //was 10024 before implementing template are.
 
@@ -53,7 +54,11 @@ typedef enum {Id_Diffraction_Filename=0,Id_Real_Image_Filename,Id_Max_Blur_Radiu
 	      Id_Filter_Intensities,Id_Beta_Checkpoints,Id_Beta_at_Checkpoints,Id_Gamma1,Id_Gamma2,Id_Support_Image_Averaging,
 	      Id_Random_Seed,Id_Input_Files,Id_Input_Files_Amplitudes,Id_Initialization,Id_Input,Id_Logging,Id_Phasing,Id_Support,
 	      Id_Autocorrelation_Area,Id_Remote_Work_Dir,Id_Save_Remote_Files,Id_Debug_Level, Id_Initial_Support_Group, Id_Enforce_Centrosymmetry, Id_Support_Closure_Radius,
+<<<<<<< HEAD
 	      Id_Starting_Guess, Id_Enforce_Ramp
+=======
+	      Id_Starting_Guess, Id_Phasing_Engine,Id_Output_Projection
+>>>>>>> big_images
 }Variable_Id;
   
   
@@ -61,7 +66,7 @@ typedef enum {isSettableBeforeRun = 1, isSettableDuringRun = 2, isGettableBefore
 	      isGettableDuringRun = 8, isMandatory = 16, deprecated = 32,advanced = 64,
 	      withSpecialValue = 128,experimental = 256} Variable_Properties;
 
-
+  typedef enum{IntensitiesProjection = 0, NoProjection}Output_Projection;
 
 typedef struct {
   Image * diffraction;
@@ -162,6 +167,8 @@ typedef struct {
   int enforce_centrosymmetry;
   int realspace_starting_point;
   int enforce_ramp;
+  SpPhasingEngine phasing_engine;
+  Output_Projection output_projection;
 }Options;
 
 typedef struct _VariableMetadata{
@@ -171,13 +178,17 @@ typedef struct _VariableMetadata{
   const Variable_Id id;
   const struct _VariableMetadata * parent;
   const Variable_Properties variable_properties;
-  const int list_valid_values[20];
-  /* No more than 20 possible values per list */
-  const char * list_valid_names[20];
-  const Variable_Properties list_properties[20];
+  const int list_valid_values[MAX_LIST_VALUES_PER_OPTION];
+  /* No more than MAX_LIST_VALUES_PER_OPTION possible values per list */
+  const char * list_valid_names[MAX_LIST_VALUES_PER_OPTION];
+  const Variable_Properties list_properties[MAX_LIST_VALUES_PER_OPTION];
   void * variable_address;
   /* No more than 10240 characters in the documentation */
   const char documentation[10240];
+  /* Documentation for individual items. 
+     Should be defined as const static char [] externally.
+  */
+  const char * list_documentation[MAX_LIST_VALUES_PER_OPTION];
   /* Pointer to a function that determines if the option
      makes sense in the current configuration */
   int (* dependencies)(const Options *);
@@ -188,7 +199,7 @@ typedef struct _VariableMetadata{
 
 extern Options global_options;
 extern const int number_of_global_options;
-extern VariableMetadata variable_metadata[201];
+extern VariableMetadata variable_metadata[];
 
   void init_options_metadata(Options * opt);
   void read_options_file(const char * filename);

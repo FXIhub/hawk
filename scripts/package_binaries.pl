@@ -31,6 +31,8 @@ sub get_dependencies{
 	# Assumes that CUDA is installed in /usr/local/cuda and that
 	# cuda libraries set rpath and no one else does, which at the moment is true
 	$lib = "/usr/local/cuda/lib/".$1;
+      }elsif($line =~ /\s*(libqwt.*?)\s/){
+	$lib = "/usr/local/lib/".$1;
       }elsif($line =~ /\s*(.*dylib)/){
 	$lib = $1;
       }elsif($line =~ /\s*(Qt.*?)\s/){
@@ -121,17 +123,27 @@ unless(`uname -s` =~ /MINGW32/){
 	    next;
 	}
 	if(-f $dep){
-	    if($dep =~ s/libQt.*/libQt\*/){
-		#copy all Qt libs
-		system("cp -d $dep $libdir");
-	    }else{
-		system("cp $dep $libdir");
-	    }
+	  if($dep =~ /(.*\.framework)/){
+	    system("cp -R $1 $libdir");
+	    $dep =~ /([^\/]*\.framework)/;
+	    my $fw = $1;
+	    system("find $libdir/$fw -name \'\*_debug*\' -exec rm -rf {} \\;");
+	  }elsif($dep =~ s/libQt.*/libQt\*/){
+	    #copy all Qt libs
+	    system("cp -d $dep $libdir");
+	  }else{
+	    system("cp $dep $libdir");
+	  }
 	}
-    }
+      }
 # remove debug libs and strip the rest of the libs
     system("rm $libdir/*.debug");
-    system("strip -s $libdir/*");
+    if(`uname -s` =~ /Darwin/){
+      system("strip -x $libdir/*");
+    }
+    if(`uname -s` =~ /Linux/){
+      system("strip -s $libdir/*");
+    }
 }
 
 

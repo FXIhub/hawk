@@ -9,7 +9,7 @@ IF(WIN32)
 ENDIF(WIN32)
 
 
-SET(TESTS_OBJ CuTest.c AllTests.c AlgorithmsTests.c GeometryTests.c ../algorithms.c ../configuration.c ../log.c ../saddle/minmaxtau.c ../saddle/minmaxL.c ../libconfig/libconfig.c ../libconfig/scanner.c ../libconfig/grammar.c ../metadata.c ../support.c ../geometry_constraints.c ../io_utils.c ../network_communication.cpp ../uwrapc.c)
+SET(TESTS_OBJ CuTest.c AllTests.c AlgorithmsTests.c GeometryTests.c ../algorithms.c ../configuration.c ../log.c ../saddle/minmaxtau.c ../saddle/minmaxL.c ../libconfig/libconfig.c ../libconfig/scanner.c ../libconfig/grammar.c ../metadata.c ../support.c ../geometry_constraints.c ../io_utils.c ../network_communication.cpp ../uwrapc.c ../output_projection.c)
 
 IF(QT4_FOUND)
 QT_WRAP_CPP(tests qxt_tests_moc_files ../qxt/qxtboundfunction.h ../qxt/qxtrpcservice.h ../qxt/qxtrpcservice_p.h ../qxt/qxtabstractconnectionmanager.h ../qxt/qxtrpcpeer.h ../qxt/qxttcpconnectionmanager.h ../qxt/qxttcpconnectionmanager_p.h  ../rpcpeer.h ../uwrapcpeerthread.h)

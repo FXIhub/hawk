@@ -426,7 +426,6 @@ void PlotDisplay::updateCurves(){
       //      canvas()->setAttribute(Qt::WA_PaintOutsidePaintEvent, directPaint);
       
       canvas()->setPaintAttribute(QwtPlotCanvas::PaintCached, false);
-      //curve->draw(previousSize, curve->dataSize() - 1);
       curve->draw(sp_max(previousSize-1,0), curve->dataSize() - 1);
 	    //curve->draw(0, curve->dataSize() - 1);
       canvas()->setPaintAttribute(QwtPlotCanvas::PaintCached, cacheMode);
