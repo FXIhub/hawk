@@ -3,6 +3,7 @@
 #include <QProcess>
 #include <QMessageBox>
 #include <QWidget>
+#include <QTemporaryFile>
 
 #include "outputwatcher.h"
 #include "uwrapcthread.h"
@@ -91,7 +92,11 @@ void ProcessControl::startLocalProcess(){
   connect(process,SIGNAL(readyReadStandardOutput()),this,SLOT(readStdOut()));
   connect(process,SIGNAL(readyReadStandardError()),this,SLOT(readStdErr()));
   connect(process,SIGNAL(finished(int,QProcess::ExitStatus)),this,SLOT(onProcessFinished(int,QProcess::ExitStatus)));
-  p_startTime = QDateTime::currentDateTime();
+  QTemporaryFile tmp("qt_temp.XXXXXX");
+  tmp.open();
+  QFileInfo fileInfo(tmp.fileName());
+  //  p_startTime = QDateTime::currentDateTime();
+  p_startTime = fileInfo.created();
   process->start("uwrapc");
   emit processStarted(Local,fullPath,this);  
 }
@@ -117,8 +122,16 @@ void ProcessControl::startEmbeddedProcess(){
     programName = QFileInfo(programName).absoluteFilePath();
   }
   QString command = programName+QString(" uwrapc");
-  qDebug("Starting %s",command.toAscii().data());
-  p_startTime = QDateTime::currentDateTime();
+  //  qDebug("Starting %s",command.toAscii().data());
+  // We are creating a temporary file to assign the startTime because the
+  // precision of creation times is pretty low and this way we ensure that 
+  // all files created after now will have a create() time larger or equal
+  // to startTime which was not the case when using currentTime() due to truncation.
+  QTemporaryFile tmp("qt_temp.XXXXXX");
+  tmp.open();
+  QFileInfo fileInfo(tmp.fileName());
+  p_startTime = fileInfo.created();
+  //  p_startTime = QDateTime::currentDateTime();
   QStringList arguments("uwrapc");
   process->start(programName,arguments);
   bool ok;

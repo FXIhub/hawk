@@ -43,7 +43,7 @@ void OutputWatcher::checkForNewFiles(){
   QFileInfo fi;
   QString file;
   QFileInfo previousFile;
-  qDebug("checkForNewFiles");
+  //  qDebug("checkForNewFiles");
   while(1){
     if(newestFiles.contains("Real Space")){
       fi = newestFiles.value("Real Space");
@@ -57,7 +57,7 @@ void OutputWatcher::checkForNewFiles(){
       fi = QFileInfo(dir,baseIter);
       file = incrementFilename(fi.absoluteFilePath(),increment-1);    
     }
-    qDebug(("Processing " + file).toAscii());
+    //    qDebug(("Processing " + file).toAscii());
     previousFile = fi;
     ImageCategory * ic = ImageCategory::getFileCategory(file);
     if(processFile(file)){
@@ -119,8 +119,8 @@ int OutputWatcher::processFile(const QString file){
 
 void OutputWatcher::stop(){
   if(pooler){
+    checkForNewFiles();
     emit stopPooler();
-    //    pooler->stop();
   }
   quit();
 }
@@ -243,6 +243,7 @@ bool OutputWatcher::isFileValid(QString file){
     //    qDebug(("File does not exist:" +file).toAscii());
     return false;
   }
+  //  qDebug() << QString("%1 %2").arg(fileInfo.created().toString("hh:mm:ss.zzz")).arg(initTime.toString("hh:mm:ss.zzz"));
   if(fileInfo.created() < initTime){
     //    qDebug(("File is old:" +file).toAscii());
     return false;
