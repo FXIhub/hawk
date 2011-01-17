@@ -138,6 +138,7 @@ void ImageView::mouseMoveEvent(QMouseEvent * event){
   if(dragged && event->buttons() & Qt::LeftButton){
     QPointF mov = mapToScene(event->pos())-mouseLastScenePos;
     dragged->moveBy(mov.x(),mov.y());
+    emit moveBy(mov,dragged);
     emit imageItemGeometryChanged(dragged);
   }else if(event->buttons() & Qt::LeftButton && _backgroundDraggable){
     QPointF mov = mapToScene(event->pos())-mouseLastScenePos;
