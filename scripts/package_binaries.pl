@@ -9,9 +9,9 @@ use File::Spec;
 
 sub get_dependencies{
   my $bin = shift;
-  my $use_ldd = 0;
-  if(`which ldd`){
-    $use_ldd = 1;
+  my $use_ldd = 1;
+  if(`uname -s` =~ /Darwin/ || !`which ldd`){
+    $use_ldd = 0;
   }
   my $libs;
   if($use_ldd ){
