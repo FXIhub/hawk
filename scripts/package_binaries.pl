@@ -103,6 +103,9 @@ chdir($builddir) or die($!);
 print `pwd`;
 if(`uname -s` =~ /MINGW32/){
     system("cmake -G \"MSYS Makefiles\" ../.. -DCMAKE_BUILD_TYPE=release -DCMAKE_INSTALL_PREFIX:PATH=$reldir");
+}elsif(`uname -s` =~ /Darwin/){
+#    system("cmake ../.. -DCMAKE_BUILD_TYPE=release -DCMAKE_INSTALL_PREFIX:PATH=$reldir -DCMAKE_OSX_DEPLOYMENT_TARGET=10.5");
+    system("cmake ../.. -DCMAKE_BUILD_TYPE=release -DCMAKE_INSTALL_PREFIX:PATH=$reldir -DCMAKE_OSX_DEPLOYMENT_TARGET=10.6");
 }else{
     system("cmake ../.. -DCMAKE_BUILD_TYPE=release -DCMAKE_INSTALL_PREFIX:PATH=$reldir");
 }

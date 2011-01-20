@@ -62,9 +62,10 @@ ImageItem::ImageItem(Image * sp_image,QString file, ImageView * view,QGraphicsIt
   identifierItem->setZValue(zValue()+1);
   _dxLocked = false;
   _dyLocked = false;
-  _dzLocked = false;
-  _thetaLocked = false;
-  _alphaLocked = false;
+  /* Start with these locked*/
+  _dzLocked = true;
+  _thetaLocked = true;
+  _alphaLocked = true;
   _alpha = 0;
   _theta = 0;
   _dx = 0;
