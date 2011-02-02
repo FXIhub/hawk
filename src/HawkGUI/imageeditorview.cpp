@@ -110,7 +110,7 @@ void ImageEditorView::setWavelength(double wavelength){
 
 double ImageEditorView::wavelength() const{
   if(selectedImage()){
-    selectedImage()->wavelength();
+    return selectedImage()->wavelength();
   }
   return -1;
 }
