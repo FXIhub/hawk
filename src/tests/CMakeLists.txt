@@ -20,7 +20,7 @@ ENDIF(QT4_FOUND)
 
 
 ADD_EXECUTABLE(tests ${TESTS_OBJ})
-ADD_EXECUTABLE(geometry_tests CuTest.c GeometryTests.c ../geometry_constraints.c geometry_tests)
+ADD_EXECUTABLE(geometry_tests CuTest.c GeometryTests.c ../geometry_constraints.c geometry_tests.c)
 INCLUDE_DIRECTORIES(GSL_INCLUDES)
 TARGET_LINK_LIBRARIES(tests ${LIBRARY_LIST} ${GSL_LIBRARIES})
 TARGET_LINK_LIBRARIES(geometry_tests ${LIBRARY_LIST} ${GSL_LIBRARIES})
