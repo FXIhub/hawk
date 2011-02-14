@@ -578,7 +578,7 @@ void StitcherWorkspace::onOptimizeGeometryClicked(){
   for(int i = 0;i<model->rowCount();i++){
 
     QStandardItem * it = model->item(i,0);
-    geometric_constraint c =  geometric_constraint_init((GeometryConstraintType)it->data(Qt::UserRole + 1).toInt(),0);    
+    geometric_constraint c =  geometric_constraint_init((GeometryConstraintType)it->data(Qt::UserRole + 3).toInt(),0);    
     QList<QVariant> item_details = it->data(Qt::UserRole + 1).value<QList<QVariant> >();
     QList<QVariant> point_details = it->data(Qt::UserRole + 2).value<QList<QVariant> >();
     total_points += item_details.size();

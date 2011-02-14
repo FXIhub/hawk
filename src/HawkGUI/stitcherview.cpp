@@ -24,6 +24,18 @@ StitcherView::StitcherView(QWidget * parent)
   setBackgroundBrush(QColor("#26466D"));
   _showIdentifiers = true;
   setBackgroundDraggable(false);
+  QGraphicsLineItem * centerVerticalIndicator = new QGraphicsLineItem(0,-100,0,100);
+  QGraphicsLineItem * centerHorizontalIndicator = new QGraphicsLineItem(-100,0,100,0);
+  centerVerticalIndicator->setZValue(11);
+  centerHorizontalIndicator->setZValue(11);
+  graphicsScene->addItem(centerVerticalIndicator);
+  graphicsScene->addItem(centerHorizontalIndicator);
+  QPen pen = centerHorizontalIndicator->pen();  
+  pen.setColor(Qt::white);
+  pen.setStyle(Qt::SolidLine);
+  centerHorizontalIndicator->setPen(pen);
+  centerVerticalIndicator->setPen(pen);
+
 }
 
 bool StitcherView::loadImage(QString s){
