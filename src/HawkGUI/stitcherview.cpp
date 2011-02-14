@@ -87,6 +87,13 @@ void StitcherView::mouseReleaseEvent( QMouseEvent *  event){
     QPointF circleCenter = (lineOriginF+lineEndF)/2;    
     qreal circleRadius = sqrt((lineOriginF-lineEndF).x()* (lineOriginF-lineEndF).x()+
 			      (lineOriginF-lineEndF).y()* (lineOriginF-lineEndF).y())/2;
+    if(QApplication::keyboardModifiers() & Qt::ShiftModifier){
+      circleCenter =  mapFromScene(QPointF(0,0));
+      circleRadius = sqrt((circleCenter-lineEnd).x()* (circleCenter-lineEnd).x()+
+			      (circleCenter-lineEnd).y()* (circleCenter-lineEnd).y());
+      circleCenter =  QPointF(0,0);
+
+    }
     QGraphicsEllipseItem * circle = new QGraphicsEllipseItem(QRect(circleCenter.x()-circleRadius,circleCenter.y()-circleRadius,circleRadius*2,circleRadius*2));
     circle->setData(0,QString("Helper"));
     circle->setZValue(11);    
@@ -145,9 +152,15 @@ void StitcherView::paintEvent(QPaintEvent *event){
     p.setPen(pen);
     p.drawLine(lineOrigin,lineEnd);
   }else if(mode == Circle && QApplication::mouseButtons() & Qt::LeftButton){
-    QPointF circleCenter = (lineOrigin+lineEnd)/2;    
+    QPointF circleCenter = (lineOrigin+lineEnd)/2;
     qreal circleRadius = sqrt((lineOrigin-lineEnd).x()* (lineOrigin-lineEnd).x()+
 			      (lineOrigin-lineEnd).y()* (lineOrigin-lineEnd).y())/2;
+    if(QApplication::keyboardModifiers() & Qt::ShiftModifier){
+      circleCenter =  mapFromScene(QPointF(0,0));
+      circleRadius = sqrt((circleCenter-lineEnd).x()* (circleCenter-lineEnd).x()+
+			      (circleCenter-lineEnd).y()* (circleCenter-lineEnd).y());
+
+    }
     QPen pen = p.pen();
     pen.setColor(Qt::white);
     pen.setStyle(Qt::SolidLine);

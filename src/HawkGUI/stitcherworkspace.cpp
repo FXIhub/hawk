@@ -88,7 +88,7 @@ QWidget * StitcherWorkspace::createToolBar(){
 
   QToolButton * circle = new QToolButton(this);
   circle->setIcon(QIcon(":images/add_circle.png"));
-  circle->setToolTip(tr("Draw guide circle"));
+  circle->setToolTip(tr("Draw guide circle (press Shift for a centered circle)"));
   circle->setIconSize(iconSize);
   connect(circle,SIGNAL(clicked(bool)),this,SLOT(onCircleClicked()));
   layout->addWidget(circle,0,2);
@@ -421,7 +421,6 @@ void StitcherWorkspace::initConstraintsTree(){
 
 
 void StitcherWorkspace::onAddConstraintClicked(){
-  QStandardItemModel * model = qobject_cast<QStandardItemModel *>(constraintsTree->model());
   /* 
      This is a prefix to distinguish Hawk Geometry properties from the
      normal widget properties 
