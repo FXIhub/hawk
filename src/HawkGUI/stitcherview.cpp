@@ -134,14 +134,7 @@ void StitcherView::mouseReleaseEvent( QMouseEvent *  event){
 	}
 	QGraphicsLineItem * line = qgraphicsitem_cast<QGraphicsLineItem *>(it[i]);
 	if(line){
-	  
-	  // Check if click position close to the line
-	  QPointF origin = elipse->rect().center();
-	  qreal radius = elipse->rect().height()/2;
-	  QPointF d = origin-pos;	  
-	  if(abs(sqrt(d.x()*d.x()+d.y()*d.y())-radius) < 10){
-	    delete elipse;
-	  }
+	  delete line;
 	}
 
       }
