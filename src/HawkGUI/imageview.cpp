@@ -550,10 +550,15 @@ QString ImageView::imageItemIdentifier(ImageItem * item){
   }
   QString id = "A";
   QList<QGraphicsItem *> ii  = items();
-  for(int i = 0;i<ii.size();i++){
-    if(ImageItem * item = qgraphicsitem_cast<ImageItem *>(ii[i])){
-      if(item->identifier() == id){
-	id = nextId(id);
+  bool conflicts = true;
+  while(conflicts){
+    conflicts = false;
+    for(int i = 0;i<ii.size();i++){
+      if(ImageItem * item = qgraphicsitem_cast<ImageItem *>(ii[i])){
+	if(item->identifier() == id){
+	  id = nextId(id);
+	  conflicts = true;
+	}
       }
     }
   }
