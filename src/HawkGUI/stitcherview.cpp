@@ -116,6 +116,36 @@ void StitcherView::mouseReleaseEvent( QMouseEvent *  event){
 	item->deleteControlPoint(item->mapFromScene(mapToScene(event->pos())));
       }
     }
+  }else if(mode == DeleteGuide && event->button() & Qt::LeftButton){
+    QList<QGraphicsItem *> it = items(event->pos());
+    QPointF pos = mapToScene(event->pos());
+    /* 10 px tolerance radius, delete the closest */
+    for(int i = 0; i < it.size(); i++){
+      if(QString("Helper") == it[i]->data(0)){
+	QGraphicsEllipseItem * elipse = qgraphicsitem_cast<QGraphicsEllipseItem *>(it[i]);
+	if(elipse){
+	  // Check if click position close to the line
+	  QPointF origin = elipse->rect().center();
+	  qreal radius = elipse->rect().height()/2;
+	  QPointF d = origin-pos;	  
+	  if(abs(sqrt(d.x()*d.x()+d.y()*d.y())-radius) < 10){
+	    delete elipse;
+	  }
+	}
+	QGraphicsLineItem * line = qgraphicsitem_cast<QGraphicsLineItem *>(it[i]);
+	if(line){
+	  
+	  // Check if click position close to the line
+	  QPointF origin = elipse->rect().center();
+	  qreal radius = elipse->rect().height()/2;
+	  QPointF d = origin-pos;	  
+	  if(abs(sqrt(d.x()*d.x()+d.y()*d.y())-radius) < 10){
+	    delete elipse;
+	  }
+	}
+
+      }
+    }
   }
 }
 
@@ -133,7 +163,7 @@ void StitcherView::saveImage(){
 
 void StitcherView::setMode(Mode m){
   mode = m;
-  if(m == Line || m == Circle || m == AddPoint || m == DeletePoint){
+  if(m == Line || m == Circle || m == AddPoint || m == DeletePoint || m == DeleteGuide){
     setCursor(Qt::CrossCursor);
   }
   if(m == Default){
@@ -234,14 +264,6 @@ void StitcherView::keyPressEvent ( QKeyEvent * event ){
   ImageView::keyPressEvent(event);
 }
 
-void StitcherView::clearHelpers(){
-  QList<QGraphicsItem *> it = items();
-  for(int i = 0; i < it.size(); i++){
-    if(QString("Helper") == it[i]->data(0)){
-      graphicsScene->removeItem(it[i]);
-    }  
-  }
-}
 
 void StitcherView::scaleScene(qreal new_scale){
   if(new_scale * transform().m11() > 0.01 && new_scale * transform().m11() < 100){

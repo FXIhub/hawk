@@ -24,6 +24,7 @@ class StitcherWorkspace: public QWidget
   void initConstraintsTree();
   void onAddControlPointClicked();
   void onDeleteControlPointClicked();
+  void onDeleteGuideClicked();
   void onAddConstraintClicked();
   void onAddConstraintDialogClosed();
   void onDelConstraintClicked();

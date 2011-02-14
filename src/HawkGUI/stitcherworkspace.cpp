@@ -95,9 +95,9 @@ QWidget * StitcherWorkspace::createToolBar(){
 
   QToolButton * clear = new QToolButton(this);
   clear->setIcon(QIcon(":images/clear.png"));
-  clear->setToolTip(tr("Remove helper lines"));
+  clear->setToolTip(tr("Remove guide lines"));
   clear->setIconSize(iconSize);
-  connect(clear,SIGNAL(clicked(bool)),_stitcherView,SLOT(clearHelpers()));
+  connect(clear,SIGNAL(clicked(bool)),this,SLOT(onDeleteGuideClicked()));
   layout->addWidget(clear,1,2);
 
   QToolButton * clearAll = new QToolButton(this);
@@ -126,6 +126,10 @@ QWidget * StitcherWorkspace::createToolBar(){
   layout->setColumnStretch(11,100);
   layout->setRowStretch(10,100);
   return ret;
+}
+
+void StitcherWorkspace::onDeleteGuideClicked(){
+  _stitcherView->setMode(StitcherView::DeleteGuide);
 }
 
 void StitcherWorkspace::clearAll(){
