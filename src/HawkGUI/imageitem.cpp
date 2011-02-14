@@ -965,3 +965,4 @@ void ImageItem::invertMask(){
     }
   }
 }
+
