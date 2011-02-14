@@ -421,12 +421,17 @@ void StitcherWorkspace::initConstraintsTree(){
 
 
 void StitcherWorkspace::onAddConstraintClicked(){
+  QStandardItemModel * model = qobject_cast<QStandardItemModel *>(constraintsTree->model());
   /* 
      This is a prefix to distinguish Hawk Geometry properties from the
      normal widget properties 
   */
-  QStandardItemModel * model = qobject_cast<QStandardItemModel *>(constraintsTree->model());
   AddConstraintDialog * d = new AddConstraintDialog(_stitcherView);
+  d->setModal(false);
+  connect(d,SIGNAL(accepted()),this,SLOT(onAddConstraintDialogClosed()));
+  d->show();
+  /*
+  return;
   if(d->exec()){
     QList<QPair<int,ImageItem *> > points = d->selectedPoints();
     if(points.isEmpty()){
@@ -445,7 +450,7 @@ void StitcherWorkspace::onAddConstraintClicked(){
     parentItem->appendRow(QList<QStandardItem *>() << itemName <<  itemValue);
     parentItem = itemName;
     for(int i = 0;i<points.size();i++){
-
+      
       itemName = new QStandardItem(points[i].second->identifier() + "." + QString::number(points[i].first+1));
       itemValue = new QStandardItem("");
       parentItem->appendRow(QList<QStandardItem *>() << itemName <<  itemValue);
@@ -456,14 +461,50 @@ void StitcherWorkspace::onAddConstraintClicked(){
       itemName = new QStandardItem("Radius");
     }
     itemValue = new QStandardItem("");
-    parentItem->appendRow(QList<QStandardItem *>() << itemName <<  itemValue);
-
-    /*    itemName = new QStandardItem("Best Fit");
-    itemValue = new QStandardItem("");
-    parentItem->appendRow(QList<QStandardItem *>() << itemName <<  itemValue);*/
-
-    
+    parentItem->appendRow(QList<QStandardItem *>() << itemName <<  itemValue);    
   }
+  constraintsTree->expandAll();
+  constraintsTree->resizeColumnToContents(0);
+  constraintsTree->resizeColumnToContents(1);
+*/
+}
+
+void StitcherWorkspace::onAddConstraintDialogClosed(){
+  QStandardItemModel * model = qobject_cast<QStandardItemModel *>(constraintsTree->model());
+  AddConstraintDialog * d = qobject_cast<AddConstraintDialog *>(sender());
+  QList<QPair<int,ImageItem *> > points = d->selectedPoints();
+  if(points.isEmpty()){
+    delete d;
+    return;
+  }
+  QStandardItem *parentItem = model->invisibleRootItem();
+  QStandardItem * itemName = new QStandardItem("Type");
+  itemName->setData(QVariant::fromValue(d));
+  QStandardItem * itemValue;
+  if(d->constraintType() == RadialLineConstraint){
+    itemValue = new QStandardItem("Radial Line");
+  }else{
+    itemValue = new QStandardItem("Centered Circle");
+  }
+  parentItem->appendRow(QList<QStandardItem *>() << itemName <<  itemValue);
+  parentItem = itemName;
+  for(int i = 0;i<points.size();i++){
+    
+    itemName = new QStandardItem(points[i].second->identifier() + "." + QString::number(points[i].first+1));
+    itemValue = new QStandardItem("");
+    parentItem->appendRow(QList<QStandardItem *>() << itemName <<  itemValue);
+  }
+  if(d->constraintType() == RadialLineConstraint){
+    itemName = new QStandardItem("Angle");
+  }else{
+    itemName = new QStandardItem("Radius");
+  }
+  itemValue = new QStandardItem("");
+  parentItem->appendRow(QList<QStandardItem *>() << itemName <<  itemValue);
+  
+  /*    itemName = new QStandardItem("Best Fit");
+	itemValue = new QStandardItem("");
+	parentItem->appendRow(QList<QStandardItem *>() << itemName <<  itemValue);*/    
   constraintsTree->expandAll();
   constraintsTree->resizeColumnToContents(0);
   constraintsTree->resizeColumnToContents(1);

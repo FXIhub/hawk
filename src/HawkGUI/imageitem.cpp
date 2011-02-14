@@ -934,6 +934,8 @@ QList<QPoint> ImageItem::imagePointsAround(QPointF scenePos,int sceneRadius){
   return ret;
 }
 
+
+
 void ImageItem::setMaskFromImage(const Image * mask){
   if(!image){
     return;

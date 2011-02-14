@@ -122,6 +122,7 @@ class ImageItem: public QObject, public QGraphicsPixmapItem
   QList<QPoint> imagePointsAround(QPointF scenePos,int sceneRadius);
   void setMaskFromImage(const Image * mask);
   void invertMask();
+  void lockControlPoint(int index, int constraint);
  private:
   enum EditType{ImageSize,Phased,Shifted,Wavelength,DetectorDistance,PointConvolute,Scaled,PixelSize,ImageCenter,CheckPoint,ImageMask,MaskFromImage,InvertMask};
   struct EditStep{
