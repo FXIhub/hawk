@@ -127,10 +127,10 @@ unless(`uname -s` =~ /MINGW32/){
 	}
 	if(-f $dep){
 	  if($dep =~ /(.*\.framework)/){
-	    system("cp -R $1 $libdir");
-	    $dep =~ /([^\/]*\.framework)/;
-	    my $fw = $1;
-	    system("find $libdir/$fw -name \'\*_debug*\' -exec rm -rf {} \\;");
+#	    system("cp -R $1 $libdir");
+#	    $dep =~ /([^\/]*\.framework)/;
+#	    my $fw = $1;
+#	    system("find $libdir/$fw -name \'\*_debug*\' -exec rm -rf {} \\;");
 	  }elsif($dep =~ s/libQt.*/libQt\*/){
 	    #copy all Qt libs
 	    system("cp -d $dep $libdir");
@@ -167,4 +167,8 @@ if(`uname -s` =~ /MINGW32/){
 
 chdir($reldir);
 chdir("..");
-system("tar -zcvf ".$reldir.".tar.gz hawk-$version-$arch");
+if(`uname -s` =~ /Darwin/){
+  system("hdiutil create -srcfolder hawk-$version-$arch -volname Hawk-$version Hawk-$version.dmg");
+}else{
+  system("tar -zcvf ".$reldir.".tar.gz hawk-$version-$arch");
+}
