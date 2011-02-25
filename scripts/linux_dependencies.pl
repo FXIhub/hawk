@@ -32,7 +32,7 @@ unless(defined $ENV{LD_LIBRARY_PATH}){
     $ENV{LD_LIBRARY_PATH} = "";
 }
 $ENV{LD_LIBRARY_PATH} = $libdir.":".$ENV{LD_LIBRARY_PATH};
-exec("$binsdir/$basename");
+exec("$binsdir/$basename @ARGV");
 END
     open(OUT,">$file");
     print OUT $wrapper;
