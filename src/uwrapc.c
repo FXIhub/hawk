@@ -252,6 +252,10 @@ void complete_reconstruction_clean(Image * amp, Image * initial_support, Image *
   if (opts->support_closure_radius > 0) {
     sp_support_array_append(sup_alg,sp_support_close_alloc(opts->support_closure_radius));
   }
+  // !CHANGE!
+  if (opts->center_image){
+    sp_support_array_append(sup_alg,sp_support_centre_image_alloc()); 
+  }
   SpPhaser * ph = sp_phaser_alloc();
   sp_phaser_init(ph,alg,sup_alg,SpEngineAutomatic);
   sp_phaser_set_amplitudes(ph,amp);

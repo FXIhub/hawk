@@ -158,7 +158,7 @@ static int depends_on_support_algorithm_with_blur(const Options * opt){
 }
 
 
-VariableMetadata variable_metadata[201] = {
+VariableMetadata variable_metadata[202] = {
   /*  0 */
   {
     .variable_name = "ROOT",
@@ -2063,12 +2063,26 @@ VariableMetadata variable_metadata[201] = {
     .documentation = "Like realspace constraint but with a non-fixed center",
     .dependencies = depends_on_phasing_algorithm_with_enforce_real,
     .reserved = NULL
+  },
+  {
+    .variable_name = "center_image",
+    .display_name = "Center Image",
+    .variable_type = Type_Bool,
+    .id = Id_Center_Image,
+    .parent = &(variable_metadata[30]),
+    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
+    .list_valid_values = {0},
+    .list_valid_names = {0},
+    .variable_address = &(global_options.center_image),
+    .documentation = "If enabled image is centered after support update so that the center of mass of the support is moved to the center of the image.",
+    .dependencies = depends_on_support_algorithm_with_area,
+    .reserved = NULL
   }
 };
 
 
 /* Don't forget to update this one!! */
-const int number_of_global_options = 139;
+const int number_of_global_options = 140;
 
 int get_list_value_from_list_name(VariableMetadata * md,char * name){
   int i = 0;
