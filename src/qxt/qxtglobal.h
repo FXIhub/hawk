@@ -28,7 +28,7 @@
 
 #include <QtGlobal>
 #ifdef Q_OS_WIN
-#include <qxtconfig.h>
+//#include <qxtconfig.h>
 #endif
 
 #define QXT_VERSION 0x000501

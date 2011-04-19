@@ -16,7 +16,4 @@ chomp($arch);
 my $reldir =($basedir."/../releases/hawk-$version-src");
 `rm -rf $reldir`;
 $reldir = File::Spec->rel2abs($reldir);
-chdir($basedir."/../releases");
-#system("svn export svn://hirst/hawk/trunk $reldir");
-system("cd $basedir/.. && git archive --format=tar --prefix=hawk-$version-src/ master  |gzip  > $basedir/releases/hawk-$version-src.tar.gz");
-#system("tar -zcvf ".$reldir.".tar.gz hawk-$version-src");
+system("cd $basedir/.. && git archive --format=tar --prefix=hawk-$version-src/ master  |gzip  > $reldir.tar.gz");

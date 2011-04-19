@@ -9,9 +9,9 @@ use File::Spec;
 
 sub get_dependencies{
   my $bin = shift;
-  my $use_ldd = 0;
-  if(`which ldd`){
-    $use_ldd = 1;
+  my $use_ldd = 1;
+  if(`uname -s` =~ /Darwin/ || !`which ldd`){
+    $use_ldd = 0;
   }
   my $libs;
   if($use_ldd ){
@@ -31,6 +31,8 @@ sub get_dependencies{
 	# Assumes that CUDA is installed in /usr/local/cuda and that
 	# cuda libraries set rpath and no one else does, which at the moment is true
 	$lib = "/usr/local/cuda/lib/".$1;
+      }elsif($line =~ /\s*(libqwt.*?)\s/){
+	$lib = "/usr/local/lib/".$1;
       }elsif($line =~ /\s*(.*dylib)/){
 	$lib = $1;
       }elsif($line =~ /\s*(Qt.*?)\s/){
@@ -101,6 +103,9 @@ chdir($builddir) or die($!);
 print `pwd`;
 if(`uname -s` =~ /MINGW32/){
     system("cmake -G \"MSYS Makefiles\" ../.. -DCMAKE_BUILD_TYPE=release -DCMAKE_INSTALL_PREFIX:PATH=$reldir");
+}elsif(`uname -s` =~ /Darwin/){
+#    system("cmake ../.. -DCMAKE_BUILD_TYPE=release -DCMAKE_INSTALL_PREFIX:PATH=$reldir -DCMAKE_OSX_DEPLOYMENT_TARGET=10.5");
+    system("cmake ../.. -DCMAKE_BUILD_TYPE=release -DCMAKE_INSTALL_PREFIX:PATH=$reldir -DCMAKE_OSX_DEPLOYMENT_TARGET=10.6");
 }else{
     system("cmake ../.. -DCMAKE_BUILD_TYPE=release -DCMAKE_INSTALL_PREFIX:PATH=$reldir");
 }
@@ -121,17 +126,27 @@ unless(`uname -s` =~ /MINGW32/){
 	    next;
 	}
 	if(-f $dep){
-	    if($dep =~ s/libQt.*/libQt\*/){
-		#copy all Qt libs
-		system("cp -d $dep $libdir");
-	    }else{
-		system("cp $dep $libdir");
-	    }
+	  if($dep =~ /(.*\.framework)/){
+#	    system("cp -R $1 $libdir");
+#	    $dep =~ /([^\/]*\.framework)/;
+#	    my $fw = $1;
+#	    system("find $libdir/$fw -name \'\*_debug*\' -exec rm -rf {} \\;");
+	  }elsif($dep =~ s/libQt.*/libQt\*/){
+	    #copy all Qt libs
+	    system("cp -d $dep $libdir");
+	  }else{
+	    system("cp $dep $libdir");
+	  }
 	}
-    }
+      }
 # remove debug libs and strip the rest of the libs
     system("rm $libdir/*.debug");
-    system("strip -s $libdir/*");
+    if(`uname -s` =~ /Darwin/){
+      system("strip -x $libdir/*");
+    }
+    if(`uname -s` =~ /Linux/){
+      system("strip -s $libdir/*");
+    }
 }
 
 
@@ -152,4 +167,8 @@ if(`uname -s` =~ /MINGW32/){
 
 chdir($reldir);
 chdir("..");
-system("tar -zcvf ".$reldir.".tar.gz hawk-$version-$arch");
+if(`uname -s` =~ /Darwin/){
+  system("hdiutil create -srcfolder hawk-$version-$arch -volname Hawk-$version Hawk-$version.dmg");
+}else{
+  system("tar -zcvf ".$reldir.".tar.gz hawk-$version-$arch");
+}

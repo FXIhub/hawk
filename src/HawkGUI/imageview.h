@@ -73,6 +73,7 @@ class ImageView: public QGraphicsView
   void focusedIn(ImageView * focused);
   void scaleBy(qreal scale);
   void translateBy(QPointF r);
+  void moveBy(QPointF r,ImageItem * item);
   void imageLoaded(QString file);
   void imageItemChanged(ImageItem * item);
   void imageItemGeometryChanged(ImageItem * item);

@@ -4,6 +4,12 @@
 int descend_real_compare(const void * a,const  void * b);
 int descend_complex_compare(const void * a,const  void * b);
 
+
+/*! Returns the support from the initial support using a certain area constraint
+ */
+Image * get_support_from_initial_support(Options * opts);
+
+
 /*! Returns the support given a real space image and a certain threshold  
  */
 Image * get_updated_support(Image * input, real level , real radius, Options * opts);

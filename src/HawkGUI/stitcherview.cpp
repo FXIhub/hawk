@@ -24,6 +24,18 @@ StitcherView::StitcherView(QWidget * parent)
   setBackgroundBrush(QColor("#26466D"));
   _showIdentifiers = true;
   setBackgroundDraggable(false);
+  QGraphicsLineItem * centerVerticalIndicator = new QGraphicsLineItem(0,-100,0,100);
+  QGraphicsLineItem * centerHorizontalIndicator = new QGraphicsLineItem(-100,0,100,0);
+  centerVerticalIndicator->setZValue(11);
+  centerHorizontalIndicator->setZValue(11);
+  graphicsScene->addItem(centerVerticalIndicator);
+  graphicsScene->addItem(centerHorizontalIndicator);
+  QPen pen = centerHorizontalIndicator->pen();  
+  pen.setColor(Qt::white);
+  pen.setStyle(Qt::SolidLine);
+  centerHorizontalIndicator->setPen(pen);
+  centerVerticalIndicator->setPen(pen);
+
 }
 
 bool StitcherView::loadImage(QString s){
@@ -87,6 +99,13 @@ void StitcherView::mouseReleaseEvent( QMouseEvent *  event){
     QPointF circleCenter = (lineOriginF+lineEndF)/2;    
     qreal circleRadius = sqrt((lineOriginF-lineEndF).x()* (lineOriginF-lineEndF).x()+
 			      (lineOriginF-lineEndF).y()* (lineOriginF-lineEndF).y())/2;
+    if(QApplication::keyboardModifiers() & Qt::ShiftModifier){
+      circleCenter =  mapFromScene(QPointF(0,0));
+      circleRadius = sqrt((circleCenter-lineEnd).x()* (circleCenter-lineEnd).x()+
+			      (circleCenter-lineEnd).y()* (circleCenter-lineEnd).y());
+      circleCenter =  QPointF(0,0);
+
+    }
     QGraphicsEllipseItem * circle = new QGraphicsEllipseItem(QRect(circleCenter.x()-circleRadius,circleCenter.y()-circleRadius,circleRadius*2,circleRadius*2));
     circle->setData(0,QString("Helper"));
     circle->setZValue(11);    
@@ -109,6 +128,29 @@ void StitcherView::mouseReleaseEvent( QMouseEvent *  event){
 	item->deleteControlPoint(item->mapFromScene(mapToScene(event->pos())));
       }
     }
+  }else if(mode == DeleteGuide && event->button() & Qt::LeftButton){
+    QList<QGraphicsItem *> it = items(event->pos());
+    QPointF pos = mapToScene(event->pos());
+    /* 10 px tolerance radius, delete the closest */
+    for(int i = 0; i < it.size(); i++){
+      if(QString("Helper") == it[i]->data(0)){
+	QGraphicsEllipseItem * elipse = qgraphicsitem_cast<QGraphicsEllipseItem *>(it[i]);
+	if(elipse){
+	  // Check if click position close to the line
+	  QPointF origin = elipse->rect().center();
+	  qreal radius = elipse->rect().height()/2;
+	  QPointF d = origin-pos;	  
+	  if(abs(sqrt(d.x()*d.x()+d.y()*d.y())-radius) < 10){
+	    delete elipse;
+	  }
+	}
+	QGraphicsLineItem * line = qgraphicsitem_cast<QGraphicsLineItem *>(it[i]);
+	if(line){
+	  delete line;
+	}
+
+      }
+    }
   }
 }
 
@@ -126,7 +168,7 @@ void StitcherView::saveImage(){
 
 void StitcherView::setMode(Mode m){
   mode = m;
-  if(m == Line || m == Circle || m == AddPoint || m == DeletePoint){
+  if(m == Line || m == Circle || m == AddPoint || m == DeletePoint || m == DeleteGuide){
     setCursor(Qt::CrossCursor);
   }
   if(m == Default){
@@ -145,9 +187,15 @@ void StitcherView::paintEvent(QPaintEvent *event){
     p.setPen(pen);
     p.drawLine(lineOrigin,lineEnd);
   }else if(mode == Circle && QApplication::mouseButtons() & Qt::LeftButton){
-    QPointF circleCenter = (lineOrigin+lineEnd)/2;    
+    QPointF circleCenter = (lineOrigin+lineEnd)/2;
     qreal circleRadius = sqrt((lineOrigin-lineEnd).x()* (lineOrigin-lineEnd).x()+
 			      (lineOrigin-lineEnd).y()* (lineOrigin-lineEnd).y())/2;
+    if(QApplication::keyboardModifiers() & Qt::ShiftModifier){
+      circleCenter =  mapFromScene(QPointF(0,0));
+      circleRadius = sqrt((circleCenter-lineEnd).x()* (circleCenter-lineEnd).x()+
+			      (circleCenter-lineEnd).y()* (circleCenter-lineEnd).y());
+
+    }
     QPen pen = p.pen();
     pen.setColor(Qt::white);
     pen.setStyle(Qt::SolidLine);
@@ -221,14 +269,6 @@ void StitcherView::keyPressEvent ( QKeyEvent * event ){
   ImageView::keyPressEvent(event);
 }
 
-void StitcherView::clearHelpers(){
-  QList<QGraphicsItem *> it = items();
-  for(int i = 0; i < it.size(); i++){
-    if(QString("Helper") == it[i]->data(0)){
-      graphicsScene->removeItem(it[i]);
-    }  
-  }
-}
 
 void StitcherView::scaleScene(qreal new_scale){
   if(new_scale * transform().m11() > 0.01 && new_scale * transform().m11() < 100){

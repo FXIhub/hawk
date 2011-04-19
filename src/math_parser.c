@@ -286,6 +286,10 @@ static void token_stack_fft(TokenStack * stack){
     return;
   }
   Image * b = sp_image_fft(a->image);
+  // After an fft all the pixels are valid
+  for(int i = 0;i<sp_image_size(b);i++){
+    b->mask->data[i] = 1;
+  }
   sp_image_free(a->image);
   a->image = b;
   token_stack_push(stack,a);  
@@ -302,6 +306,10 @@ static void token_stack_ifft(TokenStack * stack){
   a->image->phased = 1;
   a->image->shifted = 1;
   Image * b = sp_image_ifft(a->image);
+  // After an ifft all the pixels are valid
+  for(int i = 0;i<sp_image_size(b);i++){
+    b->mask->data[i] = 1;
+  }
   sp_image_free(a->image);
   a->image = b;
   token_stack_push(stack,a);  

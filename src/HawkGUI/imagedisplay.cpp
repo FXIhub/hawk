@@ -37,6 +37,7 @@ void ImageDisplay::initImageViewers(){
       connect(iv,SIGNAL(focusedIn(ImageView *)),this,SIGNAL(focusedViewChanged(ImageView *)));
       connect(iv,SIGNAL(scaleBy(qreal)),this,SLOT(scaleView(qreal)));
       connect(iv,SIGNAL(translateBy(QPointF)),this,SLOT(translateView(QPointF)));
+      connect(iv,SIGNAL(moveBy(QPointF,ImageItem *)),this,SLOT(translateView(QPointF)));
       connect(iv,SIGNAL(imageLoaded(QString)),frame,SLOT(onImageLoaded(QString)));
       connect(iv,SIGNAL(imageLoaded(QString)),this,SLOT(onImageLoaded(QString)));
 

@@ -23,6 +23,7 @@
 #include "network_communication.h"
 #include "rpcdefaultport.h"
 #include "io_utils.h"
+#include "output_projection.h"
 
 void get_intensities_noise(Options * opts){
   int i;
@@ -198,8 +199,7 @@ void output_initial_images( const Image * real_in,const Image * initial_support)
   hawk_image_write(real_in,"initial_guess.h5",sizeof(real));
 }
 
-void complete_reconstruction_clean(Image * amp, Image * initial_support, Image * exp_sigma,
-			     Options * opts, char * dir){  
+void complete_reconstruction_clean(Image * amp, Image * initial_support,Options * opts){  
 
   SpPhasingAlgorithm * alg = NULL;
   Log log;
@@ -257,7 +257,7 @@ void complete_reconstruction_clean(Image * amp, Image * initial_support, Image *
     sp_support_array_append(sup_alg,sp_support_centre_image_alloc()); 
   }
   SpPhaser * ph = sp_phaser_alloc();
-  sp_phaser_init(ph,alg,sup_alg,SpEngineAutomatic);
+  sp_phaser_init(ph,alg,sup_alg,opts->phasing_engine);
   sp_phaser_set_amplitudes(ph,amp);
   sp_phaser_init_model(ph,opts->image_guess,0);
   //sp_phaser_init_support(ph,initial_support,0,0);
@@ -272,7 +272,9 @@ void complete_reconstruction_clean(Image * amp, Image * initial_support, Image *
     int to_output = opts->output_period-(ph->iteration)%opts->output_period;
     int to_log = opts->log_output_period-(ph->iteration)%opts->log_output_period;
     int to_iterate = sp_min(to_output,to_log);
+    int timer = sp_timer_start();
     sp_phaser_iterate(ph,to_iterate);
+    //    printf("hawk - %d iterations in %d ms\n",to_iterate,(int)sp_timer_stop(timer));
     opts->cur_iteration = ph->iteration;
     if(to_iterate == to_log){
       output_from_phaser(ph,opts,&log);
@@ -280,7 +282,11 @@ void complete_reconstruction_clean(Image * amp, Image * initial_support, Image *
     if(to_iterate == to_output){
       sprintf(buffer,"real_space-%07d.h5",ph->iteration-1);
       //hawk_image_write(sp_phaser_model(ph),buffer,opts->output_precision);
-      hawk_image_write(sp_phaser_model_with_support(ph),buffer,opts->output_precision);
+      Image * rs = apply_output_projection(sp_phaser_model_with_support(ph),
+						 opts->output_projection,
+						 sp_phaser_amplitudes(ph));
+      hawk_image_write(rs,buffer,opts->output_precision);
+      sp_image_free(rs);
       sprintf(buffer,"support-%07d.h5",ph->iteration-1);
       hawk_image_write(sp_phaser_support(ph),buffer,opts->output_precision);
       sprintf(buffer,"fourier_space-%07d.h5",ph->iteration-1);
@@ -327,9 +333,8 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
       opts->support_update_algorithm == TEMPLATE_AREA ||
       opts->support_update_algorithm == STATIC) && opts->support_image_averaging == 1){ 
     /* use new libspimage backend */
-    printf("use clean reconstruction\n");
-    return complete_reconstruction_clean(amp,initial_support,exp_sigma,
-				  opts,dir);
+    //    printf("use clean reconstruction\n");
+    return complete_reconstruction_clean(amp,initial_support,opts);
   }else if(sp_cuda_get_device_type() == SpCUDAHardwareDevice  ||
 	   sp_cuda_get_device_type() == SpCUDAEmulatedDevice){
     hawk_warning("Cannot use CUDA for this particular configuration.");
@@ -487,26 +492,30 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
       }
     }
     if(opts->cur_iteration%opts->output_period == opts->output_period-1){
+      Image * rs = apply_output_projection(real_space,opts->output_projection,amp);
 	
       if(real_in->num_dimensions == SP_2D){
 	sprintf(buffer,"real_space-%07d.png",opts->cur_iteration);
-	hawk_image_write(real_space,buffer,SpColormapJet);
+	hawk_image_write(rs,buffer,SpColormapJet);
 	sprintf(buffer,"real_space_phase-%07d.png",opts->cur_iteration);
 	//	hawk_image_write(real_space,buffer,SpColormapWheel|COLOR_WEIGHTED_PHASE);
-	hawk_image_write(real_space,buffer,SpColormapWheel|SpColormapPhase);
+	hawk_image_write(rs,buffer,SpColormapWheel|SpColormapPhase);
 	sprintf(buffer,"support-%07d.png",opts->cur_iteration);
 	hawk_image_write(support,buffer,SpColormapGrayScale);
       }
       if(real_in->num_dimensions == SP_3D){
 	sprintf(buffer,"real_space-%07d.vtk",opts->cur_iteration);
-	hawk_image_write(real_space,buffer,0);
+	//	hawk_image_write(real_space,buffer,0);
+	hawk_image_write(rs,buffer,0);
 	sprintf(buffer,"support-%07d.vtk",opts->cur_iteration);
 	hawk_image_write(support,buffer,0);
       }
       sprintf(buffer,"real_space-%07d.h5",opts->cur_iteration);
-      hawk_image_write(real_space,buffer,opts->output_precision);
+      //      hawk_image_write(real_space,buffer,opts->output_precision);
+      hawk_image_write(rs,buffer,opts->output_precision);
       sprintf(buffer,"support-%07d.h5",opts->cur_iteration);
       hawk_image_write(support,buffer,opts->output_precision);
+      sp_image_free(rs);
 		
       tmp = sp_image_duplicate(real_space,SP_COPY_DATA|SP_COPY_MASK);
       for(i = 0;i<sp_c3matrix_size(tmp->image);i++){
@@ -576,7 +585,10 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
   //hawk_image_write(real_space,"real_space_final.h5",opts->output_precision|SP_2D);
   //hawk_image_write(real_space,"real_space_final.png",SpColormapJet|SP_2D);
   //  hawk_image_write(real_space,"real_space_final.vtk",0);
-  hawk_image_write(real_space,"real_space-final.h5",0);
+  Image * rs = apply_output_projection(real_space,opts->output_projection,amp);
+  //  hawk_image_write(real_space,"real_space-final.h5",0);
+  hawk_image_write(rs,"real_space-final.h5",0);
+  sp_image_free(rs);
   //sprintf(buffer,"support-final.png");
   //hawk_image_write(support,buffer,SpColormapJet|SP_2D);
   //sprintf(buffer,"support-final.h5");

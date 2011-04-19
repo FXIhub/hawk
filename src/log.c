@@ -171,6 +171,12 @@ void output_to_log(const Image * exp_amp,const Image * real_in, const Image * re
   static int sol_superimpose_counter = 0;
   static Image * previous_out = NULL;
 /*  char buffer[1024];*/
+  if(!sp_image_is_valid(real_in)){
+    hawk_fatal("Real space input image is invalid!");
+  }
+  if(!sp_image_is_valid(real_out)){
+    hawk_fatal("Real space output image is invalid!");
+  }
 
   if(!log->cumulative_fluctuation){
     log->cumulative_fluctuation = sp_image_duplicate(real_in,SP_COPY_DETECTOR);

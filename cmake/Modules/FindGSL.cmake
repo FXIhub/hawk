@@ -34,7 +34,7 @@ IF(WIN32)
     $ENV{GSL_HOME}
     $ENV{EXTERN_LIBS_DIR}/gsl
     $ENV{EXTRA}
-    C:/mingw/
+    # "C:/home/jw/source2/gsl-1.8"
     )
   FIND_PATH(GSL_INCLUDE_DIR
     NAMES gsl/gsl_cdf.h gsl/gsl_randist.h
@@ -101,7 +101,7 @@ ELSE(WIN32)
       EXEC_PROGRAM(${GSL_CONFIG}
         ARGS --libs
         OUTPUT_VARIABLE  GSL_CONFIG_LIBS )
-      SET(GSL_LIBRARIES "${GSL_CONFIG_LIBS}")
+      SET(GSL_LIBRARIES "${GSL_CONFIG_LIBS}" CACHE STRING INTERNAL)
 
       # split off the link dirs (for rpath)
       # use regular expression to match wildcard equivalent "-L*<endchar>"

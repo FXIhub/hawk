@@ -1,0 +1,16 @@
+Windows Hard Learned Lessons
+
+- Don't use MS Visual Studio
+  It does not support C99, not even scoped declaration of variables.
+
+- Use MSYS generator and install MSYS.
+  Do not use minGW!
+
+- All gcc, g++ and make in the path
+
+- Build Qwt from SVN. Use Qt Creator to build Qwt. Change to release build before building.
+
+- The Qt SDK comes with 2 Qt libraries! 
+  One in Qt/version/bin (the wrong one) and one in Qt/version/qt/bin, which is the right one!
+
+- The libraries stdc++.dll and mingw.dll and libgcc_s_dw2.dll are all required in the package

@@ -138,6 +138,7 @@ void ImageView::mouseMoveEvent(QMouseEvent * event){
   if(dragged && event->buttons() & Qt::LeftButton){
     QPointF mov = mapToScene(event->pos())-mouseLastScenePos;
     dragged->moveBy(mov.x(),mov.y());
+    emit moveBy(mov,dragged);
     emit imageItemGeometryChanged(dragged);
   }else if(event->buttons() & Qt::LeftButton && _backgroundDraggable){
     QPointF mov = mapToScene(event->pos())-mouseLastScenePos;
@@ -549,10 +550,15 @@ QString ImageView::imageItemIdentifier(ImageItem * item){
   }
   QString id = "A";
   QList<QGraphicsItem *> ii  = items();
-  for(int i = 0;i<ii.size();i++){
-    if(ImageItem * item = qgraphicsitem_cast<ImageItem *>(ii[i])){
-      if(item->identifier() == id){
-	id = nextId(id);
+  bool conflicts = true;
+  while(conflicts){
+    conflicts = false;
+    for(int i = 0;i<ii.size();i++){
+      if(ImageItem * item = qgraphicsitem_cast<ImageItem *>(ii[i])){
+	if(item->identifier() == id){
+	  id = nextId(id);
+	  conflicts = true;
+	}
       }
     }
   }

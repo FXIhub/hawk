@@ -14,12 +14,11 @@ class StitcherView: public ImageView
   void addImage(ImageItem * item);
   bool loadImage(QString file);
   void saveImage();
-  enum Mode{Default,Line,Circle,AddPoint,DeletePoint};
+  enum Mode{Default,Line,Circle,AddPoint,DeletePoint,DeleteGuide};
   void setMode(Mode m);
   void clearConstraintFits();
   void drawConstraintFit(geometrically_constrained_system* gc);
  public slots:
-  void clearHelpers();
   void clearAll();
   void scaleItems(qreal new_scale);
   void scaleScene(qreal new_scale);

@@ -166,6 +166,7 @@ void ComboBoxDelegate::setEditorData(QWidget *editor,
     QComboBox *comboBox = static_cast<QComboBox*>(editor);  
     QString option = index.model()->data(index, Qt::DisplayRole).toString();
     comboBox->setCurrentIndex(comboBox->findData(option, int(Qt::DisplayRole)));
+    
   }else if(md->variable_type == Type_Real){    
     if(md->variable_properties & withSpecialValue){
       QComboBox *comboBox = static_cast<QComboBox*>(editor);  
@@ -268,6 +269,7 @@ void ComboBoxDelegate::setModelData(QWidget *editor, QAbstractItemModel *model,
     QComboBox *comboBox = static_cast<QComboBox*>(editor);
     QString option = (comboBox->itemData(comboBox->currentIndex(), Qt::DisplayRole)).toString();    
     model->setData(index, option, Qt::DisplayRole);
+    model->setData(index, md->list_documentation[comboBox->currentIndex()], Qt::ToolTipRole);     
   }else if(md->variable_type == Type_Real){    
     if(md->variable_properties & withSpecialValue){
       QComboBox *comboBox = static_cast<QComboBox*>(editor);
@@ -557,6 +559,12 @@ QVariant ComboBoxDelegate::tooltipFromMetadata(const VariableMetadata * vm,
   if(vm->variable_type == Type_Directory_Name){
     QFileInfo f = QFileInfo((char *)vm->variable_address);	
     return f.absoluteFilePath();
+  }
+  if(vm->variable_type == Type_MultipleChoice){
+    int value = *((int *)vm->variable_address);
+    int idx = 0;
+    for(idx=0;vm->list_valid_values[idx] != value;idx++){};
+    return QString((char *)vm->list_documentation[idx]);
   }
   return QString("");
 }

@@ -43,7 +43,13 @@ static void hawk_report(const char * file, int line, int status, MessageType typ
   /* I can't abort in network more or the critical message never gets to the server */
   if(!is_connected()){
     if (status >= 0){
-      abort();
+      /*
+	Abort while providing interesting core dump for developers
+	can produce some scary looking messages for the users, so 
+	we'll use the more mild exit
+	abort();
+       */
+      exit(1);
     }
    }
 }

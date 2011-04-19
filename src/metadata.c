@@ -158,7 +158,170 @@ static int depends_on_support_algorithm_with_blur(const Options * opt){
 }
 
 
-VariableMetadata variable_metadata[202] = {
+
+static const char autocorrelation_algorithm_treshold_doc[] = "Apply a threshold on the autocorrelation as a way to define the initial support. <p>The value of the threshold is set in <em>Autocorrelation Threshold</em>.</p>";
+static const char autocorrelation_algorithm_area_doc[] = "Use as initial support the most intense pixels in the autocorrelation up to a certain fraction the total number of pixels. <p>The fraction is set in <em>Autocorrelation Area</em>.</p>";
+
+static const char phasing_algorithm_hio_doc[] = "<p>Use the Hybrid Input-Output(<b>HIO</b>) algorithm for phasing.</p>"
+"<p><b>HIO</b> is defined in <b>Fienup, J. R. </b> Reconstruction of an object from the modulus of its fourier transform. <em>Opt. Lett.</em> (1978) as:</p>"
+"<p><center><img src=\":/images/hio_formula.png\"></center></p>";
+/*
+ HIO formula 
+##LaTeX code begin for file HawkGUI/images/hio_formula.png##
+
+$\rho^{(n+1)}(r) = \begin{cases} 
+{\textbf{\em P}}_m \rho^{(n)}(r)  & \mbox{if } r \in S \\ 
+({\textbf{\em I}} - \beta {\textbf{\em P}}_m) \rho^{(n)}(r)  & \mbox{if }  r  \notin  S 
+\end{cases}
+$
+\begin{itemize}
+\item $\rho^{(n)}$ is the real space image after $n$ iterations
+\item $S$ is the support
+\item ${\textbf{\em I}}$ is the identity operator
+\item ${\textbf{\em P}}_m$ is the modulus projection operator
+\item $\beta$ is a relaxation parameter defined in {\em Beta}
+\end{itemize}
+##LaTeX code end##
+*/
+
+static const char phasing_algorithm_dm_doc[] = "<p>Use the Difference Map(<b>DM</b>) algorithm for phasing.</p>"
+"<p><b>DM</b> is defined in <b>Elser, V.</b> Phase retrieval by iterated projections "
+"<em>J. Opt. Soc. Am. A</em> <b>20</b>, 40 (2003) as:</p>"
+"<p><center><img src=\":/images/dm_formula.png\"></center></p>";
+/*
+DM formula 
+ ##LaTeX code begin for file HawkGUI/images/dm_formula.png##
+
+$\rho^{(n+1)}(r) = \left\{{\textbf{\em I}} + \beta {\textbf{\em P}}_s \left[(1+\gamma_s) {\textbf{\em P}}_m-\gamma_s I\right] - \beta {\textbf{\em P}}_m\left[(1+\gamma_m){\textbf{\em P}}_s-\gamma_m {\textbf{\em I}}\right]\right\} \rho^{(n)}
+$
+\begin{itemize}
+\item $\rho^{(n)}$ is the real space image after $n$ iterations
+\item ${\textbf{\em I}}$ is the identity operator
+\item ${\textbf{\em P}}_m$ is the modulus projection operator
+\item ${\textbf{\em P}}_s$ is the support projection operator
+\item $\gamma_s$ and $\gamma_m$ are tuning parameters defined in {\em Gamma 1} and {\em Gamma 2} 
+\item $\beta$ is a relaxation parameter defined in {\em Beta}
+\end{itemize}
+
+##LaTeX code end##
+*/
+
+
+static const char phasing_algorithm_raar_doc[] = "<p>Use the Relaxed Averaged Alternating Reflectors"
+"(<b>RAAR</b>) algorithm for phasing.</p>"
+"<p><b>RAAR</b> is defined in <b>Luke, D. R.</b> Relaxed averaged alternating reflections for diffraction imaging <em>Inverse Probl.</em> <b>21</b>, 37 (2005) as:</p>"
+"<p><center><img src=\":/images/raar_formula.png\"></center></p>";
+/*  RAAR formula 
+##LaTeX code begin for file HawkGUI/images/raar_formula.png##
+
+$\rho^{(n+1)}(r) = \left[\beta \left({\textbf{\em R}}_s{\textbf{\em R}}_m+{\textbf{\em I}}\right)+\left(1-\beta \right){\textbf{\em P}}_m\right]\rho^{(n)}
+$
+\begin{itemize}
+\item $\rho^{(n)}$ is the real space image after $n$ iterations.
+\item ${\textbf{\em I}}$ is the identity operator
+\item ${\textbf{\em P}}_m$ is the modulus projection operator
+\item ${\textbf{\em P}}_s$ is the support projection operator
+\item ${\textbf{\em R}}_m = 2{\textbf{\em P}}_m - {\textbf{\em I}}$
+\item ${\textbf{\em R}}_s = 2{\textbf{\em P}}_s - {\textbf{\em I}}$
+\item $\beta$ is a relaxation parameter defined in {\em Beta}
+\end{itemize}
+##LaTeX code end##
+*/
+
+
+static const char support_update_algorithm_area_doc[] = "<p>Constrain the area of"
+" support to always match the <em>Object Area<\em>.</p>"
+"<p>The update rule is given by the following equation:</p>"
+"<p><center><img src=\":/images/area_support_update_formula.png\"></center></p>";
+/* Area Support Update formula 
+##LaTeX code begin for file HawkGUI/images/area_support_update_formula.png##
+\begin{align*}
+\phi &= \rho \convolution G(\sigma)\\
+\psi & = \text{sort}(\phi) \\
+i & = \lfloor a N \rfloor \\
+ \Pi_r & = \begin{cases}
+0 & \mbox{if } \phi_r < \psi_i \\
+1 & \mbox{if } \phi_r \ge \psi_i
+\end{cases}
+\end{align*}
+\begin{itemize}
+\item $\rho$ is the current real space image.
+\item $G(\sigma)$ is a normalized gaussian function with standard deviation $\sigma$.
+\item $\sigma$ is given by the current value of {\em Blur}
+\item sort$(x)$ sorts the vector $x$ in decreasing order
+\item $a$ is given by the current value of {\em Object Area}
+\item $N$ is the length of $\rho$
+\item $\Pi$ is the new support.
+\end{itemize}
+
+##LaTeX code end##
+*/
+
+static const char support_update_algorithm_threshold_doc[] = "<p>Define the support as those"
+  " pixels which have a value higher than a certain fraction of the maximum pixel."
+" This fraction is given by <em>Intensity Threshold<\em>.</p>"
+"<p>The update rule is given by the following equation:</p>"
+"<p><center><img src=\":/images/threshold_support_update_formula.png\"></center></p>";
+/* Area Support Update formula 
+##LaTeX code begin for file HawkGUI/images/threshold_support_update_formula.png##
+
+\begin{align*}
+\phi &= \rho \convolution G(\sigma)\\
+ \Pi_r & = \begin{cases}
+0 & \mbox{if } \phi_r < \max(\phi) \cdot t \\
+1 & \mbox{if } \phi_r \ge \max(\phi) \cdot t
+\end{cases}
+\end{align*}
+\begin{itemize}
+\item $\rho$ is the current real space image.
+\item $G(\sigma)$ is a normalized gaussian function with standard deviation $\sigma$.
+\item $\sigma$ is given by the current value of {\em Blur}
+\item $t$ is given by the current value of {\em Intensity Threshold}
+\item $\Pi$ is the new support.
+\end{itemize}
+
+##LaTeX code end##
+*/
+
+
+
+/* Phasing algorithms projections description 
+##LaTeX code begin for file HawkGUI/images/phasing_projections_formula.png##
+${\textbf{\em P}}_m(\rho) = \mathcal{F}^{-1}\left(\frac{\mathcal{F}(\rho)}{|\mathcal{F}(\rho)|} \cdot \sqrt I\right)$
+
+\begin{itemize}
+\item $\rho$ is the real space image
+\item $I$ are the experimental intensities
+\item ${\mathcal{F}}$ is the Fourier transform
+\item ${\textbf{\em P}}_m$ is the modulus projection operator
+\end{itemize}
+
+${\textbf{\em P}}_s\left(\rho\left(r\right)\right) = \begin{cases}
+\rho(r)  & \mbox{if } r \in S \\ \\
+0  & \mbox{if } r \notin S \\
+\end{cases}
+$
+\begin{itemize}
+\item $r$ is a position in real space
+\item $\rho$ is the real space image
+\item $S$ is the support
+\item ${\textbf{\em P}}_s$ is the support projection operator
+\end{itemize}
+
+##LaTeX code end##
+*/
+
+static const char support_update_algorithm_static_doc[] = "<p>Do not update the support</p>";
+
+static const char undocumented_doc[] = "<p>Currently undocumented</p>";
+
+static const char output_projection_intensities_doc[] = "<p>Substitute the absolute squared value of the fourier transform of the current image by the experimental intensities, for those pixels where experimental data exist.</p>";
+
+  static const char output_projection_no_doc[] = "<p>Output the image as is.</p>";
+
+/* All list_valid_names must be in lower case as this is currently 
+   assumed in configuration.c! */
+VariableMetadata variable_metadata[] = {
   /*  0 */
   {
     .variable_name = "ROOT",
@@ -1463,6 +1626,7 @@ VariableMetadata variable_metadata[202] = {
     .variable_address = &(global_options.patterson_level_algorithm),
     .documentation = "Defines the algorithm that is used to determine the boundaries of the autocorrelation.",
     .dependencies = depends_on_initial_support_from_autocorrelation,
+    .list_documentation = {autocorrelation_algorithm_treshold_doc,autocorrelation_algorithm_area_doc,0},
     .reserved = NULL
   },
   {
@@ -1498,7 +1662,7 @@ VariableMetadata variable_metadata[202] = {
     .display_name = "Autocorrelation Blur Radius",
     .variable_type = Type_Real,
     .id = Id_Patterson_Blur_Radius,
-    .parent = &(variable_metadata[82]),
+    .parent = &(variable_metadata[3]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun|advanced|withSpecialValue,
     .list_valid_values = {0,0},
     .list_valid_names = {"off",0},
@@ -1833,8 +1997,12 @@ VariableMetadata variable_metadata[202] = {
     .list_valid_names = {"hio","raar","diff_map","hpr","cflip","raar_cflip","espresso","haar","so2d","raar_proj", "hio_proj",0},
     .list_properties = {0,0,0,experimental,experimental,experimental,experimental,experimental,experimental,experimental,experimental,0},
     .variable_address = &(global_options.algorithm),
-    .documentation = "The type of algorithm used during the phase retrieval. A few other options then depend on the type of algorithm chosen.",
+    .documentation = "<p>The type of algorithm used during the phase retrieval. A few other options then depend on the type of algorithm chosen.</p><p>The following projections are used in the description of the algorithms:</p>"
+    "<p><center><img src=\":/images/phasing_projections_formula.png\"></center></p>"
+    "<p>Please check the individual algorithm documentation for more information.</p>",
     .dependencies = NULL,
+    .list_documentation = {phasing_algorithm_hio_doc,phasing_algorithm_raar_doc,
+			   phasing_algorithm_dm_doc,0},
     .reserved = NULL
   },
   {
@@ -1863,6 +2031,8 @@ VariableMetadata variable_metadata[202] = {
     .list_valid_names = {"threshold","static","stepped","real_error_capped","real_error_adaptative","constant_area","area","complex_decreasing_area","template_area",0},
     .variable_address = &(global_options.support_update_algorithm),
     .dependencies = NULL,
+    .list_documentation = {support_update_algorithm_threshold_doc, support_update_algorithm_static_doc, undocumented_doc, undocumented_doc, undocumented_doc, undocumented_doc,support_update_algorithm_area_doc,undocumented_doc,undocumented_doc,0},
+    .documentation = "<p>The type of algorithm used for updating the support.</p><p> Please check the individual algorithms documentation for more information.</p>",
     .reserved = NULL
   },
   {
@@ -1883,7 +2053,7 @@ VariableMetadata variable_metadata[202] = {
     .display_name = "Autocorrelation Area",
     .variable_type = Type_Real,
     .id = Id_Autocorrelation_Area,
-    .parent = &(variable_metadata[82]),
+    .parent = &(variable_metadata[3]),
     .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
     .list_valid_values = {0},
     .list_valid_names = {0},
@@ -2056,7 +2226,7 @@ VariableMetadata variable_metadata[202] = {
     .variable_type = Type_Bool,
     .id = Id_Enforce_Ramp,
     .parent = &(variable_metadata[20]),
-    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
+    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun|advanced,
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.enforce_ramp),
@@ -2076,13 +2246,41 @@ VariableMetadata variable_metadata[202] = {
     .variable_address = &(global_options.center_image),
     .documentation = "If enabled image is centered after support update so that the center of mass of the support is moved to the center of the image.",
     .dependencies = depends_on_support_algorithm_with_area,
+  },
+{
+    .variable_name = "phasing_engine",
+    .display_name = "Phasing Engine",
+    .variable_type = Type_MultipleChoice,
+    .id = Id_Phasing_Engine,
+    .parent = &(variable_metadata[0]),
+    .variable_properties = isSettableBeforeRun|isGettableBeforeRun|isGettableDuringRun|advanced,
+    .list_valid_values = {SpEngineAutomatic,SpEngineCPU,SpEngineCUDA,0},
+    .list_valid_names = {"automatic","cpu","cuda",0},
+    .variable_address = &(global_options.phasing_engine),
+    .documentation = "Decides what resources to use for the phasing calculations. If automatic then GPU/CUDA will be used if it's available.",
+    .dependencies = NULL,
+    .reserved = NULL
+  },
+  {
+    .variable_name = "output_projection",
+    .display_name = "Output Projection",
+    .variable_type = Type_MultipleChoice,
+    .id = Id_Output_Projection,
+    .parent = &(variable_metadata[20]),
+    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun|advanced,
+    .list_valid_values = {IntensitiesProjection,NoProjection,0},
+    .list_valid_names = {"project_intensities","no_projection",0},
+    .list_properties = {0,0,0},
+    .variable_address = &(global_options.output_projection),
+    .documentation = "<p>Before outputing the real space image apply the selected projection on it.</p><p>This is useful because the iterates of several algorithms don't necessarily correspond to the recovered image (notably in the case of HIO).</p>",
+    .dependencies = NULL,
+    .list_documentation = {output_projection_intensities_doc,output_projection_no_doc,0},
     .reserved = NULL
   }
 };
 
-
-/* Don't forget to update this one!! */
-const int number_of_global_options = 140;
+/* number_of_global_options updated automatically from now on */
+const int number_of_global_options = sizeof(variable_metadata)/sizeof(VariableMetadata);
 
 int get_list_value_from_list_name(VariableMetadata * md,char * name){
   int i = 0;

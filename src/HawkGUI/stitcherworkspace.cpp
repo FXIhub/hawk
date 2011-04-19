@@ -88,16 +88,16 @@ QWidget * StitcherWorkspace::createToolBar(){
 
   QToolButton * circle = new QToolButton(this);
   circle->setIcon(QIcon(":images/add_circle.png"));
-  circle->setToolTip(tr("Draw guide circle"));
+  circle->setToolTip(tr("Draw guide circle (press Shift for a centered circle)"));
   circle->setIconSize(iconSize);
   connect(circle,SIGNAL(clicked(bool)),this,SLOT(onCircleClicked()));
   layout->addWidget(circle,0,2);
 
   QToolButton * clear = new QToolButton(this);
   clear->setIcon(QIcon(":images/clear.png"));
-  clear->setToolTip(tr("Remove helper lines"));
+  clear->setToolTip(tr("Remove guide lines"));
   clear->setIconSize(iconSize);
-  connect(clear,SIGNAL(clicked(bool)),_stitcherView,SLOT(clearHelpers()));
+  connect(clear,SIGNAL(clicked(bool)),this,SLOT(onDeleteGuideClicked()));
   layout->addWidget(clear,1,2);
 
   QToolButton * clearAll = new QToolButton(this);
@@ -126,6 +126,10 @@ QWidget * StitcherWorkspace::createToolBar(){
   layout->setColumnStretch(11,100);
   layout->setRowStretch(10,100);
   return ret;
+}
+
+void StitcherWorkspace::onDeleteGuideClicked(){
+  _stitcherView->setMode(StitcherView::DeleteGuide);
 }
 
 void StitcherWorkspace::clearAll(){
@@ -318,13 +322,14 @@ void StitcherWorkspace::loadGeometry(){
 	/* Temporarily disable Dz and Alpha */
 	if(itemName->text() == "Dz" || 
 	   itemName->text() == "Alpha"){
+	  itemLocked->setCheckState(Qt::Checked);
 	  itemName->setEnabled(false);
 	  itemValue->setEnabled(false);
 	  itemLocked->setEnabled(false);
 	  itemName->setToolTip("Currently disabled");
 	  itemValue->setToolTip("Currently disabled");
 	  itemLocked->setToolTip("Currently disabled");
-	}
+	  } 
 	parentItem->appendRow(QList<QStandardItem *>() << itemName << itemValue << itemLocked);
       }
     }
@@ -424,8 +429,12 @@ void StitcherWorkspace::onAddConstraintClicked(){
      This is a prefix to distinguish Hawk Geometry properties from the
      normal widget properties 
   */
-  QStandardItemModel * model = qobject_cast<QStandardItemModel *>(constraintsTree->model());
   AddConstraintDialog * d = new AddConstraintDialog(_stitcherView);
+  d->setModal(false);
+  connect(d,SIGNAL(accepted()),this,SLOT(onAddConstraintDialogClosed()));
+  d->show();
+  /*
+  return;
   if(d->exec()){
     QList<QPair<int,ImageItem *> > points = d->selectedPoints();
     if(points.isEmpty()){
@@ -444,7 +453,7 @@ void StitcherWorkspace::onAddConstraintClicked(){
     parentItem->appendRow(QList<QStandardItem *>() << itemName <<  itemValue);
     parentItem = itemName;
     for(int i = 0;i<points.size();i++){
-
+      
       itemName = new QStandardItem(points[i].second->identifier() + "." + QString::number(points[i].first+1));
       itemValue = new QStandardItem("");
       parentItem->appendRow(QList<QStandardItem *>() << itemName <<  itemValue);
@@ -455,14 +464,58 @@ void StitcherWorkspace::onAddConstraintClicked(){
       itemName = new QStandardItem("Radius");
     }
     itemValue = new QStandardItem("");
-    parentItem->appendRow(QList<QStandardItem *>() << itemName <<  itemValue);
-
-    /*    itemName = new QStandardItem("Best Fit");
-    itemValue = new QStandardItem("");
-    parentItem->appendRow(QList<QStandardItem *>() << itemName <<  itemValue);*/
-
-    
+    parentItem->appendRow(QList<QStandardItem *>() << itemName <<  itemValue);    
   }
+  constraintsTree->expandAll();
+  constraintsTree->resizeColumnToContents(0);
+  constraintsTree->resizeColumnToContents(1);
+*/
+}
+
+void StitcherWorkspace::onAddConstraintDialogClosed(){
+  QStandardItemModel * model = qobject_cast<QStandardItemModel *>(constraintsTree->model());
+  AddConstraintDialog * d = qobject_cast<AddConstraintDialog *>(sender());
+  QList<QPair<int,ImageItem *> > points = d->selectedPoints();
+  if(points.isEmpty()){
+    delete d;
+    return;
+  }
+  QStandardItem *parentItem = model->invisibleRootItem();
+  QStandardItem * itemName = new QStandardItem("Type");
+  // This seems a bit too much
+  QList<QVariant> point_details;
+  QList<QVariant> item_details;
+  for(int i = 0;i<points.size();i++){
+    ImageItem * item = points[i].second;
+    QPointF pos  = item->getControlPoints()[points[i].first];
+    item_details.append(QVariant::fromValue(item));
+    point_details.append(QVariant::fromValue(pos));
+  }
+  //  itemName->setData(QVariant::fromValue(d));
+  itemName->setData(QVariant::fromValue(item_details),Qt::UserRole + 1);
+  itemName->setData(QVariant::fromValue(point_details),Qt::UserRole + 2);
+  itemName->setData(QVariant::fromValue((int)d->constraintType()),Qt::UserRole + 3);
+  QStandardItem * itemValue;
+  if(d->constraintType() == RadialLineConstraint){
+    itemValue = new QStandardItem("Radial Line");
+  }else{
+    itemValue = new QStandardItem("Centered Circle");
+  }
+  parentItem->appendRow(QList<QStandardItem *>() << itemName <<  itemValue);
+  parentItem = itemName;
+  for(int i = 0;i<points.size();i++){
+    itemName = new QStandardItem(points[i].second->identifier() + "." + QString::number(points[i].first+1));
+    itemValue = new QStandardItem("");
+    parentItem->appendRow(QList<QStandardItem *>() << itemName <<  itemValue);
+  }
+  if(d->constraintType() == RadialLineConstraint){
+    itemName = new QStandardItem("Angle");
+  }else{
+    itemName = new QStandardItem("Radius");
+  }
+  itemValue = new QStandardItem("");
+  parentItem->appendRow(QList<QStandardItem *>() << itemName <<  itemValue);
+  
   constraintsTree->expandAll();
   constraintsTree->resizeColumnToContents(0);
   constraintsTree->resizeColumnToContents(1);
@@ -525,24 +578,14 @@ void StitcherWorkspace::onOptimizeGeometryClicked(){
   for(int i = 0;i<model->rowCount();i++){
 
     QStandardItem * it = model->item(i,0);
-    AddConstraintDialog * d = it->data().value<AddConstraintDialog *>();
-    geometric_constraint c =  geometric_constraint_init(d->constraintType(),0);    
-    QList<QPair<int,ImageItem *> > points = d->selectedPoints();    
-    total_points += points.size();
-    for(int i = 0;i<points.size();i++){
-      ImageItem * item = points[i].second;
-      /*      affine_transform * at = affine_transfrom_from_parameters(item->dx(),item->dy(),item->dz(),item->alpha(),item->theta());
-	      QTransform t = item->transformFromParameters();*/
-      QPointF pos  = item->getControlPoints()[points[i].first];
-      /*      qDebug("maped point %f %f",t.map(pos).x(),t.map(pos).y());
-      sp_vector * d = sp_vector_alloc(2);
-      sp_vector_set(d,0,pos.x());
-      sp_vector_set(d,1,pos.y());
-      d = apply_affine_transform(at,d);
-      qDebug("my maped point %f %f",sp_vector_get(d,0),sp_vector_get(d,1));*/
-      
+    geometric_constraint c =  geometric_constraint_init((GeometryConstraintType)it->data(Qt::UserRole + 3).toInt(),0);    
+    QList<QVariant> item_details = it->data(Qt::UserRole + 1).value<QList<QVariant> >();
+    QList<QVariant> point_details = it->data(Qt::UserRole + 2).value<QList<QVariant> >();
+    total_points += item_details.size();
+    for(int i = 0;i<item_details.size();i++){
+      ImageItem * item = item_details[i].value<ImageItem *>();
+      QPointF pos = point_details[i].value<QPointF>();      
       positioned_image * a = pos_image_map.value(item);
-      //      control_point cp = create_control_point(a,pos.x()-sp_image_x(a->image)/2,sp_image_y(a->image)/2-pos.y());
       control_point cp = create_control_point(a,pos.x(),pos.y());
       geometric_constraint_add_point(&c,cp);            
     }
