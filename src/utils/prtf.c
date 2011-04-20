@@ -1,3 +1,4 @@
+
 #include <stdlib.h>
 #include <float.h>
 #include <hdf5.h>
@@ -5,7 +6,9 @@
 #include <getopt.h>
 #include "spimage.h"
 
-/* Calculates the Phase Retrieval Transfer Function of a bunch of images */
+/* Calculates the Phase Retrieval Transfer Function of a bunch of images
+   (pixels which have at least in one reconstruction no defined phase (value = zero) lead to a zero value in the prtf)
+*/
 
 
 real phase_error(Image * a, Image * b){
@@ -176,21 +179,24 @@ int main(int argc, char ** argv){
   Image * amps;
   Image * sum;
   Image * tmp;
-  real bins[NBINS];
-  int bin_count[NBINS];
+  Image * tmpamps;
+  Image * zeros;
   real avg_prtf;
   real max_res;
   Image * prtf;
   Image * avg_img;
   int bin;
+  real v;
   long long i;
   char buffer2[1024] = "";
   char * output;
   FILE * f;
   int no_translation = 0;
+  real bin_num[NBINS] = {0.0};
+  int bin_den[NBINS] = {0};
 
   int c;
-  int opterr = 0;
+  //int opterr = 0;
   while((c = getopt(argc,argv,"tT")) != -1) {
     switch(c) {
     case('T'):
@@ -215,20 +221,26 @@ int main(int argc, char ** argv){
   fprintf(f,"\n");
   fclose(f);
 
+  // first file: initialization
   img = sp_image_read(argv[optind+1],0);
-  /*  sp_image_dephase(img);*/
   avg_img = sp_image_duplicate(img,SP_COPY_ALL);
   sum = sp_image_fft(img);
-  for(int j = 0;j<sp_image_size(sum);j++){
-    sum->image->data[j] = sp_cscale(sum->image->data[j],1.0/sp_cabs(sum->image->data[j]));
-  }
-  amps = sp_image_fft(img);
-  sp_image_dephase(amps);
-  for(int j = 0;j<sp_image_size(amps);j++){
-    amps->image->data[j] = sp_cscale(amps->image->data[j],1.0/sp_cabs(amps->image->data[j]));
-  }
+  amps = sp_image_duplicate(sum,SP_COPY_ALL);
+  zeros = sp_image_alloc(sp_image_x(img),sp_image_y(img),sp_image_z(img));
 
+  /* Normalize sum and count zeros */
+  for(int j = 0;j<sp_image_size(sum);j++){
+    if(sp_cabs(sum->image->data[j])>0.0){
+      sum->image->data[j] = sp_cscale(sum->image->data[j],1.0/sp_cabs(sum->image->data[j]));
+    }
+    else{
+      zeros->mask->data[j]+=1;
+    }
+  }
+  sp_image_dephase(amps);
   sp_image_free(img);
+
+
   for(i = optind+2;i<argc;i++){
     img = sp_image_read(argv[i],0);
     if(!img){
@@ -246,50 +258,50 @@ int main(int argc, char ** argv){
       sp_image_write(img,buff2,SpColormapWheel);
     }
     tmp = sp_image_fft(img);
-    //    sprintf(buff2,"%s.png",argv[i+1]);
-    //    sp_image_write(tmp,buff2,COLOR_PHASE);
-    //    maximize_overlap(sum,tmp);
+    tmpamps = sp_image_duplicate(tmp,SP_COPY_ALL);
+    sp_image_dephase(tmpamps);
+    sp_image_add(amps,tmpamps);
 
-    /* Do Normalize */
-        for(int j = 0;j<sp_image_size(tmp);j++){
-      tmp->image->data[j] = sp_cscale(tmp->image->data[j],1.0/sp_cabs(tmp->image->data[j]));
+    /* Normalize tmp and count zeros */
+    for(int j = 0;j<sp_image_size(tmp);j++){
+      if(sp_cabs(tmp->image->data[j])>0.0){
+	tmp->image->data[j] = sp_cscale(tmp->image->data[j],1.0/sp_cabs(tmp->image->data[j]));
       }
-    
+      else{
+	zeros->mask->data[j]+=1;
+      }
+    }
     sp_image_add(sum,tmp);
-    sp_image_dephase(tmp);
-    sp_image_add(amps,tmp);
     sp_image_free(img);
     sp_image_free(tmp);
+    sp_image_free(tmpamps);
   }
+
   prtf = sp_image_duplicate(sum,SP_COPY_DATA|SP_COPY_MASK);
-  avg_prtf = 0;
-  max_res = sp_image_dist(sum,(sp_image_z(sum)/2)*sp_image_y(sum)*sp_image_x(sum)+(sp_image_y(sum)/2)*sp_image_x(sum)+sp_image_x(sum)/2,SP_TO_CORNER);
-  for(i = 0;i<NBINS;i++){
-    bins[i] = 0;
-    bin_count[i] = 0;
+  for(i = 0;i<sp_image_size(prtf);i++){
+    if(zeros->mask->data[i] != 0){
+      prtf->image->data[i] = sp_cinit(0.0,0.0);
+	}
+    else{
+      prtf->image->data[i] = sp_cscale(prtf->image->data[i], 1.0 / ( (double) argc -2.0)) ;
+	}
   }
   sp_image_dephase(prtf);
-  /* Old mean code 
-  for(i = 0;i<sp_image_size(sum);i++){
-    sp_real(prtf->image->data[i]) /= (sp_real(amps->image->data[i])+FLT_EPSILON);
-    avg_prtf += sp_real(prtf->image->data[i]);
-    bin = (NBINS-1)*sp_image_dist(sum,i,SP_TO_CORNER)/max_res;
-    bins[bin] += sp_real(prtf->image->data[i]);
-    bin_count[bin]++;
-  }
-  */
-  /* New mean code */
-  real bin_num[NBINS];
-  real bin_den[NBINS];
+
+  sp_image_mask_to_image(zeros,zeros);
+
+  avg_prtf = 0;
+  max_res = sp_image_dist(sum,(sp_image_z(sum)/2)*sp_image_y(sum)*sp_image_x(sum)+(sp_image_y(sum)/2)*sp_image_x(sum)+sp_image_x(sum)/2,SP_TO_CORNER);
+
   for(i = 0;i<NBINS;i++){
     bin_num[i] = 0;
-    bin_den[i] = FLT_EPSILON;
+    bin_den[i] = 0; //FLT_EPSILON;
   }
   for(i = 0;i<sp_image_size(sum);i++){
     //    sp_real(prtf->image->data[i]) /= (sp_real(amps->image->data[i])+FLT_EPSILON);
     bin = (NBINS-1)*sp_image_dist(sum,i,SP_TO_CORNER)/max_res;
     bin_num[bin] += sp_real(prtf->image->data[i]);
-    bin_den[bin] += sp_real(amps->image->data[i]);
+    bin_den[bin] += 1;
     avg_prtf += sp_real(prtf->image->data[i]);
   }
 
@@ -297,11 +309,15 @@ int main(int argc, char ** argv){
   sp_image_write(sum,buffer2,sizeof(real));
   sprintf(buffer2,"%s-avg_image.h5",output);
   sp_image_write(avg_img,buffer2,sizeof(real));
+  sprintf(buffer2,"%s-zeros_fft.h5",output);
+  sp_image_write(zeros,buffer2,sizeof(real));
   if(avg_img->num_dimensions == SP_2D){
     sprintf(buffer2,"%s-avg_image-phase.png",output);
     sp_image_write(avg_img,buffer2,SpColormapWheel);
     sprintf(buffer2,"%s-avg_image.png",output);
     sp_image_write(avg_img,buffer2,SpColormapJet);
+    sprintf(buffer2,"%s-zeros_fft.png",output);
+    sp_image_write(zeros,buffer2,SpColormapJet);
   }
   sprintf(buffer2,"%s-amps.h5",output);
   sp_image_write(amps,buffer2,sizeof(real));
@@ -310,7 +326,12 @@ int main(int argc, char ** argv){
   avg_prtf /= sp_image_size(sum);
   f = fopen(output,"w");  
   for(i = 0;i<NBINS;i++){
-    real v = bin_num[i]/bin_den[i];
+    if(bin_den[i] != 0){
+      v = bin_num[i]/bin_den[i];
+    }
+    else{
+      v = 0.0;
+    }
     fprintf(f,"%f %f\n",i*max_res/NBINS,v);
   }
   return 0;
