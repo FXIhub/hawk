@@ -293,10 +293,12 @@ int main(int argc, char ** argv){
   avg_prtf = 0;
   max_res = sp_image_dist(sum,(sp_image_z(sum)/2)*sp_image_y(sum)*sp_image_x(sum)+(sp_image_y(sum)/2)*sp_image_x(sum)+sp_image_x(sum)/2,SP_TO_CORNER);
 
-  for(i = 0;i<NBINS;i++){
+  /*for(i = 0;i<NBINS;i++){
     bin_num[i] = 0;
-    bin_den[i] = 0; //FLT_EPSILON;
+    bin_den[i] = FLT_EPSILON;
   }
+  */
+
   for(i = 0;i<sp_image_size(sum);i++){
     //    sp_real(prtf->image->data[i]) /= (sp_real(amps->image->data[i])+FLT_EPSILON);
     bin = (NBINS-1)*sp_image_dist(sum,i,SP_TO_CORNER)/max_res;
@@ -309,15 +311,11 @@ int main(int argc, char ** argv){
   sp_image_write(sum,buffer2,sizeof(real));
   sprintf(buffer2,"%s-avg_image.h5",output);
   sp_image_write(avg_img,buffer2,sizeof(real));
-  sprintf(buffer2,"%s-zeros_fft.h5",output);
-  sp_image_write(zeros,buffer2,sizeof(real));
   if(avg_img->num_dimensions == SP_2D){
     sprintf(buffer2,"%s-avg_image-phase.png",output);
     sp_image_write(avg_img,buffer2,SpColormapWheel);
     sprintf(buffer2,"%s-avg_image.png",output);
     sp_image_write(avg_img,buffer2,SpColormapJet);
-    sprintf(buffer2,"%s-zeros_fft.png",output);
-    sp_image_write(zeros,buffer2,SpColormapJet);
   }
   sprintf(buffer2,"%s-amps.h5",output);
   sp_image_write(amps,buffer2,sizeof(real));
