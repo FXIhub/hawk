@@ -298,7 +298,7 @@ void ImageView::setup(){
 void ImageView::loadUserSelectedImage(){
   QString fileName = QFileDialog::getOpenFileName(this, tr("Load Image"),
 						  QString(),
-						  tr("Images (*.h5 *.png *tif *tiff)"));
+						  tr("Images (*.h5 *.png *.tif *.tiff *.cxi)"));
    if(!fileName.isEmpty()){
      loadImage(fileName);
    }
