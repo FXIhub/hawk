@@ -15,9 +15,10 @@ ImageItem::ImageItem(Image * sp_image,QString file, ImageView * view,QGraphicsIt
   colormap_flags = SpColormapJet;
   colormap_min = 0;
   colormap_max = 0;
+  m_gamma = 1.0;
   image = sp_image;
 
-  colormap_data = sp_image_get_false_color(image,colormap_flags,colormap_min,colormap_max);
+  colormap_data = sp_image_get_false_color(image,colormap_flags,colormap_min,colormap_max,m_gamma);
   data = QImage(colormap_data,sp_image_x(image),sp_image_y(image),QImage::Format_RGB32);
   /*  mask = QImage(sp_image_x(image),sp_image_y(image),QImage::Format_ARGB32);
       maskFaint = QImage(sp_image_x(image),sp_image_y(image),QImage::Format_ARGB32);*/
@@ -79,6 +80,7 @@ ImageItem::ImageItem(QPixmap pix,ImageView * view, QGraphicsItem * parent)
 { 
   _view = view;
   colormap_flags = SpColormapJet;
+  m_gamma = 1;
   setPixmap(pix);
   colormap_data = NULL;
   image = NULL;
@@ -130,7 +132,7 @@ void ImageItem::shiftImage(){
     if(tmp){
       sp_image_free(image);
       image = tmp;
-      colormap_data = sp_image_get_false_color(image,colormap_flags,colormap_min,colormap_max);
+      colormap_data = sp_image_get_false_color(image,colormap_flags,colormap_min,colormap_max,m_gamma);
       data = QImage(colormap_data,sp_image_x(image),sp_image_y(image),QImage::Format_RGB32);
       setPixmap(QPixmap::fromImage(data));
     }
@@ -172,7 +174,7 @@ void ImageItem::fourierTransform(QRectF area,bool squared){
     if(tmp && sp_image_is_valid(tmp)){
       sp_image_free(image);
       image = tmp;
-      colormap_data = sp_image_get_false_color(image,colormap_flags,colormap_min,colormap_max);
+      colormap_data = sp_image_get_false_color(image,colormap_flags,colormap_min,colormap_max,m_gamma);
       data = QImage(colormap_data,sp_image_x(image),sp_image_y(image),QImage::Format_RGB32);
       setPixmap(QPixmap::fromImage(data));
     }else if(tmp){
@@ -199,12 +201,24 @@ void ImageItem::setColormap(int color){
 }
 
 
+void ImageItem::setGamma(double gamma){
+  if(image && m_gamma != gamma){
+    m_gamma = gamma;
+    updateImage();
+  }
+}
+
+double ImageItem::gamma(){
+  return m_gamma;
+}
+
+
 void ImageItem::updateImage(){
   if(image){
     if(colormap_data){
       free(colormap_data);
     }
-    colormap_data = sp_image_get_false_color(image,colormap_flags,colormap_min,colormap_max);
+    colormap_data = sp_image_get_false_color(image,colormap_flags,colormap_min,colormap_max,m_gamma);
     data = QImage(colormap_data,sp_image_x(image),sp_image_y(image),QImage::Format_RGB32);
     setPixmap(QPixmap::fromImage(data));
   }

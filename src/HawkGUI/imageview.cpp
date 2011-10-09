@@ -209,6 +209,7 @@ void ImageView::setImage(ImageItem * item){
   int color = -1;
   bool isShifted = false;
   bool logScale = false;
+  double gamma = 1.0;
   if(selectedImage()){
     // If we already have an image loaded we're gonna preserve the location of the center
     // and the zoom
@@ -221,6 +222,7 @@ void ImageView::setImage(ImageItem * item){
     display = selectedImage()->display();
     isShifted = selectedImage()->isShifted();
     logScale = selectedImage()->logScale();
+    gamma = selectedImage()->gamma();
   }else{
     // Set pixmap center in the middle of the screen
     QPointF center = sceneRect().center();
@@ -245,6 +247,7 @@ void ImageView::setImage(ImageItem * item){
   if(display >= 0){
     selectedImage()->setDisplay(display);
   }
+  selectedImage()->setGamma(gamma);
   graphicsScene->clear();
   graphicsScene->addItem(item);  
   item->showIdentifier(_showIdentifiers);
@@ -308,9 +311,26 @@ void ImageView::loadUserSelectedImage(){
 void ImageView::saveImage(){
   if(selectedImage() && selectedImage()->getImage()){
     QString fileName = QFileDialog::getSaveFileName(this, tr("Save Image"));
-    qDebug("Trying to save %s",fileName.toAscii().data());
+    //    qDebug("Trying to save %s",fileName.toAscii().data());
     if(!fileName.isEmpty()){
       sp_image_write(selectedImage()->getImage(),fileName.toAscii().data(),0);
+    }
+  }
+}
+
+
+void ImageView::saveSnapshot(){
+  if(selectedImage() && selectedImage()->getImage()){
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Save Snapshot"),
+						    QString(),
+						    tr("Images (*.png)"));
+    if(!fileName.isEmpty()){
+      if(!selectedImage()->pixmap().save(fileName.toAscii().data())){
+	QMessageBox::critical(this, tr("Save Snapshot"),
+			      tr("Error while saving %1.\n").arg(fileName),QMessageBox::Ok);
+      }else{
+	mainWindow->statusBar()->showMessage(tr("Saved %1").arg(fileName),3000);
+      }
     }
   }
 }
@@ -405,6 +425,13 @@ int ImageView::colormap(){
     return selectedImage()->colormap();
   }
   return 0;
+}
+
+void ImageView::setGamma(double gamma){
+  if(selectedImage()){
+    selectedImage()->setGamma(gamma);
+    emit imageItemChanged(selectedImage());
+  }
 }
 
 void ImageView::setDisplay(int display){

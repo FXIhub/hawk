@@ -55,6 +55,8 @@ class ImageItem: public QObject, public QGraphicsPixmapItem
   void fourierTransform(QRectF area,bool squared);
   void setColormap(int color);
   int colormap();
+  void setGamma(double gamma);
+  double gamma();
   void setDisplay(int display);
   int display();
   void maxContrast(QRectF area);
@@ -139,6 +141,7 @@ class ImageItem: public QObject, public QGraphicsPixmapItem
   int colormap_flags;
   real colormap_min;
   real colormap_max;
+  double m_gamma;
   QImage data;
   bool selected;
   QStack<EditStep> undoStack;

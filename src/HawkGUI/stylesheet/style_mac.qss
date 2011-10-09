@@ -43,6 +43,15 @@
  }
 
 
+#panelToolBar QLabel {
+     color: white;
+ }
+#panelToolBar QLineEdit {
+     background: rgba(0,0,0,0); 
+     color: white;
+ }
+
+
 #panelToolBar QComboBox::down-arrow {
     top: 1px; right: 0px; 
     image: url(:/images/dropdownarrow_16.png);     
