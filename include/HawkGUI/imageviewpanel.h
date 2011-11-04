@@ -13,6 +13,7 @@ class QTimer;
 class QPushButton;
 class QComboBox;
 class QToolButton;
+class QLineEdit;
 
 class ImageViewPanel: public QWidget
 {
@@ -32,6 +33,7 @@ private slots:
     void changeColormap(int index);
     void onDisplayComboChanged(int index);
     void onImageLoaded();
+    void changeGamma();
  private:
   QScrollArea * frame;
   QList<QObject *>underMouse;
@@ -41,6 +43,8 @@ private slots:
   QComboBox * displayCombo;
   QToolButton * logPush;
   QToolButton * saveImage;
+  QLineEdit * gammaLineEdit;
+  QToolButton * snapImage;
   bool mySticky;
 };
 
