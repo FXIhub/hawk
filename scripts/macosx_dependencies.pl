@@ -43,7 +43,24 @@ sub is_packaged_lib{
   if($lib =~ /QtNetwork/){
     return 1;
   }
-  return 0;
+  if($lib =~ /libtiff/){
+    return 1;
+  }
+  if($lib =~ /libfftw/){
+    return 1;
+  }
+  if($lib =~ /libpng/){
+    return 1;
+  }
+  if($lib =~ /libhdf5/){
+    return 1;
+  }
+  if($lib =~ /libsz/){
+    return 1;
+  }
+  if($lib =~ /libjpeg/){
+    return 1;
+  }  return 0;
     
 }
 
@@ -59,10 +76,12 @@ sub change_install_name{
     unless(-f $file){
       next;
     }
+    system("chmod +w $file");
+    print "File = $file\n";
     my $libs = `otool -L $file`;
     my @lines = split("\n",$libs);
     foreach my $line (@lines){
-      print "line - $line\n";
+#      print "line - $line\n";
       my $old;
 #      $line =~ s/\@rpath/\/usr\/local\/cuda\/lib/;
       my $dylib;
@@ -140,7 +159,7 @@ if(`uname -s` =~ /Darwin/){
   change_install_name($libdir."/imageformats");
   chdir($bindir);
   bundle_HawkGUI();
-  system("mv  ../lib/* HawkGUI.app/Contents/Frameworks");
+  system("cp -a  ../lib/* HawkGUI.app/Contents/Frameworks");
   chdir("..");
   system("mv  bin/HawkGUI.app .");
   system("rm -rf bin");
