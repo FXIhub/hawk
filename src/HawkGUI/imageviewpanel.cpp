@@ -41,7 +41,6 @@ ImageViewPanel::ImageViewPanel(ImageView * parent)
   toolbar->setObjectName("panelToolBar");
   QSize iconSize = QSize(22,22);
 
-
   saveImage = new QToolButton(toolbar);
   saveImage->setIcon(QIcon(":images/filesave.png"));
   saveImage->setToolTip(tr("Save Image"));
