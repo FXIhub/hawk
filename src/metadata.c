@@ -1510,7 +1510,7 @@ VariableMetadata variable_metadata[] = {
     .list_valid_values = {0},
     .list_valid_names = {0},
     .variable_address = &(global_options.enforce_positivity),
-    .documentation = "The real and imaginary parts of each pixel are replaced, respectively, by absolute value of the real and imaginary of the pixel at the end of each iteration.",
+    .documentation = "Real and imaginary parts of pixels inside of the support which are negative are set to zero at the end of each iteration.",
     .dependencies = depends_on_phasing_algorithm_with_positivity,
     .reserved = NULL
   },
