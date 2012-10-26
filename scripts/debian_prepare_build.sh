@@ -1,6 +1,6 @@
 #!/bin/sh
 
-apt-get install  build-essential  libtiff4-dev libpng12-dev libfftw3-dev libhdf5-serial-dev libgsl0-dev git git-core wget swig python-dev  python-scipy  subversion libglu-dev
+apt-get install  build-essential libtiff4-dev libpng12-dev libfftw3-dev libhdf5-serial-dev libgsl0-dev git git-core wget swig python-dev  python-scipy  subversion
 arch=`uname -m`
 if [ "$arch" = "x86_64" ];then
 if test ! -f cudatoolkit_3.1_linux_64_ubuntu9.10.run; then
@@ -55,11 +55,12 @@ if [ ! -d qwt-5.2 ]; then
 	make
 	make install
 	cp -r /usr/local/qwt-5.2-svn/* /usr
+	cd
 fi
-cd libspimage && mkdir build && cd build && cmake -DCMAKE_INSTALL_PREFIX=/usr .. 
+cd libspimage && mkdir -p build && cd build && cmake -DCMAKE_INSTALL_PREFIX=/usr .. 
 cd
-cd hawk && git checkout -b big_images origin/big_images
+cd hawk && git pull
 cd
 if test -f /usr/lib/libspimage.so; then
-	cd hawk && mkdir build && cd build && cmake .. 
+	cd hawk && mkdir -p build && cd build && cmake .. 
 fi
