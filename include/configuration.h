@@ -52,7 +52,7 @@ typedef enum {Id_Diffraction_Filename=0,Id_Real_Image_Filename,Id_Max_Blur_Radiu
 		Id_Random_Seed,Id_Input_Files,Id_Input_Files_Amplitudes,Id_Initialization,Id_Input,Id_Logging,Id_Phasing,Id_Support,
 		Id_Autocorrelation_Area,Id_Remote_Work_Dir,Id_Save_Remote_Files,Id_Debug_Level, Id_Initial_Support_Group, Id_Enforce_Centrosymmetry, Id_Support_Closure_Radius,
 		Id_Starting_Guess, Id_Enforce_Ramp,
-		Id_Phasing_Engine,Id_Output_Projection
+	      Id_Phasing_Engine,Id_Output_Projection,Id_Noise_Tolerance,Id_Sigma_Noise
 }Variable_Id;
   
   typedef enum {isSettableBeforeRun = 1, isSettableDuringRun = 2, isGettableBeforeRun = 4,
@@ -163,6 +163,8 @@ typedef enum {Id_Diffraction_Filename=0,Id_Real_Image_Filename,Id_Max_Blur_Radiu
   int enforce_ramp;
   SpPhasingEngine phasing_engine;
   Output_Projection output_projection;
+  int noise_tolerance;
+  real sigma_noise;
 }Options;
 
 typedef struct _VariableMetadata{

@@ -156,7 +156,18 @@ static int depends_on_support_algorithm_with_blur(const Options * opt){
   }
   return 1;
 }
-
+static int depends_on_hio(const Options * opt){
+  if (opt->algorithm == HIO || opt->algorithm == RAAR) {
+    return 1;
+  }
+  return 0;
+}
+static int depends_on_noise_tolerance(const Options * opt){
+  if (opt->noise_tolerance) {
+    return 1;
+  }
+  return 0;
+}
 
 
 static const char autocorrelation_algorithm_treshold_doc[] = "Apply a threshold on the autocorrelation as a way to define the initial support. <p>The value of the threshold is set in <em>Autocorrelation Threshold</em>.</p>";
@@ -1897,7 +1908,7 @@ VariableMetadata variable_metadata[] = {
     .documentation = "If enabled the amplitudes are filtered using the autocorrelation of the support at each iteration.",
     .dependencies = NULL,
     .reserved = NULL
-  },
+  },  
   {
     .variable_name = "gamma1",
     .display_name = "Gamma 1",
@@ -2119,6 +2130,7 @@ VariableMetadata variable_metadata[] = {
     .dependencies = NULL,
     .reserved = NULL
   },
+
   {
     .variable_name = "template_blur_radius",
     .display_name = "Template blur radius",
@@ -2133,6 +2145,7 @@ VariableMetadata variable_metadata[] = {
     .dependencies = depends_on_support_algorithm_with_template,
     .reserved = NULL
   },
+
   {
     .variable_name = "template_area",
     .display_name = "Template Area",
@@ -2147,6 +2160,7 @@ VariableMetadata variable_metadata[] = {
     .dependencies = depends_on_support_algorithm_with_template,
     .reserved = NULL
   },
+
   {
     .variable_name = "debug_level",
     .display_name = "Debug Level",
@@ -2161,6 +2175,7 @@ VariableMetadata variable_metadata[] = {
     .dependencies = NULL,
     .reserved = NULL
   },
+
   {
     .variable_name = "max_blur_radius",
     .display_name = "Max Blur Radius",
@@ -2192,6 +2207,7 @@ VariableMetadata variable_metadata[] = {
     .dependencies = depends_on_phasing_algorithm_with_positivity,
     .reserved = NULL
   },
+
   {
     .variable_name = "support_closure_radius",
     .display_name = "Support Closure Radius",
@@ -2247,7 +2263,8 @@ VariableMetadata variable_metadata[] = {
     .documentation = "If enabled image is centered after support update so that the center of mass of the support is moved to the center of the image.",
     .dependencies = depends_on_support_algorithm_with_area,
   },
-{
+  /* 140 */
+  {
     .variable_name = "phasing_engine",
     .display_name = "Phasing Engine",
     .variable_type = Type_MultipleChoice,
@@ -2276,7 +2293,35 @@ VariableMetadata variable_metadata[] = {
     .dependencies = NULL,
     .list_documentation = {output_projection_intensities_doc,output_projection_no_doc,0},
     .reserved = NULL
-  }
+  },
+  {
+    .variable_name = "NoiseTolerance",
+    .display_name = "Noise Tolerance",
+    .variable_type = Type_Bool,
+    .id = Id_Noise_Tolerance,
+    .parent = &(variable_metadata[20]),
+    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun,
+    .list_valid_values = {0},
+    .list_valid_names = {0},
+    .variable_address = &(global_options.noise_tolerance),
+    .documentation = "Drop the imaginary part of the image at the end of each iteration",
+    .dependencies = depends_on_hio,
+    .reserved = NULL
+  },
+  {
+    .variable_name = "sigma_noise",
+    .display_name = "Sigma Noise",
+    .variable_type = Type_Real,
+    .id = Id_Sigma_Noise,
+    .parent = &(variable_metadata[20]),
+    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun|withSpecialValue,
+    .list_valid_values = {0,50},
+    .list_valid_names = {"0",0},
+    .variable_address = &(global_options.sigma_noise),
+    .documentation = "Sigma Noise as described in A. Martin's paper: .",
+    .dependencies = depends_on_noise_tolerance,
+    .reserved = NULL
+  },
 };
 
 /* number_of_global_options updated automatically from now on */

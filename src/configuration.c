@@ -175,6 +175,8 @@ void set_defaults(Options * opt){
   opt->enforce_ramp = 0;
   opt->phasing_engine = SpEngineAutomatic;
   opt->output_projection = IntensitiesProjection;
+  opt->noise_tolerance = 0;
+  opt->sigma_noise = 0;
 }
 
 void read_options_file(const char * filename){
