@@ -477,9 +477,10 @@ void Look::drawImage()
     else flags = colorscale;
 
     if (viewType == ViewAutocorrelation) {
-      colormap_data = sp_image_get_false_color(draw, flags, -1, (int)(65535.0*range*500.0));
+      //added last argument gamma. Think it's new.
+      colormap_data = sp_image_get_false_color(draw, flags, -1, (int)(65535.0*range*500.0), 1.0);
     } else {
-      colormap_data = sp_image_get_false_color(draw, flags, -1, (int)(65535.0*range));
+      colormap_data = sp_image_get_false_color(draw, flags, -1, (int)(65535.0*range), 1.0);
     }
     
     qi = QImage(colormap_data,sp_image_x(draw),sp_image_y(draw),QImage::Format_RGB32);
@@ -929,8 +930,9 @@ void Look::showBackground()
   backgroundView = new ImageView;
   //backgroundView->setMinimumWidth(500);
   //backgroundView->setMaximumWidth(500);
-  if (logScale) colormap_data = sp_image_get_false_color(background,colorscale | SpColormapLogScale,-1,(int)(65535.0*range));
-  else colormap_data = sp_image_get_false_color(background,colorscale,-1,(int)(65535.0*range));
+  //added last argument gamma. Without to much thought.
+  if (logScale) colormap_data = sp_image_get_false_color(background,colorscale | SpColormapLogScale,-1,(int)(65535.0*range), 1.0);
+  else colormap_data = sp_image_get_false_color(background,colorscale,-1,(int)(65535.0*range), 1.0);
   backgroundQi = QImage(colormap_data,sp_image_x(img),sp_image_y(img),QImage::Format_RGB32);
   //backgroundQi = backgroundQi.scaled(backgroundLabel->width(),backgroundLabel->height(),Qt::KeepAspectRatio);
   backgroundQi = backgroundQi.scaled(backgroundView->width(),backgroundView->height(),Qt::KeepAspectRatio);

@@ -379,6 +379,7 @@ void ImageView::paintEvent(QPaintEvent *)
   }
 }
     
+
 void ImageView::resizeEvent(QResizeEvent *event)
 {
   drawImage();

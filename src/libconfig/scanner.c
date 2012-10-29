@@ -1,6 +1,6 @@
-#line 2 "scanner.c"
+// #line  2 "scanner.c"
 
-#line 4 "scanner.c"
+// // #line   4 "scanner.c"
 
 #define  YY_INT_ALIGNED short int
 
@@ -14,13 +14,7 @@
 #define FLEX_BETA
 #endif
 
-/* First, we deal with  platform-specific or compiler-specific issues. */
 
-#ifdef _WIN32
-#define strdup _strdup
-#else
-#define _XOPEN_SOURCE 500
-#endif
 
 /* begin standard C headers. */
 #include <stdio.h>
@@ -29,6 +23,22 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* First, we deal with  platform-specific or compiler-specific issues. */
+
+static char * p_strdup (const char *str)
+{
+    
+    size_t len = strlen(str);
+    
+    char *s = (char *)malloc(len + 1);
+    if (!s) {
+        return NULL;
+    }
+    
+    memcpy(s, str, len + 1);
+    
+    return s;
+}
 
 /* end standard C headers. */
 
@@ -602,7 +612,7 @@ static yyconst flex_int32_t yy_rule_can_match_eol[25] =
 #define yymore() yymore_used_but_not_detected
 #define YY_MORE_ADJ 0
 #define YY_RESTORE_YY_MORE_OFFSET
-#line 1 "scanner.l"
+// #line  1 "scanner.l"
 /* -*- mode: C -*- */
 /* --------------------------------------------------------------------------
    libconfig - A structured configuration file parsing library
@@ -625,10 +635,10 @@ static yyconst flex_int32_t yy_rule_can_match_eol[25] =
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
    ----------------------------------------------------------------------------
 */
-#line 25 "scanner.l"
+// #line  25 "scanner.l"
 #define YY_EXTRA_TYPE void*
 #define YY_NO_UNISTD_H 1
-#line 38 "scanner.l"
+// #line  38 "scanner.l"
 
 #ifdef _MSC_VER
 #pragma warning (disable: 4996)
@@ -724,7 +734,7 @@ static char *make_string(char *s)
 }
 
 
-#line 720 "scanner.c"
+// #line  720 "scanner.c"
 
 #define INITIAL 0
 #define COMMENT 1
@@ -950,10 +960,10 @@ YY_DECL
 	register int yy_act;
     struct yyguts_t * yyg = (struct yyguts_t*)yyscanner;
 
-#line 157 "scanner.l"
+// #line  157 "scanner.l"
 
 
-#line 949 "scanner.c"
+// #line  949 "scanner.c"
 
     yylval = yylval_param;
 
@@ -1052,110 +1062,110 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 159 "scanner.l"
+// #line  159 "scanner.l"
 { BEGIN COMMENT; }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 160 "scanner.l"
+// #line  160 "scanner.l"
 { BEGIN INITIAL; }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 161 "scanner.l"
+// #line  161 "scanner.l"
 { /* ignore */ }
 	YY_BREAK
 case 4:
 /* rule 4 can match eol */
 YY_RULE_SETUP
-#line 162 "scanner.l"
+// #line  162 "scanner.l"
 {  }
 	YY_BREAK
 case 5:
 /* rule 5 can match eol */
 YY_RULE_SETUP
-#line 164 "scanner.l"
+// #line  164 "scanner.l"
 { /* skip */ }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 166 "scanner.l"
+// #line  166 "scanner.l"
 { return(TOK_EQUALS); }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 167 "scanner.l"
+// #line  167 "scanner.l"
 { return(TOK_COMMA); }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 168 "scanner.l"
+// #line  168 "scanner.l"
 { return(TOK_GROUP_START); }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 169 "scanner.l"
+// #line  169 "scanner.l"
 { return(TOK_GROUP_END); }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 170 "scanner.l"
+// #line  170 "scanner.l"
 { yylval->ival = 1; return(TOK_BOOLEAN); }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 171 "scanner.l"
+// #line  171 "scanner.l"
 { yylval->ival = 0; return(TOK_BOOLEAN); }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 172 "scanner.l"
-{ yylval->sval = strdup(yytext); return(TOK_NAME); }
+// #line  172 "scanner.l"
+{ yylval->sval = p_strdup (yytext); return(TOK_NAME); }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 173 "scanner.l"
+// #line  173 "scanner.l"
 { yylval->fval = atof(yytext); return(TOK_FLOAT); }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 174 "scanner.l"
+// #line  174 "scanner.l"
 { yylval->ival = atoi(yytext); return(TOK_INTEGER); }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 175 "scanner.l"
+// #line  175 "scanner.l"
 { yylval->ival = strtoul(yytext, NULL, 16); return(TOK_HEX); }
 	YY_BREAK
 case 16:
 /* rule 16 can match eol */
 YY_RULE_SETUP
-#line 176 "scanner.l"
-{ yylval->sval = strdup(make_string(yytext)); return(TOK_STRING); }
+// #line  176 "scanner.l"
+{ yylval->sval = p_strdup (make_string(yytext)); return(TOK_STRING); }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 177 "scanner.l"
+// #line  177 "scanner.l"
 { return(TOK_ARRAY_START); }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 178 "scanner.l"
+// #line  178 "scanner.l"
 { return(TOK_ARRAY_END); }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 179 "scanner.l"
+// #line  179 "scanner.l"
 { return(TOK_LIST_START); }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 180 "scanner.l"
+// #line  180 "scanner.l"
 { return(TOK_LIST_END); }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 181 "scanner.l"
+// #line  181 "scanner.l"
 { return(TOK_END); }
 	YY_BREAK
 case 22:
@@ -1163,20 +1173,20 @@ case 22:
 yyg->yy_c_buf_p = yy_cp -= 1;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 182 "scanner.l"
+// #line  182 "scanner.l"
 { /* ignore */ }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 183 "scanner.l"
+// #line  183 "scanner.l"
 { return(TOK_GARBAGE); }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 184 "scanner.l"
+// #line  184 "scanner.l"
 ECHO;
 	YY_BREAK
-#line 1172 "scanner.c"
+// #line  1172 "scanner.c"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(COMMENT):
 	yyterminate();
@@ -2264,4 +2274,4 @@ void libconfig_yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 184 "scanner.l"
+// #line  184 "scanner.l"

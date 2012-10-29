@@ -59,6 +59,13 @@
 }
 
 
+#panelToolBar QLabel {
+     color: white;
+ }
+#panelToolBar QLineEdit {
+     background: rgba(0,0,0,0); 
+     color: white;
+ }
 
 #panelToolBar{
 /*    border: 2px solid #26466D;*/

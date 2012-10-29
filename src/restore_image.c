@@ -354,11 +354,6 @@ void complete_restoration(Image * amp, Image * initial_support, Options * opts, 
 	}
       }
       sprintf(buffer,"pre_pattern-%07d.h5",opts->cur_iteration);
-      /*      tmp = zero_pad_image(tmp,sp_cmatrix_cols(tmp->image)*4,sp_cmatrix_rows(tmp->image)*4,1);
-      sp_image_write(tmp,buffer,opts->output_precision);
-      sprintf(buffer,"pre_pattern-%07d.png",opts->cur_iteration);
-      sp_image_write(tmp,buffer,SpColormapJet|LOG_SCALE);
-      */
       tmp2 = sp_image_fft(tmp); 
       sp_image_free(tmp);
       tmp = tmp2;

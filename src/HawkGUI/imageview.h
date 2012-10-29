@@ -35,6 +35,7 @@ class ImageView: public QGraphicsView
   QString currentlyLoadingFilename();
   QString getScheduledFilename();
   void setColormap(int color);
+  void setGamma(double gamma);
   int colormap();
   int display();
   QString newestFilename();
@@ -67,6 +68,7 @@ class ImageView: public QGraphicsView
   void setPreserveLog(bool on);
   bool preservesLog() const;
   virtual void saveImage();
+  void saveSnapshot();
   void emitImageItemChanged(ImageItem * item);
   void setSelectedImage(ImageItem * item);
  signals:

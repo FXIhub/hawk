@@ -141,6 +141,7 @@ unless(`uname -s` =~ /MINGW32/){
       }
 # remove debug libs and strip the rest of the libs
     system("rm $libdir/*.debug");
+    system("chmod +w $libdir/*");
     if(`uname -s` =~ /Darwin/){
       system("strip -x $libdir/*");
     }

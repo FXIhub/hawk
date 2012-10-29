@@ -116,7 +116,7 @@
 
 
 /* Copy the first part of user declarations.  */
-#line 31 "grammar.y"
+// #line 31 "grammar.y"
 
 #include <string.h>
 #include <stdlib.h>
@@ -170,14 +170,14 @@ void libconfig_yyerror(void *scanner, struct parse_context *ctx,
 
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef union YYSTYPE
-#line 65 "grammar.y"
+// #line 65 "grammar.y"
 {
   long ival;
   double fval;
   char *sval;
 }
 /* Line 193 of yacc.c.  */
-#line 181 "grammar.c"
+// #line 181 "grammar.c"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
@@ -190,7 +190,7 @@ typedef union YYSTYPE
 
 
 /* Line 216 of yacc.c.  */
-#line 194 "grammar.c"
+// #line 194 "grammar.c"
 
 #ifdef short
 # undef short
@@ -1429,7 +1429,7 @@ yyreduce:
   switch (yyn)
     {
         case 8:
-#line 95 "grammar.y"
+// #line 95 "grammar.y"
     {
     ctx->setting = config_setting_add(ctx->parent, (yyvsp[(1) - (1)].sval), CONFIG_TYPE_NONE);
     free((yyvsp[(1) - (1)].sval));
@@ -1443,7 +1443,7 @@ yyreduce:
     break;
 
   case 10:
-#line 111 "grammar.y"
+// #line 111 "grammar.y"
     {
     if(IN_LIST())
       ctx->parent = config_setting_add(ctx->parent, NULL, CONFIG_TYPE_ARRAY);
@@ -1457,7 +1457,7 @@ yyreduce:
     break;
 
   case 11:
-#line 123 "grammar.y"
+// #line 123 "grammar.y"
     {
     if(ctx->parent)
       ctx->parent = ctx->parent->parent;    
@@ -1465,7 +1465,7 @@ yyreduce:
     break;
 
   case 12:
-#line 131 "grammar.y"
+// #line 131 "grammar.y"
     {
     if(IN_LIST())
     {
@@ -1481,7 +1481,7 @@ yyreduce:
     break;
 
   case 13:
-#line 145 "grammar.y"
+// #line 145 "grammar.y"
     {
     if(ctx->parent)
       ctx->parent = ctx->parent->parent;    
@@ -1489,7 +1489,7 @@ yyreduce:
     break;
 
   case 18:
-#line 160 "grammar.y"
+// #line 160 "grammar.y"
     {
     if(IN_ARRAY() || IN_LIST())
     {
@@ -1505,7 +1505,7 @@ yyreduce:
     break;
 
   case 19:
-#line 173 "grammar.y"
+// #line 173 "grammar.y"
     {
     if(IN_ARRAY() || IN_LIST())
     {
@@ -1527,7 +1527,7 @@ yyreduce:
     break;
 
   case 20:
-#line 192 "grammar.y"
+// #line 192 "grammar.y"
     {
     if(IN_ARRAY() || IN_LIST())
     {
@@ -1549,7 +1549,7 @@ yyreduce:
     break;
 
   case 21:
-#line 211 "grammar.y"
+// #line 211 "grammar.y"
     {
     if(IN_ARRAY() || IN_LIST())
     {
@@ -1565,7 +1565,7 @@ yyreduce:
     break;
 
   case 22:
-#line 224 "grammar.y"
+// #line 224 "grammar.y"
     {
     if(IN_ARRAY() || IN_LIST())
     {
@@ -1587,7 +1587,7 @@ yyreduce:
     break;
 
   case 31:
-#line 266 "grammar.y"
+// #line 266 "grammar.y"
     {
     if(IN_LIST())
       ctx->parent = config_setting_add(ctx->parent, NULL, CONFIG_TYPE_GROUP);
@@ -1601,7 +1601,7 @@ yyreduce:
     break;
 
   case 32:
-#line 278 "grammar.y"
+// #line 278 "grammar.y"
     {
     if(ctx->parent)
       ctx->parent = ctx->parent->parent;
@@ -1610,7 +1610,7 @@ yyreduce:
 
 
 /* Line 1267 of yacc.c.  */
-#line 1614 "grammar.c"
+// #line 1614 "grammar.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -1824,6 +1824,6 @@ yyreturn:
 }
 
 
-#line 284 "grammar.y"
+// #line 284 "grammar.y"
 
 

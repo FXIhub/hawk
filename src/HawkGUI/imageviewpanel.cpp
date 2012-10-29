@@ -41,7 +41,6 @@ ImageViewPanel::ImageViewPanel(ImageView * parent)
   toolbar->setObjectName("panelToolBar");
   QSize iconSize = QSize(22,22);
 
-
   saveImage = new QToolButton(toolbar);
   saveImage->setIcon(QIcon(":images/filesave.png"));
   saveImage->setToolTip(tr("Save Image"));
@@ -89,6 +88,25 @@ ImageViewPanel::ImageViewPanel(ImageView * parent)
   }
   colormapCombo->setCurrentIndex(colormapCombo->findData(imageView->colormap()));
   htop->addWidget(colormapCombo);
+
+  gammaLineEdit = new QLineEdit(toolbar);
+  gammaLineEdit->setToolTip(tr("Gamma Correction"));
+  gammaLineEdit->setFrame(false);
+  gammaLineEdit->setText("1.0");
+  gammaLineEdit->setValidator(new QDoubleValidator(toolbar));
+  gammaLineEdit->setMaximumWidth(35);
+  gammaLineEdit->setMaxLength(4);
+  connect(gammaLineEdit,SIGNAL(editingFinished()),this,SLOT(changeGamma()));
+  connect(gammaLineEdit,SIGNAL(editingFinished()),this,SLOT(changeGamma()));
+  htop->addWidget(gammaLineEdit);
+
+  snapImage = new QToolButton(toolbar);
+  snapImage->setIcon(QIcon(":images/camera-photo.png"));
+  snapImage->setToolTip(tr("Take Snapshot"));
+  hbottom->addWidget(snapImage);
+  connect(snapImage,SIGNAL(clicked()),imageView,SLOT(saveSnapshot()));
+  snapImage->setIconSize(iconSize);
+
 
   logPush = new QToolButton(toolbar);
   logPush->setIcon(QIcon(":images/log_scale.png"));
@@ -217,6 +235,12 @@ void ImageViewPanel::onImageLoaded(){
   colormapCombo->setCurrentIndex(colormapCombo->findData(imageView->colormap()));
   displayCombo->setCurrentIndex(displayCombo->findData(imageView->display()));
   logPush->setChecked(imageView->logScale());
+}
+
+void ImageViewPanel::changeGamma(){
+  this->setFocus();
+  double gamma = gammaLineEdit->text().toDouble();
+  imageView->setGamma(gamma);
 }
 
 
