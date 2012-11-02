@@ -2,7 +2,7 @@
 #define _UWRAPC_PEER_THREAD_H_ 1
 
 #include <QThread>
-class RPCInfo;
+struct RPCInfo;
 
  class UwrapcPeerThread : public QThread
  {

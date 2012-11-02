@@ -62,7 +62,7 @@ MapEditorWidget::MapEditorWidget(QWidget * parent)
 }
 
 void MapEditorWidget::mouseDoubleClickEvent ( QMouseEvent * event ){
-  QPointF clickPos = transform.inverted().map(QPointF(event->pos()));
+  //QPointF clickPos = transform.inverted().map(QPointF(event->pos()));
   int index = -1;
   if(popup){
     /* there is already a point being edited */

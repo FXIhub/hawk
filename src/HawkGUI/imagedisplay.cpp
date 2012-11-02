@@ -13,7 +13,7 @@ ImageDisplay::ImageDisplay(QWidget * parent)
 {
   
   geometryControl = new GeometryControl;
-  QSize size = geometryControl->getGeometry();
+//  QSize size = geometryControl->getGeometry();
   gridLayout = new QGridLayout;
   setLayout(gridLayout);
   focusFrame = new QFocusFrame(this);
@@ -121,7 +121,7 @@ void ImageDisplay::onProcessStopped(){
   processRunning = false;
 }
 
-void ImageDisplay::updateLatestOutput(QString type,QFileInfo file,QFileInfo old){
+void ImageDisplay::updateLatestOutput(QString ,QFileInfo file,QFileInfo old){
   //  qDebug("here");
   int size = imageViewers.size();
   for(int i = 0;i<size;i++){

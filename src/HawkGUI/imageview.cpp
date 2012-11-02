@@ -452,13 +452,13 @@ void ImageView::finishLoadImage(){
   loader = qobject_cast<ImageLoader *>(sender());
   Image * image = loader->getImage();
   if(!image){
-    qDebug(("Failed to read image " + loader->getFile()).toAscii());
+    qDebug("Failed to read image %s",loader->getFile().toAscii().constData());
     return;
   }
   currentlyLoading.clear();
   filename = loader->getFile();
   currentIteration = ImageCategory::getFileIteration(filename);
-  qDebug(("Current iteration:" + currentIteration).toAscii());
+  qDebug("Current iteration: %s",currentIteration.toAscii().constData());
   delete loader;
   loader = NULL;
   ImageItem * item = new ImageItem(image,filename,this,NULL);
@@ -473,7 +473,7 @@ void ImageView::finishLoadImage(){
 void ImageView::loadImageFromMemory(Image * image,QString name){
   qDebug("ImageView: Loading image from memory %p",image);
   if(!image){
-    qDebug(("Failed to read image " + loader->getFile()).toAscii());
+    qDebug("Failed to read image %s",loader->getFile().toAscii().constData());
     return;
   }
   filename = name;

@@ -33,6 +33,7 @@ ADD_EXECUTABLE(uwrapc ${UWRAPC_OBJ})
 
 ADD_EXECUTABLE(process_image process_image.c ${GETOPT})
 ADD_EXECUTABLE(post_process post_process.c ${GETOPT})
+ADD_EXECUTABLE(hawk hawk.c ${GETOPT})
 
 
 
@@ -45,11 +46,14 @@ if(QWT_FOUND)
   ADD_SUBDIRECTORY(HawkGUI)
 endif(QWT_FOUND)
 #ADD_SUBDIRECTORY(Preview)
-ADD_SUBDIRECTORY(Look)
+
+# NOTE: If you want to compile Look just uncomment the line below
+#ADD_SUBDIRECTORY(Look)
+
 ENDIF(QT4_FOUND)
-ADD_SUBDIRECTORY(saddle)
+#ADD_SUBDIRECTORY(saddle)
 ADD_SUBDIRECTORY(tests)
-ADD_SUBDIRECTORY(gtm)
+#ADD_SUBDIRECTORY(gtm)
 #ADD_SUBDIRECTORY(qxt)
 
 

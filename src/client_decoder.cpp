@@ -12,7 +12,7 @@ ClientDecoder * ClientDecoder::create(Communicator * p){
 }
 
 
-void ClientDecoder::execRun(QByteArray command){
+void ClientDecoder::execRun(QByteArray ){
   init_reconstruction(&global_options);
 }
 

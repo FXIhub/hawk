@@ -498,7 +498,7 @@ namespace QxtMetaObject
     template <typename RETURN, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9, typename T10>
     QxtBoundFunction* bind(QxtGenericFunctionPointer funcPointer, QXT_IMPL_10ARGS(QVariant))
     {
-        QVariant* args[10] = { &p1, &p2, &p3, &p4, &p5, &p6, &p7, &p8, &p9, &p10 };
+        //QVariant* args[10] = { &p1, &p2, &p3, &p4, &p5, &p6, &p7, &p8, &p9, &p10 };
         return QxtMetaObject::bind<RETURN, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(funcPointer, QXT_VAR_ARG(1), QXT_VAR_ARG(2), QXT_VAR_ARG(3), QXT_VAR_ARG(4),
                 QXT_VAR_ARG(5), QXT_VAR_ARG(6), QXT_VAR_ARG(7), QXT_VAR_ARG(8), QXT_VAR_ARG(9), QXT_VAR_ARG(10));
     }

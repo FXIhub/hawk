@@ -221,13 +221,14 @@ void Decoder::readData(QByteArray command_and_data){
   emit dataReceived(dataId);    
 }
 
-void Decoder::execRun(QByteArray command){
+/* The derived functions should implement these functions */
+void Decoder::execRun(QByteArray ){
 }
 
-void Decoder::readImage(QString id, qulonglong sizeRead, QByteArray data){
+void Decoder::readImage(QString , qulonglong , QByteArray ){
 }
 
-void Decoder::setVariable(QByteArray command){
+void Decoder::setVariable(QByteArray ){
 }
 
 #endif

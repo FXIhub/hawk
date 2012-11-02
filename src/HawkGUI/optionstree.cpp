@@ -125,7 +125,7 @@ void OptionsTree::createGUI(){
   rebuildTree();
 }
 
-void OptionsTree::showAdvancedOptions(bool show){
+void OptionsTree::showAdvancedOptions(bool ){
   //  showAdvancedOptionsToggled = show;
   rebuildTree();
 }

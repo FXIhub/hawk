@@ -605,7 +605,7 @@ int gradLtau(sp_c3matrix * Gs,sp_c3matrix * Gns,sp_c3matrix * DGs,sp_c3matrix * 
     }
   }
 
-#warning Maybe this is very wrong and dtau should be complex
+//#warning Maybe this is very wrong and dtau should be complex
   dtau->data[0] = sp_cabs(dtau0);
   dtau->data[1] = sp_cabs(dtau1);
   return 0;

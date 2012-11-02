@@ -106,8 +106,8 @@ static void remove_electronic_horizontal_noise(Image * output,Image * input,int 
 }
 
 
-static void herringbone_removal1(Image * input){
-  /*just subtract the right side of the image from the left side */
+/*static void herringbone_removal1(Image * input){
+  //just subtract the right side of the image from the left side 
   for(int x = 0;x<sp_image_x(input)/2;x++){
     for(int y = 0;y<sp_image_y(input);y++){
       Complex v = sp_image_get(input,x,y,0);
@@ -121,7 +121,7 @@ static void herringbone_removal1(Image * input){
       sp_image_set(input,x,y,0,sp_cinit(0,0));
     }
   }
-}
+}*/
 
 Image * xcam_preprocess(Image * input){
   int binning = 1;
