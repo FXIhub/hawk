@@ -33,7 +33,8 @@ ADD_EXECUTABLE(uwrapc ${UWRAPC_OBJ})
 
 ADD_EXECUTABLE(process_image process_image.c ${GETOPT})
 ADD_EXECUTABLE(post_process post_process.c ${GETOPT})
-ADD_EXECUTABLE(hawk hawk.c ${GETOPT})
+ADD_EXECUTABLE(hawk hawk.c utils/image_to_png.c ${GETOPT})
+SET_TARGET_PROPERTIES(hawk PROPERTIES COMPILE_FLAGS -DHAWK_UNIFIED)
 
 
 
@@ -60,6 +61,7 @@ ADD_SUBDIRECTORY(tests)
 TARGET_LINK_LIBRARIES(uwrapc ${LIBRARY_LIST})
 TARGET_LINK_LIBRARIES(process_image ${LIBRARY_LIST})
 TARGET_LINK_LIBRARIES(post_process ${LIBRARY_LIST})
+TARGET_LINK_LIBRARIES(hawk ${LIBRARY_LIST})
 #TARGET_LINK_LIBRARIES(restore_image ${LIBRARY_LIST})
 
 #INSTALL(TARGETS uwrapc process_image post_process restore_image

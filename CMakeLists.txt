@@ -196,9 +196,9 @@ set(top_level_DOCFILES
   PROBLEMS
   README
   )
-install(FILES ${top_level_DOCFILES} DESTINATION doc)
-install(FILES doc/UserManual.pdf DESTINATION doc)
-install(DIRECTORY examples DESTINATION .)
+install(FILES ${top_level_DOCFILES} DESTINATION share/doc/hawk)
+install(FILES doc/UserManual.pdf DESTINATION share/doc/hawk)
+install(DIRECTORY examples DESTINATION share/hawk)
 # No CMakeLists.txt there, no point to add it 
 #ADD_SUBDIRECTORY(examples)
 

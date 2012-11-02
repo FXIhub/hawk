@@ -3,11 +3,19 @@
 #include <stdio.h>
 #include "spimage.h"
 
+#ifdef HAWK_UNIFIED
+int convert_main(int argc, char ** argv){
+#else
 int main(int argc, char ** argv){
+#endif
   Image * a;
   int i;
   if(argc < 3){
+#ifdef HAWK_UNIFIED
+    printf("Usage: hawk convert <image.h5> <image.png> [phase.png] [mask.png]\n");
+#else
     printf("Usage: image_to_png <image.h5> <image.png> [phase.png] [mask.png]\n");
+#endif
     return 0;
   }
   a = sp_image_read(argv[1],0);
