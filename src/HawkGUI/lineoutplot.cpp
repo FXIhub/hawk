@@ -4,6 +4,10 @@
 #include <qwt_plot.h>
 #include <qwt_plot_curve.h>
 
+#if QWT_VERSION >= 0x060000 || QWT_VERSION < 0x050000
+#error Hawk requires Qwt 5.x
+#endif
+
 LineOutPlot::LineOutPlot(const Image * a, QLineF line)
   :QWidget(0)
 {
