@@ -1,0 +1,58 @@
+hawk(1)
+======
+
+NAME
+----
+hawk - the image reconstruction package
+
+
+SYNOPSIS
+--------
+[verse]
+'hawk' [--version] [--help] <command> [<args>]
+
+DESCRIPTION
+-----------
+Hawk is a image reconstruction package that contains the tools necessary
+to process and phase a continuous diffraction pattern. It is typically
+used with diffraction patterns obtained from X-ray single particle 
+diffraction experiments, such as those performed at X-ray free-electron
+lasers and table-top X-ray lasers, but the algorithms should 
+work for other diffraction experiments such as electron or optical
+diffraction.
+
+OPTIONS
+-------
+*--version*::
+	Prints the Hawk package version.
+
+*--help*::
+	Prints the synopsis along with a list and short explanation
+  of the possible commands. When given a <command> it will show
+  the man page of that <command>, for example *hawk --help convert*
+  will show the man page for hawk-convert.
+
+COMMANDS
+--------
+
+*convert*::
+  Converts files between different file formats.
+
+//FURTHER DOCUMENTATION
+//---------------------
+
+// We could use some
+
+
+Authors
+-------
+Hawk was created by Filipe Maia and includes contributions from Tomas Ekeberg, Max Hantke and Gijs van der Schot.
+
+Reporting Bugs
+--------------
+
+Please report bugs on link:https://github.com/FilipeMaia/hawk/issues[https://github.com/FilipeMaia/hawk/issues].
+
+SEE ALSO
+--------
+*hawk-convert*(1)

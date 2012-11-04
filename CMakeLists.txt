@@ -56,6 +56,9 @@ find_package(MATH REQUIRED)
 find_package(GSL)
 #find_package(MATHEVAL)
 find_package(QWT)
+if(UNIX)
+  find_program(A2X NAMES a2x a2x.py a2x.sh DOC "AsciiDoc a2x script, for building man pages")
+endif(UNIX)
 
 
 SET(DMALLOC_USE OFF CACHE BOOL "If ON link to dmalloc library if possible.")
@@ -196,6 +199,17 @@ set(top_level_DOCFILES
   PROBLEMS
   README
   )
+
+if(A2X)
+#  add_custom_target(documentation ALL ${A2X} -f manpage ${CMAKE_SOURCE_DIR}/doc/man/hawk.txt DEPENDS ${CMAKE_SOURCE_DIR}/doc/man/hawk.txt COMMENT "Creating man pages" VERBATIM)
+add_custom_command(TARGET src/hawk POST_BUILD COMMAND ${A2X} -f manpage -D ${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR}/doc/man/hawk.txt COMMENT "Creating man pages" VERBATIM)
+
+set(man1_pages
+  ${CMAKE_BINARY_DIR}/doc/man/hawk.1
+  )
+install(FILES ${man1_pages} DESTINATION share/man/man1)
+endif()
+
 install(FILES ${top_level_DOCFILES} DESTINATION share/doc/hawk)
 install(FILES doc/UserManual.pdf DESTINATION share/doc/hawk)
 install(DIRECTORY examples DESTINATION share/hawk)
