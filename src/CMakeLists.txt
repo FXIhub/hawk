@@ -67,7 +67,7 @@ FILE(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/doc/man)
 add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/doc/man/hawk.1 COMMAND ${A2X} -f manpage -D ${CMAKE_BINARY_DIR}/doc/man ${CMAKE_SOURCE_DIR}/doc/man/hawk.txt DEPENDS ${CMAKE_SOURCE_DIR}/doc/man/hawk.txt COMMENT "Creating man pages" VERBATIM)
 add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/doc/man/hawk-convert.1 COMMAND ${A2X} -f manpage -D ${CMAKE_BINARY_DIR}/doc/man ${CMAKE_SOURCE_DIR}/doc/man/hawk-convert.txt DEPENDS ${CMAKE_SOURCE_DIR}/doc/man/hawk-convert.txt COMMENT "Creating man pages" VERBATIM)
 
-INSTALL(TARGETS uwrapc process_image post_process# restore_image
+INSTALL(TARGETS uwrapc process_image post_process hawk# restore_image
             RUNTIME DESTINATION bin
             LIBRARY DESTINATION lib
             ARCHIVE DESTINATION lib)
