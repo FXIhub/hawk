@@ -33,7 +33,7 @@ ADD_EXECUTABLE(uwrapc ${UWRAPC_OBJ})
 
 ADD_EXECUTABLE(process_image process_image.c ${GETOPT})
 ADD_EXECUTABLE(post_process post_process.c ${GETOPT})
-ADD_EXECUTABLE(hawk hawk.c utils/image_to_png.c ${GETOPT}  ${CMAKE_BINARY_DIR}/doc/man/hawk.1)
+ADD_EXECUTABLE(hawk hawk.c utils/image_to_png.c ${GETOPT}  ${CMAKE_BINARY_DIR}/doc/man/hawk.1 ${CMAKE_BINARY_DIR}/doc/man/hawk-convert.1)
 SET_TARGET_PROPERTIES(hawk PROPERTIES COMPILE_FLAGS -DHAWK_UNIFIED)
 
 
@@ -65,6 +65,7 @@ TARGET_LINK_LIBRARIES(hawk ${LIBRARY_LIST})
 
 FILE(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/doc/man)
 add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/doc/man/hawk.1 COMMAND ${A2X} -f manpage -D ${CMAKE_BINARY_DIR}/doc/man ${CMAKE_SOURCE_DIR}/doc/man/hawk.txt DEPENDS ${CMAKE_SOURCE_DIR}/doc/man/hawk.txt COMMENT "Creating man pages" VERBATIM)
+add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/doc/man/hawk-convert.1 COMMAND ${A2X} -f manpage -D ${CMAKE_BINARY_DIR}/doc/man ${CMAKE_SOURCE_DIR}/doc/man/hawk-convert.txt DEPENDS ${CMAKE_SOURCE_DIR}/doc/man/hawk-convert.txt COMMENT "Creating man pages" VERBATIM)
 
 INSTALL(TARGETS uwrapc process_image post_process# restore_image
             RUNTIME DESTINATION bin

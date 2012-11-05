@@ -202,10 +202,11 @@ set(top_level_DOCFILES
 
 if(A2X)
 #  add_custom_target(documentation ALL ${A2X} -f manpage ${CMAKE_SOURCE_DIR}/doc/man/hawk.txt DEPENDS ${CMAKE_SOURCE_DIR}/doc/man/hawk.txt COMMENT "Creating man pages" VERBATIM)
-add_custom_command(TARGET src/hawk POST_BUILD COMMAND ${A2X} -f manpage -D ${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR}/doc/man/hawk.txt COMMENT "Creating man pages" VERBATIM)
+#add_custom_command(TARGET src/hawk POST_BUILD COMMAND ${A2X} -f manpage -D ${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR}/doc/man/hawk.txt COMMENT "Creating man pages" VERBATIM)
 
 set(man1_pages
   ${CMAKE_BINARY_DIR}/doc/man/hawk.1
+  ${CMAKE_BINARY_DIR}/doc/man/hawk-convert.1
   )
 install(FILES ${man1_pages} DESTINATION share/man/man1)
 endif()
