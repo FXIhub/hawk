@@ -207,6 +207,7 @@ if(A2X)
 set(man1_pages
   ${CMAKE_BINARY_DIR}/doc/man/hawk.1
   ${CMAKE_BINARY_DIR}/doc/man/hawk-convert.1
+  ${CMAKE_BINARY_DIR}/doc/man/hawk-prepare.1
   )
 install(FILES ${man1_pages} DESTINATION share/man/man1)
 endif()

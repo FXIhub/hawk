@@ -33,7 +33,13 @@ ADD_EXECUTABLE(uwrapc ${UWRAPC_OBJ})
 
 ADD_EXECUTABLE(process_image process_image.c ${GETOPT})
 ADD_EXECUTABLE(post_process post_process.c ${GETOPT})
-ADD_EXECUTABLE(hawk hawk.c utils/image_to_png.c ${GETOPT}  ${CMAKE_BINARY_DIR}/doc/man/hawk.1 ${CMAKE_BINARY_DIR}/doc/man/hawk-convert.1)
+if(A2X)
+  SET(HAWK_MAN_PAGES ${CMAKE_BINARY_DIR}/doc/man/hawk.1 ${CMAKE_BINARY_DIR}/doc/man/hawk-convert.1 ${CMAKE_BINARY_DIR}/doc/man/hawk-prepare.1)
+  ADD_EXECUTABLE(hawk hawk.c utils/image_to_png.c ${HAWK_MAN_PAGES})
+else(A2X)
+  ADD_EXECUTABLE(hawk hawk.c utils/image_to_png.c)
+endif(A2X)
+
 SET_TARGET_PROPERTIES(hawk PROPERTIES COMPILE_FLAGS -DHAWK_UNIFIED)
 
 
@@ -64,8 +70,9 @@ TARGET_LINK_LIBRARIES(post_process ${LIBRARY_LIST})
 TARGET_LINK_LIBRARIES(hawk ${LIBRARY_LIST})
 
 FILE(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/doc/man)
-add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/doc/man/hawk.1 COMMAND ${A2X} -f manpage -D ${CMAKE_BINARY_DIR}/doc/man ${CMAKE_SOURCE_DIR}/doc/man/hawk.txt DEPENDS ${CMAKE_SOURCE_DIR}/doc/man/hawk.txt COMMENT "Creating man pages" VERBATIM)
-add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/doc/man/hawk-convert.1 COMMAND ${A2X} -f manpage -D ${CMAKE_BINARY_DIR}/doc/man ${CMAKE_SOURCE_DIR}/doc/man/hawk-convert.txt DEPENDS ${CMAKE_SOURCE_DIR}/doc/man/hawk-convert.txt COMMENT "Creating man pages" VERBATIM)
+add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/doc/man/hawk.1 COMMAND ${A2X} -f manpage -D ${CMAKE_BINARY_DIR}/doc/man ${CMAKE_SOURCE_DIR}/doc/man/hawk.txt DEPENDS ${CMAKE_SOURCE_DIR}/doc/man/hawk.txt COMMENT "Creating the hawk(1) man page" VERBATIM)
+add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/doc/man/hawk-convert.1 COMMAND ${A2X} -f manpage -D ${CMAKE_BINARY_DIR}/doc/man ${CMAKE_SOURCE_DIR}/doc/man/hawk-convert.txt DEPENDS ${CMAKE_SOURCE_DIR}/doc/man/hawk-convert.txt COMMENT "Creating the hawk-convert(1) man page" VERBATIM)
+add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/doc/man/hawk-prepare.1 COMMAND ${A2X} -f manpage -D ${CMAKE_BINARY_DIR}/doc/man ${CMAKE_SOURCE_DIR}/doc/man/hawk-prepare.txt DEPENDS ${CMAKE_SOURCE_DIR}/doc/man/hawk-prepare.txt COMMENT "Creating the hawk-prepare(1) man page" VERBATIM)
 
 INSTALL(TARGETS uwrapc process_image post_process hawk# restore_image
             RUNTIME DESTINATION bin

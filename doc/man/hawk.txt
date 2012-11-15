@@ -38,6 +38,12 @@ COMMANDS
 *convert*::
   Converts files between different file formats.
 
+*phase*::
+  Phase a diffraction pattern.
+
+*prepare*::
+  Prepare an image for phasing.
+
 //FURTHER DOCUMENTATION
 //---------------------
 
@@ -55,4 +61,4 @@ Please report bugs on link:https://github.com/FilipeMaia/hawk/issues[https://git
 
 SEE ALSO
 --------
-*hawk-convert*(1)
+*hawk-convert*(1) *hawk-phase*(1) *hawk-prepare*(1) 
