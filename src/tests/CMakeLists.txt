@@ -1,4 +1,4 @@
-PROJECT (uwrapc)
+PROJECT (hawk)
 if(GSL_FOUND)
 
 INCLUDE_DIRECTORIES(${LOCAL_INCLUDE}/tests)
