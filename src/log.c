@@ -261,11 +261,11 @@ void output_to_log(const Image * exp_amp,const Image * real_in, const Image * re
     }else{
       Ereal += sp_cabs(real_out->image->data[i])*sp_cabs(real_out->image->data[i]);
     }
-    if(sp_real(exp_amp->image->data[i]) && exp_amp->mask->data[i]){
+    if(exp_amp->mask->data[i]){
       Efourier += (sp_cabs(fourier_out->image->data[i])-sp_cabs(exp_amp->image->data[i]))*(sp_cabs(fourier_out->image->data[i])-sp_cabs(exp_amp->image->data[i]));
       Efourier_den += sp_cabs(exp_amp->image->data[i])*sp_cabs(exp_amp->image->data[i]);
       FcFo += sp_cabs(fourier_out->image->data[i]);
-      FcFo_den += sp_cabs(exp_amp->image->data[i]) ;
+      FcFo_den += sp_cabs(exp_amp->image->data[i]);
     }
   }  
   Ereal /= Ereal_den;
