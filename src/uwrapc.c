@@ -445,10 +445,11 @@ void complete_reconstruction(Image * amp, Image * initial_support, Image * exp_s
 
     if(opts->iterations && opts->cur_iteration%opts->iterations == opts->iterations-1){
       sp_image_scale(real_space_sum,1.0/real_space_sum_n);
-      for(i = 0;i<opts->error_reduction_iterations_after_loop;i++){
+      sp_image_free(real_in);
+      for(i = 0;i<opts->error_reduction_iterations_in_support_update;i++){
+	real_in = real_space_sum;
+	real_space_sum = basic_error_reduction_iteration(amp, real_in, support,opts,&log);
 	sp_image_free(real_in);
-	real_in = real_space;
-	real_space = basic_error_reduction_iteration(amp, real_in, support,opts,&log);
       }
       if(get_phases_blur_radius(opts)){
 	phase_smoothening_iteration(real_space,opts,&log);

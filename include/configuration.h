@@ -38,7 +38,7 @@ typedef enum {Id_Diffraction_Filename=0,Id_Real_Image_Filename,Id_Max_Blur_Radiu
 		Id_Enforce_Real,Id_Log_File,Id_Commandline,Id_Output_Period,Id_Log_Output_Period,
 		Id_Algorithm,Id_Exp_Sigma,Id_Dyn_Beta,Id_Rand_Phases,Id_Rand_Intensities,Id_Cur_Iteration,
 		Id_Adapt_Thres,Id_Automatic,Id_Work_Dir,Id_Real_Error_Threshold,Id_Support_Update_Algorithm,
-		Id_Output_Precision,Id_Error_Reduction_Iterations_After_Loop,Id_Enforce_Positivity,
+		Id_Output_Precision,Id_Error_Reduction_Iterations_In_Support_Update,Id_Enforce_Positivity,
 		Id_Genetic_Optimization,Id_Charge_Flip_Sigma,Id_Espresso_Tau,Id_Rescale_Amplitudes,Id_Square_Mask,
 		Id_Patterson_Blur_Radius,Id_Remove_Central_Pixel_Phase,Id_Perturb_Weak_Reflections,Id_Nthreads,
 		Id_Break_Centrosym_Period,Id_Reconstruction_Finished,Id_Real_Error_Tolerance,Id_Root,
@@ -52,7 +52,7 @@ typedef enum {Id_Diffraction_Filename=0,Id_Real_Image_Filename,Id_Max_Blur_Radiu
 		Id_Random_Seed,Id_Input_Files,Id_Input_Files_Amplitudes,Id_Initialization,Id_Input,Id_Logging,Id_Phasing,Id_Support,
 		Id_Autocorrelation_Area,Id_Remote_Work_Dir,Id_Save_Remote_Files,Id_Debug_Level, Id_Initial_Support_Group, Id_Enforce_Centrosymmetry, Id_Support_Closure_Radius,
 		Id_Starting_Guess, Id_Enforce_Ramp,
-		Id_Phasing_Engine,Id_Output_Projection
+	      Id_Phasing_Engine,Id_Output_Projection,Id_Error_Reduction_Iterations_After_Loop
 }Variable_Id;
   
   typedef enum {isSettableBeforeRun = 1, isSettableDuringRun = 2, isGettableBeforeRun = 4,
@@ -105,7 +105,7 @@ typedef enum {Id_Diffraction_Filename=0,Id_Real_Image_Filename,Id_Max_Blur_Radiu
   int support_update_algorithm;
   int support_closure_radius;
   int output_precision;
-  int error_reduction_iterations_after_loop;
+  int error_reduction_iterations_in_support_update;
   int enforce_positivity;
   int genetic_optimization;
   real charge_flip_sigma;
@@ -163,6 +163,7 @@ typedef enum {Id_Diffraction_Filename=0,Id_Real_Image_Filename,Id_Max_Blur_Radiu
   int enforce_ramp;
   SpPhasingEngine phasing_engine;
   Output_Projection output_projection;
+  int error_reduction_iterations_after_loop;
 }Options;
 
 typedef struct _VariableMetadata{

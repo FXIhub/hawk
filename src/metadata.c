@@ -1487,16 +1487,16 @@ VariableMetadata variable_metadata[] = {
     .reserved = NULL
   },
   {
-    .variable_name = "error_reduction_iterations_after_loop",
-    .display_name = "ER iterations after loop",
+    .variable_name = "error_reduction_iterations_in_support_update",
+    .display_name = "ER iterations",
     .variable_type = Type_Int,
-    .id = Id_Error_Reduction_Iterations_After_Loop,
-    .parent = &(variable_metadata[20]),
-    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun|experimental,
+    .id = Id_Error_Reduction_Iterations_In_Support_Update,
+    .parent = &(variable_metadata[30]),
+    .variable_properties = isSettableBeforeRun|isSettableDuringRun|isGettableBeforeRun|isGettableDuringRun|advanced,
     .list_valid_values = {0},
     .list_valid_names = {0},
-    .variable_address = &(global_options.error_reduction_iterations_after_loop),
-    .documentation = "Number of Error Reduction iterations to be done in each outer loop iteration.",
+    .variable_address = &(global_options.error_reduction_iterations_in_support_update),
+    .documentation = "ER iterations used before the support update. The phasing iterate will not be affected by these ER iterations, only the one used to estimate the support.",
     .dependencies = NULL,
     .reserved = NULL
   },

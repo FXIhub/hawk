@@ -114,7 +114,7 @@ void set_defaults(Options * opt){
   opt->iterations_to_min_blur = 7000;
   opt->blur_radius_reduction_method = GAUSSIAN_BLUR_REDUCTION;
   opt->output_precision = sizeof(real);
-  opt->error_reduction_iterations_after_loop = 0;
+  opt->error_reduction_iterations_in_support_update = 0;
   strcpy(opt->work_dir,".");
   opt->remote_work_dir[0] = 0;
   sprintf(opt->log_file,"uwrapc.log");
