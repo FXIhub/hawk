@@ -4,8 +4,12 @@
 #include <qwt_plot.h>
 #include <qwt_plot_curve.h>
 
-#if QWT_VERSION >= 0x060000 || QWT_VERSION < 0x050000
-#error Hawk requires Qwt 5.x
+#if QWT_VERSION >= 0x070000 || QWT_VERSION < 0x050000
+#error Hawk requires Qwt 5.x or 6.x
+#endif
+#if QWT_VERSION >= 0x060000
+#include <qwt_compat.h>
+#define setRawData setRawSamples
 #endif
 
 LineOutPlot::LineOutPlot(const Image * a, QLineF line)

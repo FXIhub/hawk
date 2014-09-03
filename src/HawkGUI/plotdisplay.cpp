@@ -7,7 +7,16 @@
 #include <qwt_plot_zoomer.h>
 #include <qwt_plot_panner.h>
 #include <qwt_legend.h>
+#if QWT_VERSION >= 0x060000
+#include <qwt_legend_label.h>
+#define QwtLegendItem QwtLegendLabel
+#define PaintCached BackingStore
+#define setRawData setRawSamples
+#include <qwt_picker_machine.h>
+#include <qwt_plot_directpainter.h>
+#else
 #include <qwt_legend_item.h>
+#endif
 #include <QFileInfo>
 #include <QLayout>
 #include <QScrollBar>
@@ -21,10 +30,18 @@
 class Zoomer: public QwtPlotZoomer
 {
 public:
+#if QWT_VERSION >= 0x060000
+    Zoomer(int xAxis, int yAxis, QWidget *canvas):
+#else
     Zoomer(int xAxis, int yAxis, QwtPlotCanvas *canvas):
+#endif
         QwtPlotZoomer(xAxis, yAxis, canvas)
     {
+#if QWT_VERSION >= 0x060000
+        setStateMachine(new QwtPickerDragRectMachine());
+#else
         setSelectionFlags(QwtPicker::DragSelection | QwtPicker::CornerToCorner);
+#endif
 	//	setTrackerMode(QwtPlotZoomer::AlwaysOn);
 	//        setTrackerMode(QwtPicker::AlwaysOff);
 	//        setRubberBand(QwtPicker::NoRubberBand);
@@ -139,22 +156,36 @@ PlotDisplay::PlotDisplay(QWidget * parent)
   //  setAxisScale(xBottom, 0, 10);
   setAxisAutoScale(xBottom);
   setAxisAutoScale(yLeft);
-  setMargin(18);
-
+#if QWT_VERSION >= 0x060000
+  setStyleSheet("QwtPlot { padding: 18px }");
   zoomer = new Zoomer(QwtPlot::xBottom, QwtPlot::yLeft,canvas());
+#else
+  setMargin(18);
+  zoomer = new Zoomer(QwtPlot::xBottom, QwtPlot::yLeft,canvas());
+#endif
+
   zoomer->setRubberBandPen(QPen(Qt::black, 2, Qt::DotLine));
   zoomer->setTrackerPen(QPen(Qt::black));
   // legend
   QwtLegend *legend = new QwtLegend;
   legend->setFrameStyle(QFrame::StyledPanel|QFrame::Raised);
   insertLegend(legend, QwtPlot::LeftLegend);
+#if QWT_VERSION >= 0x060000  
+  legend->setDefaultItemMode(QwtLegendData::Checkable);
+#else
   legend->setItemMode(QwtLegend::CheckableItem);
+#endif
+
   legend->contentsWidget()->layout()->setSpacing(0);
   legend->contentsWidget()->layout()->setContentsMargins(0,0,0,0);
 
 
   legend->setLineWidth(0);
+#if QWT_VERSION >= 0x060000
+  connect(legend,SIGNAL(checked(const QVariant&,bool,int)),this,SLOT(setCurveVisible(const QVariant&,bool,int)));
+#else
   connect(this,SIGNAL(legendChecked(QwtPlotItem *,bool)),this,SLOT(setCurveVisible(QwtPlotItem *,bool)));
+#endif
   dirty = false;
   connect(&updateTimer,SIGNAL(timeout()),this,SLOT(updateCurves()));
   updateTimer.start(1000);
@@ -174,10 +205,19 @@ void PlotDisplay::createDataset(QString name,int id){
   // QwtPlotCurve * curve = new QwtPlotCurve(fm.elidedText(name,Qt::ElideRight,100));
   QwtPlotCurve * curve = new QwtPlotCurve(name);
   curve->setStyle(QwtPlotCurve::Lines);
+#if QWT_VERSION >= 0x060000
+  curve->setPaintAttribute(QwtPlotCurve::FilterPoints);
+#else
   curve->setPaintAttribute(QwtPlotCurve::PaintFiltered);
+#endif
   curve->setPaintAttribute(QwtPlotCurve::ClipPolygons);
   /*  curve->setRenderHint(QwtPlotItem::RenderAntialiased);    */
   curve->attach(this);  
+#if QWT_VERSION >= 0x060000
+  QwtLegendItem * li = (QwtLegendItem *)((QwtLegend *)legend())->legendWidget(itemToInfo(curve));
+  li->setChecked(true);
+  li->setToolTip(name);
+#else
   QwtLegendItem * li = (QwtLegendItem *)(legend()->find(curve));
   li->setChecked(true);
   li->setToolTip(name);
@@ -185,6 +225,7 @@ void PlotDisplay::createDataset(QString name,int id){
   li->setIdentfierWidth(18);
 #else
   li->setIdentifierWidth(18);
+#endif
 #endif
   d_curves.insert(id,curve);
   QVector<QColor> colors = generatePlotColors(d_curves.size());
@@ -260,9 +301,29 @@ int PlotDisplay::setCurveVisible(DatasetId id,bool visible){
 
 int PlotDisplay::setCurveVisible(QwtPlotItem *plotItem, bool visible){
   plotItem->setVisible(visible);
+#if QWT_VERSION < 0x060000
   QwtLegendItem * li = (QwtLegendItem *)legend()->find(plotItem);
   Q_ASSERT(li != NULL);
   li->setChecked(visible);
+#else
+  QwtLegendItem * li = (QwtLegendItem *)((QwtLegend *)legend())->legendWidget(itemToInfo(plotItem));
+  Q_ASSERT(li != NULL);
+  li->setChecked(visible);
+
+#endif
+  dirty = true;
+
+  updateCurves();
+  updateZoomBase();
+  replot();
+  return 0;
+}
+
+
+ int PlotDisplay::setCurveVisible(const QVariant & itemInfo, bool visible, int index){
+  QwtPlotItem *plotItem = infoToItem( itemInfo );
+  Q_ASSERT(plotItem != NULL);
+  plotItem->setVisible(visible);
   dirty = true;
 
   updateCurves();
@@ -404,15 +465,15 @@ void PlotDisplay::updateCurves(){
 	continue;
       }
       curve->setRawData(data->x(), data->y(), data->count());
-      //      curve->setRawData(data->sampled_x(), data->sampled_y(), data->sampled_count());
       
+      QwtPlotCanvas * plotCanvas = (QwtPlotCanvas *)canvas();
       const bool cacheMode = 
-	canvas()->testPaintAttribute(QwtPlotCanvas::PaintCached);
+	plotCanvas->testPaintAttribute(QwtPlotCanvas::PaintCached);
       
       //      const bool oldDirectPaint = 
       //	canvas()->testAttribute(Qt::WA_PaintOutsidePaintEvent);
       
-      const QPaintEngine *pe = canvas()->paintEngine();
+      const QPaintEngine *pe = plotCanvas->paintEngine();
       if(!pe){	
 	/* For some reason there's no paintEngine still? */
 	return;
@@ -425,14 +486,15 @@ void PlotDisplay::updateCurves(){
       //      }
       //      canvas()->setAttribute(Qt::WA_PaintOutsidePaintEvent, directPaint);
       
-      canvas()->setPaintAttribute(QwtPlotCanvas::PaintCached, false);
+#if QWT_VERSION >= 0x060000
+      QwtPlotDirectPainter directPainter;
+      directPainter.drawSeries(curve, sp_max(previousSize-1,0), curve->dataSize() - 1);
+#else
+      plotCanvas->setPaintAttribute(QwtPlotCanvas::PaintCached, false);
       curve->draw(sp_max(previousSize-1,0), curve->dataSize() - 1);
 	    //curve->draw(0, curve->dataSize() - 1);
-      canvas()->setPaintAttribute(QwtPlotCanvas::PaintCached, cacheMode);
-      
-      //      canvas()->setAttribute(Qt::WA_PaintOutsidePaintEvent, oldDirectPaint);
-      
-
+      plotCanvas->setPaintAttribute(QwtPlotCanvas::PaintCached, cacheMode);
+#endif      
     }
     updateZoomBase();
     dirty = false;

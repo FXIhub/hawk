@@ -16,7 +16,7 @@ ELSE()
 SET(EXTRA_PREFIX /usr/include/qwt-qt4)
 ENDIF()
 
-FIND_PATH(QWT_INCLUDE_DIR qwt.h PATHS ${EXTRA_PREFIX} PATH_SUFFIXES include)
+FIND_PATH(QWT_INCLUDE_DIR qwt.h PATHS ${EXTRA_PREFIX} PATH_SUFFIXES include lib/qwt.framework/Headers)
 
 # They also decided to name it qwt-qt4, which also breaks some stuff
 SET(QWT_NAMES ${QWT_NAMES} qwt-qt4 qwt5 qwt)

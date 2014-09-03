@@ -1,16 +1,21 @@
 #ifndef _PLOTDISPLAY_H_
 #define _PLOTDISPLAY_H_ 1
 
+#include <qwt.h>
+#if QWT_VERSION >= 0x070000 || QWT_VERSION < 0x050000
+#error Hawk requires Qwt 5.x or 6.x
+#endif
+#if QWT_VERSION >= 0x060000
+#include <qwt_compat.h>
+#else
 #include <qwt_array.h>
+#endif
 #include <qwt_plot.h>
 #include <QTimer>
 #include <QMap>
 #include <QVarLengthArray>
 #include "processcontrol.h"
 
-#if QWT_VERSION >= 0x060000 || QWT_VERSION < 0x050000
-#error Hawk requires Qwt 5.x
-#endif
 
 class QwtPlotCurve;
 class Zoomer;
@@ -61,6 +66,7 @@ class PlotDisplay : public QwtPlot
   private slots:
   int setCurveVisible(DatasetId id,bool visible);
   int setCurveVisible(QwtPlotItem * plotItem,bool visible);
+  int setCurveVisible(const QVariant& itemInfo, bool visible, int index);
   void addDataLine(QList<double> data);
   void addHeader(QString title, int col);
   void updateCurves();
