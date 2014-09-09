@@ -66,7 +66,9 @@ class PlotDisplay : public QwtPlot
   private slots:
   int setCurveVisible(DatasetId id,bool visible);
   int setCurveVisible(QwtPlotItem * plotItem,bool visible);
+#if QWT_VERSION >= 0x060000
   int setCurveVisible(const QVariant& itemInfo, bool visible, int index);
+#endif
   void addDataLine(QList<double> data);
   void addHeader(QString title, int col);
   void updateCurves();
