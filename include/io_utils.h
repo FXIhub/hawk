@@ -12,7 +12,7 @@ extern "C"
 typedef enum{DebugMessage=1,InformationMessage,WarningMessage,CriticalMessage}MessageType;
 
   void hawk_log(FILE * fp, const char *format, ...);
-  void hawk_image_write(const Image * img, const char * filename, int flags);
+  void hawk_image_write(const Image * img, const char * filename, long long flags);
 #if __STDC_VERSION__ >= 199901L
   /* Lets try our luck with variable argument macros */ 
 #ifndef  _IO_UTILS_NO_MACRO_SUBSTITUTIONS_

@@ -133,7 +133,7 @@ void hawk_log(FILE * fp,const char *format, ...){
 }
 
 
-void hawk_image_write(const Image * img, const char * filename, int flags){
+void hawk_image_write(const Image * img, const char * filename, long long flags){
   /* save images if we're not connected to a server
      of if we have explicitly said to save them */
   if(!is_connected() || global_options.save_remote_files){
