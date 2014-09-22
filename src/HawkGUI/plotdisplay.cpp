@@ -319,8 +319,9 @@ int PlotDisplay::setCurveVisible(QwtPlotItem *plotItem, bool visible){
   return 0;
 }
 
-#if QWT_VERSION >= 0x060000
  int PlotDisplay::setCurveVisible(const QVariant & itemInfo, bool visible, int index){
+#if QWT_VERSION >= 0x060000
+
    QwtPlotItem *plotItem = infoToItem( itemInfo );
   Q_ASSERT(plotItem != NULL);
   plotItem->setVisible(visible);
@@ -329,9 +330,9 @@ int PlotDisplay::setCurveVisible(QwtPlotItem *plotItem, bool visible){
   updateCurves();
   updateZoomBase();
   replot();
+#endif
   return 0;
 }
-#endif
 
 
 void PlotDisplay::onProcessStarted(ProcessControl::ProcessType type, QString path,ProcessControl * p){    
