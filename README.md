@@ -47,7 +47,7 @@ We recommend you to install all these prerequisites before continuing any furthe
 
 You also need to compile the LibSPImage library. It can be downloaded through:
 
-
+    `git clone https://github.com/filipemaia/libspimage.git`
 
 If you don't have git installed, you can follow the link and click `Download ZIP`, but we recommend that you install git (available through Homebrew). Follow the instructions in `libspimage/README.md` to compile the library:
 
@@ -170,4 +170,4 @@ There are four sources of documentation for Hawk:
 Contribute
 ----------
 
-If you would like to add content to Hawk or suggest an enhancement, please do! The usual GitHub features (issues & pull requests) should suffice for these purposes. Coding standards for Hawk are documented in `doc/CodingStandards.tex`.
+If you would like to add content to Hawk or suggest an enhancement, please do! The usual GitHub features (issues & pull requests) should suffice for these purposes. Coding standards for Hawk are documented in `doc/CodingStandards.tex`
