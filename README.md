@@ -33,7 +33,7 @@ Hawk depends on the following packages:
 The packages above are necessary for the compilation to complete. Additionally, HawkGUI also uses the following packages for the graphical interface:
 
 * QT
-* QTW
+* QWT
 
 If you want to use the Python features in `python/plot_autocorrelation.py`, you also want to install the following Python packages:
 
@@ -122,14 +122,13 @@ HDF5_INCLUDE_DIR                */usr/local/include
 HDF5_LIBRARY                    */usr/local/lib/libhdf5.dylib                                                                                       
 MATH_INCLUDE_DIR                */Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/include     
 MATH_LIBRARY                    */usr/lib/libm.dylib                                                                                                
-QT_QMAKE_EXECUTABLE             *NOTFOUND                                                                                                           
-QWT_INCLUDE_DIR                 *QWT_INCLUDE_DIR-NOTFOUND                                                                                           
-QWT_LIBRARY                     *QWT_LIBRARY-NOTFOUND                                                                                               
+QT_QMAKE_EXECUTABLE             */usr/local/bin/qmake                                                                                               
+QWT_INCLUDE_DIR                 */usr/local/lib/qwt.framework/Headers                                                                               
+QWT_LIBRARY                     */usr/local/lib/qwt.framework                                                                                       
 SPIMAGE_INCLUDE_DIR             */usr/local/include                                                                                                 
 SPIMAGE_LIBRARY                 */usr/local/lib64/libspimage.dylib                                                                                  
 USE_MPI                         *OFF                                                                                                                
 
-Press [enter] to edit option                              CMake Version 3.0.2
 Press [c] to configure
 Press [h] for help               Press [q] to quit without generating
 Press [t] to toggle advanced mode (Currently Off)
@@ -151,7 +150,7 @@ This will build things and place the result in the build directory. If the build
 
     `make install`
 
-This will automatically install the scripts in your path.
+This will automatically install the scripts in your path. You may have to obtain administrative permissions by typing `sudo make install` for the install to successfully complete.
 
 Please check `doc/UserManual.pdf` for further installation instructions and documentation.
 
