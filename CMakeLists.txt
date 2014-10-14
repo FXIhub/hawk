@@ -199,7 +199,7 @@ set(top_level_DOCFILES
   Changelog
   Copyright
   PROBLEMS
-  README
+  README.md
   )
 
 if(A2X)
