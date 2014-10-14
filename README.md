@@ -51,17 +51,17 @@ You also need to compile the LibSPImage library. It can be downloaded through:
 
 If you don't have git installed, you can follow the link and click `Download ZIP`, but we recommend that you install git (available through Homebrew). Follow the instructions in `libspimage/README.md` to compile the library:
 
-    `cd libspimage`
+    `cd libspimage` 
 
-    `mkdir build`
+    `mkdir build` 
 
-    `cd build`
+    `cd build` 
 
-    `ccmake ..`
+    `ccmake ..` 
 
-    `make`
+    `make` 
 
-    `make install`
+    `make install` 
 
 If you want to be able to run Hawk on your graphics card, you need CUDA. You may also run Hawk using MPI, but this is not a necessity.
 
