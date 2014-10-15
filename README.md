@@ -8,6 +8,7 @@ Principle Authors:<br>
 Filipe Maia     ||  <filipe.c.maia@gmail.com><br>
 Tomas Ekeberg   ||  <ekeberg@xray.bmc.uu.se><br>
 Max Hantke      ||  <max.hantke@icm.uu.se><br>
+Jonas Sellberg  ||  <sellberg@xray.bmc.uu.se><br>
 <br>
 Hawk is currently v1.00 and is undergoing testing.
 
@@ -170,11 +171,11 @@ There are five sources of documentation for Hawk:
 Tutorial: HawkGUI
 -------------------------------
 
-Below, we'll go through two examples of how to use HawkGUI to reconstruct the real space image of an object from the diffracted intensities.
+Below, we'll go through two examples of how to use HawkGUI to reconstruct and view the real space image of an object from the diffracted intensities.
 
 ###(1) Ring###
 
-As a first example we'll use the diffraction image of a ring. This file is provided in `examples/ring/ring.h5` in the HDF5 format. In the same folder, there is a configuration file for the image reconstruction called `uwrapc.conf` that we need for the image reconstruction and a gzipped file of the raw ring we don't have to care about. Go to the folder `examples/ring/` or copy it to a location where you want to run the phasing algorithm, then start HawkGUI by simply typing `HawkGUI`, which opens the program and should look something like this:
+As a first example we'll use the diffraction image of a ring. This file is provided in `examples/ring/ring.h5` in the HDF5 format. In the same folder, there is a configuration file for the image reconstruction called `uwrapc.conf` that we need for the image reconstruction and a gzipped file of the raw ring that we don't have to care about. Go to the folder `examples/ring/` or copy it to a location where you want to run the phasing algorithm, then start HawkGUI by simply typing `HawkGUI`, which opens the program and should look something like this:
 
 ![HawkGUI screen](https://raw.github.com/filipemaia/hawk/master/doc/Images/README/HawkGUI-init.png)
 
@@ -182,25 +183,23 @@ You see an expandable tree of various phasing options to the upper left, two (em
 
 ![HawkGUI ring initial](https://raw.github.com/filipemaia/hawk/master/doc/Images/README/HawkGUI-ring-init.png)
 
-If you hover over the parameter keywords and sometimes their set values, you will see a pop-up help that explains what they do. Now click `Run` to start the iterative phasing algorithm. The image reconustrction should run for 10000 iteration (specified by the configuration file) and look similar to this after finishing:
+If you hover over the parameter keywords and sometimes their set values, you will see a pop-up help that explains what they do. Now click `Run` to start the iterative phasing algorithm. The image reconustrction should run for 10000 iterations (specified by the configuration file) and look similar to this after finishing:
 
 ![HawkGUI ring running](https://raw.github.com/filipemaia/hawk/master/doc/Images/README/HawkGUI-ring-run.png)
 
-The left image shows the real space image and the right image shows the support in red. The support is the area in which the particle is contained and and is related to the fact that the diffraction image is oversampled and is a necessary constrain to uniquely determine the phases of the scattering amplitudes (hence, the real space image). You may zoom in on the images by scrolling and translate them by moving them with the mouse while you left-click. As you see, the support image looks different from the real space image, and does not seem to overlap with the ring at all. This is because the FFT algorithms uses shifted images where the center of the image is located at the corners. This can be fixed by hovering over the lower part of the image slot, which reveals a hidden image menu, and clicking `Shift Image`, which is the middle button in the lower row. The program should now look like this:
+The left image shows the real space image and the right image shows the support in red. The support is the area in which the particle is contained and is related to the fact that the diffraction image is oversampled and is a necessary constraint to uniquely determine the phases of the scattering amplitudes (hence, the real space image). You may zoom in on the images by scrolling and translate them by moving them with the mouse while you left-click. As you see, the support image looks different from the real space image, and does not seem to overlap with the ring at all. This is because the FFT algorithms use shifted images where the center of the image is located at the corners. This can be fixed by hovering over the lower part of the image slot, which reveals a hidden image menu, and clicking `Shift Image`, which is the middle button in the lower row. The screen should now look like this:
 
 ![HawkGUI ring final](https://raw.github.com/filipemaia/hawk/master/doc/Images/README/HawkGUI-ring-final.png)
 
 You can now click on one of the images to mark them and use the up-arrow and down-arrow keys to scroll through the various iteration steps saved to file. You may also switch the real space and support images in the drop-down menu above the image slots to the Fourier space image, the real space autocorrelation, as well as the initial image and support. If you want to see how the initial diffraction intensities look like, you can press `Load Image`, which is the left-most button in the upper row of the hidden image menu and select `ring.h5`. You may have to press `Shift Image` when you change between the various images to make sure that the center is located at the center of the image (and not at the corners).
 
-Last, you can take a look at the graph in the lower left part of the screen, which shows how various parameters change as a function of the number of iterations. As default, the support size (measured in % of the image size) and the real space and Fourier space errors are shown. The real space error is defined as the summed amplitudes of the real space image outside of the support. The Fourier space error is defined as the summed difference in magnitude between the (square root of the) diffraction image and the reconstructed Fourier amplitudes. You can zoom by marking a certin area of the graph and unzoom by right-clicking in the graph window.
-
-You may also run the image reconstruction without the graphical interface. This is done by running `uwrapc` in the folder where the `uwrapc.conf` configuration file is present.
+Last, you can take a look at the graph in the lower left part of the screen, which shows how various parameters change as a function of the number of iterations. As default, the support size (measured in percent of the image size) and the real space and Fourier space errors are shown. The real space error is defined as the summed amplitudes of the real space image outside of the support. The Fourier space error is defined as the summed difference in magnitude between the (square root of the) measured diffraction intensities and the reconstructed Fourier amplitudes. You can zoom by marking a certain area of the graph and unzoom by right-clicking in the graph window.
 
 Further information about algorithms, parameters, as well as a more detailed example of the ring reconstruction can be found in `doc/UserManual.pdf`
 
-###(2) Mimi virus###
+###(2) Mimivirus###
 
-The next example is closer to reality, but also harder to reconstruct. It is a single snapshot of a Mimi virus, measured by Marvin Seibert, Tomas Ekeberg, Filipe Maia, et al. at the AMO endstation at LCLS and published in Nature in 2011, available at: http://dx.doi.org/10.1038/nature09748
+The next example is closer to the reality of single-particle imaging, but also harder to reconstruct. It is a single snapshot of a Mimivirus, measured by Marvin Seibert, Tomas Ekeberg, Filipe Maia, et al. at the AMO endstation at LCLS and published in Nature in 2011, available at: http://dx.doi.org/10.1038/nature09748
 
 The data was published in the Coherent X-ray Imaging Data Bank (CXIDB) and is available to download from: http://www.cxidb.org/id-1.html
 
@@ -210,7 +209,9 @@ Download `mimi_a.conf` that contains the configuration file for the image recons
 
 ![HawkGUI ring final](https://raw.github.com/filipemaia/hawk/master/doc/Images/README/HawkGUI-mimi1-final.png)
 
-You see that the real space image has converged towards the shape and size of a Mimi virus with icoshedral facets (looks hexagonal in a 2D projection). A good indication that the image reconstruction has converged is given by the observation that the Fourier space error drops slightly without the real space error increasing when the support size is lowered, which means that real space image is localized and still reproduces the diffraction intensities in Fourier space. If the image reconstruction succeeds, the image should be comparable to the "Unconstrained" reconstruction in Fig. 2f in the published article. The hollow center of the virus is due to missing diffraction data at small scattering angles and can be corrected for by fitting low-resolution modes to a spherical os icoshedral profile.
+You see that the real space image has converged towards the shape and size of a Mimivirus with icosahedral facets (that looks hexagonal in a 2D projection). A good indication that the image reconstruction has converged is given by the Fourier space error, which drops slightly after approximately 3000 iterations without the real space error increasing although the support size is lowered. This means that the real space image is localized and still reproduces the measured diffraction intensities in Fourier space. If the image reconstruction succeeds, the image should be comparable to the "Unconstrained" reconstruction in Fig. 2f in the published article. The hollow center of the virus is due to missing diffraction data at small scattering angles and can be corrected for by fitting low-resolution modes to a spherical or icosahedral profile.
+
+You may also run the image reconstruction without the graphical interface. This is done by running `uwrapc` in the folder where the `uwrapc.conf` configuration file is present.
 
 
 Contribute
