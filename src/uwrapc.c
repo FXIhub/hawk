@@ -197,6 +197,15 @@ void harmonize_sizes(Options * opts){
 void output_initial_images( const Image * real_in,const Image * initial_support){
   hawk_image_write(initial_support,"initial_support.h5",0);
   hawk_image_write(real_in,"initial_guess.h5",sizeof(real));
+  // appending in cxidb file format is currently only implemented for 2D images
+  if (real_in->num_dimensions == SP_2D) {
+    // copy support to data Image
+    for (unsigned i = 0; i < sp_image_size(initial_support); i++) {
+      real_in->mask->data[i] = (int) sp_real(initial_support->image->data[i]);
+    }
+    // append to cxidb file as new image to original entry
+    hawk_image_write(real_in, "reconstruction.cxi", 4);
+  }
 }
 
 void complete_reconstruction_clean(Image * amp, Image * initial_support,Options * opts){  
@@ -283,14 +292,26 @@ void complete_reconstruction_clean(Image * amp, Image * initial_support,Options 
       sprintf(buffer,"real_space-%07d.h5",ph->iteration-1);
       //hawk_image_write(sp_phaser_model(ph),buffer,opts->output_precision);
       Image * rs = apply_output_projection(sp_phaser_model_with_support(ph),
-						 opts->output_projection,
-						 sp_phaser_amplitudes(ph));
+                                           opts->output_projection,
+                                           sp_phaser_amplitudes(ph));
       hawk_image_write(rs,buffer,opts->output_precision);
-      sp_image_free(rs);
       sprintf(buffer,"support-%07d.h5",ph->iteration-1);
       hawk_image_write(sp_phaser_support(ph),buffer,opts->output_precision);
       sprintf(buffer,"fourier_space-%07d.h5",ph->iteration-1);
       hawk_image_write(sp_phaser_fmodel_with_mask(ph),buffer,opts->output_precision);
+      // appending in cxidb file format is currently only implemented for 2D images
+      if (amp->num_dimensions == SP_2D) {
+        // initialize flag to include iteration number with the last 32 bits
+        long long flag = ph->iteration;
+        flag = (flag << 32) | 8;
+        // copy support to data Image
+        for (unsigned i = 0; i < sp_image_size(sp_phaser_support(ph)); i++) {
+          rs->mask->data[i] = (int) sp_real(sp_phaser_support(ph)->image->data[i]);
+        }
+        // append data to cxidb file
+        hawk_image_write(rs, "reconstruction.cxi", flag);
+      }
+      sp_image_free(rs);
     }
   }
   
@@ -722,11 +743,20 @@ void init_reconstruction(Options * opts){
     sp_image_high_pass(opts->amplitudes, opts->beamstop, SP_3D);
   }
   sp_add_noise(opts->amplitudes,opts->noise,SP_GAUSSIAN);
-/*  if(opts->rescale_amplitudes){
-    rescale_image(opts->amplitudes);
-  }*/
+  /*
+   if(opts->rescale_amplitudes){
+      rescale_image(opts->amplitudes);
+   }
+   */
+  
+  // create cxidb file with initial amplitudes
+  char buffer[OPTION_STRING_SIZE*2+1];
+  strcpy(buffer,opts->work_dir);
+  strcat(buffer,"/");
+  strcat(buffer,"reconstruction.cxi");
+  hawk_image_write(opts->amplitudes, buffer, 0);
+  
   if(opts->debug_level > 0){
-    char buffer[OPTION_STRING_SIZE*2+1];
     strcpy(buffer,opts->work_dir);
     strcat(buffer,"/");
     strcat(buffer,"diffraction.vtk");
