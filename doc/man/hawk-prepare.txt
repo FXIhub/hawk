@@ -1,0 +1,59 @@
+hawk-prepare(1)
+===============
+
+NAME
+----
+hawk-prepare - Prepare an image for phasing
+
+
+SYNOPSIS
+--------
+[verse]
+'hawk prepare' <-i infile> <-o outfile> [-s <saturation>] 
+	[-g <background>] [-b <beamstop>] [-m <mask file>] [-p]
+	[-r <crop radius>] [-C] [-c <center>] [-d <dark file>] [-S]
+	[-n <noise file>] [-f <filter radius>] [-a <downsample>] 
+	[-t=<smoothness>] [-e=<filler file>] [-v] [-h]
+
+DESCRIPTION
+-----------
+Processes images so that they are in a suitable format for phasing. It is capable of
+doing many different operations (too many?), which help turn a raw detector image
+into a datafile which incorpates knowledge about, among others, beam position, 
+dead pixels, detector background and detector saturation level. It also allows 
+includes tools to speed up the reconstruction by padding the image such that the
+dimensions are a power of 2, the possibly downsample the image and to crop the
+center of the image when only a low resolution reconstruction is necessary.
+
+OPTIONS
+-------
+*-i <infile>*::
+The input filename. It should be in a format that *hawk-convert*(1) can understand.
+The input file will not be altered.
+
+*-o outfile>*::
+The output filename, after all the operations have been performed.
+
+*-s <saturation>*::
+	Set values above the *<saturation>* to 0 and set the equivalent mask pixel
+	to 0.
+
+*-v*::
+	Turn on verbose output.
+
+*-h*::
+	Print help text.
+
+
+//FURTHER DOCUMENTATION
+//---------------------
+
+// We could use some
+
+
+EXAMPLES
+-------
+
+*hawk prepare -i image.tiff -o image.h5 -s 64000 -g 200 -a 2*
+
+Will read *image.tiff* and covert it into a CXI file named *image.cxi*.
