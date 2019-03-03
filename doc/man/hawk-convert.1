@@ -1,0 +1,131 @@
+'\" t
+.\"     Title: hawk-convert
+.\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
+.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
+.\"      Date: 03/03/2019
+.\"    Manual: [FIXME: manual]
+.\"    Source: [FIXME: source]
+.\"  Language: English
+.\"
+.TH "HAWK\-CONVERT" "1" "03/03/2019" "[FIXME: source]" "[FIXME: manual]"
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+hawk-convert \- Converts files between different file formats
+.SH "SYNOPSIS"
+.sp
+.nf
+\fIhawk convert\fR <input file> <output file>
+.fi
+.SH "DESCRIPTION"
+.sp
+Converts images from one file format to another\&. It infers the both the input and output file format from the filenames of the \fB<input file>\fR and \fB<output file>\fR\&. It tries to preserve as much information as possible but for many formats there will be a substantial loss of information\&. Certain output formats, such as \fBPNG\fR, do not attempt to preserve the input information but instead adapt it to the output format\&.
+.SH "OPTIONS"
+.PP
+\fB<input file>\fR
+.RS 4
+The filename of the file to convert\&.
+.RE
+.PP
+\fB<output file>\fR
+.RS 4
+The filename where the output file will be created\&.
+.RE
+.PP
+\fB\-\-version\fR
+.RS 4
+Prints the Hawk package version\&.
+.RE
+.PP
+\fB\-\-help\fR
+.RS 4
+Prints the synopsis along with a list and short explanation of the possible commands\&. When given a <command> it will show the man page of that <command>, for example
+\fBhawk \-\-help convert\fR
+will show the man page for hawk\-convert\&.
+.RE
+.SH "FILE FORMATS"
+.sp
+The following file formats are supported\&. All filename ending comparisons are \fBcase insensitive\fR\&.
+.SS "INPUT ONLY FORMATS"
+.PP
+\fBSMV Files\fR
+.RS 4
+Filenames ending with
+\fB\&.smv\fR
+are assumed to be Super Marty View (SMV) files, used by some early CCD\-based X\-ray detectors\&.
+.RE
+.SS "OUTPUT ONLY FORMATS"
+.PP
+\fBVTK Files\fR
+.RS 4
+Filenames ending with
+\fB\&.vtk\fR
+are assumed to be VTK files\&. These are files used for 3D data visualization\&. The data will be written as a dataset of structured points in ASCII format\&. Only the absolute value of each pixel will be written to the file\&. No metadata support\&.
+.RE
+.PP
+\fBCSV Files\fR
+.RS 4
+Filenames ending with
+\fB\&.csv\fR
+are assumed to be CSV files\&. This format only support 2D images\&. The output file will have 6 columns corresponding to the x,y pixel position and the complex pixel value in both radial (amplitude and phase) and cartesian (real and imaginary part) notation\&. No metadata support\&.
+.RE
+.PP
+\fBXPLOR Files\fR
+.RS 4
+Filenames ending with
+\fB\&.xplor\fR
+are assumed to be XPLOR files\&. This format only support 3D images\&. The output file will contain the absolute value of each pixel as a 3D electron density map, suitable for visualization in crystallography packages such as PyMOL\&. No metadata support\&.
+.RE
+.SS "INPUT/OUTPUT FORMATS"
+.PP
+\fBHawk H5 Files\fR
+.RS 4
+Filenames ending with
+\fB\&.h5\fR
+are assumed to be traditional Hawk H5 files\&. This format supports both 2D and 3D floating point datasets as well as extensive metadata including mask, and a variety of experimental parameters\&.
+.RE
+.PP
+\fBPNG Files\fR
+.RS 4
+Filenames ending with
+\fB\&.png\fR
+are assumed to be PNG files\&. This format only supports 2D images\&. As an input only 8\-bit monochromatic images are accepted\&. When PNG files are used as an output format the absolute value of the input data is converted into a color image using the Jet colormap and that image is then written into the file\&. No metadata support\&.
+.RE
+.PP
+\fBTIFF Files\fR
+.RS 4
+Filenames ending with
+\fB\&.tif\fR
+or
+\fB\&.tiff\fR
+are assumed to be TIFF files\&. 8\-bit, 16\-bit and 32\-bit integer and 32\-bit floating point input files are supported\&. Output files will always be written in 32\-bit floating point format\&. No metadata support\&.
+.RE
+.PP
+\fBCXI Files\fR
+.RS 4
+Filenames ending with
+\fB\&.cxi\fR
+are assumed to be CXI Files\&. As an input only the first entry of a possibly multi\-entry file will be converted\&. Currently no metadata is converted, even when the output files support it\&. As an output format a file with a single entry will be created containing the input data along with any possible metadata\&.
+.RE
+.PP
+\fBMRC Files\fR
+.RS 4
+Filenames ending with
+\fB\&.mrc\fR
+or
+\fB\&.map\fR
+are assumed to be MRC Files\&. These are cryo\-electron microscopy density maps\&. 16\-bit integer and 32\-bit floating point input files are supported\&. As an output 32\-bit floating point files will be created containing the real part of the input data\&. CCP4 electron density maps can also be read as an MRC files\&.
+.RE
+.SH "EXAMPLES"
+.sp
+\fBhawk convert image\&.tiff image\&.cxi\fR
+.sp
+Will read \fBimage\&.tiff\fR and covert it into a CXI file named \fBimage\&.cxi\fR\&.
