@@ -33,6 +33,7 @@ int main(int argc, char ** argv)
       }
     }
   }
+  sp_image_write(density, "density.h5", 0);
 
   Image * img = sp_image_fft(density);
 
@@ -40,7 +41,6 @@ int main(int argc, char ** argv)
     img->mask->data[i] = 1;
   }
 
-  //Image * img = sp_image_generate_pattern(100);
   Image * tmp = sp_image_duplicate(img,SP_COPY_DATA|SP_COPY_MASK);
 
   sp_image_conj(tmp);
