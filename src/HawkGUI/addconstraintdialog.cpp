@@ -41,7 +41,7 @@ AddConstraintDialog::AddConstraintDialog(StitcherView * v,QWidget * parent,Qt::W
   hbox->addWidget(center);
   QVBoxLayout * centerVbox = new QVBoxLayout(center);
   centerVbox->setContentsMargins(0,0,0,0);
-  centerVbox->addStretch(1.5);
+  centerVbox->addStretch(1);
   QPushButton * add = new QPushButton("Add",center);
   connect(add,SIGNAL(clicked()),this,SLOT(onAddClicked()));
   centerVbox->addWidget(add);

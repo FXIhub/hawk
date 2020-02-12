@@ -23,7 +23,7 @@ const char      prog_name[] = "hawk";
   These functions are intended to be similar to those in libspimage sperror
 */
 static void hawk_report(const char * file, int line, int status, MessageType type, const char *format,va_list ap){
-  char * buffer;
+  char * buffer = NULL;
   int size[3] = {0,0,0};
   size[0] = snprintf(buffer,0, "%s: ", prog_name);
   va_list ap_copy;
@@ -55,7 +55,7 @@ static void hawk_report(const char * file, int line, int status, MessageType typ
 }
 
 static void hawk_report2(int status, MessageType type,const char *format,va_list ap){
-  char * buffer;
+  char * buffer = NULL;
   int size[3] = {0,0,0};
   size[0] = snprintf(buffer,0, "%s: ", prog_name);
   va_list ap_copy;
@@ -115,7 +115,7 @@ void hawk_info(const char *format, ...){
 }
 
 void hawk_log(FILE * fp,const char *format, ...){
-  char * buffer;
+  char * buffer = NULL;
   int size = 0;
   va_list ap;
   va_start(ap,format);

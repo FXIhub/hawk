@@ -1,5 +1,5 @@
 #ifndef _SUPPORT_H_
-#define _SUPPORT_H
+#define _SUPPORT_H_
 
 int descend_real_compare(const void * a,const  void * b);
 int descend_complex_compare(const void * a,const  void * b);
