@@ -35,6 +35,8 @@ void initSettings(){
 
 int main(int argc, char **argv)
 {
+  /* Avoids problems with commas in libconfig */
+  setenv("LC_NUMERIC", "C", 1);
   if(argc >= 2 && strcmp(argv[1] ,"uwrapc") == 0){
     uwrapc_main(argc-1,argv+1);
     return 0;
