@@ -70,9 +70,9 @@ TARGET_LINK_LIBRARIES(post_process ${LIBRARY_LIST})
 TARGET_LINK_LIBRARIES(hawk ${LIBRARY_LIST})
 
 FILE(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/doc/man)
-add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/doc/man/hawk.1 COMMAND ${A2X} -f manpage -D ${CMAKE_BINARY_DIR}/doc/man ${CMAKE_SOURCE_DIR}/doc/man/hawk.txt DEPENDS ${CMAKE_SOURCE_DIR}/doc/man/hawk.txt COMMENT "Creating the hawk(1) man page" VERBATIM)
-add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/doc/man/hawk-convert.1 COMMAND ${A2X} -f manpage -D ${CMAKE_BINARY_DIR}/doc/man ${CMAKE_SOURCE_DIR}/doc/man/hawk-convert.txt DEPENDS ${CMAKE_SOURCE_DIR}/doc/man/hawk-convert.txt COMMENT "Creating the hawk-convert(1) man page" VERBATIM)
-add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/doc/man/hawk-prepare.1 COMMAND ${A2X} -f manpage -D ${CMAKE_BINARY_DIR}/doc/man ${CMAKE_SOURCE_DIR}/doc/man/hawk-prepare.txt DEPENDS ${CMAKE_SOURCE_DIR}/doc/man/hawk-prepare.txt COMMENT "Creating the hawk-prepare(1) man page" VERBATIM)
+add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/doc/man/hawk.1 COMMAND ${A2X} --no-xmllint -f manpage -D ${CMAKE_BINARY_DIR}/doc/man ${CMAKE_SOURCE_DIR}/doc/man/hawk.txt DEPENDS ${CMAKE_SOURCE_DIR}/doc/man/hawk.txt COMMENT "Creating the hawk(1) man page" VERBATIM)
+add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/doc/man/hawk-convert.1 COMMAND ${A2X} --no-xmllint -f manpage -D ${CMAKE_BINARY_DIR}/doc/man ${CMAKE_SOURCE_DIR}/doc/man/hawk-convert.txt DEPENDS ${CMAKE_SOURCE_DIR}/doc/man/hawk-convert.txt COMMENT "Creating the hawk-convert(1) man page" VERBATIM)
+add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/doc/man/hawk-prepare.1 COMMAND ${A2X} --no-xmllint -f manpage -D ${CMAKE_BINARY_DIR}/doc/man ${CMAKE_SOURCE_DIR}/doc/man/hawk-prepare.txt DEPENDS ${CMAKE_SOURCE_DIR}/doc/man/hawk-prepare.txt COMMENT "Creating the hawk-prepare(1) man page" VERBATIM)
 
 INSTALL(TARGETS uwrapc process_image post_process hawk# restore_image
             RUNTIME DESTINATION bin

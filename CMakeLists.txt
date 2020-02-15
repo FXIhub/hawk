@@ -205,8 +205,8 @@ set(top_level_DOCFILES
 if(A2X)
   set(REBUILD_MAN_PAGES OFF CACHE BOOL "If ON rebuild man pages.")
   if(REBUILD_MAN_PAGES)
-    add_custom_target(documentation ALL ${A2X} -f manpage ${CMAKE_SOURCE_DIR}/doc/man/hawk.txt DEPENDS ${CMAKE_SOURCE_DIR}/doc/man/hawk.txt COMMENT "Creating man pages" VERBATIM)
-    add_custom_command(TARGET src/hawk POST_BUILD COMMAND ${A2X} -f manpage -D ${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR}/doc/man/hawk.txt COMMENT "Creating man pages" VERBATIM)
+    add_custom_target(documentation ALL ${A2X} --no-xmllint -f manpage ${CMAKE_SOURCE_DIR}/doc/man/hawk.txt DEPENDS ${CMAKE_SOURCE_DIR}/doc/man/hawk.txt COMMENT "Creating man pages" VERBATIM)
+    add_custom_command(TARGET src/hawk POST_BUILD COMMAND ${A2X} --no-xmllint -f manpage -D ${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR}/doc/man/hawk.txt COMMENT "Creating man pages" VERBATIM)
   endif()
 
   set(man1_pages
