@@ -1,8 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include <hdf5.h>
-#include <mpi.h>
 
 #include "spimage.h"
 
@@ -21,20 +19,21 @@ int main(int argc, char ** argv)
     for(y=0; y<sp_image_y(density); y++){
       for(z=0; z<sp_image_z(density); z++){
 	if((x-45)*(x-45)+(y-47)*(y-47)+(z-40)*(z-40) <= 5){
-	  sp_image_set(density,x,y,z,5);
+	  sp_image_set(density,x,y,z,sp_cinit(5,0));
 	}
 	if((x-55)*(x-55)+(y-47)*(y-47)+(z-49)*(z-49) <= 9){
-	  sp_image_set(density,x,y,z,4);
+	  sp_image_set(density,x,y,z,sp_cinit(4,0));
 	}
 	if((x-50)*(x-50)+(y-57)*(y-57)+(z-52)*(z-52) <= 12){
-	  sp_image_set(density,x,y,z,7);
+	  sp_image_set(density,x,y,z,sp_cinit(7,0));
 	}
 	if((x-50)*(x-50)+(y-50)*(y-50)+(z-58)*(z-58) <= 8){
-	  sp_image_set(density,x,y,z,3);
+	  sp_image_set(density,x,y,z,sp_cinit(3,0));
 	}
       }
     }
   }
+  sp_image_write(density, "density.h5", 0);
 
   Image * img = sp_image_fft(density);
 
@@ -42,7 +41,6 @@ int main(int argc, char ** argv)
     img->mask->data[i] = 1;
   }
 
-  //Image * img = sp_image_generate_pattern(100);
   Image * tmp = sp_image_duplicate(img,SP_COPY_DATA|SP_COPY_MASK);
 
   sp_image_conj(tmp);
