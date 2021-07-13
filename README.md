@@ -46,9 +46,9 @@ If you want to use the Python features in `python/plot_autocorrelation.py`, you 
 
 We recommend you to install all these prerequisites before continuing any further. If you're unfamiliar with installing packages, we recommend you to use Homebrew, which can be found at http://brew.sh/
 
-You also need to compile the LibSPImage library. It can be downloaded through:
+You also need to compile the `libspimage` library. It can be downloaded through:
 
-`git clone https://github.com/filipemaia/hawk.git`
+`git clone https://github.com/FXIhub/libspimage.git`
 
 If you don't have git installed, you can follow the link and click `Download ZIP`, but we recommend that you install git (available through Homebrew). Follow the instructions in `libspimage/README.md` to compile the library:
 
